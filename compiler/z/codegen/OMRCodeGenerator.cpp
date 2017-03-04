@@ -8245,7 +8245,7 @@ OMR::Z::CodeGenerator::setEstimatedLocationsForDataSnippetLabels(int32_t estimat
 
 
 void
-OMR::Z::CodeGenerator::emitDataSnippets(bool isWarm)
+OMR::Z::CodeGenerator::emitDataSnippets()
    {
    // *this    swipeable for debugging purposes
    // If you change logic here, be sure to do similar change in
@@ -8278,7 +8278,7 @@ OMR::Z::CodeGenerator::emitDataSnippets(bool isWarm)
          if (maxSize < (*iterator)->getConstantSize())
             maxSize = size;
 
-         if (HANDLE_CONSTANT_SNIPPET((*iterator), isWarm, size))
+         if (HANDLE_CONSTANT_SNIPPET((*iterator), 0, size))
             {
             if (first)
                {
@@ -8300,7 +8300,7 @@ OMR::Z::CodeGenerator::emitDataSnippets(bool isWarm)
           if (maxSize < cursor->getConstantSize())
              maxSize = size;
 
-          if (HANDLE_CONSTANT_SNIPPET(cursor, isWarm, size))
+          if (HANDLE_CONSTANT_SNIPPET(cursor, 0, size))
              {
               if (first)
                  {
@@ -8328,7 +8328,7 @@ OMR::Z::CodeGenerator::emitDataSnippets(bool isWarm)
        if (maxSize < (*writeableiterator)->getConstantSize())
             maxSize = size;
 
-         if (HANDLE_CONSTANT_SNIPPET((*writeableiterator), isWarm, size))
+         if (HANDLE_CONSTANT_SNIPPET((*writeableiterator), 0, size))
             {
             if (first)
                {
@@ -8350,7 +8350,7 @@ OMR::Z::CodeGenerator::emitDataSnippets(bool isWarm)
    self()->setBinaryBufferCursor((uint8_t *) (((uintptrj_t) (self()->getBinaryBufferCursor() + 7) / 8) * 8));
    for (auto snippetDataIterator = _snippetDataList.begin(); snippetDataIterator != _snippetDataList.end(); ++snippetDataIterator)
       {
-     if ((*snippetDataIterator)->isWarmSnippet() == isWarm)
+     if ((*snippetDataIterator)->isWarmSnippet() == 0)
          {
          if ((*snippetDataIterator)->getKind() == TR::Snippet::IsEyeCatcherData )
             {
@@ -8659,7 +8659,7 @@ OMR::Z::CodeGenerator::setEstimatedLocationsForTargetAddressSnippetLabels(int32_
    }
 
 void
-OMR::Z::CodeGenerator::emitTargetAddressSnippets(bool isWarm)
+OMR::Z::CodeGenerator::emitTargetAddressSnippets()
    {
    // *this    swipeable for debugging purposes
    uint8_t * codeOffset;
@@ -8672,7 +8672,7 @@ OMR::Z::CodeGenerator::emitTargetAddressSnippets(bool isWarm)
 
    for (auto iterator = _targetList.begin(); iterator != _targetList.end(); ++iterator)
       {
-      if ((*iterator)->isWarmSnippet() == isWarm)
+      if ((*iterator)->isWarmSnippet() == 0)
          {
          codeOffset = (*iterator)->emitSnippetBody();
          if (codeOffset != NULL)

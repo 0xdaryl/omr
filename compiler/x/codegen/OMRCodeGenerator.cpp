@@ -2318,7 +2318,7 @@ int32_t OMR::X86::CodeGenerator::setEstimatedLocationsForDataSnippetLabels(int32
    return estimatedSnippetStart;
    }
 
-void OMR::X86::CodeGenerator::emitDataSnippets(bool isWarm)
+void OMR::X86::CodeGenerator::emitDataSnippets()
    {
    // *this    swipeable for debugging purposes
 
@@ -2336,7 +2336,7 @@ void OMR::X86::CodeGenerator::emitDataSnippets(bool isWarm)
       first = true;
       for (auto iterator = _dataSnippetList.begin(); iterator != _dataSnippetList.end(); ++iterator)
          {
-         if ((*iterator)->getDataSize() == size && (*iterator)->isWarmSnippet() == isWarm)
+         if ((*iterator)->getDataSize() == size && (*iterator)->isWarmSnippet() == 0)
             {
             if (first)
                {
