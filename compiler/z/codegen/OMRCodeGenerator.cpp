@@ -7963,14 +7963,14 @@ TR_S390OutOfLineCodeSection * OMR::Z::CodeGenerator::findS390OutOfLineCodeSectio
 // OMR::Z::CodeGenerator::Constant Data List Functions
 ////////////////////////////////////////////////////////////////////////////////
 TR::S390ConstantDataSnippet *
-OMR::Z::CodeGenerator::findOrCreateConstant(TR::Node * node, void * c, uint16_t size, bool isWarm)
+OMR::Z::CodeGenerator::findOrCreateConstant(TR::Node * node, void * c, uint16_t size)
    {
    // *this    swipeable for debugging purposes
    CS2::HashIndex hi;
    TR_S390ConstantDataSnippetKey key;
    key.c      = c;
    key.size   = size;
-   key.isWarm = isWarm;
+   key.isWarm = false;
    TR::S390ConstantDataSnippet * data;
 
    // Can only share data snippets for literal pool address when inlined site indices are the same
@@ -8005,11 +8005,9 @@ OMR::Z::CodeGenerator::findOrCreateConstant(TR::Node * node, void * c, uint16_t 
    // Constant was not found: create a new snippet for it and add it to the constant list.
    //
    data = new (self()->trHeapMemory()) TR::S390ConstantDataSnippet(self(), node, c, size);
-   if (isWarm)
-      data->setWarmSnippet();  // Set as a warm snippet if requested.
    key.c = (void *)data->getRawData();
    key.size = size;
-   key.isWarm = isWarm;
+   key.isWarm = false;
    if (self()->profiledPointersRequireRelocation() && node &&
        (node->getOpCodeValue() == TR::aconst && (node->isClassPointerConstant() || node->isMethodPointerConstant()) ||
         node->getOpCodeValue() == TR::loadaddr && node->getSymbol()->isClassObject() ||
@@ -8076,7 +8074,7 @@ OMR::Z::CodeGenerator::addDataConstantSnippet(TR::S390ConstantDataSnippet * snip
  * since the constant is emitted after all the target address snippets
  */
 int32_t
-OMR::Z::CodeGenerator::setEstimatedOffsetForConstantDataSnippets(int32_t targetAddressSnippetSize, bool isWarm)
+OMR::Z::CodeGenerator::setEstimatedOffsetForConstantDataSnippets(int32_t targetAddressSnippetSize)
    {
    // *this    swipeable for debugging purposes
    TR::S390ConstantDataSnippet * cursor;
@@ -8105,7 +8103,7 @@ OMR::Z::CodeGenerator::setEstimatedOffsetForConstantDataSnippets(int32_t targetA
       first = true;
       for (auto iterator = _constantList.begin(); iterator != _constantList.end(); ++iterator)
          {
-         if (HANDLE_CONSTANT_SNIPPET((*iterator), isWarm, size))
+         if (HANDLE_CONSTANT_SNIPPET((*iterator), false, size))
             {
             if (first)
                {
@@ -8120,7 +8118,7 @@ OMR::Z::CodeGenerator::setEstimatedOffsetForConstantDataSnippets(int32_t targetA
       for(hi = _constantHashCur.SetToFirst(); _constantHashCur.Valid(); hi = _constantHashCur.SetToNext())
           {
            cursor = _constantHash.DataAt(hi);
-           if (HANDLE_CONSTANT_SNIPPET(cursor, isWarm, size))
+           if (HANDLE_CONSTANT_SNIPPET(cursor, false, size))
               {
               if (first)
                   {
@@ -8140,7 +8138,7 @@ OMR::Z::CodeGenerator::setEstimatedOffsetForConstantDataSnippets(int32_t targetA
       first = true;
       for (auto writeableiterator = _writableList.begin(); writeableiterator != _writableList.end(); ++writeableiterator)
          {
-         if (HANDLE_CONSTANT_SNIPPET((*writeableiterator), isWarm, size))
+         if (HANDLE_CONSTANT_SNIPPET((*writeableiterator), false, size))
             {
             if (first)
                {
@@ -8511,19 +8509,19 @@ OMR::Z::CodeGenerator::createLiteralPoolSnippet(TR::Node * node)
 TR::S390ConstantDataSnippet *
 OMR::Z::CodeGenerator::findOrCreate2ByteConstant(TR::Node * node, int16_t c, bool isWarm)
    {
-   return self()->findOrCreateConstant(node, &c, 2, isWarm);
+   return self()->findOrCreateConstant(node, &c, 2);
    }
 
 TR::S390ConstantDataSnippet *
 OMR::Z::CodeGenerator::findOrCreate4ByteConstant(TR::Node * node, int32_t c, bool isWarm)
    {
-   return self()->findOrCreateConstant(node, &c, 4, isWarm);
+   return self()->findOrCreateConstant(node, &c, 4);
    }
 
 TR::S390ConstantDataSnippet *
 OMR::Z::CodeGenerator::findOrCreate8ByteConstant(TR::Node * node, int64_t c, bool isWarm)
    {
-   return self()->findOrCreateConstant(node, &c, 8, isWarm);
+   return self()->findOrCreateConstant(node, &c, 8);
    }
 
 TR::S390ConstantDataSnippet *

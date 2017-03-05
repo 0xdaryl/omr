@@ -887,7 +887,7 @@ public:
    /** First Snippet (can be AddressSnippet or ConstantSnippet) */
    TR::Snippet *getFirstSnippet();
    // Constant Data List functions
-   int32_t setEstimatedOffsetForConstantDataSnippets(int32_t targetAddressSnippetSize, bool isWarm = 0);
+   int32_t setEstimatedOffsetForConstantDataSnippets(int32_t targetAddressSnippetSize);
    int32_t setEstimatedLocationsForDataSnippetLabels(int32_t estimatedSnippetStart, bool isWarm = 0);
    void emitDataSnippets();
    bool hasDataSnippets() { return (_constantList.empty() && _writableList.empty() && _snippetDataList.empty() && _constantHash.IsEmpty()) ? false : true; }
