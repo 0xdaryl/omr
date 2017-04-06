@@ -268,6 +268,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableCodeCacheSnippets",           "O\tdisable code cache snippets (e.g. allocation prefetch snippet) ", SET_OPTION_BIT(TR_DisableCodeCacheSnippets), "F"},
    {"disableColdBlockMarker",             "O\tdisable detection of cold blocks",               TR::Options::disableOptimization, coldBlockMarker, 0, "P"},
    {"disableColdBlockOutlining",          "O\tdisable outlining of cold blocks",               TR::Options::disableOptimization, coldBlockOutlining, 0, "P"},
+   {"disableColdCodeAllocations",         "I\tdisable allocating code in the cold area of a code cache", SET_OPTION_BIT(TR_DisableColdCodeAllocations),"F"},
    {"disableCompactLocals",               "O\tdisable compact locals",                         TR::Options::disableOptimization, compactLocals, 0, "P"},
    {"disableCompactNullChecks",           "O\tdisable compact null checks",                    TR::Options::disableOptimization, compactNullChecks, 0, "P"},
    {"disableCompareAndBranchInstruction", "O\tdisable compareAndBranch instruction",           SET_OPTION_BIT(TR_DisableCompareAndBranchInstruction), "F"},
