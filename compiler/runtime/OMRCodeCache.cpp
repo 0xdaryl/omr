@@ -1738,49 +1738,20 @@ OMR::CodeCache::allocateCodeMemory(size_t warmCodeSize,
    TR::CodeCacheConfig & config = _manager->codeCacheConfig();
 
    uint8_t * warmCodeAddress = NULL;
-   uint8_t * coldCodeAddress = NULL;
    uint8_t * cacheHeapAlloc;
    bool warmIsFreeBlock = false;
-   bool coldIsFreeBlock = false;
 
    size_t warmSize = warmCodeSize;
-   size_t coldSize = coldCodeSize;
-   _manager->performSizeAdjustments(warmSize, coldSize, needsToBeContiguous, isMethodHeaderNeeded); // side effect on warmSize and coldSize
-
-#if 0
-   if (config.verboseReclamation())
-      {
-      TR_FrontEnd *fe = _manager->fe();
-      TR_VerboseLog::writeLineLocked(TR_Vlog_CODECACHE,"--ccr-- allocateCodeMemory CC=%p warmSize=%u, coldSize=%u headerNeeded=%d warmCodeAlloc=%p coldCodeAlloc=%p",
-         this, warmSize, coldSize, isMethodHeaderNeeded, _warmCodeAlloc, _coldCodeAlloc);
-      }
-#endif
+   _manager->performSizeAdjustments(warmSize, needsToBeContiguous, isMethodHeaderNeeded); // side effect on warmSize
 
    // Acquire mutex because we are walking the list of free blocks
    CacheCriticalSection walkingFreeList(self());
-
-#if 0
-   if (config.doSanityCheck())
-      checkForErrors();
-#endif
 
    // See if we can get a warm and/or cold block from the reclaimed method list
    if (!needsToBeContiguous)
       {
       if (warmSize)
          warmIsFreeBlock = _sizeOfLargestFreeWarmBlock >= warmSize;
-      if (coldSize)
-         coldIsFreeBlock = _sizeOfLargestFreeColdBlock >= coldSize;
-      }
-
-   // We want to avoid the case where we allocate the warm portion and then
-   // discover that we cannot allocate the cold portion and switch to
-   // another code cache. Therefore, lets make sure that we can allocate
-   // cold before proceding with the allocation
-   if (coldSize != 0 && !coldIsFreeBlock &&
-       coldSize + (warmIsFreeBlock ? 0 : warmSize) > self()->getFreeContiguousSpace())
-      {
-      return NULL;
       }
 
    size_t round = config.codeCacheAlignment() - 1;
@@ -1825,44 +1796,6 @@ OMR::CodeCache::allocateCodeMemory(size_t warmCodeSize,
       //   warmSize = ((CodeCacheFreeCacheBlock*)warmCodeAddress)->size;
       }
 
-   if (!coldIsFreeBlock)
-      {
-      if (coldSize)
-         {
-         cacheHeapAlloc = _coldCodeAlloc - coldSize;
-         cacheHeapAlloc = (uint8_t *)(((size_t)cacheHeapAlloc) & ~round);
-         // Do we have enough space in codeCache to allocate the warm code?
-         if (cacheHeapAlloc < _warmCodeAlloc)
-            {
-            // This case should never happen now because we checked above that both warm and cold can be allocated
-            TR_ASSERT(false, "Must be able to find space for cold code");
-            // No - just return failure
-            //
-            if (!warmIsFreeBlock)
-               {
-               _warmCodeAlloc = warmCodeAddress;
-               }
-            return NULL;
-            }
-         _manager->decreaseFreeSpaceInCodeCacheRepository(_coldCodeAlloc - cacheHeapAlloc);
-         _coldCodeAlloc = cacheHeapAlloc;
-         coldCodeAddress = cacheHeapAlloc;
-         if (isMethodHeaderNeeded)
-            self()->writeMethodHeader(coldCodeAddress, coldSize, true);
-         }
-      else
-         coldCodeAddress = _coldCodeAlloc;
-      }
-   else
-      {
-      coldCodeAddress = self()->findFreeBlock(coldSize, true, isMethodHeaderNeeded); // side effect: free block is unlinked
-      // Note that findFreeBlock may return a block which is slightly bigger than what we wanted
-      // Change the warmSize to the higher size so that the size of the block is correctly maintained
-      //if (((CodeCacheFreeCacheBlock*)coldCodeAddress)->size > coldSize)
-      //  coldSize = ((CodeCacheFreeCacheBlock*)coldCodeAddress)->size;
-      }
-
-   /////diagnostic("allocated method @0x%p [cc=0x%p] (reclaimed block)\n", methodBlockAddress, this);
 
    _lastAllocatedBlock = (CodeCacheMethodHeader*)warmCodeAddress; // MP
    if (isMethodHeaderNeeded)
@@ -1871,14 +1804,10 @@ OMR::CodeCache::allocateCodeMemory(size_t warmCodeSize,
          {
          warmCodeAddress += sizeof(CodeCacheMethodHeader);
          }
-      if (coldSize)
-         {
-         coldCodeAddress += sizeof(CodeCacheMethodHeader);
-         }
       }
 
    if (!needsToBeContiguous)
-      *coldCode = coldCodeAddress;
+      *coldCode = NULL;
    else
       *coldCode = warmCodeAddress;
    return warmCodeAddress;

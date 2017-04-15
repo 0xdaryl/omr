@@ -197,7 +197,6 @@ public:
    void onFSDDecompile();
 
    void performSizeAdjustments(size_t &warmCodeSize,
-                               size_t &coldCodeSize,
                                bool needsToBeContiguous,
                                bool isMethodHeaderNeeded);
 

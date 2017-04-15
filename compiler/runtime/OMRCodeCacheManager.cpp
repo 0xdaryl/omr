@@ -443,18 +443,11 @@ OMR::CodeCacheManager::almostOutOfCodeCache()
 
 void
 OMR::CodeCacheManager::performSizeAdjustments(size_t &warmCodeSize,
-                                            size_t &coldCodeSize,
                                             bool needsToBeContiguous,
                                             bool isMethodHeaderNeeded)
    {
    TR::CodeCacheConfig config = self()->codeCacheConfig();
    size_t round = config.codeCacheAlignment() - 1;
-
-   if (needsToBeContiguous && coldCodeSize)
-      {
-      warmCodeSize += coldCodeSize;
-      coldCodeSize=0;
-      }
 
    // reserve space for code cache header and align to the required boundary
    if (warmCodeSize)
@@ -462,13 +455,6 @@ OMR::CodeCacheManager::performSizeAdjustments(size_t &warmCodeSize,
       if (isMethodHeaderNeeded)
          warmCodeSize += sizeof(CodeCacheMethodHeader);
       warmCodeSize = (warmCodeSize + round) & ~round;
-      }
-
-   if (coldCodeSize)
-      {
-      if (isMethodHeaderNeeded)
-         coldCodeSize += sizeof(CodeCacheMethodHeader);
-      coldCodeSize = (coldCodeSize + round) & ~round;
       }
    }
 
@@ -777,9 +763,8 @@ OMR::CodeCacheManager::allocateCodeMemoryWithRetries(size_t warmCodeSize,
                   // How about the size
                   size_t warmSize = warmCodeSize;
                   size_t coldSize = coldCodeSize;
-                  // note side effect on warmSize and coldSize from performSizeAdjustments
+                  // note side effect on warmSize from performSizeAdjustments
                   self()->performSizeAdjustments(warmSize,
-                                                 coldSize,
                                                  needsToBeContiguous,
                                                  isMethodHeaderNeeded);
                    // TODO: should we check the free blocks first?
