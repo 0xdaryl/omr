@@ -762,13 +762,13 @@ OMR::CodeCacheManager::allocateCodeMemoryWithRetries(size_t warmCodeSize,
                   {
                   // How about the size
                   size_t warmSize = warmCodeSize;
-                  size_t coldSize = coldCodeSize;
+
                   // note side effect on warmSize from performSizeAdjustments
                   self()->performSizeAdjustments(warmSize,
                                                  needsToBeContiguous,
                                                  isMethodHeaderNeeded);
                    // TODO: should we check the free blocks first?
-                  if (codeCache->getFreeContiguousSpace() > warmSize + coldSize)
+                  if (codeCache->getFreeContiguousSpace() > warmSize)
                      {
                      codeCache->reserve(compThreadID);
                      break;
@@ -820,7 +820,7 @@ OMR::CodeCacheManager::allocateCodeMemoryWithRetries(size_t warmCodeSize,
    //        allocationRetries, numCachesVisited, numCachesAlreadyReserved);
 #ifdef MCT_DEBUG
    fprintf(stderr, "Cache %p has %u bytes free. We requested %u bytes\n",
-           *codeCache_pp, (*codeCache_pp)->getFreeContiguousSpace(), warmCodeSize+coldCodeSize);
+           *codeCache_pp, (*codeCache_pp)->getFreeContiguousSpace(), warmCodeSize);
 #endif
 
    codeCache = *codeCache_pp; // MCT
@@ -842,7 +842,6 @@ OMR::CodeCacheManager::allocateCodeMemoryWithRetries(size_t warmCodeSize,
    /* Calculate the code cache segment size */
    TR::CodeCacheConfig &config = self()->codeCacheConfig();
    size_t allocateSize = 2*(warmCodeSize +
-                            coldCodeSize +
                             config.numRuntimeHelpers() * config.trampolineCodeSize() +
                             config.ccPreLoadedCodeSize());
 

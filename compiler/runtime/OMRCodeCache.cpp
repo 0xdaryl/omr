@@ -1322,22 +1322,16 @@ OMR::CodeCache::findFreeBlock(size_t size, bool isCold, bool isMethodHeaderNeede
    CodeCacheFreeCacheBlock *biggestLink = NULL;
    CodeCacheFreeCacheBlock *secondBiggestLink = NULL;
 
+   // DMDM: always false after refactoring
+   isCold = false;
+ 
    TR_ASSERT(_freeBlockList, "Because we first checked that a freeBlockExists, freeBlockList cannot be null");
 
    // Find the smallest free link to fit the requested blockSize
    for (currLink = _freeBlockList, prevLink = NULL; currLink; prevLink = currLink, currLink = currLink->_next)
       {
-      if (isCold)
-         {
-         if ((void*)currLink < (void*)_coldCodeAlloc)
-            continue;
-         }
-      else
-         {
-         if ((void*)currLink >= (void*)_warmCodeAlloc)
-            continue;
-         // curLink is warm code
-         }
+      if ((void*)currLink >= (void*)_warmCodeAlloc)
+         continue;
 
       //fprintf(stderr, "cache %p findFreeBlock bs=%u\n", this, currLink->size);
       if (!biggestLink)
@@ -1385,17 +1379,10 @@ OMR::CodeCache::findFreeBlock(size_t size, bool isCold, bool isMethodHeaderNeede
    TR_ASSERT(bestFitLink, "There must be a bestFitLink");
 
    TR::CodeCacheConfig & config = _manager->codeCacheConfig();
-   if (!isCold)
-      {
-      TR_ASSERT(!config.codeCacheFreeBlockRecylingEnabled() ||
-              _sizeOfLargestFreeWarmBlock == biggestLink->_size, "_sizeOfLargestFreeWarmBlock=%d  biggestLink->_size=%d",
-           _sizeOfLargestFreeWarmBlock, (int32_t)biggestLink->_size);
-      }
-   else
-      {
-      TR_ASSERT(!config.codeCacheFreeBlockRecylingEnabled() ||
-         _sizeOfLargestFreeColdBlock == biggestLink->_size, "assertion failure");
-      }
+
+   TR_ASSERT(!config.codeCacheFreeBlockRecylingEnabled() ||
+           _sizeOfLargestFreeWarmBlock == biggestLink->_size, "_sizeOfLargestFreeWarmBlock=%d  biggestLink->_size=%d",
+        _sizeOfLargestFreeWarmBlock, (int32_t)biggestLink->_size);
 
    if (bestFitLink)
       {
@@ -1408,18 +1395,14 @@ OMR::CodeCache::findFreeBlock(size_t size, bool isCold, bool isMethodHeaderNeede
          uint64_t leftBlockSize     = leftBlock ? leftBlock->_size : 0;
          uint64_t secondBiggestSize = secondBiggestLink ? secondBiggestLink->_size : 0;
          uint64_t biggestSize       = leftBlockSize > secondBiggestSize ? leftBlockSize : secondBiggestSize;
-         if (!isCold)
-            {
-            _sizeOfLargestFreeWarmBlock = (size_t)biggestSize;
-            }
-         else
-            _sizeOfLargestFreeColdBlock = (size_t)biggestSize;
+
+         _sizeOfLargestFreeWarmBlock = (size_t)biggestSize;
          }
      //fprintf(stderr, "--ccr-- reallocate free'd block of size %d\n", size);
      if (config.verboseReclamation())
          {
          TR_FrontEnd *fe = _manager->fe();
-         TR_VerboseLog::writeLineLocked(TR_Vlog_CODECACHE,"--ccr- findFreeBlock: CodeCache=%p size=%u isCold=%d bestFitLink=%p bestFitLink->size=%u leftBlock=%p", this, size, isCold, bestFitLink, bestFitLink->_size, leftBlock);
+         TR_VerboseLog::writeLineLocked(TR_Vlog_CODECACHE,"--ccr- findFreeBlock: CodeCache=%p size=%u bestFitLink=%p bestFitLink->size=%u leftBlock=%p", this, size, bestFitLink, bestFitLink->_size, leftBlock);
          }
       }
    // Because we call this method only after we made sure a free block exists
