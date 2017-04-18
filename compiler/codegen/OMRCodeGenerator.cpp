@@ -2521,7 +2521,7 @@ OMR::CodeGenerator::allocateCodeMemory(uint32_t size, bool isCold, bool isMethod
    {
    uint8_t *coldCode;
 
-   if (isCold && !self()->comp()->getOptions()->getOption(TR_DisableColdCodeAllocations))
+   if (isCold && self()->comp()->getOptions()->getOption(TR_EnableColdCodeAllocations))
       {
       self()->allocateCodeMemory(0, size, &coldCode, isMethodHeaderNeeded);
       return coldCode;
