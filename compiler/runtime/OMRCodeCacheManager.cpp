@@ -569,6 +569,22 @@ OMR::CodeCacheManager::findHelperTrampoline(void *callingPC, int32_t helperIndex
    return codeCache->findTrampoline(helperIndex);
    }
 
+// Native trampoline lookup
+//
+OMR::CodeCacheTrampolineCode *
+OMR::CodeCacheManager::findNativeTrampoline(void *nativeAddress, void *callingPC)
+   {
+   TR::CodeCacheConfig &config = self()->codeCacheConfig();
+   if (!config.needsMethodTrampolines())
+      return NULL;
+
+   TR::CodeCache *codeCache = self()->findCodeCacheFromPC(callingPC);
+   if (!codeCache)
+      return NULL;
+
+   return codeCache->findTrampoline(nativeAddress);
+   }
+
 // Synchronize temporary trampolines in all code caches
 //
 void

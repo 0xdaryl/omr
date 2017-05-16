@@ -135,6 +135,13 @@ OMR::CodeCache::destroy(TR::CodeCacheManager *manager)
             manager->freeMemory(_unresolvedMethodHT->_buckets);
          manager->freeMemory(_unresolvedMethodHT);
          }
+
+      if (_nativeMethodHT)
+         {
+         if (_nativeMethodHT->_buckets)
+            manager->freeMemory(_nativeMethodHT->_buckets);
+         manager->freeMemory(_nativeMethodHT);
+         }
       }
    }
 
@@ -376,7 +383,8 @@ OMR::CodeCache::initialize(TR::CodeCacheManager *manager,
       // Initialize hashtables to hold trampolines for resolved and unresolved methods
       _resolvedMethodHT   = CodeCacheHashTable::allocate(manager);
       _unresolvedMethodHT = CodeCacheHashTable::allocate(manager);
-      if (_resolvedMethodHT==NULL || _unresolvedMethodHT==NULL)
+      _nativeMethodHT = CodeCacheHashTable::allocate(manager);
+      if (_resolvedMethodHT==NULL || _unresolvedMethodHT==NULL || _nativeMethodHT==NULL)
          return false;
       }
 

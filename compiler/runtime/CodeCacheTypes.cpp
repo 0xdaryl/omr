@@ -121,6 +121,14 @@ CodeCacheHashTable::hashResolvedMethod(TR_OpaqueMethodBlock *method)
    return (CodeCacheHashKey) method;
    }
 
+
+CodeCacheHashKey
+CodeCacheHashTable::hashNativeMethod(void *nativeAddress)
+   {
+   return (CodeCacheHashKey) nativeAddress;
+   }
+
+
 // Find an existing unresolved method in the hash table
 //
 CodeCacheHashEntry *
@@ -148,6 +156,21 @@ CodeCacheHashTable::findResolvedMethod(TR_OpaqueMethodBlock *method)
    for (entry = _buckets[key % _size]; entry; entry = entry->_next)
       {
       if (entry->_info._resolved._method == method)
+         return entry;
+      }
+   return NULL;
+   }
+
+// Find an existing native method in the hash table
+//
+CodeCacheHashEntry *
+CodeCacheHashTable::findNativeMethod(void *nativeAddress)
+   {
+   CodeCacheHashKey key = hashNativeMethod(nativeAddress);
+   CodeCacheHashEntry *entry;
+   for (entry = _buckets[key % _size]; entry; entry = entry->_next)
+      {
+      if (entry->_info._native._address == nativeAddress)
          return entry;
       }
    return NULL;

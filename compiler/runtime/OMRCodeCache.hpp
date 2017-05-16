@@ -242,6 +242,7 @@ public:
 
    CodeCacheHashTable * _resolvedMethodHT;
    CodeCacheHashTable * _unresolvedMethodHT;
+   CodeCacheHashTable * _nativeMethodHT;
 
    bool      _CCPreLoadedCodeInitialized;
    uint8_t * _CCPreLoadedCodeBase;

@@ -96,6 +96,10 @@ struct CodeCacheHashEntry
          void *_constPool;
          int32_t _constPoolIndex;
          } _unresolved;
+      struct
+         {
+         void *_address;
+         } _native; 
       } _info;
    };
 
@@ -109,9 +113,11 @@ public:
    static CodeCacheHashTable *allocate(TR::CodeCacheManager *codeCacheManager);
    static size_t hashUnresolvedMethod(void *constPool, int32_t constPoolIndex);
    static size_t hashResolvedMethod(TR_OpaqueMethodBlock *method);
+   static size_t hashNativeMethod(void *nativeAddress);
 
    CodeCacheHashEntry *findUnresolvedMethod(void *constPool, int32_t constPoolIndex);
    CodeCacheHashEntry *findResolvedMethod(TR_OpaqueMethodBlock *method);
+   CodeCacheHashEntry *findNativeMethod(void *nativeAddress);
 
    void dumpHashUnresolvedMethod(void);
    void reloHashUnresolvedMethod(void *constPoolOld,void *constPoolNew, int32_t cpIndex);
