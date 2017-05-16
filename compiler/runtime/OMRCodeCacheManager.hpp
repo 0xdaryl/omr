@@ -180,6 +180,7 @@ public:
 
    CodeCacheTrampolineCode * findMethodTrampoline(TR_OpaqueMethodBlock *method, void *callingPC);
    CodeCacheTrampolineCode * findHelperTrampoline(void *callingPC, int32_t helperIndex);
+   CodeCacheTrampolineCode * findNativeTrampoline(void *nativeAddress, void *callingPC);
    void synchronizeTrampolines();
    CodeCacheTrampolineCode * replaceTrampoline(TR_OpaqueMethodBlock *method,
                                                void *callSite,
