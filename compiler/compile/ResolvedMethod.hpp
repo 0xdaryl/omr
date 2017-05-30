@@ -97,6 +97,8 @@ public:
    virtual uint16_t numberOfTemps();
    virtual uint16_t numberOfPendingPushes();
 
+   static uint8_t *startPC(TR_OpaqueMethodBlock *method);
+
    // --------------------------------------------------------------------------
    // J9
    virtual bool isStrictFP();

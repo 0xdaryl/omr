@@ -190,3 +190,20 @@ ResolvedMethod::returnType()
    return _returnType->getPrimitiveType();
    }
 } // namespace TestCompiler
+
+
+/**
+ * \brief
+ * Returns the starting address of the method in the code cache.
+ *
+ * \param method
+ * An opaque pointer to the method.
+ *
+ * \return
+ * Returns the starting PC of the method.  Returns 0 if unknown.
+ */
+uint8_t *TR_ResolvedMethod::startPC(TR_OpaqueMethodBlock *method)
+   {
+   return 0;
+   }
+
