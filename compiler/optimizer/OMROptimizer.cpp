@@ -2338,7 +2338,7 @@ TR_Hotness OMR::Optimizer::checkMaxHotnessOfInlinedMethods( TR::Compilation *com
          TR_OpaqueMethodBlock *method = comp->fe()->getInlinedCallSiteMethod(&ics);
          if (comp->fe()->isCompiledMethod(method))
             {
-            TR_PersistentJittedBodyInfo * bodyInfo = TR::Recompilation::getJittedBodyInfoFromPC(comp->fe()->getMethodStartPC(method));
+            TR_PersistentJittedBodyInfo * bodyInfo = TR::Recompilation::getJittedBodyInfoFromPC(TR_ResolvedMethod::startPC(method));
             if (bodyInfo &&
                 bodyInfo->getHotness() > strategy)
                {

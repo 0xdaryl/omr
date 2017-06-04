@@ -216,13 +216,6 @@ TR_FrontEnd::getMethodFromName(char * className, char *methodName, char *signatu
    return 0;
    }
 
-uint8_t *
-TR_FrontEnd::getMethodStartPC(TR_OpaqueMethodBlock *method)
-   {
-   notImplemented("getMethodStartPC");
-   return 0;
-   }
-
 TR_OpaqueClassBlock *
 TR_FrontEnd::getClassOfMethod(TR_OpaqueMethodBlock *method)
    {
