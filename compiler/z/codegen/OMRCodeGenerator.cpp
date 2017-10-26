@@ -2684,7 +2684,7 @@ OMR::Z::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
    // assign GPRs and FGPRs in backwards direction
    self()->setAssignmentDirection(Backward);
 
-   TR::Instruction * instructionCursor = self()->comp()->getAppendInstruction();
+   TR::Instruction * instructionCursor = self()->getAppendInstruction();
    int32_t instCount = 0;
    TR::Block *currBlock = NULL;
    TR::Instruction * currBBEndInstr = instructionCursor;
@@ -3004,6 +3004,14 @@ TR::Instruction* realInstructionWithLabelsAndRET(TR::Instruction* inst, bool for
       }
 
    return inst;
+   }
+
+TR_S390Peephole::TR_S390Peephole(TR::Compilation* comp, TR::CodeGenerator *cg)
+   : _fe(comp->fe()),
+     _outFile(comp->getOutFile()),
+     _cursor(cg->getFirstInstruction()),
+     _cg(cg)
+   {
    }
 
 bool
@@ -5977,9 +5985,9 @@ OMR::Z::CodeGenerator::deleteInst(TR::Instruction* old)
       }
 
    // Update the append instruction if we are deleting the last instruction in the stream
-   if (self()->comp()->getAppendInstruction() == old)
+   if (self()->getAppendInstruction() == old)
       {
-      self()->comp()->setAppendInstruction(prv);
+      self()->setAppendInstruction(prv);
       }
    }
 
@@ -6221,7 +6229,7 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
    TR::Recompilation * recomp = self()->comp()->getRecompilationInfo();
    bool isPrivateLinkage = (self()->comp()->getJittedMethodSymbol()->getLinkageConvention() == TR_Private);
 
-   TR::Instruction *instr = self()->comp()->getFirstInstruction();
+   TR::Instruction *instr = self()->getFirstInstruction();
 
    while (instr)
       {
@@ -6324,7 +6332,7 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
 
    self()->setEstimatedCodeLength(data.estimate);
 
-   data.cursorInstruction = self()->comp()->getFirstInstruction();
+   data.cursorInstruction = self()->getFirstInstruction();
 
    uint8_t *coldCode = NULL;
    uint8_t *temp = self()->allocateCodeMemory(self()->getEstimatedCodeLength(), 0, &coldCode);
@@ -6498,7 +6506,7 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
       TR::SimpleRegex * regex =  self()->comp()->getOptions()->getTraceForCodeMining();
       if (regex && TR::SimpleRegex::match(regex, "BBN"))
          {
-         data.cursorInstruction = self()->comp()->getFirstInstruction();
+         data.cursorInstruction = self()->getFirstInstruction();
          int32_t currentBlock = -1;
          int32_t currentBlockFreq = 0;
          while (data.cursorInstruction)
