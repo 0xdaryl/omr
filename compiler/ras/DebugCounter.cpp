@@ -41,6 +41,7 @@
 #include "il/symbol/StaticSymbol.hpp"        // for StaticSymbol
 #include "infra/Assert.hpp"                  // for TR_ASSERT
 #include "ras/Debug.hpp"                     // for TR_Debug
+#include "infra/Bit.hpp"
 #include "infra/SimpleRegex.hpp"
 #include "infra/Assert.hpp"
 #include "infra/Monitor.hpp"                 // for createCounter race conditions
@@ -433,7 +434,7 @@ TR::DebugCounter *TR::DebugCounterGroup::createCounter(const char *name, int8_t 
    TR::DebugCounter *result = new (persistentMemory) TR::DebugCounter(name, fidelity, denominator, flags);
    TR_ASSERT(result, "DebugCounter *result must not be null. Ensure availability of persistent memory");
    _counters.add(result);
-   
+
    // There's a race here if we do parallel compilation
 
    OMR::CriticalSection createCounterLock(_countersMutex);
