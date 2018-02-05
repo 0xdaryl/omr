@@ -105,8 +105,6 @@ public:
    static TR::Register *newArrayEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *anewArrayEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *multianewArrayEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *directCallEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *indirectCallEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *treetopEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *iaddEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *laddEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -419,15 +417,15 @@ public:
 
 
    static TR::Register *integerHighestOneBit(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *integerLowestOneBit(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *integerNumberOfLeadingZeros(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *integerNumberOfTrailingZeros(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *integerBitCount(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *longHighestOneBit(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *longLowestOneBit(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *longNumberOfLeadingZeros(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *longNumberOfTrailingZeros(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *longBitCount(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *integerLowestOneBit(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *integerNumberOfLeadingZeros(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *integerNumberOfTrailingZeros(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *integerBitCount(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *longHighestOneBit(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *longLowestOneBit(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *longNumberOfLeadingZeros(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *longNumberOfTrailingZeros(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *longBitCount(TR::Node *node, TR::CodeGenerator *cg);
 
 #ifdef J9_PROJECT_SPECIFIC
    static TR::Instruction *generateVFTMaskInstruction(TR::CodeGenerator *cg, TR::Node *node, TR::Register *dstReg, TR::Register *srcReg, TR::Instruction *prev=0);
@@ -440,7 +438,6 @@ public:
                                               TR::Node             *node,
                                               TR::CodeGenerator    *cg,
                                               TR::SymbolReference  *sr = NULL);
-   static TR::Register *performCall(TR::Node *node, bool isIndirect, TR::CodeGenerator *cg);
 
    protected:
    static TR::Register *conversionAnalyser(TR::Node          *node,

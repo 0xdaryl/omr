@@ -292,6 +292,8 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
 
    void doBackwardsRegisterAssignment(TR_RegisterKinds kindsToAssign, TR::Instruction *startInstruction, TR::Instruction *appendInstruction = NULL);
 
+   bool inlineDirectCall(TR::Node *node, TR::Register *&resultReg);
+
    bool hasComplexAddressingMode() { return true; }
    bool getSupportsBitOpCodes() { return true; }
 

@@ -6419,7 +6419,7 @@ bool directMemoryStoreHelper(TR::CodeGenerator* cg, TR::Node* storeNode)
             // Force the memory references to not use an index register because MVC is an SS instruction
             // After generating a memory reference, Enforce it to generate LA instruction.
             // This will avoid scenarios when we have common base/index between destination and source
-            // And when generating the source memory reference, it clobber evaluates one of the node shared between 
+            // And when generating the source memory reference, it clobber evaluates one of the node shared between
             // target memory reference as well.
             TR::MemoryReference* targetMemRef = generateS390MemoryReference(storeNode, cg, false);
             targetMemRef->enforceSSFormatLimits(storeNode, cg, NULL);
@@ -11420,7 +11420,7 @@ OMR::Z::TreeEvaluator::directCallEvaluator(TR::Node * node, TR::CodeGenerator * 
    {
    TR::Register *resultReg = NULL;
 
-   if (!cg->inlineDirectCall(node, resultReg))
+   if (!TR::TreeEvaluator::inlineDirectCall(node, resultReg, cg))
       {
       resultReg = TR::TreeEvaluator::performCall(node, false, cg);
        // on 64bit, lcall returns 64bit registers

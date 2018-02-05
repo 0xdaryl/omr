@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,12 +19,11 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include "codegen/OMRTreeEvaluator.hpp"
-
 #include <stdint.h>                            // for uint64_t, etc
 #include <stdio.h>                             // for NULL, printf, etc
 #include "codegen/CodeGenerator.hpp"           // for CodeGenerator
 #include "codegen/FrontEnd.hpp"                // for TR_FrontEnd, etc
+#include "codegen/Linkage.hpp"
 #include "codegen/Register.hpp"                // for Register
 #include "codegen/TreeEvaluator.hpp"
 #include "compile/Compilation.hpp"             // for Compilation
@@ -150,7 +149,7 @@ bool OMR::TreeEvaluator::instanceOfOrCheckCastNeedSuperTest(TR::Node * node, TR:
    return false;
    }
 
-TR_GlobalRegisterNumber 
+TR_GlobalRegisterNumber
 OMR::TreeEvaluator::getHighGlobalRegisterNumberIfAny(TR::Node *node, TR::CodeGenerator *cg)
    {
     //No need for register pairs in 64-bit mode
@@ -565,4 +564,46 @@ void OMR::TreeEvaluator::initializeStrictlyFutureUseCounts(TR::Node *node, vcoun
    if (node->getReferenceCount() > 0)
       node->decFutureUseCount();
 
+   }
+
+
+TR::Register *
+OMR::TreeEvaluator::performCall(TR::Node *node, bool isIndirect, TR::CodeGenerator *cg)
+   {
+   TR::SymbolReference *symRef = node->getSymbolReference();
+   TR::MethodSymbol *callee = symRef->getSymbol()->castToMethodSymbol();
+   TR::Linkage *linkage = cg->getLinkage(callee->getLinkageConvention());
+
+   TR::Register *returnRegister = isIndirect ?
+      linkage->buildIndirectDispatch(node) :
+      linkage->buildDirectDispatch(node);
+
+   return returnRegister;
+   }
+
+
+TR::Register *
+OMR::TreeEvaluator::directCallEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR::Register *resultRegister = NULL;
+   if (TR::TreeEvaluator::inlineDirectCall(node, resultRegister, cg))
+      {
+      return resultRegister;
+      }
+
+   return TR::TreeEvaluator::performCall(node, false, cg);
+   }
+
+
+TR::Register *
+OMR::TreeEvaluator::indirectCallEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::performCall(node, true, cg);
+   }
+
+
+bool
+OMR::TreeEvaluator::inlineDirectCall(TR::Node *node, TR::Register *&resultReg, TR::CodeGenerator *cg)
+   {
+   return cg->inlineDirectCall(node, resultReg);
    }

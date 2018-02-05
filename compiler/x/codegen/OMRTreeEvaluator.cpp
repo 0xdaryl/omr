@@ -3664,61 +3664,84 @@ TR::Register* OMR::X86::TreeEvaluator::performSimpleAtomicMemoryUpdate(TR::Node*
    return result;
    }
 
+
+
+
+static bool
+OMR::X86::TreeEvaluator::inlineDirectCall(
+      TR::Node *node,
+      TR::Register *&resultReg,
+      TR::CodeGenerator *cg)
+   {
+   bool didInline = true;
+   TR::SymbolReferenceTable *symRefTab = cg->comp()->getSymRefTab();
+   TR::SymbolReference *symRef = node->getSymbolReference();
+
+   if (symRefTab->isNonHelper(symRef, TR::SymbolReferenceTable::singlePrecisionSQRTSymbol))
+      {
+      resultReg = TR::TreeEvaluator::inlineSinglePrecisionSQRT(node, cg);
+      }
+   else if (symRef && symRef->getSymbol()->castToMethodSymbol()->isInlinedByCG())
+      {
+      if (symRefTab->isNonHelper(symRef, TR::SymbolReferenceTable::atomicAdd32BitSymbol))
+         {
+         resultReg = TR::TreeEvaluator::performSimpleAtomicMemoryUpdate(node, LADD4MemReg, cg);
+         }
+      else if (symRefTab->isNonHelper(symRef, TR::SymbolReferenceTable::atomicAdd64BitSymbol))
+         {
+         resultReg = TR::TreeEvaluator::performSimpleAtomicMemoryUpdate(node, LADD8MemReg, cg);
+         }
+      else if (symRefTab->isNonHelper(symRef, TR::SymbolReferenceTable::atomicFetchAndAdd32BitSymbol))
+         {
+         resultReg = TR::TreeEvaluator::performSimpleAtomicMemoryUpdate(node, LXADD4MemReg, cg);
+         }
+      else if (symRefTab->isNonHelper(symRef, TR::SymbolReferenceTable::atomicFetchAndAdd64BitSymbol))
+         {
+         resultReg = TR::TreeEvaluator::performSimpleAtomicMemoryUpdate(node, LXADD8MemReg, cg);
+         }
+      else if (symRefTab->isNonHelper(symRef, TR::SymbolReferenceTable::atomicSwap32BitSymbol))
+         {
+         resultReg = TR::TreeEvaluator::performSimpleAtomicMemoryUpdate(node, XCHG4MemReg, cg);
+         }
+      else if (symRefTab->isNonHelper(symRef, TR::SymbolReferenceTable::atomicSwap64BitSymbol))
+         {
+         resultReg = TR::TreeEvaluator::performSimpleAtomicMemoryUpdate(node, XCHG8MemReg, cg);
+         }
+       else
+         {
+         didInline = false;
+         }
+      }
+   else
+      {
+      didInline = false;
+      }
+
+   return didInline ? true : OMR::TreeEvaluator::inlineDirectCall(node, resultReg, cg);
+   }
+
+
 // TR::icall, TR::acall, TR::lcall, TR::fcall, TR::dcall, TR::call handled by directCallEvaluator
 TR::Register *OMR::X86::TreeEvaluator::directCallEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::Compilation *comp = cg->comp();
-   TR::SymbolReference* SymRef = node->getSymbolReference();
+   TR::Register *resultReg = NULL;
 
-   if (comp->getSymRefTab()->isNonHelper(SymRef, TR::SymbolReferenceTable::singlePrecisionSQRTSymbol))
+   if (!TR::TreeEvaluator::inlineDirectCall(node, resultReg, cg))
       {
-      return inlineSinglePrecisionSQRT(node, cg);
+      resultReg = TR::TreeEvaluator::performCall(node, false, true, cg);
       }
-
-   if (SymRef && SymRef->getSymbol()->castToMethodSymbol()->isInlinedByCG())
-      {
-      if (comp->getSymRefTab()->isNonHelper(SymRef, TR::SymbolReferenceTable::atomicAdd32BitSymbol))
-         {
-         return TR::TreeEvaluator::performSimpleAtomicMemoryUpdate(node, LADD4MemReg, cg);
-         }
-      if (comp->getSymRefTab()->isNonHelper(SymRef, TR::SymbolReferenceTable::atomicAdd64BitSymbol))
-         {
-         return TR::TreeEvaluator::performSimpleAtomicMemoryUpdate(node, LADD8MemReg, cg);
-         }
-      if (comp->getSymRefTab()->isNonHelper(SymRef, TR::SymbolReferenceTable::atomicFetchAndAdd32BitSymbol))
-         {
-         return TR::TreeEvaluator::performSimpleAtomicMemoryUpdate(node, LXADD4MemReg, cg);
-         }
-      if (comp->getSymRefTab()->isNonHelper(SymRef, TR::SymbolReferenceTable::atomicFetchAndAdd64BitSymbol))
-         {
-         return TR::TreeEvaluator::performSimpleAtomicMemoryUpdate(node, LXADD8MemReg, cg);
-         }
-      if (comp->getSymRefTab()->isNonHelper(SymRef, TR::SymbolReferenceTable::atomicSwap32BitSymbol))
-         {
-         return TR::TreeEvaluator::performSimpleAtomicMemoryUpdate(node, XCHG4MemReg, cg);
-         }
-      if (comp->getSymRefTab()->isNonHelper(SymRef, TR::SymbolReferenceTable::atomicSwap64BitSymbol))
-         {
-         return TR::TreeEvaluator::performSimpleAtomicMemoryUpdate(node, XCHG8MemReg, cg);
-         }
-      }
-
-   // If the method to be called is marked as an inline method, see if it can
-   // actually be generated inline.
-   //
-   TR::Register *returnRegister = TR::TreeEvaluator::performCall(node, false, true, cg);
 
    // A strictfp caller needs to adjust double return values;
    // a float callee always returns values that have correct precision.
    //
-   if (returnRegister &&
-       returnRegister->needsPrecisionAdjustment() &&
+   if (resultReg &&
+       resultReg->needsPrecisionAdjustment() &&
        comp->getCurrentMethod()->isStrictFP())
       {
-      TR::TreeEvaluator::insertPrecisionAdjustment(returnRegister, node, cg);
+      TR::TreeEvaluator::insertPrecisionAdjustment(resultReg, node, cg);
       }
 
-   return returnRegister;
+   return resultReg;
    }
 
 // TR::icalli, TR::acalli, TR::lcalli, TR::fcalli, TR::dcalli, TR::calli handled by directCallEvaluator

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -275,7 +275,7 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *unsignedIntegerIfCmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *unsignedIntegerIfCmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 
-   
+
    static TR::Register *tstartEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *tfinishEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *tabortEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -366,6 +366,22 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *performCall(TR::Node *node, bool isIndirect, bool spillFPRegs, TR::CodeGenerator *cg);
 
    static TR::Register *loadConstant(TR::Node *node, intptrj_t value, TR_RematerializableTypes t, TR::CodeGenerator *cg, TR::Register *targetRegister = NULL);
+
+   /**
+    * \brief Dispatch the appropriate handler function if a direct call node can be
+    *           handled specially by a code generator.
+    *
+    * \details This function will delegate to its superclass if an inline handler is
+    *             not found in this class.
+    *
+    * \param[in]     node : TR::Node* of the direct call node
+    * \param[in,out] resultReg : TR::Register* of the result of the call if the call
+    *                   was evaluated inline
+    * \param[in]     cg : TR::CodeGenerator* object
+    *
+    * \return true if the node was inlined; false otherwise
+    */
+   static bool inlineDirectCall(TR::Node *node, TR::Register *&resultReg, TR::CodeGenerator *cg);
 
    protected:
 

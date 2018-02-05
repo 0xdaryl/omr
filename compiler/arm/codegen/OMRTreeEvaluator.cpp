@@ -1083,7 +1083,7 @@ TR::Register *OMR::ARM::TreeEvaluator::newArrayEvaluator(TR::Node *node, TR::Cod
       {
       TR::ILOpCodes opCode = node->getOpCodeValue();
       TR::Node::recreate(node, TR::acall);
-      TR::Register *targetRegister = directCallEvaluator(node, cg);
+      TR::Register *targetRegister = TR::TreeEvaluator::directCallEvaluator(node, cg);
       TR::Node::recreate(node, opCode);
       return targetRegister;
       }
@@ -1099,7 +1099,7 @@ TR::Register *OMR::ARM::TreeEvaluator::anewArrayEvaluator(TR::Node *node, TR::Co
       {
       TR::ILOpCodes opCode = node->getOpCodeValue();
       TR::Node::recreate(node, TR::acall);
-      TR::Register *targetRegister = directCallEvaluator(node, cg);
+      TR::Register *targetRegister = TR::TreeEvaluator::directCallEvaluator(node, cg);
       TR::Node::recreate(node, opCode);
       return targetRegister;
       }
@@ -1115,45 +1115,9 @@ TR::Register *OMR::ARM::TreeEvaluator::multianewArrayEvaluator(TR::Node *node, T
    {
    TR::ILOpCodes opCode = node->getOpCodeValue();
    TR::Node::recreate(node, TR::acall);
-   TR::Register *targetRegister = directCallEvaluator(node, cg);
+   TR::Register *targetRegister = TR::TreeEvaluator::directCallEvaluator(node, cg);
    TR::Node::recreate(node, opCode);
    return targetRegister;
-   }
-
-// handles: TR::call, TR::acall, TR::icall, TR::lcall, TR::fcall, TR::dcall
-TR::Register *OMR::ARM::TreeEvaluator::directCallEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR::SymbolReference *symRef = node->getSymbolReference();
-   TR::MethodSymbol    *callee = symRef->getSymbol()->castToMethodSymbol();
-   TR::Linkage      *linkage = cg->getLinkage(callee->getLinkageConvention());
-
-   return linkage->buildDirectDispatch(node);
-   }
-
-TR::Register *OMR::ARM::TreeEvaluator::performCall(TR::Node *node, bool isIndirect, TR::CodeGenerator *cg)
-   {
-   TR::SymbolReference *symRef     = node->getSymbolReference();
-   TR::MethodSymbol    *callee = symRef->getSymbol()->castToMethodSymbol();
-   TR::Linkage      *linkage = cg->getLinkage(callee->getLinkageConvention());
-   TR::Register *returnRegister;
-
-   if (isIndirect)
-      returnRegister = linkage->buildIndirectDispatch(node);
-   else
-      returnRegister = linkage->buildDirectDispatch(node);
-
-   return returnRegister;
-
-   }
-
-// handles: TR::icalli, TR::acalli, TR::fcalli, TR::dcalli, TR::lcalli, TR::calli
-TR::Register *OMR::ARM::TreeEvaluator::indirectCallEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR::SymbolReference *symRef = node->getSymbolReference();
-   TR::MethodSymbol    *callee = symRef->getSymbol()->castToMethodSymbol();
-   TR::Linkage      *linkage = cg->getLinkage(callee->getLinkageConvention());
-
-   return linkage->buildIndirectDispatch(node);
    }
 
 TR::Register *OMR::ARM::TreeEvaluator::treetopEvaluator(TR::Node *node, TR::CodeGenerator *cg)

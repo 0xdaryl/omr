@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -90,8 +90,6 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *freturnEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *returnEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *iternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *directCallEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *indirectCallEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *treetopEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *iaddEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *laddEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -534,7 +532,6 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
          TR::MemoryReference *memRef,
          TR::InstOpCode::Mnemonic syncOp,
          bool lazyVolatile = false);
-   static TR::Register *performCall(TR::Node *node, bool isIndirect, TR::CodeGenerator *cg);
 
    // VM dependent routines
 

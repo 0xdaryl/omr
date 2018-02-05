@@ -52,7 +52,7 @@ class OMR_EXTENSIBLE TreeEvaluator
    static bool instanceOfOrCheckCastNeedEqualityTest(TR::Node * castClassNode, TR::CodeGenerator *cg);
    static bool instanceOfOrCheckCastNeedSuperTest(TR::Node * castClassNode, TR::CodeGenerator *cg);
 
-   static TR_GlobalRegisterNumber getHighGlobalRegisterNumberIfAny(TR::Node *node, TR::CodeGenerator *cg); 
+   static TR_GlobalRegisterNumber getHighGlobalRegisterNumberIfAny(TR::Node *node, TR::CodeGenerator *cg);
 
    static int32_t classDepth(TR::Node * castClassNode, TR::CodeGenerator * cg);
    static int32_t checkNonNegativePowerOfTwo(int32_t value);
@@ -84,6 +84,57 @@ class OMR_EXTENSIBLE TreeEvaluator
    static bool nodeIsLSubOverflowCheck(TR::Node *node, TR_ArithmeticOverflowCheckNodes *u);
    static void evaluateNodesWithFutureUses(TR::Node *node, TR::CodeGenerator *cg);
    static void initializeStrictlyFutureUseCounts(TR::Node *node, vcount_t visitCount, TR::CodeGenerator *cg);
+
+   /**
+    * \brief Generic evaluator driving the logic to dispatch a function in the format
+    *           prescribed by its linkage.
+    *
+    * \param[in] node : TR::Node* of the call node
+    * \param[in] isIndirect : bool indicating whether to generate indirect dispatch or not
+    * \param[in] cg : TR::CodeGenerator* object
+    *
+    * \return TR::Register* virtual register containing the result of the call;
+    *         NULL if the call returns void
+    */
+   static TR::Register *performCall(TR::Node *node, bool isIndirect, TR::CodeGenerator *cg);
+
+   /**
+    * \brief Generic evaluator driving the logic for evaluating direct calls.
+    *
+    * \param[in] node : TR::Node* of the direct call node
+    * \param[in] cg : TR::CodeGenerator* object
+    *
+    * \return TR::Register* virtual register containing the result of the call;
+    *            NULL if the call returns void
+    */
+   static TR::Register *directCallEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+
+   /**
+    * \brief Generic evaluator driving the logic for evaluating indirect calls.
+    *
+    * \param[in] node : TR::Node* of the indirect call node
+    * \param[in] cg : TR::CodeGenerator* object
+    *
+    * \return TR::Register* virtual register containing the result of the call;
+    *            NULL if the call returns void
+    */
+   static TR::Register *indirectCallEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+
+   /**
+    * \brief Dispatch the appropriate handler function if a direct call node can be
+    *           handled specially by a code generator.
+    *
+    * \details This function will delegate to its superclass if an inline handler is
+    *             not found in this class.
+    *
+    * \param[in]     node : TR::Node* of the direct call node
+    * \param[in,out] resultReg : TR::Register* of the result of the call if the call
+    *                   was evaluated inline
+    * \param[in]     cg : TR::CodeGenerator* object
+    *
+    * \return true if the node was inlined; false otherwise
+    */
+   static bool inlineDirectCall(TR::Node *node, TR::Register *&resultReg, TR::CodeGenerator *cg);
 
    protected:
    static bool isStaticClassSymRef(TR::SymbolReference * symRef);

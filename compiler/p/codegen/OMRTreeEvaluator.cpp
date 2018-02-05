@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -5170,46 +5170,6 @@ TR::Register *OMR::Power::TreeEvaluator::PrefetchEvaluator(TR::Node *node, TR::C
    return NULL;
    }
 
-// handles: TR::call, TR::acall, TR::icall, TR::lcall, TR::fcall, TR::dcall
-TR::Register *OMR::Power::TreeEvaluator::directCallEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR::Register *resultReg;
-
-   if (!cg->inlineDirectCall(node, resultReg))
-      {
-      TR::SymbolReference *symRef = node->getSymbolReference();
-      TR::MethodSymbol *callee = symRef->getSymbol()->castToMethodSymbol();
-      TR::Linkage *linkage = cg->getLinkage(callee->getLinkageConvention());
-      resultReg = linkage->buildDirectDispatch(node);
-      }
-
-   return resultReg;
-   }
-
-TR::Register *OMR::Power::TreeEvaluator::performCall(TR::Node *node, bool isIndirect, TR::CodeGenerator *cg)
-   {
-   TR::SymbolReference *symRef     = node->getSymbolReference();
-   TR::MethodSymbol    *callee = symRef->getSymbol()->castToMethodSymbol();
-   TR::Linkage      *linkage = cg->getLinkage(callee->getLinkageConvention());
-   TR::Register *returnRegister;
-
-   if (isIndirect)
-      returnRegister = linkage->buildIndirectDispatch(node);
-   else
-      returnRegister = linkage->buildDirectDispatch(node);
-
-   return returnRegister;
-   }
-
-// handles: TR::icalli, TR::acalli, TR::fcalli, TR::dcalli, TR::lcalli, TR::calli
-TR::Register *OMR::Power::TreeEvaluator::indirectCallEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR::SymbolReference *symRef = node->getSymbolReference();
-   TR::MethodSymbol    *callee = symRef->getSymbol()->castToMethodSymbol();
-   TR::Linkage      *linkage = cg->getLinkage(callee->getLinkageConvention());
-
-   return linkage->buildIndirectDispatch(node);
-   }
 
 TR::Register *OMR::Power::TreeEvaluator::treetopEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
