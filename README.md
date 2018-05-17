@@ -22,7 +22,7 @@ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-excepti
 
 <img src="https://swift.org/assets/images/swift.svg" alt="Swift logo" height="70" >
 
-<img src="https://github.com/eclipse/omr/tree/master/artwork/OMRIcon.svg" alt="Eclipse OMR logo" height="70" >
+<img src="artwork/OMRIcon.svg" alt="Eclipse OMR logo" height="70" >
 
 ![Eclipse OMR logo](artwork/OMRIcon.svg)
 
