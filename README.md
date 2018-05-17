@@ -21,8 +21,7 @@ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-excepti
 -->
 
 <img src="artwork/OMRIcon.svg" alt="Eclipse OMR logo" height="100" >
-
-# Eclipse OMR
+Eclipse OMR
 
 ## Build Status
 
