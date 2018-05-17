@@ -20,6 +20,10 @@ OpenJDK Assembly Exception [2].
 SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
 -->
 
+<img src="https://github.com/eclipse/omr/artwork/OMRLogo.svg" alt="Eclipse OMR logo" height="70" >
+
+# Eclipse OMR
+
 | **Architecture** | **OS** | **Status** |
 |:---:|:---:|:---:|
 |x86-64|Linux|[![Travis Status](https://api.travis-ci.org/eclipse/omr.svg?branch=master)](https://travis-ci.org/eclipse/omr)|
