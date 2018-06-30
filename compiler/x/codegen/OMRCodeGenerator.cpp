@@ -3677,7 +3677,7 @@ void OMR::X86::CodeGenerator::dumpPreGPRegisterAssignment(TR::Instruction * inst
 
       if (debug("dumpGPRegStatus"))
          {
-         self()->machine()->printGPRegisterStatus(self()->fe(), self()->machine()->getRegisterFile(), self()->comp()->getOutFile());
+         self()->machine()->printGPRegisterStatus(self()->fe(), self()->machine()->registerFile(), self()->comp()->getOutFile());
          }
       }
    }
@@ -3707,7 +3707,7 @@ void OMR::X86::CodeGenerator::dumpPostGPRegisterAssignment(TR::Instruction * ins
 
       if (debug("dumpGPRegStatus"))
          {
-         self()->machine()->printGPRegisterStatus(self()->fe(), self()->machine()->getRegisterFile(), self()->comp()->getOutFile());
+         self()->machine()->printGPRegisterStatus(self()->fe(), self()->machine()->registerFile(), self()->comp()->getOutFile());
          }
       }
    }
