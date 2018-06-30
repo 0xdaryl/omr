@@ -101,7 +101,6 @@ namespace X86
 
 class OMR_EXTENSIBLE Machine : public OMR::Machine
    {
-   TR::RealRegister  **_registerFile;
    TR::Register         **_registerAssociations;
 
    /**
@@ -148,8 +147,6 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
       }
 
    TR::RealRegister **cloneRegisterFile(TR::RealRegister **registerFile, TR_AllocationKind allocKind = heapAlloc);
-   TR::RealRegister **getRegisterFile() { return _registerFile; }
-   TR::RealRegister **setRegisterFile(TR::RealRegister **r) { return _registerFile = r; }
 
    TR::RealRegister **captureRegisterFile();
    void installRegisterFile(TR::RealRegister **registerFileCopy);
@@ -328,7 +325,6 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
       uint8_t numIntRegs,
       uint8_t numFPRegs,
       TR::CodeGenerator *cg,
-      TR::RealRegister **registerFile,
       TR::Register **registerAssociations,
       uint8_t numGlobalGPRs,
       uint8_t numGlobal8BitGPRs,
