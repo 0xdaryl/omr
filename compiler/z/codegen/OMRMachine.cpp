@@ -6992,12 +6992,6 @@ OMR::Z::Machine::supportLockedRegisterAssignment()
    return false; // TODO : Identity needs folding
    }
 
-TR::RealRegister *
-OMR::Z::Machine::getRegisterFile(int32_t i)
-   {
-   return  _registerFile[i];
-   }
-
 void
 OMR::Z::Machine::takeRegisterStateSnapShot()
    {
