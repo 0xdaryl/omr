@@ -146,8 +146,6 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
       return _registerFile[regNum];
       }
 
-   TR::RealRegister **cloneRegisterFile(TR::RealRegister **registerFile, TR_AllocationKind allocKind = heapAlloc);
-
    TR::RealRegister **captureRegisterFile();
    void installRegisterFile(TR::RealRegister **registerFileCopy);
    TR::Register **captureRegisterAssociations();

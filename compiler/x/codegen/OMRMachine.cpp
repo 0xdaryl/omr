@@ -1717,43 +1717,6 @@ OMR::X86::Machine::getGlobalRegisterTable(const struct TR::X86LinkageProperties&
    return _globalRegisterNumberToRealRegisterMap;
    }
 
-TR::RealRegister **
-OMR::X86::Machine::cloneRegisterFile(TR::RealRegister **registerFile, TR_AllocationKind allocKind)
-   {
-   int32_t arraySize = sizeof(TR::RealRegister *) * TR::RealRegister::NumRegisters;
-   TR::RealRegister  **registerFileClone = (TR::RealRegister **)self()->cg()->trMemory()->allocateMemory(arraySize, allocKind);
-   int32_t i = 0;
-   int32_t endReg = TR::RealRegister::LastAssignableGPR;
-
-   TR_LiveRegisters *liveFPRs = self()->cg()->getLiveRegisters(TR_FPR);
-   TR_LiveRegisters *liveVRFs = self()->cg()->getLiveRegisters(TR_VRF);
-
-   if ((liveFPRs && liveFPRs->getNumberOfLiveRegisters() > 0) || (liveVRFs && liveVRFs->getNumberOfLiveRegisters() > 0))
-      endReg = TR::RealRegister::LastXMMR;
-
-   for (i = TR::RealRegister::FirstGPR; i <= endReg; i = ((i==TR::RealRegister::LastAssignableGPR) ? TR::RealRegister::FirstXMMR : i+1))
-      {
-      registerFileClone[i] = (TR::RealRegister *)self()->cg()->trMemory()->allocateMemory(sizeof(TR::RealRegister), allocKind);
-      memcpy(registerFileClone[i], registerFile[i], sizeof(TR::RealRegister));
-      }
-
-   // the vfp entry is a real register and it must always point to the same _frameRegister pointer so the memRef assignRegisters check
-   // if (_baseRegister == cg()->machine()->getX86RealRegister(TR::RealRegister::vfp)
-   // works correctly
-   registerFileClone[TR::RealRegister::vfp] = self()->cg()->getFrameRegister();
-
-   // if there are no live FPRs then initialize the clone with the incoming registerFile values for the XMMRegs so
-   // these pointers are not garbage values
-   if (endReg == TR::RealRegister::LastAssignableGPR)
-      {
-      for (i = TR::RealRegister::FirstXMMR; i <= TR::RealRegister::LastXMMR; i++)
-         registerFileClone[i] = registerFile[i];
-      }
-
-   return registerFileClone;
-   }
-
-
 TR::RegisterDependencyConditions * OMR::X86::Machine::createDepCondForLiveGPRs()
    {
    int32_t i, c=0;
@@ -1869,8 +1832,6 @@ TR::RegisterDependencyConditions * OMR::X86::Machine::createCondForLiveAndSpille
    }
 
 
-// Shares many similarities with 'cloneRegisterFile'.  Consider merging.
-//
 TR::RealRegister **OMR::X86::Machine::captureRegisterFile()
    {
    int32_t arraySize = sizeof(TR::RealRegister *) * TR::RealRegister::NumRegisters;
