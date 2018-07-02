@@ -133,9 +133,6 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
    void takeRegisterStateSnapShot();
    void restoreRegisterStateFromSnapShot();
 
-   TR::RealRegister **cloneRegisterFile(TR::RealRegister **registerFile, TR_AllocationKind allocKind = heapAlloc);
-   TR::RealRegister **cloneRegisterFileByType(TR::RealRegister **registerFileClone, TR::RealRegister **registerFile,
-                                                int32_t start, int32_t end, TR_RegisterKinds kind, TR_AllocationKind allocKind);
    TR::RegisterDependencyConditions  *createCondForLiveAndSpilledGPRs(bool cleanRegState, TR::list<TR::Register*> *spilledRegisterList = NULL);
 
    void decFutureUseCountAndUnlatch(TR::Register *virtualRegister);
