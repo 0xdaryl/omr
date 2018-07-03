@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -75,6 +75,21 @@ struct RegisterDependencyExt
    uint32_t getRefsRegister()   {return _flags & ReferencesDependentRegister;}
    uint32_t setRefsRegister()   {return _flags |= ReferencesDependentRegister;}
    uint32_t resetRefsRegister() {return _flags &= ~ReferencesDependentRegister;}
+
+   bool isEvenOddPair() { return ((uint32_t)_realRegister == (uint32_t)TR::RealRegister::EvenOddPair) ? true : false; }
+   bool isLegalEvenOfPair() { return ((uint32_t)_realRegister == (uint32_t)TR::RealRegister::LegalEvenOfPair) ? true : false; }
+   bool isLegalOddOfPair() { return ((uint32_t)_realRegister == (uint32_t)TR::RealRegister::LegalOddOfPair) ? true : false; }
+   bool isFPPair() { return ((uint32_t)_realRegister == (uint32_t)TR::RealRegister::FPPair) ? true : false; }
+   bool isLegalFirstOfFPPair() { return ((uint32_t)_realRegister == (uint32_t)TR::RealRegister::LegalFirstOfFPPair) ? true : false; }
+   bool isLegalSecondOfFPPair() { return ((uint32_t)_realRegister == (uint32_t)TR::RealRegister::LegalSecondOfFPPair) ? true : false; }
+   bool isAssignAny() { return ((uint32_t)_realRegister == (uint32_t)TR::RealRegister::AssignAny) ? true : false; }
+   bool isKillVolAccessRegs() { return ((uint32_t)_realRegister == (uint32_t)TR::RealRegister::KillVolAccessRegs) ? true : false; }
+   bool isKillVolHighRegs() { return ((uint32_t)_realRegister == (uint32_t)TR::RealRegister::KillVolHighRegs) ? true : false; }
+   bool isMayDefine() { return ((uint32_t)_realRegister == (uint32_t)TR::RealRegister::MayDefine) ? true : false; }
+   bool isSpilledReg() { return ((uint32_t)_realRegister == (uint32_t)TR::RealRegister::SpilledReg) ? true : false; }
+   bool isArGprPair() { return ((uint32_t)_realRegister == (uint32_t)TR::RealRegister::ArGprPair) ? true : false; }
+   bool isArOfArGprPair() { return ((uint32_t)_realRegister == (uint32_t)TR::RealRegister::ArOfArGprPair) ? true : false; }
+   bool isGprOfArGprPair() { return ((uint32_t)_realRegister == (uint32_t)TR::RealRegister::GprOfArGprPair) ? true : false; }
 
    TR::Register * getRegister(TR::CodeGenerator *cg)
       {

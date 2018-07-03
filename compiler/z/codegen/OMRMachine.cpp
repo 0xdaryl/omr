@@ -7245,22 +7245,22 @@ OMR::Z::Machine::createRegisterAssociationDirective(TR::Instruction * cursor)
 TR::Register *
 OMR::Z::Machine::setVirtualAssociatedWithReal(TR::RealRegister::RegNum regNum, TR::Register * virtReg)
    {
-   if ((regNum == TR::RealRegister::ArGprPair) ||
-      (regNum == TR::RealRegister::ArOfArGprPair) ||
-      (regNum == TR::RealRegister::GprOfArGprPair))
+   uint32_t regNumOrDep = (uint32_t)regNum;
+   switch (regNumOrDep)
       {
-      virtReg->setAssociation(regNum);
-      return NULL;
+      case (uint32_t)TR::RealRegister::ArGprPair:
+      case (uint32_t)TR::RealRegister::ArOfArGprPair:
+      case (uint32_t)TR::RealRegister::GprOfArGprPair:
+      case (uint32_t)TR::RealRegister::EvenOddPair:
+      case (uint32_t)TR::RealRegister::LegalEvenOfPair:
+      case (uint32_t)TR::RealRegister::LegalOddOfPair:
+         virtReg->setAssociation(regNum);
+         return NULL;
+      default:
+         break;
       }
 
-   if ((regNum == TR::RealRegister::EvenOddPair) ||
-      (regNum == TR::RealRegister::LegalEvenOfPair) ||
-      (regNum == TR::RealRegister::LegalOddOfPair))
-      {
-      virtReg->setAssociation(regNum);
-      return NULL;
-      }
-   else if (regNum >= TR::RealRegister::NumRegisters || _registerFile[regNum]->getRealRegisterMask() == 0)
+   if (regNum >= TR::RealRegister::NumRegisters || _registerFile[regNum]->getRealRegisterMask() == 0)
       {
       virtReg->setAssociation(TR::RealRegister::NoReg);
       return NULL;
