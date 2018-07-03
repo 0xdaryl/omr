@@ -183,7 +183,7 @@ OMR::Power::RegisterDependencyConditions::RegisterDependencyConditions(
       TR::RealRegister::RegNum regNum = (TR::RealRegister::RegNum)cg->getGlobalRegister(child->getGlobalRegisterNumber());
 
       TR::RealRegister::RegNum highRegNum;
-      TR_GlobalRegisterNumber validHighRegNum = TR::TreeEvaluator::getHighGlobalRegisterNumberIfAny(child, cg); 
+      TR_GlobalRegisterNumber validHighRegNum = TR::TreeEvaluator::getHighGlobalRegisterNumberIfAny(child, cg);
 
       if (validHighRegNum != -1)
          {
@@ -228,7 +228,7 @@ OMR::Power::RegisterDependencyConditions::RegisterDependencyConditions(
       TR::RealRegister::RegNum regNum = (TR::RealRegister::RegNum)cg->getGlobalRegister(child->getGlobalRegisterNumber());
 
       TR::RealRegister::RegNum highRegNum;
-      TR_GlobalRegisterNumber validHighRegNum = TR::TreeEvaluator::getHighGlobalRegisterNumberIfAny(child, cg); 
+      TR_GlobalRegisterNumber validHighRegNum = TR::TreeEvaluator::getHighGlobalRegisterNumberIfAny(child, cg);
 
       if (validHighRegNum != -1)
          {
@@ -772,7 +772,7 @@ void TR_PPCRegisterDependencyGroup::assignRegisters(TR::Instruction   *currentIn
          {
          virtReg         = _dependencies[i].getRegister();
          dependentRegNum = _dependencies[i].getRealRegister();
-         if (dependentRegNum == TR::RealRegister::SpilledReg)
+         if (_dependencies[i].isSpilledReg())
             {
             TR_ASSERT(virtReg->getBackingStorage(), "Should have a backing store if dependentRegNum == SpilledReg");
             if (virtReg->getAssignedRealRegister())
@@ -828,9 +828,7 @@ void TR_PPCRegisterDependencyGroup::assignRegisters(TR::Instruction   *currentIn
       {
       map.addDependency(_dependencies[i], i);
 
-      dependentRegNum = _dependencies[i].getRealRegister();
-
-      if (dependentRegNum != TR::RealRegister::SpilledReg)
+      if (!_dependencies[i].isSpilledReg())
          {
          virtReg = _dependencies[i].getRegister();
          switch (virtReg->getKind())
@@ -952,7 +950,7 @@ void TR_PPCRegisterDependencyGroup::assignRegisters(TR::Instruction   *currentIn
          dependentRealReg = machine->getPPCRealRegister(dependentRegNum);
 
          if (dependentRegNum != TR::RealRegister::NoReg &&
-             dependentRegNum != TR::RealRegister::SpilledReg &&
+             !_dependencies[i].isSpilledReg() &&
              dependentRealReg->getState() == TR::RealRegister::Free)
             {
             assignFreeRegisters(currentInstruction, &_dependencies[i], map, cg);
@@ -968,7 +966,7 @@ void TR_PPCRegisterDependencyGroup::assignRegisters(TR::Instruction   *currentIn
       dependentRealReg = machine->getPPCRealRegister(dependentRegNum);
 
       if (dependentRegNum != TR::RealRegister::NoReg &&
-          dependentRegNum != TR::RealRegister::SpilledReg &&
+          !_dependencies[i].isSpilledReg() &&
           dependentRealReg->getState() == TR::RealRegister::Free)
          {
          assignFreeRegisters(currentInstruction, &_dependencies[i], map, cg);
@@ -987,7 +985,7 @@ void TR_PPCRegisterDependencyGroup::assignRegisters(TR::Instruction   *currentIn
       dependentRegNum  = _dependencies[i].getRealRegister();
       dependentRealReg = machine->getPPCRealRegister(dependentRegNum);
       if (dependentRegNum != TR::RealRegister::NoReg &&
-          dependentRegNum != TR::RealRegister::SpilledReg &&
+          !_dependencies[i].isSpilledReg() &&
           dependentRealReg != assignedRegister)
          {
          bool depsBlocked = false;

@@ -52,6 +52,21 @@ struct RegisterDependencyExt : OMR::RegisterDependencyExt
 
    TR::RealRegister::RegNum getRealRegister() {return _realRegister;}
    TR::RealRegister::RegNum setRealRegister(TR::RealRegister::RegNum r) { return (_realRegister = r); }
+
+   bool isEvenOddPair() { return ((uint32_t)_realRegister == (uint32_t)TR::RealRegister::EvenOddPair) ? true : false; }
+   bool isLegalEvenOfPair() { return ((uint32_t)_realRegister == (uint32_t)TR::RealRegister::LegalEvenOfPair) ? true : false; }
+   bool isLegalOddOfPair() { return ((uint32_t)_realRegister == (uint32_t)TR::RealRegister::LegalOddOfPair) ? true : false; }
+   bool isFPPair() { return ((uint32_t)_realRegister == (uint32_t)TR::RealRegister::FPPair) ? true : false; }
+   bool isLegalFirstOfFPPair() { return ((uint32_t)_realRegister == (uint32_t)TR::RealRegister::LegalFirstOfFPPair) ? true : false; }
+   bool isLegalSecondOfFPPair() { return ((uint32_t)_realRegister == (uint32_t)TR::RealRegister::LegalSecondOfFPPair) ? true : false; }
+   bool isAssignAny() { return ((uint32_t)_realRegister == (uint32_t)TR::RealRegister::AssignAny) ? true : false; }
+   bool isKillVolAccessRegs() { return ((uint32_t)_realRegister == (uint32_t)TR::RealRegister::KillVolAccessRegs) ? true : false; }
+   bool isKillVolHighRegs() { return ((uint32_t)_realRegister == (uint32_t)TR::RealRegister::KillVolHighRegs) ? true : false; }
+   bool isMayDefine() { return ((uint32_t)_realRegister == (uint32_t)TR::RealRegister::MayDefine) ? true : false; }
+   bool isSpilledReg() { return ((uint32_t)_realRegister == (uint32_t)TR::RealRegister::SpilledReg) ? true : false; }
+   bool isArGprPair() { return ((uint32_t)_realRegister == (uint32_t)TR::RealRegister::ArGprPair) ? true : false; }
+   bool isArOfArGprPair() { return ((uint32_t)_realRegister == (uint32_t)TR::RealRegister::ArOfArGprPair) ? true : false; }
+   bool isGprOfArGprPair() { return ((uint32_t)_realRegister == (uint32_t)TR::RealRegister::GprOfArGprPair) ? true : false; }
    };
 }
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -337,7 +337,7 @@ void TR_ARMRegisterDependencyGroup::assignRegisters(TR::Instruction  *currentIns
          {
          virtReg = dependencies[i].getRegister();
          dependentRegNum = dependencies[i].getRealRegister();
-         if (dependentRegNum == TR::RealRegister::SpilledReg)
+         if (dependencies[i].isSpilledReg())
             {
             TR_ASSERT(virtReg->getBackingStorage(),"should have a backing store if dependentRegNum == spillRegIndex()\n");
             if (virtReg->getAssignedRealRegister())
@@ -433,7 +433,7 @@ void TR_ARMRegisterDependencyGroup::assignRegisters(TR::Instruction  *currentIns
          dependentRealReg = machine->getARMRealRegister(dependentRegNum);
 
          if (dependentRegNum != TR::RealRegister::NoReg &&
-             dependentRegNum != TR::RealRegister::SpilledReg &&
+             !dependencies[i].isSpilledReg() &&
              dependentRealReg->getState() == TR::RealRegister::Free)
             {
             machine->coerceRegisterAssignment(currentInstruction, virtReg, dependentRegNum);
@@ -458,7 +458,7 @@ void TR_ARMRegisterDependencyGroup::assignRegisters(TR::Instruction  *currentIns
          dependentRegNum = dependencies[i].getRealRegister();
          dependentRealReg = machine->getARMRealRegister(dependentRegNum);
          if (dependentRegNum != TR::RealRegister::NoReg &&
-             dependentRegNum != TR::RealRegister::SpilledReg &&
+             !dependencies[i].isSpilledReg() &&
              dependentRealReg != assignedRegister)
             {
             machine->coerceRegisterAssignment(currentInstruction, virtReg, dependentRegNum);

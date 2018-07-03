@@ -53,6 +53,8 @@ struct RegisterDependencyExt: OMR::RegisterDependencyExt
 
    TR::RealRegister::RegNum getRealRegister() {return _realRegister;}
    TR::RealRegister::RegNum setRealRegister(TR::RealRegister::RegNum r) { return (_realRegister = r); }
+
+   bool isSpilledReg() { return (_realRegister == TR::RealRegister::SpilledReg) ? true : false; }
    };
 
 }

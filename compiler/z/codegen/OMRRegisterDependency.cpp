@@ -598,7 +598,7 @@ OMR::Z::RegisterDependencyConditions::mayDefineRegister(TR::Register * r)
    for (int32_t j = 0; j < _numPostConditions; j++)
       {
       if (_postConditions->getRegisterDependency(j)->getRegister() == r &&
-          _postConditions->getRegisterDependency(j)->getRealRegister() == TR::RealRegister::MayDefine)
+          _postConditions->getRegisterDependency(j)->isMayDefine())
          {
          return true;
          }
@@ -720,10 +720,11 @@ TR_S390RegisterDependencyGroup::checkRegisterPairSufficiencyAndHPRAssignment(TR:
    // Count the number of required pairs to be assigned in reg deps
    for (int32_t i = 0; i < numOfDependencies; i++)
       {
-      TR::RealRegister::RegNum realRegI = _dependencies[i].getRealRegister();
-      TR::Register* virtRegI            = _dependencies[i].getRegister();
+      TR::RegisterDependency &regDep = _dependencies[i];
+      TR::RealRegister::RegNum realRegI = regDep.getRealRegister();
+      TR::Register* virtRegI            = regDep.getRegister();
 
-      if (realRegI == TR::RealRegister::EvenOddPair)
+      if (regDep.isEvenOddPair())
          numReqPairs++;
 
       // Set HPR or 64-bit register assignment flags
@@ -835,8 +836,8 @@ TR_S390RegisterDependencyGroup::checkRegisterDependencyDuplicates(TR::CodeGenera
          realRegJ = _dependencies[j].getRealRegister();
 
          if (virtRegI == virtRegJ
-               && realRegI != TR::RealRegister::SpilledReg
-               && realRegJ != TR::RealRegister::SpilledReg)
+               && !_dependencies[i].isSpilledReg()
+               && !_dependencies[j].isSpilledReg())
             {
             TR_ASSERT(false, "Virtual register duplicate found in a register dependency\n");
             }
@@ -936,7 +937,7 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
          {
          virtReg = _dependencies[i].getRegister();
          dependentRegNum = _dependencies[i].getRealRegister();
-         if (dependentRegNum == TR::RealRegister::SpilledReg && !_dependencies[i].getRegister()->getRealRegister())
+         if (_dependencies[i].isSpilledReg() && !_dependencies[i].getRegister()->getRealRegister())
             {
             TR_ASSERT( virtReg->getBackingStorage(),"should have a backing store if dependentRegNum == spillRegIndex()\n");
             TR::RealRegister * spilledHPR = NULL;
@@ -1195,8 +1196,7 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
          }
 
       // Check for directive to spill high registers. Used on callouts
-      if ( _dependencies[i].getRealRegister() == TR::RealRegister::KillVolHighRegs &&
-           cg->use64BitRegsOn32Bit() )
+      if ( _dependencies[i].isKillVolHighRegs() && cg->use64BitRegsOn32Bit() )
          {
          machine->spillAllVolatileHighRegisters(currentInstruction);
          _dependencies[i].setRealRegister(TR::RealRegister::NoReg);  // ignore from now on
@@ -1227,7 +1227,8 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
       {
       // Get reg pair pointer
       //
-      TR::RegisterPair * virtRegPair = _dependencies[i].getRegister()->getRegisterPair();
+      TR::RegisterDependency &regDep = _dependencies[i];
+      TR::RegisterPair * virtRegPair = regDep.getRegister()->getRegisterPair();
 
       // If it is a register pair
       //
@@ -1235,15 +1236,10 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
          {
          continue;
          }
-      else
-         {
-         dependentRegNum = _dependencies[i].getRealRegister();
-         }
 
       // Is this an Even-Odd pair assignment
       //
-      if (dependentRegNum == TR::RealRegister::EvenOddPair
-          || dependentRegNum == TR::RealRegister::FPPair)
+      if (regDep.isEvenOddPair() || regDep.isFPPair())
          {
          TR::Register * virtRegHigh = virtRegPair->getHighOrder();
          TR::Register * virtRegLow = virtRegPair->getLowOrder();
@@ -1299,19 +1295,16 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
 
             // Check to ensure correct assignment of even/odd pair.
             //
-            if (((_dependencies[j].getRealRegister() == TR::RealRegister::LegalEvenOfPair
-                 || _dependencies[j].getRealRegister() == TR::RealRegister::LegalFirstOfFPPair) &&
+            if (((_dependencies[j].isLegalEvenOfPair() || _dependencies[j].isLegalFirstOfFPPair()) &&
                  _dependencies[j].getRegister() == virtRegLow) ||
-                ((_dependencies[j].getRealRegister() == TR::RealRegister::LegalOddOfPair
-                 || _dependencies[j].getRealRegister() == TR::RealRegister::LegalSecondOfFPPair)  &&
+                ((_dependencies[j].isLegalOddOfPair() || _dependencies[j].isLegalSecondOfFPPair()) &&
                  _dependencies[j].getRegister() == virtRegHigh))
                {
                TR_ASSERT( 0, "Register pair odd and even assigned wrong\n");
                }
 
             // Look for the Even reg in deps
-            if ((_dependencies[j].getRealRegister() == TR::RealRegister::LegalEvenOfPair
-                || _dependencies[j].getRealRegister() == TR::RealRegister::LegalFirstOfFPPair) &&
+            if ((_dependencies[j].isLegalEvenOfPair() || _dependencies[j].isLegalFirstOfFPPair()) &&
                 _dependencies[j].getRegister() == virtRegHigh)
                {
                _dependencies[j].setRealRegister(TR::RealRegister::NoReg);
@@ -1319,8 +1312,7 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
                }
 
             // Look for the Odd reg in deps
-            if ((_dependencies[j].getRealRegister() == TR::RealRegister::LegalOddOfPair
-                || _dependencies[j].getRealRegister() == TR::RealRegister::LegalSecondOfFPPair) &&
+            if ((_dependencies[j].isLegalOddOfPair() || _dependencies[j].isLegalSecondOfFPPair()) &&
                 _dependencies[j].getRegister() == virtRegLow)
                {
                _dependencies[j].setRealRegister(TR::RealRegister::NoReg);
@@ -1346,9 +1338,8 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
       {
       TR::Register * virtReg = _dependencies[i].getRegister();
       TR::Register * assRealReg = virtReg->getAssignedRealRegister();
-      dependentRegNum = _dependencies[i].getRealRegister();
 
-      if (dependentRegNum == TR::RealRegister::LegalEvenOfPair)
+      if (_dependencies[i].isLegalEvenOfPair())
          {
          // if not assigned, or assigned but not legal.
          //
@@ -1367,8 +1358,7 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
             _dependencies[i].setRealRegister(TR::RealRegister::NoReg);
             }
          }
-
-      if (dependentRegNum == TR::RealRegister::LegalOddOfPair)
+      else if (_dependencies[i].isLegalOddOfPair())
          {
          // if not assigned, or assigned but not legal.
          //
@@ -1387,8 +1377,7 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
             _dependencies[i].setRealRegister(TR::RealRegister::NoReg);
             }
          }
-
-      if (dependentRegNum == TR::RealRegister::LegalFirstOfFPPair)
+      else if (_dependencies[i].isLegalFirstOfFPPair())
          {
          // if not assigned, or assigned but not legal.
          //
@@ -1407,8 +1396,7 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
             _dependencies[i].setRealRegister(TR::RealRegister::NoReg);
             }
          }
-
-      if (dependentRegNum == TR::RealRegister::LegalSecondOfFPPair)
+      else if (_dependencies[i].isLegalSecondOfFPPair())
          {
          // if not assigned, or assigned but not legal.
          //
@@ -1465,8 +1453,8 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
 
          // If dep requires a specific real reg, and the real reg is free
          if (dependentRegNum != TR::RealRegister::NoReg     &&
-             dependentRegNum != TR::RealRegister::AssignAny &&
-             dependentRegNum != TR::RealRegister::SpilledReg &&
+             !_dependencies[i].isAssignAny() &&
+             !_dependencies[i].isSpilledReg() &&
              dependentRealReg->getState() == TR::RealRegister::Free)
             {
             #if 0
@@ -1516,8 +1504,8 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
          // If the dependency requires a real reg
          // and the assigned real reg is not equal to the required one
          if (dependentRegNum  != TR::RealRegister::NoReg     &&
-             dependentRegNum  != TR::RealRegister::AssignAny &&
-             dependentRegNum  != TR::RealRegister::SpilledReg)
+             !_dependencies[i].isAssignAny() &&
+             !_dependencies[i].isSpilledReg())
             {
             if(dependentRealReg != assignedRegister)
               {
@@ -1540,8 +1528,8 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
                    TR::RealRegister::RegNum aRealNum = _dependencies[lcount].getRealRegister();
                    // If the real reg is the same as the one just assigned
                    if (aRealNum != TR::RealRegister::NoReg     &&
-                       aRealNum != TR::RealRegister::AssignAny &&
-                       aRealNum != TR::RealRegister::SpilledReg &&
+                       !_dependencies[lcount].isAssignAny() &&
+                       !_dependencies[lcount].isSpilledReg() &&
                        assignedRegister == machine->getS390RealRegister(aRealNum))
                      {
                        #if 0
@@ -1592,7 +1580,7 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
    // assign those used in memref first
    for (i = 0; i < numOfDependencies; i++)
       {
-      if (_dependencies[i].getRealRegister() == TR::RealRegister::AssignAny)
+      if (_dependencies[i].isAssignAny())
          {
          virtReg = _dependencies[i].getRegister();
 
@@ -1630,7 +1618,7 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
    // assign those which are not used in memref
    for (i = 0; i < numOfDependencies; i++)
       {
-      if (_dependencies[i].getRealRegister() == TR::RealRegister::AssignAny)
+      if (_dependencies[i].isAssignAny())
          {
          virtReg = _dependencies[i].getRegister();
 
@@ -1690,7 +1678,7 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
       // that must have its count decremented, but rather the children.
       if (dependentRegister->getRegisterPair() == NULL &&
           (dependentRegister->getAssignedRegister() || (comp->getOption(TR_EnableTrueRegisterModel) && dependentRegister->isLive())) &&
-          getRegisterDependency(i)->getRealRegister() != TR::RealRegister::SpilledReg
+          !getRegisterDependency(i)->isSpilledReg()
          )
          {
          TR::Register * assignedRegister = dependentRegister->getAssignedRegister();
@@ -1820,8 +1808,7 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
          if (_dependencies[i].getRegister()->getRealRegister())
             {
             TR::RealRegister * highWordReg = toRealRegister(_dependencies[i].getRegister());
-            dependentRegNum = _dependencies[i].getRealRegister();
-            if (dependentRegNum == TR::RealRegister::SpilledReg)
+            if (_dependencies[i].isSpilledReg())
                {
                virtReg = highWordReg->getAssignedRegister();
                //printf ("\nOOL HPR Spill in %s", comp->signature());fflush(stdout);
@@ -1899,7 +1886,7 @@ bool OMR::Z::RegisterDependencyConditions::doesConditionExist( TR_S390RegisterDe
          //
          // Produces an assertion. The fix for this is to overwrite the AssignAny dependency.
          //
-         else if( regDep->getRealRegister() == TR::RealRegister::AssignAny )
+         else if( regDep->isAssignAny() )
             {
             // AssignAny exists already, and the argument real register is not AssignAny
             // - overwrite the existing real register with the argument real register
