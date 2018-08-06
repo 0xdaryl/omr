@@ -193,8 +193,7 @@ public:
 
    bool                       initialize(TR::CodeCacheManager *manager,
                                          TR::CodeCacheMemorySegment *codeCacheSegment,
-                                         size_t codeCacheSizeAllocated,
-                                         CodeCacheHashEntrySlab *hashEntrySlab);
+                                         size_t codeCacheSizeAllocated);
 
 private:
    void                       updateMaxSizeOfFreeBlocks(CodeCacheFreeCacheBlock *blockPtr, size_t blockSize);
