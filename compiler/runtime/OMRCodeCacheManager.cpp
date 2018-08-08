@@ -262,6 +262,9 @@ OMR::CodeCacheManager::allocateCodeCacheObject(TR::CodeCacheMemorySegment *codeC
       new (codeCache) TR::CodeCache();
       if (!codeCache->initialize(self(), codeCacheSegment, codeCacheSizeAllocated))
          {
+
+TR_ASSERT_FATAL(0, "allocateCodeCacheObject: initialize fail");
+
          if (codeCache->hashEntrySlab())
             {
             codeCache->hashEntrySlab()->free(self());
