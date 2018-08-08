@@ -1700,8 +1700,11 @@ OMR::CodeCache::allocate(TR::CodeCacheManager *manager,
 
    if (codeCacheSegment)
       {
+fprintf(stderr,"QQQQQ OMR::CodeCache::allocate: codeCacheSegment=%p\n",codeCacheSegment);fflush(stderr);
       TR::CodeCache *codeCache = manager->allocateCodeCacheObject(codeCacheSegment,
                                                                   codeCacheSizeAllocated);
+
+fprintf(stderr,"QQQQQ OMR::CodeCache::allocate: allocateCodeCacheObject returned %p\n",codeCache);fflush(stderr);
 
       if (codeCache)
          {
