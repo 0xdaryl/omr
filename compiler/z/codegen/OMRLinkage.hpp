@@ -35,7 +35,6 @@ namespace OMR { typedef OMR::Z::Linkage LinkageConnector; }
 
 #include <stddef.h>
 #include <stdint.h>
-#include "codegen/CodeGenerator.hpp"
 #include "codegen/InstOpCode.hpp"
 #include "codegen/LinkageConventionsEnum.hpp"
 #include "codegen/Machine.hpp"
@@ -52,6 +51,7 @@ class TR_FrontEnd;
 namespace TR { class S390JNICallDataSnippet; }
 namespace TR { class S390PrivateLinkage; }
 namespace TR { class AutomaticSymbol; }
+namespace TR { class CodeGenerator; }
 namespace TR { class Compilation; }
 namespace TR { class Instruction; }
 namespace TR { class MemoryReference; }

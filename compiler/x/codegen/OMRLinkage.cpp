@@ -19,8 +19,6 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include "codegen/OMRLinkage.hpp"
-
 #include <stddef.h>
 #include <stdint.h>
 #include "env/StackMemoryRegion.hpp"
@@ -65,6 +63,18 @@
 static uint32_t accumOrigSize = 0;
 static uint32_t accumMappedSize = 0;
 #endif
+
+
+OMR::Linkage::Linkage(TR::CodeGenerator *cg) :
+      _cg(cg),
+      _minimumFirstInstructionSize(0)
+   {
+   // Initialize the movOp table based on preferred load instructions for this target.
+   //
+   TR_X86OpCodes op = cg->getXMMDoubleLoadOpCode() ? cg->getXMMDoubleLoadOpCode() : MOVSDRegMem;
+   _movOpcodes[RegMem][Float8] = op;
+   }
+
 
 void OMR::X86::Linkage::mapCompactedStack(TR::ResolvedMethodSymbol *method)
    {

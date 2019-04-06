@@ -36,7 +36,6 @@ namespace OMR { typedef OMR::X86::Linkage LinkageConnector; }
 #include <algorithm>
 #include <stddef.h>
 #include <stdint.h>
-#include "codegen/CodeGenerator.hpp"
 #include "codegen/Machine.hpp"
 #include "codegen/RealRegister.hpp"
 #include "codegen/Register.hpp"
@@ -75,6 +74,7 @@ namespace OMR { typedef OMR::X86::Linkage LinkageConnector; }
 
 class TR_FrontEnd;
 namespace TR { class AutomaticSymbol; }
+namespace TR { class CodeGenerator; }
 namespace TR { class Compilation; }
 namespace TR { class Instruction; }
 namespace TR { class MethodSymbol; }
@@ -401,13 +401,7 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
 
    protected:
 
-   Linkage(TR::CodeGenerator *cg) : _cg(cg), _minimumFirstInstructionSize(0)
-      {
-      // Initialize the movOp table based on preferred load instructions for this target.
-      //
-      TR_X86OpCodes op = cg->getXMMDoubleLoadOpCode() ? cg->getXMMDoubleLoadOpCode() : MOVSDRegMem;
-      _movOpcodes[RegMem][Float8] = op;
-      }
+   Linkage(TR::CodeGenerator *cg);
 
    void stopUsingKilledRegisters(TR::RegisterDependencyConditions  *deps, TR::Register *returnRegister);
    void associatePreservedRegisters(TR::RegisterDependencyConditions  *deps, TR::Register *returnRegister);
