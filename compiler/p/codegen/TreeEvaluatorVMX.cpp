@@ -26,6 +26,7 @@
 #include <string.h>
 #include "codegen/BackingStore.hpp"
 #include "codegen/CodeGenerator.hpp"
+#include "codegen/CodeGeneratorUtils.hpp"
 #include "codegen/FrontEnd.hpp"
 #include "codegen/InstOpCode.hpp"
 #include "codegen/Instruction.hpp"
