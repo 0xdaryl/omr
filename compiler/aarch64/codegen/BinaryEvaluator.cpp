@@ -23,7 +23,6 @@
 #include "codegen/ARM64ShiftCode.hpp"
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/GenerateInstructions.hpp"
-#include "codegen/Linkage.hpp"
 #include "codegen/RegisterDependency.hpp"
 #include "codegen/TreeEvaluator.hpp"
 #include "il/Node.hpp"
@@ -34,7 +33,7 @@
  * Generic helper that handles a number of similar binary operations.
  * @param[in] node : calling node
  * @param[in] regOp : the target AArch64 instruction opcode
- * @param[in] regOpImm : the matching AArch64 immediate instruction opcode 
+ * @param[in] regOpImm : the matching AArch64 immediate instruction opcode
  * regOpImm == regOp indicates that the passed opcode has no immediate form.
  * @param[in] cg : codegenerator
  * @return target register
@@ -97,7 +96,7 @@ genericBinaryEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic regOp, TR::InstO
       src2Reg = cg->evaluate(secondChild);
       generateTrg1Src2Instruction(cg, regOp, node, trgReg, src1Reg, src2Reg);
       }
-   
+
    firstChild->decReferenceCount();
    secondChild->decReferenceCount();
    node->setRegister(trgReg);
@@ -503,7 +502,7 @@ OMR::ARM64::TreeEvaluator::landEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 	// boolean and of 2 integers
 	return genericBinaryEvaluator(node, TR::InstOpCode::andx, TR::InstOpCode::andimmx, true, cg);
 	}
-	
+
 TR::Register *
 OMR::ARM64::TreeEvaluator::iorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 	{
@@ -524,7 +523,7 @@ OMR::ARM64::TreeEvaluator::ixorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 	// boolean xor of 2 integers
 	return genericBinaryEvaluator(node, TR::InstOpCode::eorw, TR::InstOpCode::eorimmw, false, cg);
 	}
-	
+
 TR::Register *
 OMR::ARM64::TreeEvaluator::lxorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 	{

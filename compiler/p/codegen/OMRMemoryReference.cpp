@@ -26,7 +26,6 @@
 #include "codegen/FrontEnd.hpp"
 #include "codegen/InstOpCode.hpp"
 #include "codegen/Instruction.hpp"
-#include "codegen/Linkage.hpp"
 #include "codegen/Machine.hpp"
 #include "codegen/MemoryReference.hpp"
 #include "codegen/RealRegister.hpp"

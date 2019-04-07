@@ -26,7 +26,6 @@
 #include "codegen/ARM64Instruction.hpp"
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/InstOpCode.hpp"
-#include "codegen/Linkage.hpp"
 #include "codegen/RegisterDependency.hpp"
 #include "il/DataTypes_inlines.hpp"
 #include "il/Node_inlines.hpp"

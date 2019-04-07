@@ -28,7 +28,6 @@
 #endif
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/GenerateInstructions.hpp"
-#include "codegen/Linkage.hpp"
 #include "codegen/RealRegister.hpp"
 #include "codegen/Register.hpp"
 #include "codegen/RegisterPair.hpp"

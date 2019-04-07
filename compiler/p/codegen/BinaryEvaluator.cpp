@@ -24,7 +24,6 @@
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/FrontEnd.hpp"
 #include "codegen/InstOpCode.hpp"
-#include "codegen/Linkage.hpp"
 #include "codegen/Machine.hpp"
 #include "codegen/RealRegister.hpp"
 #include "codegen/Register.hpp"
