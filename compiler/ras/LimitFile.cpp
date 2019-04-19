@@ -1185,6 +1185,16 @@ TR_Debug::methodSigCanBeFound(const char *methodSig, TR::CompilationFilters * fi
    const char *methodClass, *methodName, *methodSignature;
    uint32_t methodClassLen, methodNameLen, methodSignatureLen;
 
+TR::Compiler->mtd.tokenizeSignature(
+   methodSig,
+   methodClass,
+   methodClassLen,
+   methodName,
+   methodNameLen,
+   methodSignature,
+   methodSignatureLen);
+
+
    methodClass = methodSig;
    if (methodType != TR_Method::J9)
       {

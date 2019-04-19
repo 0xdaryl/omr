@@ -19,59 +19,37 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#ifndef OMR_VMMETHODENV_INCL
-#define OMR_VMMETHODENV_INCL
+#include "env/VMMethodEnv.hpp"
+#include <string.h>
 
-/*
- * The following #define and typedef must appear before any #includes in this file
- */
-#ifndef OMR_VMMETHODENV_CONNECTOR
-#define OMR_VMMETHODENV_CONNECTOR
-namespace OMR { class VMMethodEnv; }
-namespace OMR { typedef OMR::VMMethodEnv VMMethodEnvConnector; }
-#endif
-
-#include <stdint.h>
-#include "infra/Annotations.hpp"
-#include "env/jittypes.h"
-
-
-namespace OMR
-{
-
-class OMR_EXTENSIBLE VMMethodEnv
-   {
-public:
-
-   /**
-    * \brief  Does this method contain any backward branches?
-    * \return true if there are backward branches, false if there aren't or unknown
-    */
-   bool hasBackwardBranches(TR_OpaqueMethodBlock *method) { return false; }
-
-   /**
-    * \brief  Is this method compiled?
-    * \return true if compiled, false if not or unknown
-    */
-   bool isCompiledMethod(TR_OpaqueMethodBlock *method) { return false; }
-
-   /**
-    * \brief  Ask for the start PC of the provided method
-    * \return the start PC, or 0 if unknown or not compiled
-    */
-   uintptr_t startPC(TR_OpaqueMethodBlock *method) { return 0; }
-
-
-   void tokenizeSignature(
+void
+OMR::VMMethodEnv::tokenizeSignature(
       const char * signature,
       const char * &methodClass,
       uint32_t     &methodClassLen,
       const char * &methodName,
       uint32_t     &methodNameLen,
       const char * &methodSignature,
-      uint32_t     &methodSignatureLen);
-   };
+      uint32_t     &methodSignatureLen)
+   {
+   if (signature[0] == '/' || signature[0] == '.')
+      {
+      methodClass = signature;
+      methodSignature = strchr(signature, ':');
+      methodClassLen = methodSignature - methodClass;
+      methodSignature++;
+      methodName = strchr(methodSignature, ':');
+      methodSignatureLen = methodName - methodSignature;
+      methodName++;
+      methodNameLen = strlen(methodName);
+      }
+   else
+      {
+      methodName = signature;
+      methodClassLen = 0;
+      methodSignature = "";
+      methodSignatureLen = 0;
+      methodNameLen = strlen(methodName);
+      }
+   }
 
-}
-
-#endif
