@@ -36,8 +36,6 @@ namespace OMR { typedef OMR::X86::Linkage LinkageConnector; }
 #include <algorithm>
 #include <stddef.h>
 #include <stdint.h>
-#include "codegen/CodeGenerator.hpp"
-#include "codegen/Machine.hpp"
 #include "codegen/RealRegister.hpp"
 #include "codegen/Register.hpp"
 #include "codegen/RegisterConstants.hpp"
@@ -75,6 +73,7 @@ namespace OMR { typedef OMR::X86::Linkage LinkageConnector; }
 
 class TR_FrontEnd;
 namespace TR { class AutomaticSymbol; }
+namespace TR { class CodeGenerator; }
 namespace TR { class Compilation; }
 namespace TR { class Instruction; }
 namespace TR { class MethodSymbol; }
