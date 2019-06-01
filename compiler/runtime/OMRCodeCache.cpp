@@ -1657,17 +1657,3 @@ OMR::CodeCache::getCCPreLoadedCodeAddress(TR_CCPreLoadedCode h, TR::CodeGenerato
    return (h >= 0 && h < TR_numCCPreLoadedCode) ? _CCPreLoadedCode[h] : (void *) (uintptr_t) 0xDEADBEEF;
    }
 
-
-// Allocate and initialize a new code cache
-// If reservingCompThreadID >= -1, then the new code codecache will be reserved
-// A value of -1 for this parameter means that an application thread is requesting the reservation
-// A positive value means that a compilation thread is requesting the reservation
-// A value of -2 (or less) means that no reservation is requested
-//
-TR::CodeCache *
-OMR::CodeCache::allocate(TR::CodeCacheManager *manager,
-                         size_t segmentSize,
-                         int32_t reservingCompThreadID)
-   {
-   return manager->allocateCodeCacheFromNewSegment(segmentSize, reservingCompThreadID);
-   }
