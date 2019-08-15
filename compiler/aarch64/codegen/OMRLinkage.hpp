@@ -388,6 +388,21 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
     */
    virtual TR::Register *buildIndirectDispatch(TR::Node *callNode) = 0;
 
+
+   /**
+    * @brief Creates an additional prologue prior to the formal prologue
+    *        required by this linkage.  This is useful, for example, for
+    *        providing an alternate entry point into the method that might
+    *        have different linkage.  This preprologue will fall through to
+    *        the formal prologue.
+    *
+    * @param[in] cursorInstruction : the TR::Instruction to begin generating
+    *        this prologue at.
+    *
+    * @return : the instruction cursor after preprologue creation
+    */
+   virtual TR::Instruction *createPrePrologue(TR::Instruction *cursorInstruction) { return cursorInstruction; }
+
    };
 } // ARM64
 } // TR

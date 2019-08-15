@@ -215,9 +215,13 @@ OMR::ARM64::CodeGenerator::doBinaryEncoding()
    int32_t estimate = 0;
    TR::Instruction *cursorInstruction = self()->getFirstInstruction();
 
+   cursorInstruction = self()->getLinkage()->createPrePrologue(cursorInstruction);
+
+   TR::Instruction *firstPrologueInstruction = cursorInstruction;
+
    self()->getLinkage()->createPrologue(cursorInstruction);
 
-   TR::Instruction *prologueCursor = self()->getFirstInstruction();
+   TR::Instruction *prologueCursor = firstPrologueInstruction;
    for (TR::Instruction *gcMapCursor = prologueCursor; NULL!= gcMapCursor; gcMapCursor = gcMapCursor->getNext())
       {
       if (gcMapCursor->needsGCMap())
