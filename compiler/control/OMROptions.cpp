@@ -1025,6 +1025,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"randomSeed=",        "R<nnn>\tExplicit random seed value; zero (the default) picks the random seed randomly", TR::Options::set32BitSignedNumeric, offsetof(OMR::Options,_randomSeed), 0, "F%d"},
    {"randomSeedRaw",      "R\tUses the supplied random seed as-is; see also randomSeedSignatureHash", RESET_OPTION_BIT(TR_RandomSeedSignatureHash),  "F" },
    {"randomSeedSignatureHash","R\tSet random seed value based on a hash of the method's signature, in order to get varying seeds while maintaining reproducibility", SET_OPTION_BIT(TR_RandomSeedSignatureHash),  "F" },
+   {"readOnlyCode", "M\tGenerate read-only code (no patching)\t", SET_OPTION_BIT(TR_GenerateReadOnlyCode), "F", NOT_IN_SUBSET },
    {"reduceCountsForMethodsCompiledDuringStartup", "M\tNeeds SCC compilation hints\t", SET_OPTION_BIT(TR_ReduceCountsForMethodsCompiledDuringStartup), "F", NOT_IN_SUBSET },
    {"regmap",             "C\tgenerate GC maps with register maps", SET_OPTION_BIT(TR_RegisterMaps), NULL, NOT_IN_SUBSET},
    {"reportEvents",       "C\tcompile event reporting hooks into code", SET_OPTION_BIT(TR_ReportMethodEnter | TR_ReportMethodExit)},
