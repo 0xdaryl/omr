@@ -2810,7 +2810,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Instruction * inst, const char *title)
       print(pOutFile, inst);
       return;
       }
-#endif      
+#endif
 
 #if defined(TR_TARGET_S390)
    if (_comp->target().cpu.isZ())
@@ -3889,6 +3889,7 @@ TR_Debug::getRuntimeHelperName(int32_t index)
             {
             case TR_AMD64floatRemainder:                              return "__SSEfloatRemainder";
             case TR_AMD64doubleRemainder:                             return "__SSEdoubleRemainder";
+            case TR_AMD64resolveVirtualDispatchReadOnly:              return "resolveVirtualDispatchReadOnly";
             case TR_AMD64icallVMprJavaSendVirtual0:                   return "_icallVMprJavaSendVirtual0";
             case TR_AMD64icallVMprJavaSendVirtual1:                   return "_icallVMprJavaSendVirtual1";
             case TR_AMD64icallVMprJavaSendVirtualJ:                   return "_icallVMprJavaSendVirtualJ";

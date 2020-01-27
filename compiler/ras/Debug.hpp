@@ -141,7 +141,6 @@ namespace TR { class X86FPMemRegInstruction;               }
 namespace TR { class X86FPRegMemInstruction;               }
 class TR_X86RegisterDependencyGroup;
 namespace TR { class X86RestartSnippet; }
-namespace TR { class X86PicDataSnippet; }
 namespace TR { class X86DivideCheckSnippet; }
 namespace TR { class X86FPConvertToIntSnippet; }
 namespace TR { class X86FPConvertToLongSnippet; }
@@ -167,6 +166,8 @@ namespace TR { class X86BoundCheckWithSpineCheckSnippet; }
 namespace TR { class X86SpineCheckSnippet; }
 namespace TR { class X86ForceRecompilationSnippet; }
 namespace TR { class X86RecompilationSnippet; }
+namespace TR { class X86PicDataSnippet; }
+namespace TR { class X86ResolveVirtualDispatchReadOnlyDataSnippet; }
 #endif
 
 namespace TR { class PPCAlignmentNopInstruction;         }
@@ -858,6 +859,7 @@ public:
 #ifdef J9_PROJECT_SPECIFIC
    void print(TR::FILE *, TR::X86CallSnippet *);
    void print(TR::FILE *, TR::X86PicDataSnippet *);
+   void print(TR::FILE *, TR::X86ResolveVirtualDispatchReadOnlyDataSnippet *);
    void print(TR::FILE *, TR::X86CheckFailureSnippet *);
    void print(TR::FILE *, TR::X86CheckFailureSnippetWithResolve *);
    void print(TR::FILE *, TR::X86BoundCheckWithSpineCheckSnippet *);
