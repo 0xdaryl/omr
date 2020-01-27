@@ -3888,6 +3888,7 @@ TR_Debug::getRuntimeHelperName(int32_t index)
             {
             case TR_AMD64floatRemainder:                              return "__SSEfloatRemainder";
             case TR_AMD64doubleRemainder:                             return "__SSEdoubleRemainder";
+            case TR_AMD64resolveVirtualDispatch:                      return "resolveVirtualDispatch";
             case TR_AMD64icallVMprJavaSendVirtual0:                   return "_icallVMprJavaSendVirtual0";
             case TR_AMD64icallVMprJavaSendVirtual1:                   return "_icallVMprJavaSendVirtual1";
             case TR_AMD64icallVMprJavaSendVirtualJ:                   return "_icallVMprJavaSendVirtualJ";

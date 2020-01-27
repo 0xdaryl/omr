@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -43,6 +43,7 @@ namespace TR { class X86FPConvertToLongSnippet; }
 namespace TR { class X86ForceRecompilationSnippet; }
 namespace TR { class X86GuardedDevirtualSnippet; }
 namespace TR { class X86PicDataSnippet; }
+namespace TR { class X86ResolveVirtualDispatchDataSnippet; }
 namespace TR { class X86RecompilationSnippet; }
 namespace TR { class X86SpineCheckSnippet; }
 namespace TR { class LabelSymbol; }
@@ -82,6 +83,9 @@ TR_Debug::getNamex(TR::Snippet *snippet)
          break;
       case TR::Snippet::IsIPicData:
          return "IPic Data";
+         break;
+      case TR::Snippet::IsResolveVirtualDispatch:
+         return "Resolve Virtual Dispatch";
          break;
       case TR::Snippet::IsForceRecompilation:
          return "Force Recompilation Snippet";
@@ -153,6 +157,9 @@ TR_Debug::printx(TR::FILE *pOutFile, TR::Snippet *snippet)
       case TR::Snippet::IsIPicData:
       case TR::Snippet::IsVPicData:
          print(pOutFile, (TR::X86PicDataSnippet *)snippet);
+         break;
+      case TR::Snippet::IsResolveVirtualDispatch:
+         print(pOutFile, (TR::X86ResolveVirtualDispatchSnippet *)snippet);
          break;
       case TR::Snippet::IsCheckFailure:
          print(pOutFile, (TR::X86CheckFailureSnippet *)snippet);
