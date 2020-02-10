@@ -44,6 +44,7 @@ namespace TR { class X86ForceRecompilationSnippet; }
 namespace TR { class X86GuardedDevirtualSnippet; }
 namespace TR { class X86PicDataSnippet; }
 namespace TR { class X86ResolveVirtualDispatchDataSnippet; }
+namespace TR { class X86InterfaceDispatchSnippet; }
 namespace TR { class X86RecompilationSnippet; }
 namespace TR { class X86SpineCheckSnippet; }
 namespace TR { class LabelSymbol; }
@@ -86,6 +87,9 @@ TR_Debug::getNamex(TR::Snippet *snippet)
          break;
       case TR::Snippet::IsResolveVirtualDispatch:
          return "Resolve Virtual Dispatch";
+         break;
+      case TR::Snippet::IsInterfaceDispatch:
+         return "Interface Dispatch";
          break;
       case TR::Snippet::IsForceRecompilation:
          return "Force Recompilation Snippet";
@@ -160,6 +164,9 @@ TR_Debug::printx(TR::FILE *pOutFile, TR::Snippet *snippet)
          break;
       case TR::Snippet::IsResolveVirtualDispatch:
          print(pOutFile, (TR::X86ResolveVirtualDispatchSnippet *)snippet);
+         break;
+      case TR::Snippet::IsInterfaceDispatch:
+         print(pOutFile, (TR::X86InterfaceDispatchSnippet *)snippet);
          break;
       case TR::Snippet::IsCheckFailure:
          print(pOutFile, (TR::X86CheckFailureSnippet *)snippet);

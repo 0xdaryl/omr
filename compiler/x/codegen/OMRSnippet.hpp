@@ -64,6 +64,7 @@ class OMR_EXTENSIBLE Snippet : public OMR::Snippet
       IsIPicData,
       IsVPicData,
       IsResolveVirtualDispatch,
+      IsInterfaceDispatch,
       IsUnresolvedVTableSlot,
       IsVirtualPIC,
       IsCheckFailure,
