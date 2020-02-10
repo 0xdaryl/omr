@@ -168,6 +168,7 @@ namespace TR { class X86ForceRecompilationSnippet; }
 namespace TR { class X86RecompilationSnippet; }
 namespace TR { class X86PicDataSnippet; }
 namespace TR { class X86ResolveVirtualDispatchReadOnlyDataSnippet; }
+namespace TR { class X86InterfaceDispatchReadOnlySnippet; }
 #endif
 
 namespace TR { class PPCAlignmentNopInstruction;         }
@@ -860,6 +861,7 @@ public:
    void print(TR::FILE *, TR::X86CallSnippet *);
    void print(TR::FILE *, TR::X86PicDataSnippet *);
    void print(TR::FILE *, TR::X86ResolveVirtualDispatchReadOnlyDataSnippet *);
+   void print(TR::FILE *, TR::X86InterfaceDispatchReadOnlySnippet *);
    void print(TR::FILE *, TR::X86CheckFailureSnippet *);
    void print(TR::FILE *, TR::X86CheckFailureSnippetWithResolve *);
    void print(TR::FILE *, TR::X86BoundCheckWithSpineCheckSnippet *);

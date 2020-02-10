@@ -3889,7 +3889,13 @@ TR_Debug::getRuntimeHelperName(int32_t index)
             {
             case TR_AMD64floatRemainder:                              return "__SSEfloatRemainder";
             case TR_AMD64doubleRemainder:                             return "__SSEdoubleRemainder";
+
             case TR_AMD64resolveVirtualDispatchReadOnly:              return "resolveVirtualDispatchReadOnly";
+            case TR_AMD64dispatchIPicSlot1MethodReadOnly:             return "dispatchIPicSlot1MethodReadOnly";
+            case TR_AMD64dispatchIPicSlot2MethodReadOnly:             return "dispatchIPicSlot2MethodReadOnly";
+            case TR_AMD64IPicResolveReadOnly:                         return "IPicResolveReadOnly";
+            case TR_AMD64IPicLookupDispatchReadOnly:                  return "IPicLookupDispatchReadOnly";
+
             case TR_AMD64icallVMprJavaSendVirtual0:                   return "_icallVMprJavaSendVirtual0";
             case TR_AMD64icallVMprJavaSendVirtual1:                   return "_icallVMprJavaSendVirtual1";
             case TR_AMD64icallVMprJavaSendVirtualJ:                   return "_icallVMprJavaSendVirtualJ";
