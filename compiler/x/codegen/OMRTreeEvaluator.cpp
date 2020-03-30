@@ -887,11 +887,31 @@ TR::Register *OMR::X86::TreeEvaluator::integerStoreEvaluator(TR::Node *node, TR:
       TR::RegisterDependencyConditions *deps = NULL;
       int32_t konst = valueChild->getInt();
 
+//*************
+      if (cg->comp()->getGenerateReadOnlyCode() && !node->getSymbolReference()->isUnresolved())
+         {
+printf("QQQ1 integer store: indirect=%d\n", node->getOpCode().isIndirect());
+
+         tempMR = generateX86MemoryReference(node->getSymbolReference(), cg);
+
+         if (node->getOpCode().isIndirect())
+            {
+            TR::Register *baseReg = cg->evaluate(node->getFirstChild());
+            tempMR->setBaseRegister(baseReg);
+            tempMR->setBaseNode(node->getFirstChild());
+            }
+         }
+      else
+         {
+         tempMR = generateX86MemoryReference(node, cg);
+         }
+//*************
+
       // Note that we can use getInt() here for all sizes, since only the
       // low order "size" bytes of the int will be used by the instruction,
       // and longs only get here if the constant fits in 32 bits.
       //
-      tempMR = generateX86MemoryReference(node, cg);
+//DM      tempMR = generateX86MemoryReference(node, cg);
 
       if (size == 1)
          opCode = S1MemImm1;
@@ -991,7 +1011,28 @@ TR::Register *OMR::X86::TreeEvaluator::integerStoreEvaluator(TR::Node *node, TR:
                  (node->getSymbolReference() == comp->getSymRefTab()->findVftSymbolRef())))
             opCode = S4MemReg;
 
-         tempMR = generateX86MemoryReference(node, cg);
+
+//***********
+         if (cg->comp()->getGenerateReadOnlyCode() && !node->getSymbolReference()->isUnresolved())
+            {
+printf("QQQ2 integer store: indirect=%d\n", node->getOpCode().isIndirect());
+
+            tempMR = generateX86MemoryReference(node->getSymbolReference(), cg);
+
+            if (node->getOpCode().isIndirect())
+               {
+               TR::Register *baseReg = cg->evaluate(node->getFirstChild());
+               tempMR->setBaseRegister(baseReg);
+               tempMR->setBaseNode(node->getFirstChild());
+               }
+            }
+         else
+            {
+            tempMR = generateX86MemoryReference(node, cg);
+            }
+//***********
+
+//DM         tempMR = generateX86MemoryReference(node, cg);
 
          // in comp->useCompressedPointers we should write 4 bytes
          // since the iastore has been changed to an iistore, size will be 4
