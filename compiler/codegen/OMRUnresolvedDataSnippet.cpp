@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -53,7 +53,7 @@ OMR::UnresolvedDataSnippet::UnresolvedDataSnippet(TR::CodeGenerator * cg,
 TR::UnresolvedDataSnippet *
 OMR::UnresolvedDataSnippet::create(TR::CodeGenerator * cg, TR::Node * node, TR::SymbolReference *s, bool isStore, bool canCauseGC)
    {
-   return new (cg->trHeapMemory()) TR::UnresolvedDataSnippet(cg, node, s, isStore, canCauseGC);
+   return new (cg->comp()->trHeapMemory()) TR::UnresolvedDataSnippet(cg, node, s, isStore, canCauseGC);
    }
 
 #ifndef J9_PROJECT_SPECIFIC

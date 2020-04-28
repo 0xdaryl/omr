@@ -236,12 +236,14 @@ OMR::CodeGenerator::CodeGenerator() :
      _symbolDataTypeMap(self()->comp()->allocator()),
      _lmmdFailed(false)
    {
-   _machine = new (self()->trHeapMemory()) TR::Machine(self());
-   _disableInternalPointers = self()->comp()->getOption(TR_MimicInterpreterFrameShape) ||
-                               self()->comp()->getOptions()->realTimeGC() ||
-                               self()->comp()->getOption(TR_DisableInternalPointers);
+   TR::Compilation *comp = self()->comp();
 
-   uintptr_t maxSize = TR::Compiler->vm.getOverflowSafeAllocSize(self()->comp());
+   _machine = new (comp->trHeapMemory()) TR::Machine(self());
+   _disableInternalPointers = comp->getOption(TR_MimicInterpreterFrameShape) ||
+                               comp->getOptions()->realTimeGC() ||
+                               comp->getOption(TR_DisableInternalPointers);
+
+   uintptr_t maxSize = TR::Compiler->vm.getOverflowSafeAllocSize(comp);
    int32_t i;
 
    for (i = 0; i < NumRegisterKinds; ++i)
@@ -255,8 +257,8 @@ OMR::CodeGenerator::CodeGenerator() :
 
    _maxObjectSizeGuaranteedNotToOverflow = (maxSize > UINT_MAX) ? UINT_MAX : maxSize;
 
-   if (self()->comp()->getDebug())
-      self()->comp()->getDebug()->resetDebugData();
+   if (comp->getDebug())
+      comp->getDebug()->resetDebugData();
 
    self()->setIsLeafMethod();
    }
@@ -395,8 +397,9 @@ OMR::CodeGenerator::lowerTreesPropagateBlockToNode(TR::Node *node)
 void
 OMR::CodeGenerator::preLowerTrees()
    {
-   int32_t symRefCount = self()->comp()->getSymRefCount();
-   _localsThatAreStored = new (self()->comp()->trHeapMemory()) TR_BitVector(symRefCount, self()->comp()->trMemory(), heapAlloc);
+   TR::Compilation *comp = self()->comp();
+   int32_t symRefCount = comp->getSymRefCount();
+   _localsThatAreStored = new (comp->trHeapMemory()) TR_BitVector(symRefCount, comp->trMemory(), heapAlloc);
    _numLocalsWhenStoreAnalysisWasDone = symRefCount;
    }
 
@@ -429,8 +432,10 @@ OMR::CodeGenerator::lowerTreesPostChildrenVisit(TR::Node * parent, TR::TreeTop *
 
 void
 OMR::CodeGenerator::setUpForInstructionSelection()
-  {
-   self()->comp()->incVisitCount();
+   {
+   TR::Compilation *comp = self()->comp();
+
+   comp->incVisitCount();
 
    // prepareNodeForInstructionSelection is called during a separate walk of the treetops because
    // the _register and _label fields are unioned members of a node.  prepareNodeForInstructionSelection
@@ -439,13 +444,13 @@ OMR::CodeGenerator::setUpForInstructionSelection()
    TR::TreeTop * tt=NULL, *prev = NULL;
 
 
-   for (tt = self()->comp()->getStartTree(); tt; tt = tt->getNextTreeTop())
+   for (tt = comp->getStartTree(); tt; tt = tt->getNextTreeTop())
       {
       self()->prepareNodeForInstructionSelection(tt->getNode());
       }
 
 
-   for (tt = self()->comp()->getStartTree(); tt; prev=tt, tt = tt->getNextTreeTop())
+   for (tt = comp->getStartTree(); tt; prev=tt, tt = tt->getNextTreeTop())
       {
       TR::Node * node = tt->getNode();
 
@@ -477,7 +482,7 @@ OMR::CodeGenerator::setUpForInstructionSelection()
             {
             // need to get the label type from the target block for RAS
             TR::LabelSymbol * label =
-                TR::LabelSymbol::create(self()->trHeapMemory(),self(),node->getBranchDestination()->getNode()->getBlock());
+                TR::LabelSymbol::create(comp->trHeapMemory(),self(),node->getBranchDestination()->getNode()->getBlock());
 
             node->getBranchDestination()->getNode()->setLabel(label);
 
@@ -641,11 +646,11 @@ OMR::CodeGenerator::doInstructionSelection()
                {
                if (block->getLiveLocals())
                   {
-                  liveLocals = new (self()->trHeapMemory()) TR_BitVector(*block->getLiveLocals());
+                  liveLocals = new (comp->trHeapMemory()) TR_BitVector(*block->getLiveLocals());
                   }
                else
                   {
-                  liveLocals = new (self()->trHeapMemory()) TR_BitVector(*liveLocals);
+                  liveLocals = new (comp->trHeapMemory()) TR_BitVector(*liveLocals);
                   liveLocals->empty();
                   }
                }
@@ -754,7 +759,7 @@ OMR::CodeGenerator::doInstructionSelection()
 
          if (liveSym)
             {
-            liveLocals = new (self()->trHeapMemory()) TR_BitVector(*liveLocals);
+            liveLocals = new (comp->trHeapMemory()) TR_BitVector(*liveLocals);
             liveLocals->set(liveSym->getLiveLocalIndex());
             }
          }
@@ -2314,21 +2319,21 @@ OMR::CodeGenerator::lookUpSnippet(int32_t snippetKind, TR::SymbolReference *symR
 TR::SymbolReference *
 OMR::CodeGenerator::allocateLocalTemp(TR::DataType dt, bool isInternalPointer)
    {
-   //
+   TR::Compilation *comp = self()->comp();
    TR::AutomaticSymbol * temp;
    if (isInternalPointer)
       {
-      temp = TR::AutomaticSymbol::createInternalPointer(self()->trHeapMemory(),
+      temp = TR::AutomaticSymbol::createInternalPointer(comp->trHeapMemory(),
                                                        dt,
                                                        TR::Symbol::convertTypeToSize(dt),
                                                        self()->fe());
       }
    else
       {
-      temp = TR::AutomaticSymbol::create(self()->trHeapMemory(),dt,TR::Symbol::convertTypeToSize(dt));
+      temp = TR::AutomaticSymbol::create(comp->trHeapMemory(),dt,TR::Symbol::convertTypeToSize(dt));
       }
-   self()->comp()->getMethodSymbol()->addAutomatic(temp);
-   return new (self()->trHeapMemory()) TR::SymbolReference(self()->comp()->getSymRefTab(), temp);
+   comp->getMethodSymbol()->addAutomatic(temp);
+   return new (comp->trHeapMemory()) TR::SymbolReference(comp->getSymRefTab(), temp);
    }
 
 
@@ -2386,7 +2391,7 @@ OMR::CodeGenerator::computeBlocksWithCalls()
    TR::Block        *block;
    uint32_t         bnum, btemp;
 
-   _blocksWithCalls = new (self()->trHeapMemory()) TR_BitVector(bcount, self()->trMemory());
+   _blocksWithCalls = new (self()->comp()->trHeapMemory()) TR_BitVector(bcount, self()->trMemory());
    bvec.init(bcount, self()->trMemory());
 
    for (pTree=self()->comp()->getStartTree(); pTree!=NULL; pTree=exitTree->getNextTreeTop())
@@ -2937,13 +2942,14 @@ void OMR::CodeGenerator::recordSingleRegisterUse(TR::Register *reg)
          }
       }
 
-   OMR::RegisterUsage *ru = new (self()->trHeapMemory()) OMR::RegisterUsage(reg, 1);
+   OMR::RegisterUsage *ru = new (self()->comp()->trHeapMemory()) OMR::RegisterUsage(reg, 1);
    self()->getReferencedRegisterList()->push_front(ru);
    }
 
 void OMR::CodeGenerator::startRecordingRegisterUsage()
    {
-   self()->setReferencedRegisterList(new (self()->trHeapMemory()) TR::list<OMR::RegisterUsage*>(getTypedAllocator<OMR::RegisterUsage*>(self()->comp()->allocator())));
+   TR::Compilation *comp = self()->comp();
+   self()->setReferencedRegisterList(new (comp->trHeapMemory()) TR::list<OMR::RegisterUsage*>(getTypedAllocator<OMR::RegisterUsage*>(comp->allocator())));
    self()->setEnableRegisterUsageTracking();
    }
 
@@ -2968,10 +2974,11 @@ void OMR::CodeGenerator::addRelocation(TR::Relocation *r)
 
 void OMR::CodeGenerator::addExternalRelocation(TR::Relocation *r, const char *generatingFileName, uintptr_t generatingLineNumber, TR::Node *node, TR::ExternalRelocationPositionRequest where)
    {
+   TR::Compilation *comp = self()->comp();
    TR_ASSERT(generatingFileName, "External relocation location has improper NULL filename specified");
-   if (self()->comp()->compileRelocatableCode())
+   if (comp->compileRelocatableCode())
       {
-      TR::RelocationDebugInfo *genData = new(self()->trHeapMemory()) TR::RelocationDebugInfo;
+      TR::RelocationDebugInfo *genData = new(comp->trHeapMemory()) TR::RelocationDebugInfo;
       genData->file = generatingFileName;
       genData->line = generatingLineNumber;
       genData->node = node;
@@ -3070,14 +3077,14 @@ void OMR::CodeGenerator::addAllocatedRegister(TR::Register * temp)
 
 TR::RegisterPair * OMR::CodeGenerator::allocateRegisterPair(TR::Register * lo, TR::Register * ho)
    {
-   TR::RegisterPair *temp =  new (self()->trHeapMemory()) TR::RegisterPair(lo, ho);
+   TR::RegisterPair *temp =  new (self()->comp()->trHeapMemory()) TR::RegisterPair(lo, ho);
    self()->addAllocatedRegisterPair(temp);
    return temp;
    }
 
 TR::RegisterPair * OMR::CodeGenerator::allocateSinglePrecisionRegisterPair(TR::Register * lo, TR::Register * ho)
    {
-   TR::RegisterPair *temp = new (self()->trHeapMemory()) TR::RegisterPair(TR_FPR);
+   TR::RegisterPair *temp = new (self()->comp()->trHeapMemory()) TR::RegisterPair(TR_FPR);
    temp->setLowOrder(lo, self());
    temp->setHighOrder(ho, self());
    self()->addAllocatedRegisterPair(temp);
@@ -3086,7 +3093,7 @@ TR::RegisterPair * OMR::CodeGenerator::allocateSinglePrecisionRegisterPair(TR::R
 
 TR::RegisterPair * OMR::CodeGenerator::allocateFloatingPointRegisterPair(TR::Register * lo, TR::Register * ho)
    {
-   TR::RegisterPair * temp = new (self()->trHeapMemory()) TR::RegisterPair(lo, ho);
+   TR::RegisterPair * temp = new (self()->comp()->trHeapMemory()) TR::RegisterPair(lo, ho);
    temp->setKind(TR_FPR);
    self()->addAllocatedRegisterPair(temp);
    return temp;

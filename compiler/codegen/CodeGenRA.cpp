@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -424,19 +424,20 @@ OMR::CodeGenerator::allocateInternalPointerSpill(TR::AutomaticSymbol *pinningArr
    //
    if (!spill)
       {
+      TR::Compilation *comp = self()->comp();
       int32_t slot;
       TR::AutomaticSymbol *spillSymbol =
-         TR::AutomaticSymbol::createInternalPointer(self()->trHeapMemory(),
+         TR::AutomaticSymbol::createInternalPointer(comp->trHeapMemory(),
                                                    TR::Address,
                                                    TR::Compiler->om.sizeofReferenceAddress(),
                                                    self()->fe());
       spillSymbol->setSpillTempAuto();
       spillSymbol->setPinningArrayPointer(pinningArrayPointer);
-      self()->comp()->getMethodSymbol()->addAutomatic(spillSymbol);
-      spill = new (self()->trHeapMemory()) TR_BackingStore(self()->comp()->getSymRefTab(), spillSymbol, 0);
+      comp->getMethodSymbol()->addAutomatic(spillSymbol);
+      spill = new (comp->trHeapMemory()) TR_BackingStore(comp->getSymRefTab(), spillSymbol, 0);
       slot = spill->getSymbolReference()->getCPIndex();
       slot = (slot < 0) ? (-slot - 1) : slot;
-      self()->comp()->getJittedMethodSymbol()->getAutoSymRefs(slot).add(spill->getSymbolReference());
+      comp->getJittedMethodSymbol()->getAutoSymRefs(slot).add(spill->getSymbolReference());
       _allSpillList.push_front(spill);
       }
 
@@ -453,13 +454,15 @@ OMR::CodeGenerator::allocateSpill(bool containsCollectedReference, int32_t *offs
 TR_BackingStore *
 OMR::CodeGenerator::allocateSpill(int32_t dataSize, bool containsCollectedReference, int32_t *offset, bool reuse)
    {
+   TR::Compilation *comp = self()->comp();
+
    TR_ASSERT_FATAL(dataSize <= 16, "assertion failure");
    TR_ASSERT_FATAL(!containsCollectedReference || (dataSize == TR::Compiler->om.sizeofReferenceAddress()), "assertion failure");
 
-   if (self()->comp()->getOption(TR_TraceRA))
-      traceMsg(self()->comp(), "\nallocateSpill(%d, %s, %s)", dataSize, containsCollectedReference? "collected":"uncollected", offset? "offset":"NULL");
+   if (comp->getOption(TR_TraceRA))
+      traceMsg(comp, "\nallocateSpill(%d, %s, %s)", dataSize, containsCollectedReference? "collected":"uncollected", offset? "offset":"NULL");
 
-   if (offset && self()->comp()->getOption(TR_DisableHalfSlotSpills))
+   if (offset && comp->getOption(TR_DisableHalfSlotSpills))
       {
       // Pretend the caller can't handle half-slot spills
       *offset = 0;
@@ -495,7 +498,7 @@ OMR::CodeGenerator::allocateSpill(int32_t dataSize, bool containsCollectedRefere
        self()->getSpill16FreeList().pop_front();
      }
      if (
-         (spill && self()->comp()->getOption(TR_TraceRA) && !performTransformation(self()->comp(), "O^O SPILL TEMPS: Reuse spill temp %s\n", self()->getDebug()->getName(spill->getSymbolReference()))))
+         (spill && comp->getOption(TR_TraceRA) && !performTransformation(comp, "O^O SPILL TEMPS: Reuse spill temp %s\n", self()->getDebug()->getName(spill->getSymbolReference()))))
        {
        // Discard the spill temp we popped and never use it again; allocate a
        // new one instead, and later, where we would have returned this spill
@@ -523,13 +526,13 @@ OMR::CodeGenerator::allocateSpill(int32_t dataSize, bool containsCollectedRefere
       int spillSize = std::max(dataSize, static_cast<int32_t>(TR::Compiler->om.sizeofReferenceAddress()));
 
       TR_ASSERT(4 <= spillSize && spillSize <= 16, "Spill temps should be between 4 and 16 bytes");
-      spillSymbol = TR::AutomaticSymbol::create(self()->trHeapMemory(),TR::NoType,spillSize);
+      spillSymbol = TR::AutomaticSymbol::create(comp->trHeapMemory(),TR::NoType,spillSize);
       spillSymbol->setSpillTempAuto();
-      self()->comp()->getMethodSymbol()->addAutomatic(spillSymbol);
-      spill = new (self()->trHeapMemory()) TR_BackingStore(self()->comp()->getSymRefTab(), spillSymbol, 0);
+      comp->getMethodSymbol()->addAutomatic(spillSymbol);
+      spill = new (comp->trHeapMemory()) TR_BackingStore(comp->getSymRefTab(), spillSymbol, 0);
       int32_t slot = spill->getSymbolReference()->getCPIndex();
       slot = (slot < 0) ? (-slot - 1) : slot;
-      self()->comp()->getJittedMethodSymbol()->getAutoSymRefs(slot).add(spill->getSymbolReference());
+      comp->getJittedMethodSymbol()->getAutoSymRefs(slot).add(spill->getSymbolReference());
       _allSpillList.push_front(spill);
       }
 
@@ -540,7 +543,7 @@ OMR::CodeGenerator::allocateSpill(int32_t dataSize, bool containsCollectedRefere
       //
       if (  offset == NULL
          || spill->secondHalfIsOccupied()
-            || !performTransformation(self()->comp(), "O^O HALF-SLOT SPILLS: Use second half of %s\n", self()->getDebug()->getName(spill->getSymbolReference())))
+            || !performTransformation(comp, "O^O HALF-SLOT SPILLS: Use second half of %s\n", self()->getDebug()->getName(spill->getSymbolReference())))
          {
          spill->setFirstHalfIsOccupied();
          }
@@ -560,14 +563,14 @@ OMR::CodeGenerator::allocateSpill(int32_t dataSize, bool containsCollectedRefere
       {
       spillSymbol->setGCMapIndex(self()->getStackAtlas()->assignGCIndex());
       _collectedSpillList.push_front(spill);
-      if (self()->comp()->getOption(TR_TraceRA))
-         traceMsg(self()->comp(), "\n -> added to collectedSpillList");
+      if (comp->getOption(TR_TraceRA))
+         traceMsg(comp, "\n -> added to collectedSpillList");
       }
    spill->setContainsCollectedReference(containsCollectedReference);
 
    TR_ASSERT(spill->isOccupied(), "assertion failure");
-   if (self()->comp()->getOption(TR_TraceRA))
-     traceMsg(self()->comp(), "\nallocateSpill returning (%s(%d%d), %d) ", self()->getDebug()->getName(spill->getSymbolReference()->getSymbol()), spill->firstHalfIsOccupied()?1:0, spill->secondHalfIsOccupied()?1:0, offset? *offset : 0);
+   if (comp->getOption(TR_TraceRA))
+     traceMsg(comp, "\nallocateSpill returning (%s(%d%d), %d) ", self()->getDebug()->getName(spill->getSymbolReference()->getSymbol()), spill->firstHalfIsOccupied()?1:0, spill->secondHalfIsOccupied()?1:0, offset? *offset : 0);
    return spill;
    }
 
@@ -695,7 +698,7 @@ OMR::CodeGenerator::jettisonAllSpills()
 TR::Register * OMR::CodeGenerator::allocateRegister(TR_RegisterKinds rk)
    {
    TR_ASSERT(rk != TR_SSR,"use allocatePseudoRegister for TR_SSR registers\n");
-   TR::Register * temp = new (self()->trHeapMemory()) TR::Register(rk);
+   TR::Register * temp = new (self()->comp()->trHeapMemory()) TR::Register(rk);
    self()->addAllocatedRegister(temp);
    if (self()->getDebug())
       self()->getDebug()->newRegister(temp);
@@ -884,7 +887,7 @@ OMR::CodeGenerator::processReference(TR::Node *reference, TR::Node *parent, TR::
       ++iterator;
       }
 
-   cursor = new (self()->trHeapMemory()) TR_LiveReference(reference, parent, self()->trMemory());
+   cursor = new (self()->comp()->trHeapMemory()) TR_LiveReference(reference, parent, self()->trMemory());
    _liveReferenceList.push_back(cursor);
    self()->needSpillTemp(cursor, parent, treeTop);
    }
@@ -933,10 +936,10 @@ OMR::CodeGenerator::spillLiveReferencesToTemps(TR::TreeTop *insertionTree, std::
          else
             {
             int32_t slot;
-            TR::AutomaticSymbol *tempSym = TR::AutomaticSymbol::create(self()->trHeapMemory());
+            TR::AutomaticSymbol *tempSym = TR::AutomaticSymbol::create(self()->comp()->trHeapMemory());
             tempSym->setSize(TR::DataType::getSize(TR::Address));
             tempSym->setSpillTempAuto();
-            tempSymRef = new (self()->trHeapMemory()) TR::SymbolReference(self()->comp()->getSymRefTab(), tempSym);
+            tempSymRef = new (self()->comp()->trHeapMemory()) TR::SymbolReference(self()->comp()->getSymRefTab(), tempSym);
             slot = tempSymRef->getCPIndex();
             slot = (slot < 0) ? (-slot - 1) : slot;
             self()->comp()->getJittedMethodSymbol()->getAutoSymRefs(slot).add(tempSymRef);

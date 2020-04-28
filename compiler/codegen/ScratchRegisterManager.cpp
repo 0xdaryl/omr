@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -44,7 +44,7 @@ bool TR_ScratchRegisterManager::donateScratchRegister(TR::Register *reg)
    if (_cursor >= _capacity)
       return false;
 
-   TR_ManagedScratchRegister *msr = new (_cg->trHeapMemory()) TR_ManagedScratchRegister(reg, msrDonated);
+   TR_ManagedScratchRegister *msr = new (_cg->comp()->trHeapMemory()) TR_ManagedScratchRegister(reg, msrDonated);
    _msrList.add(msr);
    _cursor++;
    return true;
@@ -102,7 +102,7 @@ TR::Register *TR_ScratchRegisterManager::findOrCreateScratchRegister(TR_Register
       }
 
    TR::Register *reg = _cg->allocateRegister(rk);
-   msr = new (_cg->trHeapMemory()) TR_ManagedScratchRegister(reg, msrAllocated);
+   msr = new (_cg->comp()->trHeapMemory()) TR_ManagedScratchRegister(reg, msrAllocated);
    _msrList.add(msr);
    _cursor++;
    return reg;

@@ -270,8 +270,8 @@ void TR::ExternalRelocation::addExternalRelocation(TR::CodeGenerator *codeGen)
          }
       }
    TR::IteratedExternalRelocation *temp =   _targetAddress2 ?
-      new (codeGen->trHeapMemory()) TR::IteratedExternalRelocation(_targetAddress, _targetAddress2, _kind, modifier, codeGen) :
-      new (codeGen->trHeapMemory()) TR::IteratedExternalRelocation(_targetAddress, _kind, modifier, codeGen);
+      new (comp->trHeapMemory()) TR::IteratedExternalRelocation(_targetAddress, _targetAddress2, _kind, modifier, codeGen) :
+      new (comp->trHeapMemory()) TR::IteratedExternalRelocation(_targetAddress, _kind, modifier, codeGen);
 
    aot.add(temp);
    if (_targetAddress2)

@@ -384,7 +384,7 @@ OMR::CodeGenerator::lowerTreeIfNeeded(
                   if (!liveButMaybeUnreferencedLocals)
                      {
                      int32_t numLocals = self()->comp()->getMethodSymbol()->getAutomaticList().getSize();
-                     liveButMaybeUnreferencedLocals = new (self()->trHeapMemory()) TR_BitVector(numLocals, self()->trMemory());
+                     liveButMaybeUnreferencedLocals = new (self()->comp()->trHeapMemory()) TR_BitVector(numLocals, self()->trMemory());
                      self()->setLiveButMaybeUnreferencedLocals(liveButMaybeUnreferencedLocals);
                      }
                   if (!storeLocal->isLiveLocalIndexUninitialized())
