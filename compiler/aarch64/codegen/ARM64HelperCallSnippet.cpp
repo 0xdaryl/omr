@@ -42,7 +42,7 @@ TR::ARM64HelperCallSnippet::emitSnippetBody()
 
    *(int32_t *)cursor = TR::InstOpCode::getOpCodeBinaryEncoding(TR::InstOpCode::bl) | ((distance >> 2) & 0x3ffffff); // imm26
 
-   cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(
+   cg()->addExternalRelocation(new (cg()->comp()->trHeapMemory()) TR::ExternalRelocation(
                                cursor,
                                (uint8_t *)getDestination(),
                                TR_HelperAddress, cg()), __FILE__, __LINE__, getNode());

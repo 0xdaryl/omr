@@ -248,8 +248,8 @@ OMR::ARM64::RegisterDependencyConditions::clone(
       addPreNum = omitPre ? 0 : added->getAddCursorForPre();
       addPostNum = omitPost ? 0 : added->getAddCursorForPost();
       }
-   
-   TR::RegisterDependencyConditions *result =  new (cg->trHeapMemory()) TR::RegisterDependencyConditions(preNum + addPreNum, postNum + addPostNum, cg->trMemory());
+
+   TR::RegisterDependencyConditions *result =  new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(preNum + addPreNum, postNum + addPostNum, cg->trMemory());
    for (int i = 0; i < preNum; i++)
       {
       auto singlePair = getPreConditions()->getRegisterDependency(i);
@@ -308,7 +308,7 @@ void TR_ARM64RegisterDependencyGroup::assignRegisters(
                traceMsg (comp,"\nOOL: Found register spilled in main line and re-assigned inside OOL");
                TR::Node *currentNode = currentInstruction->getNode();
                TR::RealRegister *assignedReg = toRealRegister(virtReg->getAssignedRegister());
-               TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(currentNode, (TR::SymbolReference*)virtReg->getBackingStorage()->getSymbolReference(), sizeof(uintptr_t), cg);
+               TR::MemoryReference *tempMR = new (comp->trHeapMemory()) TR::MemoryReference(currentNode, (TR::SymbolReference*)virtReg->getBackingStorage()->getSymbolReference(), sizeof(uintptr_t), cg);
                TR_RegisterKinds rk = virtReg->getKind();
                TR::InstOpCode::Mnemonic opCode;
                switch (rk)

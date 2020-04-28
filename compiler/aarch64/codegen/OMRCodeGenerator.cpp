@@ -44,6 +44,8 @@ OMR::ARM64::CodeGenerator::CodeGenerator() :
       _dataSnippetList(getTypedAllocator<TR::ARM64ConstantDataSnippet*>(TR::comp()->allocator())),
       _outOfLineCodeSectionList(getTypedAllocator<TR_ARM64OutOfLineCodeSection*>(self()->comp()->allocator()))
    {
+   TR::Compilation *comp = self()->comp();
+
    // Initialize Linkage for Code Generator
    self()->initializeLinkage();
 
@@ -76,10 +78,10 @@ OMR::ARM64::CodeGenerator::CodeGenerator() :
    _numberBytesReadInaccessible = 0;
    _numberBytesWriteInaccessible = 0;
 
-   if (TR::Compiler->vm.hasResumableTrapHandler(self()->comp()))
+   if (TR::Compiler->vm.hasResumableTrapHandler(comp))
       self()->setHasResumableTrapHandler();
 
-   if (!self()->comp()->getOption(TR_DisableRegisterPressureSimulation))
+   if (!comp->getOption(TR_DisableRegisterPressureSimulation))
       {
       for (int32_t i = 0; i < TR_numSpillKinds; i++)
          _globalRegisterBitVectors[i].init(self()->getNumberOfGlobalRegisters(), self()->trMemory());
@@ -123,15 +125,15 @@ OMR::ARM64::CodeGenerator::CodeGenerator() :
    for (i = 0; i < linkageProperties.getNumFloatArgRegs(); i++)
      _fprLinkageGlobalRegisterNumbers[i] = globalRegNumbers[linkageProperties.getFloatArgumentRegister(i)];
 
-   if (self()->comp()->getOption(TR_TraceRA))
+   if (comp->getOption(TR_TraceRA))
       {
-      self()->setGPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstGPR, TR::RealRegister::LastGPR));
-      self()->setFPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstFPR, TR::RealRegister::LastFPR));
+      self()->setGPRegisterIterator(new (comp->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstGPR, TR::RealRegister::LastGPR));
+      self()->setFPRegisterIterator(new (comp->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstFPR, TR::RealRegister::LastFPR));
       }
 
-   self()->getLinkage()->setParameterLinkageRegisterIndex(self()->comp()->getJittedMethodSymbol());
+   self()->getLinkage()->setParameterLinkageRegisterIndex(comp->getJittedMethodSymbol());
 
-   if (self()->comp()->target().isSMP())
+   if (comp->target().isSMP())
       self()->setEnforceStoreOrder();
    }
 
@@ -149,7 +151,7 @@ OMR::ARM64::CodeGenerator::beginInstructionSelection()
       _returnTypeInfoInstruction = NULL;
       }
 
-   new (self()->trHeapMemory()) TR::ARM64AdminInstruction(TR::InstOpCode::proc, startNode, NULL, _returnTypeInfoInstruction, self());
+   new (comp->trHeapMemory()) TR::ARM64AdminInstruction(TR::InstOpCode::proc, startNode, NULL, _returnTypeInfoInstruction, self());
    }
 
 void
@@ -172,7 +174,7 @@ OMR::ARM64::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
 
    if (!comp->getOption(TR_DisableOOL))
       {
-      TR::list<TR::Register*> *spilledRegisterList = new (self()->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::Register*>(comp->allocator()));
+      TR::list<TR::Register*> *spilledRegisterList = new (comp->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::Register*>(comp->allocator()));
       self()->setSpilledRegisterList(spilledRegisterList);
       }
 
@@ -315,15 +317,16 @@ OMR::ARM64::CodeGenerator::doBinaryEncoding()
 
 TR::Linkage *OMR::ARM64::CodeGenerator::createLinkage(TR_LinkageConventions lc)
    {
+   TR::Compilation *comp = self()->comp();
    TR::Linkage *linkage;
    switch (lc)
       {
       case TR_System:
-         linkage = new (self()->trHeapMemory()) TR::ARM64SystemLinkage(self());
+         linkage = new (comp->trHeapMemory()) TR::ARM64SystemLinkage(self());
          break;
       default:
          TR_ASSERT(false, "using system linkage for unrecognized convention %d\n", lc);
-         linkage = new (self()->trHeapMemory()) TR::ARM64SystemLinkage(self());
+         linkage = new (comp->trHeapMemory()) TR::ARM64SystemLinkage(self());
       }
    self()->setLinkage(lc, linkage);
    return linkage;
@@ -372,7 +375,7 @@ TR::ARM64ConstantDataSnippet *OMR::ARM64::CodeGenerator::findOrCreateConstantDat
 
    // Constant was not found: create a new snippet for it and add it to the constant list.
    //
-   auto snippet = new (self()->trHeapMemory()) TR::ARM64ConstantDataSnippet(self(), node, c, s);
+   auto snippet = new (self()->comp()->trHeapMemory()) TR::ARM64ConstantDataSnippet(self(), node, c, s);
    _dataSnippetList.push_back(snippet);
    return snippet;
    }
@@ -426,6 +429,7 @@ OMR::ARM64::CodeGenerator::registerBitMask(int32_t reg)
 
 void OMR::ARM64::CodeGenerator::buildRegisterMapForInstruction(TR_GCStackMap *map)
    {
+   TR::Compilation *comp = self()->comp();
    TR_InternalPointerMap * internalPtrMap = NULL;
    TR::GCStackAtlas *atlas = self()->getStackAtlas();
    //
@@ -442,7 +446,7 @@ void OMR::ARM64::CodeGenerator::buildRegisterMapForInstruction(TR_GCStackMap *ma
             if (virtReg->containsInternalPointer())
                {
                if (!internalPtrMap)
-                  internalPtrMap = new (self()->trHeapMemory()) TR_InternalPointerMap(self()->trMemory());
+                  internalPtrMap = new (comp->trHeapMemory()) TR_InternalPointerMap(self()->trMemory());
                internalPtrMap->addInternalPointerPair(virtReg->getPinningArrayPointer(), i);
                atlas->addPinningArrayPtrForInternalPtrReg(virtReg->getPinningArrayPointer());
                }
@@ -572,7 +576,7 @@ TR::Instruction *
 OMR::ARM64::CodeGenerator::generateNop(TR::Node *node, TR::Instruction *preced)
    {
    if (preced)
-      return new (self()->trHeapMemory()) TR::Instruction(TR::InstOpCode::nop, node, preced, self());
+      return new (self()->comp()->trHeapMemory()) TR::Instruction(TR::InstOpCode::nop, node, preced, self());
    else
-      return new (self()->trHeapMemory()) TR::Instruction(TR::InstOpCode::nop, node, self());
+      return new (self()->comp()->trHeapMemory()) TR::Instruction(TR::InstOpCode::nop, node, self());
    }

@@ -267,7 +267,7 @@ TR::Instruction *OMR::ARM64::Linkage::copyParametersToHomeLocation(TR::Instructi
                diagnostic("copyParametersToHomeLocation: Loading %d\n", ai);
 
             // ai := stack
-            TR::MemoryReference *stackMR = new (cg()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, cg());
+            TR::MemoryReference *stackMR = new (cg()->comp()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, cg());
             loadCursor = generateTrg1MemInstruction(cg(), getOpCodeForParmLoads(paramType), NULL, machine->getRealRegister(ai), stackMR, loadCursor);
             }
          }
@@ -291,7 +291,7 @@ TR::Instruction *OMR::ARM64::Linkage::copyParametersToHomeLocation(TR::Instructi
                   diagnostic("copyParametersToHomeLocation: Storing %d\n", sourceIndex);
 
                TR::RealRegister *linkageReg = machine->getRealRegister(sourceIndex);
-               TR::MemoryReference *stackMR = new (cg()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, cg());
+               TR::MemoryReference *stackMR = new (cg()->comp()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, cg());
                cursor = generateMemSrc1Instruction(cg(), getOpCodeForParmStores(paramType), NULL, stackMR, linkageReg, cursor);
                }
             }

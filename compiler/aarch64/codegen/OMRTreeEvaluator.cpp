@@ -208,7 +208,7 @@ addMetaDataForLoadAddressConstantFixed(TR::CodeGenerator *cg, TR::Node *node, TR
       {
       case TR_DataAddress:
          {
-         relo = new (cg->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
+         relo = new (comp->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
             firstInstruction,
             (uint8_t *)node->getSymbolReference(),
             (uint8_t *)node->getInlinedSiteIndex(),
@@ -232,7 +232,7 @@ addMetaDataForLoadAddressConstantFixed(TR::CodeGenerator *cg, TR::Node *node, TR
             {
             TR::SymbolReference *symRef = (TR::SymbolReference *)value;
 
-            relo = new (cg->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
+            relo = new (comp->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
                firstInstruction,
                (uint8_t *)symRef->getSymbol()->getStaticSymbol()->getStaticAddress(),
                (uint8_t *)TR::SymbolType::typeClass,
@@ -242,7 +242,7 @@ addMetaDataForLoadAddressConstantFixed(TR::CodeGenerator *cg, TR::Node *node, TR
             {
             TR::SymbolReference *symRef = (TR::SymbolReference *)value;
 
-            relo = new (cg->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
+            relo = new (comp->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
                firstInstruction,
                (uint8_t *)symRef,
                (uint8_t *)(node == NULL ? -1 : node->getInlinedSiteIndex()),
@@ -255,7 +255,7 @@ addMetaDataForLoadAddressConstantFixed(TR::CodeGenerator *cg, TR::Node *node, TR
          {
          if (comp->getOption(TR_UseSymbolValidationManager))
             {
-            relo = new (cg->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
+            relo = new (comp->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
                firstInstruction,
                (uint8_t *)comp->getJittedMethodSymbol()->getResolvedMethod()->resolvedMethodAddress(),
                (uint8_t *)TR::SymbolType::typeMethod,
@@ -268,7 +268,7 @@ addMetaDataForLoadAddressConstantFixed(TR::CodeGenerator *cg, TR::Node *node, TR
 
    if (!relo)
       {
-      relo = new (cg->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
+      relo = new (comp->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
          firstInstruction,
          (uint8_t *)value,
          (TR_ExternalRelocationTargetKind)typeAddress,
@@ -290,7 +290,7 @@ addMetaDataForLoadAddressConstantFixed(TR::CodeGenerator *cg, TR::Node *node, TR
  * @param[in] trgReg : target register
  * @param[in] cursor : instruction cursor
  * @param[in] typeAddress : type of address
- */ 
+ */
 static TR::Instruction *
 loadAddressConstantRelocatable(TR::CodeGenerator *cg, TR::Node *node, intptr_t value, TR::Register *trgReg, TR::Instruction *cursor=NULL, int16_t typeAddress = -1)
    {
@@ -358,7 +358,7 @@ TR::Register *commonLoadEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, i
       tempReg = cg->allocateRegister();
       }
    node->setRegister(tempReg);
-   TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, memSize, cg);
+   TR::MemoryReference *tempMR = new (cg->comp()->trHeapMemory()) TR::MemoryReference(node, memSize, cg);
    generateTrg1MemInstruction(cg, op, node, tempReg, tempMR);
 
    if (needSync)
@@ -416,7 +416,7 @@ OMR::ARM64::TreeEvaluator::aloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       op = TR::InstOpCode::ldrimmx;
       sizeOfMR = 8;
       }
-   TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, sizeOfMR, cg);
+   TR::MemoryReference *tempMR = new (cg->comp()->trHeapMemory()) TR::MemoryReference(node, sizeOfMR, cg);
    generateTrg1MemInstruction(cg, op, node, tempReg, tempMR);
 
    if (node->getSymbolReference() == comp->getSymRefTab()->findVftSymbolRef())
@@ -472,7 +472,7 @@ OMR::ARM64::TreeEvaluator::awrtbarEvaluator(TR::Node *node, TR::CodeGenerator *c
 
 TR::Register *commonStoreEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, int32_t memSize, TR::CodeGenerator *cg)
    {
-   TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, memSize, cg);
+   TR::MemoryReference *tempMR = new (cg->comp()->trHeapMemory()) TR::MemoryReference(node, memSize, cg);
    bool needSync = (node->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP());
    TR::Node *valueChild;
 
@@ -670,7 +670,7 @@ OMR::ARM64::TreeEvaluator::loadaddrEvaluator(TR::Node *node, TR::CodeGenerator *
    TR::Register *resultReg;
    TR::Symbol *sym = node->getSymbol();
    TR::Compilation *comp = cg->comp();
-   TR::MemoryReference *mref = new (cg->trHeapMemory()) TR::MemoryReference(node, node->getSymbolReference(), 0, cg);
+   TR::MemoryReference *mref = new (comp->trHeapMemory()) TR::MemoryReference(node, node->getSymbolReference(), 0, cg);
 
    if (mref->getUnresolvedSnippet() != NULL)
       {

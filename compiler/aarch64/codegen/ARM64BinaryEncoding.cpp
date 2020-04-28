@@ -110,6 +110,7 @@ int32_t TR::ARM64RelocatableImmInstruction::estimateBinaryLength(int32_t current
 
 uint8_t *TR::ARM64ImmSymInstruction::generateBinaryEncoding()
    {
+   TR::Compilation *comp = cg()->comp();
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
    uint8_t *cursor = instructionStart;
    cursor = getOpCode().copyBinaryToBuffer(instructionStart);
@@ -121,13 +122,13 @@ uint8_t *TR::ARM64ImmSymInstruction::generateBinaryEncoding()
 
       TR::ResolvedMethodSymbol *sym = symRef->getSymbol()->getResolvedMethodSymbol();
 
-      if (cg()->comp()->isRecursiveMethodTarget(sym))
+      if (comp->isRecursiveMethodTarget(sym))
          {
          intptr_t jitToJitStart = cg()->getLinkage()->entryPointFromCompiledMethod();
 
          TR_ASSERT_FATAL(jitToJitStart, "Unknown compiled method entry point.  Entry point should be available by now.");
 
-         TR_ASSERT_FATAL(cg()->comp()->target().cpu.isTargetWithinUnconditionalBranchImmediateRange(jitToJitStart, (intptr_t)cursor),
+         TR_ASSERT_FATAL(comp->target().cpu.isTargetWithinUnconditionalBranchImmediateRange(jitToJitStart, (intptr_t)cursor),
                          "Target address is out of range");
 
          intptr_t distance = jitToJitStart - (intptr_t)cursor;
@@ -136,7 +137,7 @@ uint8_t *TR::ARM64ImmSymInstruction::generateBinaryEncoding()
          }
       else if (label != NULL)
          {
-         cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative32BitRelocation(cursor, label));
+         cg()->addRelocation(new (comp->trHeapMemory()) TR::LabelRelative32BitRelocation(cursor, label));
          TR::InstructionDelegate::encodeBranchToLabel(cg(), this, cursor);
          }
       else
@@ -156,7 +157,7 @@ uint8_t *TR::ARM64ImmSymInstruction::generateBinaryEncoding()
                {
                destination = TR::CodeCacheManager::instance()->findHelperTrampoline(symRef->getReferenceNumber(), (void *)cursor);
 
-               TR_ASSERT_FATAL(cg()->comp()->target().cpu.isTargetWithinUnconditionalBranchImmediateRange(destination, (intptr_t)cursor),
+               TR_ASSERT_FATAL(comp->target().cpu.isTargetWithinUnconditionalBranchImmediateRange(destination, (intptr_t)cursor),
                                "Target address is out of range");
                }
 
@@ -164,7 +165,7 @@ uint8_t *TR::ARM64ImmSymInstruction::generateBinaryEncoding()
             insertImmediateField(toARM64Cursor(cursor), distance);
             setAddrImmediate(destination);
 
-            cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(
+            cg()->addExternalRelocation(new (comp->trHeapMemory()) TR::ExternalRelocation(
                                            cursor,
                                            (uint8_t *)symRef,
                                            TR_HelperAddress, cg()),
@@ -176,8 +177,8 @@ uint8_t *TR::ARM64ImmSymInstruction::generateBinaryEncoding()
 
             if (cg()->directCallRequiresTrampoline(destination, (intptr_t)cursor))
                {
-               destination = (intptr_t)cg()->fe()->methodTrampolineLookup(cg()->comp(), symRef, (void *)cursor);
-               TR_ASSERT_FATAL(cg()->comp()->target().cpu.isTargetWithinUnconditionalBranchImmediateRange(destination, (intptr_t)cursor),
+               destination = (intptr_t)cg()->fe()->methodTrampolineLookup(comp, symRef, (void *)cursor);
+               TR_ASSERT_FATAL(comp->target().cpu.isTargetWithinUnconditionalBranchImmediateRange(destination, (intptr_t)cursor),
                                "Call target address is out of range");
                }
 
@@ -227,7 +228,7 @@ uint8_t *TR::ARM64LabelInstruction::generateBinaryEncoding()
          }
       else
          {
-         cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative32BitRelocation(cursor, label));
+         cg()->addRelocation(new (cg()->comp()->trHeapMemory()) TR::LabelRelative32BitRelocation(cursor, label));
          }
       cursor += ARM64_INSTRUCTION_LENGTH;
       }
@@ -270,7 +271,7 @@ uint8_t *TR::ARM64ConditionalBranchInstruction::generateBinaryEncoding()
       }
    else
       {
-      cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative24BitRelocation(cursor, label));
+      cg()->addRelocation(new (cg()->comp()->trHeapMemory()) TR::LabelRelative24BitRelocation(cursor, label));
       }
 
    cursor += ARM64_INSTRUCTION_LENGTH;
@@ -302,7 +303,7 @@ uint8_t *TR::ARM64CompareBranchInstruction::generateBinaryEncoding()
       }
    else
       {
-      cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative24BitRelocation(cursor, label));
+      cg()->addRelocation(new (cg()->comp()->trHeapMemory()) TR::LabelRelative24BitRelocation(cursor, label));
       }
 
    cursor += ARM64_INSTRUCTION_LENGTH;
@@ -422,7 +423,7 @@ uint8_t *TR::ARM64Trg1ImmSymInstruction::generateBinaryEncoding()
          auto label = sym->getLabelSymbol();
          if (label != NULL)
             {
-            cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative24BitRelocation(cursor, label));
+            cg()->addRelocation(new (cg()->comp()->trHeapMemory()) TR::LabelRelative24BitRelocation(cursor, label));
             }
          }
       else if ((getOpCodeValue() == TR::InstOpCode::adr) && sym->isStartPC())
@@ -746,7 +747,7 @@ uint8_t *TR::ARM64VirtualGuardNOPInstruction::generateBinaryEncoding()
       setBinaryEncoding(cursor);
       if (label->getCodeLocation() == NULL)
          {
-         cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelAbsoluteRelocation((uint8_t *) (&_site->getDestination()), label));
+         cg()->addRelocation(new (cg()->comp()->trHeapMemory()) TR::LabelAbsoluteRelocation((uint8_t *) (&_site->getDestination()), label));
          }
       else
          {
@@ -762,7 +763,7 @@ uint8_t *TR::ARM64VirtualGuardNOPInstruction::generateBinaryEncoding()
    if (label->getCodeLocation() == NULL)
       {
       _site->setDestination(cursor);
-      cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelAbsoluteRelocation((uint8_t *) (&_site->getDestination()), label));
+      cg()->addRelocation(new (cg()->comp()->trHeapMemory()) TR::LabelAbsoluteRelocation((uint8_t *) (&_site->getDestination()), label));
 
 #ifdef DEBUG
    if (debug("traceVGNOP"))

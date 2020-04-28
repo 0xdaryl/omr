@@ -37,8 +37,8 @@
 namespace TR { class Node; }
 
 TR::ARM64ConstantDataSnippet::ARM64ConstantDataSnippet(TR::CodeGenerator *cg, TR::Node * n, void *c, size_t size, TR_ExternalRelocationTargetKind reloType)
-   : TR::Snippet(cg, n, TR::LabelSymbol::create(cg->trHeapMemory(),cg), false),
-     _data(size, 0, getTypedAllocator<uint8_t>(TR::comp()->allocator())),
+   : TR::Snippet(cg, n, TR::LabelSymbol::create(cg->comp()->trHeapMemory(), cg), false),
+     _data(size, 0, getTypedAllocator<uint8_t>(cg->comp()->allocator())),
      _reloType(reloType)
    {
    if (c)
@@ -65,10 +65,10 @@ TR::ARM64ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
             // intentional fall through
          case TR_ClassPointer:
             AOTcgDiag2(comp, "add relocation (%d) cursor=%x\n", reloType, cursor);
-            if (cg()->comp()->getOption(TR_UseSymbolValidationManager))
+            if (comp->getOption(TR_UseSymbolValidationManager))
                {
                TR_ASSERT_FATAL(getData<uint8_t *>(), "Static Sym can not be NULL");
-               cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor,
+               cg()->addExternalRelocation(new (comp->trHeapMemory()) TR::ExternalRelocation(cursor,
                                                                                     getData<uint8_t *>(),
                                                                                     reinterpret_cast<uint8_t *>(symbolKind),
                                                                                     TR_SymbolFromManager,
@@ -78,7 +78,7 @@ TR::ARM64ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
                }
             else
                {
-               cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor,
+               cg()->addExternalRelocation(new (comp->trHeapMemory()) TR::ExternalRelocation(cursor,
                                                                                     reinterpret_cast<uint8_t *>(node),
                                                                                     reloType,
                                                                                     cg()),

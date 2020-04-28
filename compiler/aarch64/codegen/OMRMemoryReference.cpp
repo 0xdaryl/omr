@@ -90,7 +90,7 @@ static void loadRelocatableConstant(TR::Node *node,
          }
       else
          {
-         mr->setUnresolvedSnippet(new (cg->trHeapMemory()) TR::UnresolvedDataSnippet(cg, node, ref, node->getOpCode().isStore(), false));
+         mr->setUnresolvedSnippet(new (comp->trHeapMemory()) TR::UnresolvedDataSnippet(cg, node, ref, node->getOpCode().isStore(), false));
          cg->addSnippet(mr->getUnresolvedSnippet());
          }
       }
@@ -112,7 +112,8 @@ OMR::ARM64::MemoryReference::MemoryReference(
    _length(0),
    _scale(0)
    {
-   _symbolReference = new (cg->trHeapMemory()) TR::SymbolReference(cg->comp()->getSymRefTab());
+   TR::Compilation *comp = cg->comp();
+   _symbolReference = new (comp->trHeapMemory()) TR::SymbolReference(comp->getSymRefTab());
    _offset = _symbolReference->getOffset();
    }
 
@@ -131,7 +132,8 @@ OMR::ARM64::MemoryReference::MemoryReference(
    _length(0),
    _scale(0)
    {
-   _symbolReference = new (cg->trHeapMemory()) TR::SymbolReference(cg->comp()->getSymRefTab());
+   TR::Compilation *comp = cg->comp();
+   _symbolReference = new (comp->trHeapMemory()) TR::SymbolReference(comp->getSymRefTab());
    _offset = _symbolReference->getOffset();
    }
 
@@ -151,7 +153,8 @@ OMR::ARM64::MemoryReference::MemoryReference(
    _scale(0),
    _offset(disp)
    {
-   _symbolReference = new (cg->trHeapMemory()) TR::SymbolReference(cg->comp()->getSymRefTab());
+   TR::Compilation *comp = cg->comp();
+   _symbolReference = new (comp->trHeapMemory()) TR::SymbolReference(comp->getSymRefTab());
    }
 
 
@@ -182,7 +185,7 @@ OMR::ARM64::MemoryReference::MemoryReference(
       {
       if (ref->isUnresolved())
          {
-         self()->setUnresolvedSnippet(new (cg->trHeapMemory()) TR::UnresolvedDataSnippet(cg, rootLoadOrStore, rootLoadOrStore->getSymbolReference(), isStore, false));
+         self()->setUnresolvedSnippet(new (comp->trHeapMemory()) TR::UnresolvedDataSnippet(cg, rootLoadOrStore, rootLoadOrStore->getSymbolReference(), isStore, false));
          cg->addSnippet(self()->getUnresolvedSnippet());
          }
       self()->populateMemoryReference(rootLoadOrStore->getFirstChild(), cg);
@@ -193,7 +196,7 @@ OMR::ARM64::MemoryReference::MemoryReference(
          {
          if (ref->isUnresolved())
             {
-            self()->setUnresolvedSnippet(new (cg->trHeapMemory()) TR::UnresolvedDataSnippet(cg, rootLoadOrStore, rootLoadOrStore->getSymbolReference(), isStore, false));
+            self()->setUnresolvedSnippet(new (comp->trHeapMemory()) TR::UnresolvedDataSnippet(cg, rootLoadOrStore, rootLoadOrStore->getSymbolReference(), isStore, false));
             cg->addSnippet(self()->getUnresolvedSnippet());
             }
          else
@@ -242,7 +245,7 @@ OMR::ARM64::MemoryReference::MemoryReference(
       {
       if (symRef->isUnresolved())
          {
-         self()->setUnresolvedSnippet(new (cg->trHeapMemory()) TR::UnresolvedDataSnippet(cg, node, symRef, false, false));
+         self()->setUnresolvedSnippet(new (cg->comp()->trHeapMemory()) TR::UnresolvedDataSnippet(cg, node, symRef, false, false));
          cg->addSnippet(self()->getUnresolvedSnippet());
          }
       else
@@ -388,7 +391,9 @@ void OMR::ARM64::MemoryReference::decNodeReferenceCounts(TR::CodeGenerator *cg)
 
 void OMR::ARM64::MemoryReference::populateMemoryReference(TR::Node *subTree, TR::CodeGenerator *cg)
    {
-   if (cg->comp()->useCompressedPointers())
+   TR::Compilation *comp = cg->comp();
+
+   if (comp->useCompressedPointers())
       {
       if (subTree->getOpCodeValue() == TR::l2a && subTree->getReferenceCount() == 1 && subTree->getRegister() == NULL)
          {
@@ -445,7 +450,7 @@ void OMR::ARM64::MemoryReference::populateMemoryReference(TR::Node *subTree, TR:
          subTree->getFirstChild()->decReferenceCount();
          subTree->getSecondChild()->decReferenceCount();
          }
-      else if ((subTree->getOpCodeValue() == TR::loadaddr) && !cg->comp()->compileRelocatableCode())
+      else if ((subTree->getOpCodeValue() == TR::loadaddr) && !comp->compileRelocatableCode())
          {
          TR::SymbolReference *ref = subTree->getSymbolReference();
          TR::Symbol *symbol = ref->getSymbol();
@@ -455,7 +460,7 @@ void OMR::ARM64::MemoryReference::populateMemoryReference(TR::Node *subTree, TR:
             {
             if (ref->isUnresolved())
                {
-               self()->setUnresolvedSnippet(new (cg->trHeapMemory()) TR::UnresolvedDataSnippet(cg, subTree, ref, subTree->getOpCode().isStore(), false));
+               self()->setUnresolvedSnippet(new (comp->trHeapMemory()) TR::UnresolvedDataSnippet(cg, subTree, ref, subTree->getOpCode().isStore(), false));
                cg->addSnippet(self()->getUnresolvedSnippet());
                }
             else

@@ -341,7 +341,7 @@ OMR::ARM64::TreeEvaluator::imulhEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    TR::Register *tmpReg = NULL;
 
    TR::Register *zeroReg = cg->allocateRegister();
-   TR::RegisterDependencyConditions *cond = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
+   TR::RegisterDependencyConditions *cond = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
    TR::addDependency(cond, zeroReg, TR::RealRegister::xzr, TR_GPR, cg);
 
    // imulh is generated for constant idiv and the second child is the magic number
