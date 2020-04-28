@@ -36,7 +36,7 @@
 namespace TR { class Node; }
 
 TR::X86DataSnippet::X86DataSnippet(TR::CodeGenerator *cg, TR::Node * n, void *c, size_t size)
-   : TR::Snippet(cg, n, TR::LabelSymbol::create(cg->trHeapMemory(),cg), false),
+   : TR::Snippet(cg, n, TR::LabelSymbol::create(cg->comp()->trHeapMemory(), cg), false),
      _data(size, 0, getTypedAllocator<uint8_t>(TR::comp()->allocator())),
      _isClassAddress(false)
    {
@@ -53,15 +53,17 @@ TR::X86DataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
    // add dummy class unload/redefinition assumption.
    if (_isClassAddress)
       {
-      bool needRelocation = TR::Compiler->cls.classUnloadAssumptionNeedsRelocation(cg()->comp());
-      if (needRelocation && !cg()->comp()->compileRelocatableCode())
+      TR::Compilation *comp = cg()->comp();
+
+      bool needRelocation = TR::Compiler->cls.classUnloadAssumptionNeedsRelocation(comp);
+      if (needRelocation && !comp->compileRelocatableCode())
          {
-         cg()->addExternalRelocation(new (TR::comp()->trHeapMemory())
+         cg()->addExternalRelocation(new (comp->trHeapMemory())
                                   TR::ExternalRelocation(cursor, NULL, TR_ClassUnloadAssumption, cg()),
                                   __FILE__, __LINE__, self()->getNode());
          }
 
-      if (cg()->comp()->target().is64Bit())
+      if (comp->target().is64Bit())
          {
          if (!needRelocation)
             cg()->jitAddPicToPatchOnClassUnload((void*)-1, (void *) cursor);
@@ -81,9 +83,9 @@ TR::X86DataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
          }
 
       TR_OpaqueClassBlock *clazz = getData<TR_OpaqueClassBlock *>();
-      if (clazz && cg()->comp()->compileRelocatableCode() && cg()->comp()->getOption(TR_UseSymbolValidationManager))
+      if (clazz && comp->compileRelocatableCode() && comp->getOption(TR_UseSymbolValidationManager))
          {
-         cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor,
+         cg()->addExternalRelocation(new (comp->trHeapMemory()) TR::ExternalRelocation(cursor,
                                                                (uint8_t *)clazz,
                                                                (uint8_t *)TR::SymbolType::typeClass,
                                                                TR_SymbolFromManager,

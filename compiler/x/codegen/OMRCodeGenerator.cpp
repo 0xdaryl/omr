@@ -378,11 +378,11 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
       comp->setOption(TR_EnableRangeSplittingGRA);
 
    self()->addSupportedLiveRegisterKind(TR_GPR);
-   self()->setLiveRegisters(new (self()->trHeapMemory()) TR_LiveRegisters(comp), TR_GPR);
+   self()->setLiveRegisters(new (comp->trHeapMemory()) TR_LiveRegisters(comp), TR_GPR);
    self()->addSupportedLiveRegisterKind(TR_FPR);
-   self()->setLiveRegisters(new (self()->trHeapMemory()) TR_LiveRegisters(comp), TR_FPR);
+   self()->setLiveRegisters(new (comp->trHeapMemory()) TR_LiveRegisters(comp), TR_FPR);
    self()->addSupportedLiveRegisterKind(TR_VRF);
-   self()->setLiveRegisters(new (self()->trHeapMemory()) TR_LiveRegisters(comp), TR_VRF);
+   self()->setLiveRegisters(new (comp->trHeapMemory()) TR_LiveRegisters(comp), TR_VRF);
 
    if (!TR::Compiler->om.canGenerateArraylets())
       {
@@ -500,8 +500,8 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
 
    if (comp->getOption(TR_TraceRA))
       {
-      self()->setGPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstGPR, TR::RealRegister::LastAssignableGPR));
-      self()->setFPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstXMMR, TR::RealRegister::LastXMMR));
+      self()->setGPRegisterIterator(new (comp->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstGPR, TR::RealRegister::LastAssignableGPR));
+      self()->setFPRegisterIterator(new (comp->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstXMMR, TR::RealRegister::LastXMMR));
       }
 
    self()->setSupportsProfiledInlining();
@@ -539,20 +539,20 @@ OMR::X86::CodeGenerator::createLinkage(TR_LinkageConventions lc)
       case TR_Helper:
          // Intentional fall through
       case TR_System:
-         if (self()->comp()->target().isLinux() || self()->comp()->target().isOSX() || self()->comp()->target().isBSD())
+         if (comp->target().isLinux() || comp->target().isOSX() || comp->target().isBSD())
             {
 #if defined(TR_TARGET_64BIT)
-            linkage = new (self()->trHeapMemory()) TR::AMD64ABILinkage(self());
+            linkage = new (comp->trHeapMemory()) TR::AMD64ABILinkage(self());
 #else
-            linkage = new (self()->trHeapMemory()) TR::IA32SystemLinkage(self());
+            linkage = new (comp->trHeapMemory()) TR::IA32SystemLinkage(self());
 #endif
             }
          else if (self()->comp()->target().isWindows())
             {
 #if defined(TR_TARGET_64BIT)
-            linkage = new (self()->trHeapMemory()) TR::AMD64Win64FastCallLinkage(self());
+            linkage = new (comp->trHeapMemory()) TR::AMD64Win64FastCallLinkage(self());
 #else
-            linkage = new (self()->trHeapMemory()) TR::IA32SystemLinkage(self());
+            linkage = new (comp->trHeapMemory()) TR::IA32SystemLinkage(self());
 #endif
             }
          else
@@ -595,7 +595,7 @@ OMR::X86::CodeGenerator::beginInstructionSelection()
       if (self()->getAppendInstruction())
          _returnTypeInfoInstruction = generateImmInstruction(DDImm4, startNode, 0, self());
       else
-         _returnTypeInfoInstruction = new (self()->trHeapMemory()) TR::X86ImmInstruction((TR::Instruction *)NULL, DDImm4, 0, self());
+         _returnTypeInfoInstruction = new (comp->trHeapMemory()) TR::X86ImmInstruction((TR::Instruction *)NULL, DDImm4, 0, self());
       }
 
    if (methodSymbol->getLinkageConvention() == TR_System && !_returnTypeInfoInstruction)
@@ -604,13 +604,13 @@ OMR::X86::CodeGenerator::beginInstructionSelection()
       if (self()->getAppendInstruction())
          _returnTypeInfoInstruction = generateImmInstruction(DDImm4, startNode, 0, self());
       else
-         _returnTypeInfoInstruction = new (self()->trHeapMemory()) TR::X86ImmInstruction((TR::Instruction *)NULL, DDImm4, 0, self());
+         _returnTypeInfoInstruction = new (comp->trHeapMemory()) TR::X86ImmInstruction((TR::Instruction *)NULL, DDImm4, 0, self());
       }
 
    if (self()->getAppendInstruction())
       generateInstruction(PROCENTRY, startNode, self());
    else
-      new (self()->trHeapMemory()) TR::Instruction(PROCENTRY, (TR::Instruction *)NULL, self());
+      new (comp->trHeapMemory()) TR::Instruction(PROCENTRY, (TR::Instruction *)NULL, self());
 
    // Set the default FPCW to single precision mode if we are allowed to.
    //
@@ -763,6 +763,7 @@ void OMR::X86::CodeGenerator::clobberLiveDiscardableRegisters(
 
    if (symbol)
       {
+      TR::Compilation *comp = self()->comp();
       TR::ClobberingInstruction  * clob = NULL;
       TR_IGNode                 *IGNodeSym = NULL;
 
@@ -786,7 +787,7 @@ void OMR::X86::CodeGenerator::clobberLiveDiscardableRegisters(
                {
                if (!clob)
                   {
-                  clob = new (self()->trHeapMemory()) TR::ClobberingInstruction(instr, self()->trMemory());
+                  clob = new (comp->trHeapMemory()) TR::ClobberingInstruction(instr, self()->trMemory());
                   self()->addClobberingInstruction(clob);
                   }
 
@@ -799,7 +800,7 @@ void OMR::X86::CodeGenerator::clobberLiveDiscardableRegisters(
                   diagnostic("---> Clobbering %s discardable register %s at instruction %p in %s\n",
                               self()->getDebug()->toString(registerCursor->getRematerializationInfo()),
                               self()->getDebug()->getName(registerCursor),
-                              instr, self()->comp()->signature());
+                              instr, comp->signature());
                   }
                }
 
@@ -813,7 +814,7 @@ void OMR::X86::CodeGenerator::clobberLiveDiscardableRegisters(
                   {
                   if (!clob)
                      {
-                     clob = new (self()->trHeapMemory()) TR::ClobberingInstruction(instr, self()->trMemory());
+                     clob = new (comp->trHeapMemory()) TR::ClobberingInstruction(instr, self()->trMemory());
                      self()->addClobberingInstruction(clob);
                      }
 
@@ -826,7 +827,7 @@ void OMR::X86::CodeGenerator::clobberLiveDiscardableRegisters(
                      diagnostic("---> Clobbering %s discardable register %s at instruction %p because of shared slot in %s\n",
                                  self()->getDebug()->toString(registerCursor->getRematerializationInfo()),
                                  self()->getDebug()->getName(registerCursor),
-                                 instr, self()->comp()->signature());
+                                 instr, comp->signature());
                      }
                   }
                else
@@ -1125,14 +1126,15 @@ OMR::X86::CodeGenerator::getNanoTimeTemp()
    {
    if (_nanoTimeTemp == NULL)
       {
+      TR::Compilation *comp = self()->comp();
       TR::AutomaticSymbol *sym;
 #if defined(LINUX) || defined(OSX)
-      sym = TR::AutomaticSymbol::create(self()->trHeapMemory(),TR::Aggregate,sizeof(struct timeval));
+      sym = TR::AutomaticSymbol::create(comp->trHeapMemory(),TR::Aggregate,sizeof(struct timeval));
 #else
-      sym = TR::AutomaticSymbol::create(self()->trHeapMemory(),TR::Aggregate,8);
+      sym = TR::AutomaticSymbol::create(comp->trHeapMemory(),TR::Aggregate,8);
 #endif
-      self()->comp()->getMethodSymbol()->addAutomatic(sym);
-      _nanoTimeTemp = new (self()->trHeapMemory()) TR::SymbolReference(self()->comp()->getSymRefTab(), sym);
+      comp->getMethodSymbol()->addAutomatic(sym);
+      _nanoTimeTemp = new (comp->trHeapMemory()) TR::SymbolReference(comp->getSymRefTab(), sym);
       }
    return _nanoTimeTemp;
    }
@@ -1171,6 +1173,8 @@ void OMR::X86::CodeGenerator::saveBetterSpillPlacements(TR::Instruction * branch
    if (!freeRealRegisters)
       return;
 
+   TR::Compilation *comp = self()->comp();
+
    // Add the current spilled virtual registers and this instruction to the list
    // of candidates for better spill placement.
    // For each, remember the current set of free real registers.
@@ -1186,7 +1190,7 @@ void OMR::X86::CodeGenerator::saveBetterSpillPlacements(TR::Instruction * branch
 
       self()->traceRegisterAssignment("Saved better spill placement for %R, mask = %x.", *regElement, freeRealRegisters);
 
-      TR_BetterSpillPlacement * info = new (self()->trHeapMemory()) TR_BetterSpillPlacement;
+      TR_BetterSpillPlacement * info = new (comp->trHeapMemory()) TR_BetterSpillPlacement;
       info->_virtReg                = *regElement;
       info->_freeRealRegs           = freeRealRegisters;
       info->_branchInstruction      = branchInstruction;
@@ -1281,7 +1285,7 @@ OMR::X86::CodeGenerator::performNonLinearRegisterAssignmentAtBranch(
       TR_RegisterKinds kindsToBeAssigned)
    {
    TR::Machine *xm = self()->machine();
-   TR_RegisterAssignerState *branchRAState = new (self()->trHeapMemory()) TR_RegisterAssignerState(xm);
+   TR_RegisterAssignerState *branchRAState = new (self()->comp()->trHeapMemory()) TR_RegisterAssignerState(xm);
 
    // Take a snapshot of the current register assigner state.
    //
@@ -1374,7 +1378,7 @@ void OMR::X86::CodeGenerator::prepareForNonLinearRegisterAssignmentAtMerge(
       TR::X86LabelInstruction *mergeInstruction)
    {
    TR::Machine *xm = self()->machine();
-   TR_RegisterAssignerState *ras = new (self()->trHeapMemory()) TR_RegisterAssignerState(xm);
+   TR_RegisterAssignerState *ras = new (self()->comp()->trHeapMemory()) TR_RegisterAssignerState(xm);
 
    // Take a snapshot of the current register assigner state.
    //
@@ -1475,7 +1479,7 @@ void OMR::X86::CodeGenerator::doBackwardsRegisterAssignment(
       {
       if (!self()->getSpilledRegisterList())
          {
-         self()->setSpilledRegisterList(new (self()->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::Register*>(comp->allocator())));
+         self()->setSpilledRegisterList(new (comp->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::Register*>(comp->allocator())));
          }
       }
 
@@ -2145,7 +2149,7 @@ TR_OutlinedInstructions * OMR::X86::CodeGenerator::findOutlinedInstructionsFromM
 
 TR::X86DataSnippet * OMR::X86::CodeGenerator::createDataSnippet(TR::Node * n, void * c, size_t s)
    {
-   auto snippet = new (self()->trHeapMemory()) TR::X86DataSnippet(self(), n, c, s);
+   auto snippet = new (self()->comp()->trHeapMemory()) TR::X86DataSnippet(self(), n, c, s);
    _dataSnippetList.push_back(snippet);
    return snippet;
    }
@@ -2169,7 +2173,7 @@ TR::X86ConstantDataSnippet * OMR::X86::CodeGenerator::findOrCreateConstantDataSn
 
    // Constant was not found: create a new snippet for it and add it to the constant list.
    //
-   auto snippet = new (self()->trHeapMemory()) TR::X86ConstantDataSnippet(self(), n, c, s);
+   auto snippet = new (self()->comp()->trHeapMemory()) TR::X86ConstantDataSnippet(self(), n, c, s);
    _dataSnippetList.push_back(snippet);
    return snippet;
    }
@@ -2242,6 +2246,7 @@ static uint32_t registerBitMask(int32_t reg)
 
 void OMR::X86::CodeGenerator::buildRegisterMapForInstruction(TR_GCStackMap * map)
    {
+   TR::Compilation *comp = self()->comp();
    TR_InternalPointerMap * internalPtrMap = NULL;
    TR::GCStackAtlas *atlas = self()->getStackAtlas();
    //
@@ -2258,7 +2263,7 @@ void OMR::X86::CodeGenerator::buildRegisterMapForInstruction(TR_GCStackMap * map
             if (virtReg->containsInternalPointer())
                {
                if (!internalPtrMap)
-                  internalPtrMap = new (self()->trHeapMemory()) TR_InternalPointerMap(self()->trMemory());
+                  internalPtrMap = new (comp->trHeapMemory()) TR_InternalPointerMap(self()->trMemory());
                internalPtrMap->addInternalPointerPair(virtReg->getPinningArrayPointer(), i);
                atlas->addPinningArrayPtrForInternalPtrReg(virtReg->getPinningArrayPointer());
                }
@@ -2911,7 +2916,7 @@ OMR::X86::CodeGenerator::patchableRangeNeedsAlignment(void *cursor, intptr_t len
 
 TR_X86ScratchRegisterManager *OMR::X86::CodeGenerator::generateScratchRegisterManager(int32_t capacity)
    {
-   return new (self()->trHeapMemory()) TR_X86ScratchRegisterManager(capacity, self());
+   return new (self()->comp()->trHeapMemory()) TR_X86ScratchRegisterManager(capacity, self());
    }
 
 bool

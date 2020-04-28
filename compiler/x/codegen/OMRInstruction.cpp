@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -250,10 +250,13 @@ void OMR::X86::Instruction::adjustVFPStateForCall(TR_VFPState *state, int32_t vf
 
 void OMR::X86::Instruction::clobberRegsForRematerialisation()
    {
+   TR::CodeGenerator *cg = self()->cg();
+   TR::Compilation *comp = cg->comp();
+
    // We assume most instructions modify all registers that appear in their
    // postconditions, with a few exceptions.
    //
-   if (  self()->cg()->enableRematerialisation()
+   if (cg->enableRematerialisation()
       && self()->getDependencyConditions()
       && (self()->getOpCodeValue() != ASSOCREGS)  // reg associations aren't really instructions, so they don't modify anything
       && (self()->getOpCodeValue() != LABEL)      // labels must already be handled properly for a variety of reasons
@@ -272,18 +275,18 @@ void OMR::X86::Instruction::clobberRegsForRematerialisation()
             {
             if (!clob)
                {
-               clob = new (self()->cg()->trHeapMemory()) TR::ClobberingInstruction(self(), self()->cg()->trMemory());
-               self()->cg()->addClobberingInstruction(clob);
+               clob = new (comp->trHeapMemory()) TR::ClobberingInstruction(self(), cg->trMemory());
+               cg->addClobberingInstruction(clob);
                }
             clob->addClobberedRegister(reg);
-            self()->cg()->removeLiveDiscardableRegister(reg);
-            self()->cg()->clobberLiveDependentDiscardableRegisters(clob, reg);
+            cg->removeLiveDiscardableRegister(reg);
+            cg->clobberLiveDependentDiscardableRegisters(clob, reg);
 
             if (debug("dumpRemat"))
                diagnostic("---> Clobbering %s discardable postcondition register %s at instruction %s\n",
-                  self()->cg()->getDebug()->toString(reg->getRematerializationInfo()),
-                  self()->cg()->getDebug()->getName(reg),
-                  self()->cg()->getDebug()->getName(self()));
+                  cg->getDebug()->toString(reg->getRematerializationInfo()),
+                  cg->getDebug()->getName(reg),
+                  cg->getDebug()->getName(self()));
 
             }
          }

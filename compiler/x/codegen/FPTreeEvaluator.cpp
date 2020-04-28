@@ -1022,7 +1022,7 @@ TR::Register *OMR::X86::TreeEvaluator::i2dEvaluator(TR::Node *node, TR::CodeGene
 TR::Register *OMR::X86::TreeEvaluator::fpConvertToInt(TR::Node *node, TR::SymbolReference *helperSymRef, TR::CodeGenerator *cg)
    {
    TR::Compilation *comp = cg->comp();
-   TR_ASSERT(cg->comp()->target().is32Bit(), "AMD64 has enableSSE set, so it doesn't use this logic");
+   TR_ASSERT(comp->target().is32Bit(), "AMD64 has enableSSE set, so it doesn't use this logic");
 
    TR::Node     *child     = node->getFirstChild();
    TR::Register *accReg    = 0;
@@ -1033,9 +1033,9 @@ TR::Register *OMR::X86::TreeEvaluator::fpConvertToInt(TR::Node *node, TR::Symbol
    TR::X86RegMemInstruction             *loadInstr;
    TR::RegisterDependencyConditions  *deps;
 
-   TR::LabelSymbol *startLabel    = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol *reStartLabel  = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol *snippetLabel  = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol *startLabel    = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
+   TR::LabelSymbol *reStartLabel  = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
+   TR::LabelSymbol *snippetLabel  = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
 
    startLabel->setStartInternalControlFlow();
    reStartLabel->setEndInternalControlFlow();
@@ -1148,7 +1148,7 @@ TR::Register *OMR::X86::TreeEvaluator::fpConvertToInt(TR::Node *node, TR::Symbol
 
    // Create the conversion snippet.
    //
-   cg->addSnippet( new (cg->trHeapMemory()) TR::X86FPConvertToIntSnippet(reStartLabel,
+   cg->addSnippet( new (comp->trHeapMemory()) TR::X86FPConvertToIntSnippet(reStartLabel,
                                                          snippetLabel,
                                                          helperSymRef,
                                                          loadInstr,
@@ -1208,9 +1208,9 @@ TR::Register *OMR::X86::TreeEvaluator::fpConvertToLong(TR::Node *node, TR::Symbo
       deps->addPostCondition(doubleReg, TR::RealRegister::NoReg, cg);
       deps->stopAddingConditions();
 
-      TR::LabelSymbol *reStartLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);   // exit routine label
-      TR::LabelSymbol *CallLabel    = TR::LabelSymbol::create(cg->trHeapMemory(),cg);   // label where long (64-bit) conversion will start
-      TR::LabelSymbol *StartLabel   = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+      TR::LabelSymbol *reStartLabel = TR::LabelSymbol::create(comp->trHeapMemory(), cg);   // exit routine label
+      TR::LabelSymbol *CallLabel    = TR::LabelSymbol::create(comp->trHeapMemory(), cg);   // label where long (64-bit) conversion will start
+      TR::LabelSymbol *StartLabel   = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
 
       StartLabel->setStartInternalControlFlow();
       reStartLabel->setEndInternalControlFlow();
@@ -1234,7 +1234,7 @@ TR::Register *OMR::X86::TreeEvaluator::fpConvertToLong(TR::Node *node, TR::Symbo
       d2l->getSymbol()->getMethodSymbol()->setLinkage(TR_Helper);
       TR::Node::recreate(node, TR::lcall);
       node->setSymbolReference(d2l);
-      TR_OutlinedInstructions *outlinedHelperCall = new (cg->trHeapMemory()) TR_OutlinedInstructions(node, TR::lcall, targetRegister, CallLabel, reStartLabel, cg);
+      TR_OutlinedInstructions *outlinedHelperCall = new (comp->trHeapMemory()) TR_OutlinedInstructions(node, TR::lcall, targetRegister, CallLabel, reStartLabel, cg);
       cg->getOutlinedInstructionsList().push_front(outlinedHelperCall);
 
       cg->decReferenceCount(child);
@@ -1253,9 +1253,9 @@ TR::Register *OMR::X86::TreeEvaluator::fpConvertToLong(TR::Node *node, TR::Symbo
 
       TR::RegisterDependencyConditions  *deps;
 
-      TR::LabelSymbol *snippetLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-      TR::LabelSymbol *startLabel   = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-      TR::LabelSymbol *reStartLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+      TR::LabelSymbol *snippetLabel = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
+      TR::LabelSymbol *startLabel   = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
+      TR::LabelSymbol *reStartLabel = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
 
       startLabel->setStartInternalControlFlow();
       reStartLabel->setEndInternalControlFlow();
@@ -1321,7 +1321,7 @@ TR::Register *OMR::X86::TreeEvaluator::fpConvertToLong(TR::Node *node, TR::Symbo
 
       // Create the conversion snippet.
       //
-      cg->addSnippet( new (cg->trHeapMemory()) TR::X86FPConvertToLongSnippet(reStartLabel,
+      cg->addSnippet( new (comp->trHeapMemory()) TR::X86FPConvertToLongSnippet(reStartLabel,
                                                         snippetLabel,
                                                         helperSymRef,
                                                         clobInstruction,
@@ -1363,6 +1363,8 @@ TR::Register *OMR::X86::TreeEvaluator::fpConvertToLong(TR::Node *node, TR::Symbo
 
 TR::Register *OMR::X86::TreeEvaluator::f2iEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+   TR::Compilation *comp = cg->comp();
+
    if (cg->useSSEForSinglePrecision())
       {
       bool doubleSource;
@@ -1396,21 +1398,21 @@ TR::Register *OMR::X86::TreeEvaluator::f2iEvaluator(TR::Node *node, TR::CodeGene
             TR_ASSERT(0, "Unknown opcode value in f2iEvaluator");
             break;
          }
-      TR_ASSERT(cg->comp()->target().is64Bit() || !longTarget, "Incorrect opcode value in f2iEvaluator");
+      TR_ASSERT(comp->target().is64Bit() || !longTarget, "Incorrect opcode value in f2iEvaluator");
 
       TR::TreeEvaluator::coerceFPOperandsToXMMRs(node, cg);
 
       TR::Node        *child          = node->getFirstChild();
       TR::Register    *sourceRegister = NULL;
       TR::Register    *targetRegister = cg->allocateRegister(TR_GPR);
-      TR::LabelSymbol *startLabel     = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-      TR::LabelSymbol *endLabel       = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-      TR::LabelSymbol *exceptionLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+      TR::LabelSymbol *startLabel     = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
+      TR::LabelSymbol *endLabel       = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
+      TR::LabelSymbol *exceptionLabel = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
 
       sourceRegister = cg->evaluate(child);
       if (sourceRegister->getKind() == TR_X87 && child->getReferenceCount() == 1)
          {
-         TR_ASSERT(cg->comp()->target().is32Bit(), "assertion failure");
+         TR_ASSERT(comp->target().is32Bit(), "assertion failure");
          TR::MemoryReference  *tempMR = cg->machine()->getDummyLocalMR(TR::Float);
          generateFPMemRegInstruction(FSTMemReg, node, tempMR, sourceRegister, cg);
          generateRegMemInstruction(CVTTSS2SIReg4Mem,
@@ -1430,7 +1432,7 @@ TR::Register *OMR::X86::TreeEvaluator::f2iEvaluator(TR::Node *node, TR::CodeGene
 
       if (longTarget)
          {
-         TR_ASSERT(cg->comp()->target().is64Bit(), "We should only get here on AMD64");
+         TR_ASSERT(comp->target().is64Bit(), "We should only get here on AMD64");
          // We can't compare with 0x8000000000000000.
          // Instead, rotate left 1 bit and compare with 0x0000000000000001.
          generateRegInstruction(ROL8Reg1, node, targetRegister, cg);
@@ -1492,7 +1494,7 @@ TR::Register *OMR::X86::TreeEvaluator::f2iEvaluator(TR::Node *node, TR::CodeGene
       }
    else
       {
-      TR_ASSERT(cg->comp()->target().is32Bit(), "assertion failure");
+      TR_ASSERT(comp->target().is32Bit(), "assertion failure");
       return TR::TreeEvaluator::fpConvertToInt(node, cg->symRefTab()->findOrCreateRuntimeHelper(node->getOpCodeValue() == TR::f2i ? TR_IA32floatToInt : TR_IA32doubleToInt, false, false, false), cg);
       }
    }
@@ -1745,11 +1747,11 @@ TR::Register *OMR::X86::TreeEvaluator::fbits2iEvaluator(TR::Node *node, TR::Code
    if (node->normalizeNanValues())
       {
       static char *disableFastNormalizeNaNs = feGetEnv("TR_disableFastNormalizeNaNs");
-      TR::LabelSymbol *lab0 = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+      TR::LabelSymbol *lab0 = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
       if (disableFastNormalizeNaNs)
          {
-         TR::LabelSymbol *lab1 = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-         TR::LabelSymbol *lab2 = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+         TR::LabelSymbol *lab1 = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
+         TR::LabelSymbol *lab2 = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
          lab0->setStartInternalControlFlow();
          lab2->setEndInternalControlFlow();
          generateLabelInstruction(LABEL, node, lab0, cg);
@@ -1777,10 +1779,10 @@ TR::Register *OMR::X86::TreeEvaluator::fbits2iEvaluator(TR::Node *node, TR::Code
          helperDeps->addPreCondition( treg, TR::RealRegister::eax, cg);
          helperDeps->addPostCondition(treg, TR::RealRegister::eax, cg);
 
-         TR::LabelSymbol *startLabel     = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-         TR::LabelSymbol *slowPathLabel  = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-         TR::LabelSymbol *normalizeLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-         TR::LabelSymbol *endLabel       = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+         TR::LabelSymbol *startLabel     = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
+         TR::LabelSymbol *slowPathLabel  = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
+         TR::LabelSymbol *normalizeLabel = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
+         TR::LabelSymbol *endLabel       = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
          startLabel->setStartInternalControlFlow();
          endLabel  ->setEndInternalControlFlow();
 
@@ -2068,8 +2070,8 @@ TR::Register *OMR::X86::TreeEvaluator::generateBranchOrSetOnFPCompare(TR::Node  
       {
       if (generateBranch)
          {
-         TR::LabelSymbol *startLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-         TR::LabelSymbol *fallThroughLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+         TR::LabelSymbol *startLabel = TR::LabelSymbol::create(cg->comp()->trHeapMemory(),cg);
+         TR::LabelSymbol *fallThroughLabel = TR::LabelSymbol::create(cg->comp()->trHeapMemory(),cg);
 
          startLabel->setStartInternalControlFlow();
          fallThroughLabel->setEndInternalControlFlow();
@@ -2174,8 +2176,8 @@ TR::Register *OMR::X86::TreeEvaluator::generateFPCompareResult(TR::Node *node, T
       cg->stopUsingRegister(accRegister);
       }
 
-   TR::LabelSymbol *startLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol *doneLabel  = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol *startLabel = TR::LabelSymbol::create(cg->comp()->trHeapMemory(), cg);
+   TR::LabelSymbol *doneLabel  = TR::LabelSymbol::create(cg->comp()->trHeapMemory(), cg);
 
    startLabel->setStartInternalControlFlow();
    doneLabel->setEndInternalControlFlow();

@@ -204,11 +204,11 @@ static TR_RematerializationInfo *generateRematerializationInfo(TR::Node         
       // A dependent discardable register can only depend on a base register.
       if (mr->getIndexRegister())
          return NULL;
-      info = new (cg->trHeapMemory()) TR_RematerializationInfo(instr, type, symRef, NULL);
+      info = new (comp->trHeapMemory()) TR_RematerializationInfo(instr, type, symRef, NULL);
       }
    else if (cg->supportsStaticMemoryRematerialization() && sym->isStatic())
       {
-      info = new (cg->trHeapMemory()) TR_RematerializationInfo(instr, type, symRef, NULL);
+      info = new (comp->trHeapMemory()) TR_RematerializationInfo(instr, type, symRef, NULL);
       }
    else if (cg->supportsIndirectMemoryRematerialization() && sym->isShadow())
       {
@@ -239,7 +239,7 @@ static TR_RematerializationInfo *generateRematerializationInfo(TR::Node         
       if (baseReg && baseNode->getReferenceCount() <= 1)
          return NULL;
 
-      info = new (cg->trHeapMemory()) TR_RematerializationInfo(instr, type, symRef, baseReg);
+      info = new (comp->trHeapMemory()) TR_RematerializationInfo(instr, type, symRef, baseReg);
       }
 
    if (info && isStore)
@@ -265,7 +265,7 @@ static TR_RematerializationInfo *generateRematerializationInfo(TR::Node         
       && !cg->supportsXMMRRematerialization())
       return NULL;
 
-   return new (cg->trHeapMemory()) TR_RematerializationInfo(instr, type, constant);
+   return new (cg->comp()->trHeapMemory()) TR_RematerializationInfo(instr, type, constant);
    }
 
 
@@ -284,7 +284,7 @@ static TR_RematerializationInfo *generateRematerializationInfo(TR::Node         
       return NULL;
 
    if (sym->isLocalObject() || (sym->isStatic() && !symRef->isUnresolved()))
-      return new (cg->trHeapMemory()) TR_RematerializationInfo(instr, type, symRef);
+      return new (cg->comp()->trHeapMemory()) TR_RematerializationInfo(instr, type, symRef);
 
    return NULL;
    }

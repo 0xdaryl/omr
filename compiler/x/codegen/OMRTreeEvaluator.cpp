@@ -3212,7 +3212,7 @@ TR::Register *OMR::X86::TreeEvaluator::fenceEvaluator(TR::Node *node, TR::CodeGe
 
    if (fenceOp.getOpCodeValue() != BADIA32Op)
       {
-      new (cg->trHeapMemory()) TR::Instruction(node, fenceOp.getOpCodeValue(), cg);
+      new (cg->comp()->trHeapMemory()) TR::Instruction(node, fenceOp.getOpCodeValue(), cg);
       }
    else
       {
@@ -3573,7 +3573,7 @@ TR::Register *OMR::X86::TreeEvaluator::BBEndEvaluator(TR::Node *node, TR::CodeGe
             TR::Register* regCursor = *iterator;
             if (!clob)
             {
-               clob = new (cg->trHeapMemory()) TR::ClobberingInstruction(instr, cg->trMemory());
+               clob = new (comp->trHeapMemory()) TR::ClobberingInstruction(instr, cg->trMemory());
                cg->addClobberingInstruction(clob);
             }
             clob->addClobberedRegister(regCursor);
@@ -3963,6 +3963,8 @@ TR::Register *OMR::X86::TreeEvaluator::atomicorEvaluator(TR::Node *node, TR::Cod
 TR::Register *
 OMR::X86::TreeEvaluator::tstartEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+   TR::Compilation *comp = cg->comp();
+
    /*
    .Lstart:
       xbegin       .Lfallback
@@ -3978,12 +3980,12 @@ OMR::X86::TreeEvaluator::tstartEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    TR::Node *fallThroughNode = node->getThirdChild();
    TR::Node *GRANode = NULL;
 
-   TR::LabelSymbol *startLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol *startLabel = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
    startLabel->setStartInternalControlFlow();
-   TR::LabelSymbol *endLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol *endLabel = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
    endLabel->setEndInternalControlFlow();
 
-   TR::LabelSymbol *fallbackLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol *fallbackLabel = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
    TR::LabelSymbol *persistentFailureLabel = persistentFailureNode->getBranchDestination()->getNode()->getLabel();
    TR::LabelSymbol *transientFailureLabel  = transientFailureNode->getBranchDestination()->getNode()->getLabel();
    TR::LabelSymbol *fallThroughLabel = fallThroughNode->getBranchDestination()->getNode()->getLabel();

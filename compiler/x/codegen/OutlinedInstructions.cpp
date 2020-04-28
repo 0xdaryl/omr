@@ -109,7 +109,7 @@ void TR_OutlinedInstructions::generateOutlinedInstructionsDispatch()
    cg()->setFirstInstruction(NULL);
    cg()->setAppendInstruction(NULL);
 
-   new (_cg->trHeapMemory()) TR::X86LabelInstruction(NULL, LABEL, _entryLabel, _cg);
+   new (_cg->comp()->trHeapMemory()) TR::X86LabelInstruction(NULL, LABEL, _entryLabel, _cg);
 
    TR::Register *resultReg=NULL;
    if (_callNode->getOpCode().isCallIndirect())
@@ -172,7 +172,7 @@ void TR_OutlinedInstructions::generateOutlinedInstructionsDispatch()
 
    // Dummy label to delimit the end of the helper call dispatch sequence (for exception ranges).
    //
-   generateLabelInstruction(LABEL, _callNode, TR::LabelSymbol::create(_cg->trHeapMemory(),_cg), _cg);
+   generateLabelInstruction(LABEL, _callNode, TR::LabelSymbol::create(_cg->comp()->trHeapMemory(), _cg), _cg);
 
    // Switch from cold helper instruction stream.
    //
@@ -373,7 +373,7 @@ TR::Node *TR_OutlinedInstructions::createOutlinedCallNode(TR::Node *callNode, TR
 TR_OutlinedInstructionsGenerator::TR_OutlinedInstructionsGenerator(TR::LabelSymbol* entryLabel, TR::Node* node, TR::CodeGenerator* cg)
    : _hasEnded(false)
    {
-   _oi = new (cg->trHeapMemory()) TR_OutlinedInstructions(entryLabel, cg);
+   _oi = new (cg->comp()->trHeapMemory()) TR_OutlinedInstructions(entryLabel, cg);
    _oi->setCallNode(node);
    cg->getOutlinedInstructionsList().push_front(_oi);
    _oi->swapInstructionListsWithCompilation();

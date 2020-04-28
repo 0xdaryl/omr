@@ -1181,6 +1181,7 @@ OMR::X86::MemoryReference::addMetaDataForCodeAddress(
       TR::Node *node,
       TR::CodeGenerator *cg)
    {
+   TR::Compilation *comp = cg->comp();
 
    switch (addressTypes)
       {
@@ -1189,14 +1190,14 @@ OMR::X86::MemoryReference::addMetaDataForCodeAddress(
          {
          if (self()->needsCodeAbsoluteExternalRelocation())
             {
-            cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(cursor,
+            cg->addExternalRelocation(new (comp->trHeapMemory()) TR::ExternalRelocation(cursor,
                                                                   0,
                                                                   TR_AbsoluteMethodAddress, cg),
                                  __FILE__,__LINE__, node);
             }
          else if (self()->getReloKind() == TR_ACTIVE_CARD_TABLE_BASE)
             {
-            cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(cursor,
+            cg->addExternalRelocation(new (comp->trHeapMemory()) TR::ExternalRelocation(cursor,
                                                                   (uint8_t*)TR_ActiveCardTableBase,
                                                                   TR_GlobalValue, cg),
                                  __FILE__,__LINE__, node);
@@ -1225,8 +1226,7 @@ OMR::X86::MemoryReference::addMetaDataForCodeAddress(
                   {
                   if (symbol->isConst())
                      {
-                     TR::Compilation *comp = cg->comp();
-                     cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(cursor,
+                     cg->addExternalRelocation(new (comp->trHeapMemory()) TR::ExternalRelocation(cursor,
                                                                             (uint8_t *)self()->getSymbolReference().getOwningMethod(comp)->constantPool(),
                                                                             node ? (uint8_t *)(intptr_t)node->getInlinedSiteIndex() : (uint8_t *)-1,
                                                                            TR_ConstantPool, cg),
@@ -1236,10 +1236,10 @@ OMR::X86::MemoryReference::addMetaDataForCodeAddress(
                      {
                      if (cg->needClassAndMethodPointerRelocations())
                         {
-                        *(int32_t *)cursor = (int32_t)(TR::Compiler->cls.persistentClassPointerFromClassPointer(cg->comp(), (TR_OpaqueClassBlock*)(self()->getSymbolReference().getOffset() + (intptr_t)staticSym->getStaticAddress())));
-                        if (cg->comp()->getOption(TR_UseSymbolValidationManager))
+                        *(int32_t *)cursor = (int32_t)(TR::Compiler->cls.persistentClassPointerFromClassPointer(comp, (TR_OpaqueClassBlock*)(self()->getSymbolReference().getOffset() + (intptr_t)staticSym->getStaticAddress())));
+                        if (comp->getOption(TR_UseSymbolValidationManager))
                            {
-                           cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(cursor,
+                           cg->addExternalRelocation(new (comp->trHeapMemory()) TR::ExternalRelocation(cursor,
                                                                                                      (uint8_t *)(self()->getSymbolReference().getOffset() + (intptr_t)staticSym->getStaticAddress()),
                                                                                                      (uint8_t *)TR::SymbolType::typeClass,
                                                                                                      TR_SymbolFromManager,
@@ -1248,7 +1248,7 @@ OMR::X86::MemoryReference::addMetaDataForCodeAddress(
                            }
                         else
                            {
-                           cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *)&self()->getSymbolReference(),
+                           cg->addExternalRelocation(new (comp->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *)&self()->getSymbolReference(),
                                                                                                     node ? (uint8_t *)(intptr_t)node->getInlinedSiteIndex() : (uint8_t *)-1,
                                                                                                     TR_ClassAddress, cg), __FILE__, __LINE__, node);
                            }
@@ -1263,21 +1263,21 @@ OMR::X86::MemoryReference::addMetaDataForCodeAddress(
                      {
                      if (staticSym->isCountForRecompile())
                         {
-                        cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *) TR_CountForRecompile, TR_GlobalValue, cg),
+                        cg->addExternalRelocation(new (comp->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *) TR_CountForRecompile, TR_GlobalValue, cg),
                                              __FILE__,
                                              __LINE__,
                                              node);
                         }
                      else if (staticSym->isRecompilationCounter())
                         {
-                        cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(cursor, 0, TR_BodyInfoAddress, cg),
+                        cg->addExternalRelocation(new (comp->trHeapMemory()) TR::ExternalRelocation(cursor, 0, TR_BodyInfoAddress, cg),
                                              __FILE__,
                                              __LINE__,
                                              node);
                         }
                      else if (staticSym->isGCRPatchPoint())
                         {
-                        TR::ExternalRelocation* r= new (cg->trHeapMemory())
+                        TR::ExternalRelocation* r= new (comp->trHeapMemory())
                            TR::ExternalRelocation(cursor,
                                                       0,
                                                       TR_AbsoluteMethodAddress, cg);
@@ -1285,19 +1285,19 @@ OMR::X86::MemoryReference::addMetaDataForCodeAddress(
                         }
                      else if (symbol->isDebugCounter())
                         {
-                        TR::DebugCounterBase *counter = cg->comp()->getCounterFromStaticAddress(&(self()->getSymbolReference()));
+                        TR::DebugCounterBase *counter = comp->getCounterFromStaticAddress(&(self()->getSymbolReference()));
                         if (counter == NULL)
                            {
-                           cg->comp()->failCompilation<TR::CompilationException>("Could not generate relocation for debug counter in OMR::X86::MemoryReference::addMetaDataForCodeAddress\n");
+                           comp->failCompilation<TR::CompilationException>("Could not generate relocation for debug counter in OMR::X86::MemoryReference::addMetaDataForCodeAddress\n");
                            }
-                        TR::DebugCounter::generateRelocation(cg->comp(),
+                        TR::DebugCounter::generateRelocation(comp,
                                                              cursor,
                                                              node,
                                                              counter);
                         }
                      else
                         {
-                        cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(cursor,
+                        cg->addExternalRelocation(new (comp->trHeapMemory()) TR::ExternalRelocation(cursor,
                                                                            (uint8_t *)&self()->getSymbolReference(),
                                                                            node ? (uint8_t *)(uintptr_t)node->getInlinedSiteIndex() : (uint8_t *)-1,
                                                                            TR_DataAddress, cg),
@@ -1328,16 +1328,16 @@ OMR::X86::MemoryReference::addMetaDataForCodeAddress(
 
             if (label != NULL)
                {
-               if (cg->comp()->target().is64Bit())
+               if (comp->target().is64Bit())
                   {
                   // Assume the snippet is in RIP range
                   // TODO:AMD64: Would it be cleaner to have some kind of "isRelative" flag rather than "is64BitTarget"?
-                  cg->addRelocation(new (cg->trHeapMemory()) TR::LabelRelative32BitRelocation(cursor, label));
+                  cg->addRelocation(new (comp->trHeapMemory()) TR::LabelRelative32BitRelocation(cursor, label));
                   }
                else
                   {
-                  cg->addRelocation(new (cg->trHeapMemory()) TR::LabelAbsoluteRelocation(cursor, label));
-                  cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(cursor,
+                  cg->addRelocation(new (comp->trHeapMemory()) TR::LabelAbsoluteRelocation(cursor, label));
+                  cg->addExternalRelocation(new (comp->trHeapMemory()) TR::ExternalRelocation(cursor,
                                                                         0,
                                                                         TR_AbsoluteMethodAddress, cg),
                                        __FILE__, __LINE__, node);
@@ -1803,74 +1803,74 @@ uint32_t OMR::X86::MemoryReference::getNumMRReferencedGPRegisters()
 TR::MemoryReference  *
 generateX86MemoryReference(TR::CodeGenerator *cg)
    {
-   return new (cg->trHeapMemory()) TR::MemoryReference(cg);
+   return new (cg->comp()->trHeapMemory()) TR::MemoryReference(cg);
    }
 
 TR::MemoryReference  *
 generateX86MemoryReference(intptr_t disp, TR::CodeGenerator *cg)
    {
-   return new (cg->trHeapMemory()) TR::MemoryReference(disp, cg);
+   return new (cg->comp()->trHeapMemory()) TR::MemoryReference(disp, cg);
    }
 
 TR::MemoryReference  *
 generateX86MemoryReference(TR::Register * br, intptr_t disp, TR::CodeGenerator *cg)
    {
-   return new (cg->trHeapMemory()) TR::MemoryReference(br, disp, cg);
+   return new (cg->comp()->trHeapMemory()) TR::MemoryReference(br, disp, cg);
    }
 
 TR::MemoryReference  *
 generateX86MemoryReference(TR::Register * br, TR::Register * ir, uint8_t s, TR::CodeGenerator *cg)
    {
-   return new (cg->trHeapMemory()) TR::MemoryReference(br, ir, s, cg);
+   return new (cg->comp()->trHeapMemory()) TR::MemoryReference(br, ir, s, cg);
    }
 
 TR::MemoryReference  *
 generateX86MemoryReference(TR::Register * br, TR::Register * ir, uint8_t s, intptr_t disp, TR::CodeGenerator *cg)
    {
-   return new (cg->trHeapMemory()) TR::MemoryReference(br, ir, s, disp, cg);
+   return new (cg->comp()->trHeapMemory()) TR::MemoryReference(br, ir, s, disp, cg);
    }
 
 TR::MemoryReference  *
 generateX86MemoryReference(TR::Node * node, TR::CodeGenerator *cg, bool canRematerializeAddressAdds)
    {
-   return new (cg->trHeapMemory()) TR::MemoryReference(node, cg, canRematerializeAddressAdds);
+   return new (cg->comp()->trHeapMemory()) TR::MemoryReference(node, cg, canRematerializeAddressAdds);
    }
 
 TR::MemoryReference  *
 generateX86MemoryReference(TR::MemoryReference  & mr, intptr_t n, TR::CodeGenerator *cg)
    {
-   return new (cg->trHeapMemory()) TR::MemoryReference(mr, n, cg);
+   return new (cg->comp()->trHeapMemory()) TR::MemoryReference(mr, n, cg);
    }
 
 TR::MemoryReference  *
 generateX86MemoryReference(TR::MemoryReference& mr, intptr_t n, TR_ScratchRegisterManager *srm, TR::CodeGenerator *cg)
    {
    if(cg->comp()->target().is64Bit())
-      return new (cg->trHeapMemory()) TR::MemoryReference(mr, n, cg, srm);
+      return new (cg->comp()->trHeapMemory()) TR::MemoryReference(mr, n, cg, srm);
    else
-      return new (cg->trHeapMemory()) TR::MemoryReference(mr, n, cg);
+      return new (cg->comp()->trHeapMemory()) TR::MemoryReference(mr, n, cg);
    }
 
 TR::MemoryReference  *
 generateX86MemoryReference(TR::SymbolReference * sr, TR::CodeGenerator *cg)
    {
-   return new (cg->trHeapMemory()) TR::MemoryReference(sr, cg);
+   return new (cg->comp()->trHeapMemory()) TR::MemoryReference(sr, cg);
    }
 
 TR::MemoryReference  *
 generateX86MemoryReference(TR::SymbolReference * sr, intptr_t displacement, TR::CodeGenerator *cg)
    {
-   return new (cg->trHeapMemory()) TR::MemoryReference(sr, displacement, cg);
+   return new (cg->comp()->trHeapMemory()) TR::MemoryReference(sr, displacement, cg);
    }
 
 TR::MemoryReference  *
 generateX86MemoryReference(TR::X86DataSnippet* cds, TR::CodeGenerator *cg)
    {
-   return new (cg->trHeapMemory()) TR::MemoryReference(cds, cg);
+   return new (cg->comp()->trHeapMemory()) TR::MemoryReference(cds, cg);
    }
 
 TR::MemoryReference  *
 generateX86MemoryReference(TR::LabelSymbol *label, TR::CodeGenerator *cg)
    {
-   return new (cg->trHeapMemory()) TR::MemoryReference(label, cg);
+   return new (cg->comp()->trHeapMemory()) TR::MemoryReference(label, cg);
    }

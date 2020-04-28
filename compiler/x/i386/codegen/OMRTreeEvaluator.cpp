@@ -92,9 +92,10 @@ TR::Register *OMR::X86::I386::TreeEvaluator::longArithmeticCompareRegisterWithIm
    int32_t      lowValue       = immedChild->getLongIntLow();
    int32_t      highValue      = immedChild->getLongIntHigh();
 
-   TR::LabelSymbol *startLabel    = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol *doneLabel     = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol *highDoneLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::Compilation *comp = cg->comp();
+   TR::LabelSymbol *startLabel    = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
+   TR::LabelSymbol *doneLabel     = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
+   TR::LabelSymbol *highDoneLabel = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
    startLabel->setStartInternalControlFlow();
    doneLabel->setEndInternalControlFlow();
 
@@ -148,8 +149,8 @@ TR::Register *OMR::X86::I386::TreeEvaluator::compareLongAndSetOrderedBoolean(
       TR::Node     *firstChild  = node->getFirstChild();
       TR::Register *cmpRegister = cg->evaluate(firstChild);
 
-      TR::LabelSymbol *startLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-      TR::LabelSymbol *doneLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+      TR::LabelSymbol *startLabel = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
+      TR::LabelSymbol *doneLabel = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
       startLabel->setStartInternalControlFlow();
       doneLabel->setEndInternalControlFlow();
       generateLabelInstruction(LABEL, node, startLabel, cg);
@@ -210,8 +211,8 @@ void OMR::X86::I386::TreeEvaluator::compareLongsForOrder(
       // KAS:: need delayed evaluation here and use of memimm instructions to reduce
       // register pressure
       TR::Register   *cmpRegister       = cg->evaluate(firstChild);
-      TR::LabelSymbol *startLabel       = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-      TR::LabelSymbol *doneLabel        = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+      TR::LabelSymbol *startLabel       = TR::LabelSymbol::create(comp->trHeapMemory(),cg);
+      TR::LabelSymbol *doneLabel        = TR::LabelSymbol::create(comp->trHeapMemory(),cg);
       TR::LabelSymbol *destinationLabel = node->getBranchDestination()->getNode()->getLabel();
       List<TR::Register> popRegisters(cg->trMemory());
 
@@ -1057,7 +1058,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::integerPairMulEvaluator(TR::Node *n
 
             int32_t dummy = 0;
             TR_X86IntegerMultiplyDecomposer *mulDecomposer =
-               new (cg->trHeapMemory()) TR_X86IntegerMultiplyDecomposer((int64_t)absValue,
+               new (comp->trHeapMemory()) TR_X86IntegerMultiplyDecomposer((int64_t)absValue,
                                                    multiplierRegister,
                                                    node,
                                                    cg,
@@ -1162,8 +1163,8 @@ TR::Register *OMR::X86::I386::TreeEvaluator::integerPairMulEvaluator(TR::Node *n
             generateRegRegInstruction(TEST4RegReg, node,
                                       multiplierRegister->getHighOrder(),
                                       multiplierRegister->getHighOrder(), cg);
-            TR::LabelSymbol *startLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-            TR::LabelSymbol *doneLabel  = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+            TR::LabelSymbol *startLabel = TR::LabelSymbol::create(comp->trHeapMemory(),cg);
+            TR::LabelSymbol *doneLabel  = TR::LabelSymbol::create(comp->trHeapMemory(),cg);
             startLabel->setStartInternalControlFlow();
             doneLabel->setEndInternalControlFlow();
             generateLabelInstruction(LABEL, node, startLabel, cg);
@@ -1172,7 +1173,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::integerPairMulEvaluator(TR::Node *n
             TR::Register *tempRegArray[TR_X86IntegerMultiplyDecomposer::MAX_NUM_REGISTERS];
             int32_t tempRegArraySize = 0;
             TR_X86IntegerMultiplyDecomposer *mulDecomposer =
-               new (cg->trHeapMemory()) TR_X86IntegerMultiplyDecomposer((int64_t)lowValue,
+               new (comp->trHeapMemory()) TR_X86IntegerMultiplyDecomposer((int64_t)lowValue,
                                                    multiplierRegister->getHighOrder(),
                                                    node,
                                                    cg,
@@ -1276,7 +1277,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::integerPairMulEvaluator(TR::Node *n
             absValue = highValue; // No negation necessary
 
             TR_X86IntegerMultiplyDecomposer *mulDecomposer =
-               new (cg->trHeapMemory()) TR_X86IntegerMultiplyDecomposer((int64_t)absValue,
+               new (comp->trHeapMemory()) TR_X86IntegerMultiplyDecomposer((int64_t)absValue,
                                                    sourceLow,
                                                    node,
                                                    cg,
@@ -1358,8 +1359,8 @@ TR::Register *OMR::X86::I386::TreeEvaluator::integerPairMulEvaluator(TR::Node *n
             generateRegRegInstruction(TEST4RegReg, node,
                                       multiplierRegister->getHighOrder(),
                                       multiplierRegister->getHighOrder(), cg);
-            TR::LabelSymbol *startLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-            TR::LabelSymbol *doneLabel  = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+            TR::LabelSymbol *startLabel = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
+            TR::LabelSymbol *doneLabel  = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
             startLabel->setStartInternalControlFlow();
             doneLabel->setEndInternalControlFlow();
             generateLabelInstruction(LABEL, node, startLabel, cg);
@@ -1369,7 +1370,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::integerPairMulEvaluator(TR::Node *n
             tempRegArraySize = 0;
 
             TR_X86IntegerMultiplyDecomposer *mulDecomposer =
-               new (cg->trHeapMemory()) TR_X86IntegerMultiplyDecomposer((int64_t)lowValue,
+               new (comp->trHeapMemory()) TR_X86IntegerMultiplyDecomposer((int64_t)lowValue,
                                                    multiplierRegister->getHighOrder(),
                                                    node,
                                                    cg,
@@ -1482,9 +1483,10 @@ TR::Register *OMR::X86::I386::TreeEvaluator::integerPairDivEvaluator(TR::Node *n
    idivDependencies->addPostCondition(firstRegister->getLowOrder(), TR::RealRegister::NoReg, cg);
    idivDependencies->addPostCondition(secondRegister->getLowOrder(), TR::RealRegister::NoReg, cg);
 
-   TR::LabelSymbol *startLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol *doneLabel  = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol *callLabel  = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::Compilation *comp = cg->comp();
+   TR::LabelSymbol *startLabel = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
+   TR::LabelSymbol *doneLabel  = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
+   TR::LabelSymbol *callLabel  = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
 
    startLabel->setStartInternalControlFlow();
    doneLabel->setEndInternalControlFlow();
@@ -1589,9 +1591,10 @@ TR::Register *OMR::X86::I386::TreeEvaluator::integerPairRemEvaluator(TR::Node *n
    idivDependencies->addPostCondition(firstRegister->getLowOrder(), TR::RealRegister::NoReg, cg);
    idivDependencies->addPostCondition(secondRegister->getLowOrder(), TR::RealRegister::NoReg, cg);
 
-   TR::LabelSymbol *startLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol *doneLabel  = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol *callLabel  = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::Compilation *comp = cg->comp();
+   TR::LabelSymbol *startLabel = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
+   TR::LabelSymbol *doneLabel  = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
+   TR::LabelSymbol *callLabel  = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
 
    startLabel->setStartInternalControlFlow();
    doneLabel->setEndInternalControlFlow();
@@ -3269,11 +3272,11 @@ TR::Register *OMR::X86::I386::TreeEvaluator::dbits2lEvaluator(TR::Node *node, TR
    // There's a special-case check for NaN values, which have to be
    // normalized to a particular NaN value.
    //
-
-   TR::LabelSymbol *lab0 = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol *lab1 = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol *lab2 = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol *lab3 = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::Compilation *comp = cg->comp();
+   TR::LabelSymbol *lab0 = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
+   TR::LabelSymbol *lab1 = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
+   TR::LabelSymbol *lab2 = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
+   TR::LabelSymbol *lab3 = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
    if (node->normalizeNanValues())
       {
       lab0->setStartInternalControlFlow();
@@ -3377,8 +3380,9 @@ TR::Register *OMR::X86::I386::TreeEvaluator::iflcmpeqEvaluator(TR::Node *node, T
       else
          {
          List<TR::Register>  popRegisters(cg->trMemory());
-         TR::LabelSymbol     *startLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-         TR::LabelSymbol     *doneLabel  = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+         TR::Compilation *comp = cg->comp();
+         TR::LabelSymbol     *startLabel = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
+         TR::LabelSymbol     *doneLabel  = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
 
          startLabel->setStartInternalControlFlow();
          doneLabel->setEndInternalControlFlow();

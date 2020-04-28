@@ -408,6 +408,7 @@ OMR::X86::AMD64::MemoryReference::addMetaDataForCodeAddressWithLoad(
       TR::CodeGenerator *cg,
       TR::SymbolReference *srCopy)
    {
+   TR::Compilation *comp = cg->comp();
    intptr_t displacement = self()->getDisplacement();
 
    if (_symbolReference.getSymbol())
@@ -432,7 +433,7 @@ OMR::X86::AMD64::MemoryReference::addMetaDataForCodeAddressWithLoad(
                {
                if (cg->comp()->getOption(TR_UseSymbolValidationManager))
                   {
-                  cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(displacementLocation,
+                  cg->addExternalRelocation(new (comp->trHeapMemory()) TR::ExternalRelocation(displacementLocation,
                                                                                             (uint8_t *)sr.getSymbol()->castToStaticSymbol()->getStaticAddress(),
                                                                                             (uint8_t *)TR::SymbolType::typeClass,
                                                                                             TR_SymbolFromManager,
@@ -442,7 +443,7 @@ OMR::X86::AMD64::MemoryReference::addMetaDataForCodeAddressWithLoad(
                   }
                else
                   {
-                  cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(displacementLocation, (uint8_t *)srCopy,
+                  cg->addExternalRelocation(new (comp->trHeapMemory()) TR::ExternalRelocation(displacementLocation, (uint8_t *)srCopy,
                                                                                             (uint8_t *)(uintptr_t)containingInstruction->getNode()->getInlinedSiteIndex(),
                                                                                             TR_ClassAddress, cg),__FILE__, __LINE__,
                                                                                             containingInstruction->getNode());
@@ -458,7 +459,7 @@ OMR::X86::AMD64::MemoryReference::addMetaDataForCodeAddressWithLoad(
       else if (sr.getSymbol()->isCountForRecompile())
          {
          if (cg->needRelocationsForPersistentInfoData())
-            cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(
+            cg->addExternalRelocation(new (comp->trHeapMemory()) TR::ExternalRelocation(
                                    displacementLocation, (uint8_t *) TR_CountForRecompile, TR_GlobalValue, cg),
                                  __FILE__,
                                  __LINE__,
@@ -467,14 +468,14 @@ OMR::X86::AMD64::MemoryReference::addMetaDataForCodeAddressWithLoad(
       else if (sr.getSymbol()->isRecompilationCounter())
          {
          if (cg->needRelocationsForBodyInfoData())
-            cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(displacementLocation, 0, TR_BodyInfoAddress, cg),
+            cg->addExternalRelocation(new (comp->trHeapMemory()) TR::ExternalRelocation(displacementLocation, 0, TR_BodyInfoAddress, cg),
                                  __FILE__,__LINE__,containingInstruction->getNode());
          }
       else if (sr.getSymbol()->isGCRPatchPoint())
          {
          if (cg->needRelocationsForStatics())
             {
-            TR::ExternalRelocation* r= new (cg->trHeapMemory())
+            TR::ExternalRelocation* r= new (comp->trHeapMemory())
                            TR::ExternalRelocation(displacementLocation,
                                                       0,
                                                       TR_AbsoluteMethodAddress, cg);
@@ -484,23 +485,23 @@ OMR::X86::AMD64::MemoryReference::addMetaDataForCodeAddressWithLoad(
       else if (sr.getSymbol()->isCompiledMethod())
          {
          if (cg->needRelocationsForStatics())
-            cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(displacementLocation, 0, TR_RamMethod, cg),
+            cg->addExternalRelocation(new (comp->trHeapMemory()) TR::ExternalRelocation(displacementLocation, 0, TR_RamMethod, cg),
                                  __FILE__,__LINE__,containingInstruction->getNode());
          }
       else if (sr.getSymbol()->isStartPC())
          {
          if (cg->needRelocationsForStatics())
-            cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(displacementLocation, 0, TR_AbsoluteMethodAddress, cg),
+            cg->addExternalRelocation(new (comp->trHeapMemory()) TR::ExternalRelocation(displacementLocation, 0, TR_AbsoluteMethodAddress, cg),
                                  __FILE__,__LINE__,containingInstruction->getNode());
          }
       else if (sr.getSymbol()->isDebugCounter())
          {
-         TR::DebugCounterBase *counter = cg->comp()->getCounterFromStaticAddress(&sr);
+         TR::DebugCounterBase *counter = comp->getCounterFromStaticAddress(&sr);
          if (counter == NULL)
             {
-            cg->comp()->failCompilation<TR::CompilationException>("Could not generate relocation for debug counter in OMR::X86::AMD64::MemoryReference::addMetaDataForCodeAddressWithLoad\n");
+            comp->failCompilation<TR::CompilationException>("Could not generate relocation for debug counter in OMR::X86::AMD64::MemoryReference::addMetaDataForCodeAddressWithLoad\n");
             }
-         TR::DebugCounter::generateRelocation(cg->comp(),
+         TR::DebugCounter::generateRelocation(comp,
                                               displacementLocation,
                                               containingInstruction->getNode(),
                                               counter);
@@ -510,7 +511,7 @@ OMR::X86::AMD64::MemoryReference::addMetaDataForCodeAddressWithLoad(
       {
       if (self()->needsCodeAbsoluteExternalRelocation())
          {
-         cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(displacementLocation,
+         cg->addExternalRelocation(new (comp->trHeapMemory()) TR::ExternalRelocation(displacementLocation,
                                                                                  (uint8_t *)0,
                                                                                  TR_AbsoluteMethodAddress, cg),
                               __FILE__,
@@ -605,7 +606,7 @@ OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(
          {
          // Clone the symbol reference because we're going to clobber it shortly
          //
-         symRef = new (cg->trHeapMemory()) TR::SymbolReference(cg->symRefTab(), _symbolReference, 0);
+         symRef = new (comp->trHeapMemory()) TR::SymbolReference(cg->symRefTab(), _symbolReference, 0);
 
          addressLoadInstruction = generateRegImm64SymInstruction(
             containingInstruction->getPrev(),

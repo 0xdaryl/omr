@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -935,7 +935,7 @@ TR::RealRegister *OMR::X86::Machine::freeBestGPRegister(TR::Instruction         
          {
          op = LRegMem();
          }
-      instr = new (self()->cg()->trHeapMemory()) TR::X86RegMemInstruction(currentInstruction, op, best, tempMR, self()->cg());
+      instr = new (comp->trHeapMemory()) TR::X86RegMemInstruction(currentInstruction, op, best, tempMR, self()->cg());
 
       self()->cg()->traceRegFreed(bestRegister, best);
       self()->cg()->traceRAInstruction(instr);
@@ -1022,7 +1022,7 @@ TR::RealRegister *OMR::X86::Machine::reverseGPRSpillState(TR::Instruction     *c
 
    if (spilledRegister->getKind() == TR_FPR)
       {
-      instr = new (self()->cg()->trHeapMemory())
+      instr = new (comp->trHeapMemory())
          TR::X86MemRegInstruction(
             currentInstruction,
             spilledRegister->isSinglePrecision() ? MOVSSMemReg : MOVSDMemReg,
@@ -1041,7 +1041,7 @@ TR::RealRegister *OMR::X86::Machine::reverseGPRSpillState(TR::Instruction     *c
       }
    else if (spilledRegister->getKind() == TR_VRF)
       {
-      instr = new (self()->cg()->trHeapMemory())
+      instr = new (comp->trHeapMemory())
          TR::X86MemRegInstruction(
             currentInstruction,
             MOVDQUMemReg,
@@ -1060,7 +1060,7 @@ TR::RealRegister *OMR::X86::Machine::reverseGPRSpillState(TR::Instruction     *c
       }
    else
       {
-      instr = new (self()->cg()->trHeapMemory())
+      instr = new (comp->trHeapMemory())
          TR::X86MemRegInstruction(
             currentInstruction,
             SMemReg(),
@@ -1087,6 +1087,9 @@ void OMR::X86::Machine::coerceGPRegisterAssignment(TR::Instruction          *cur
                                                TR::RealRegister::RegNum  registerNumber,
                                                bool                     coerceToSatisfyRegDeps)
    {
+   TR::CodeGenerator *cg = self()->cg();
+   TR::Compilation *comp = cg->comp();
+
    TR::RealRegister *targetRegister          = _registerFile[registerNumber];
    TR::RealRegister    *currentAssignedRegister = virtualRegister->getAssignedRealRegister();
    TR::Instruction     *instr                   = NULL;
@@ -1097,46 +1100,46 @@ void OMR::X86::Machine::coerceGPRegisterAssignment(TR::Instruction          *cur
          {
          if (virtualRegister->getTotalUseCount() != virtualRegister->getFutureUseCount())
             {
-            self()->cg()->setRegisterAssignmentFlag(TR_RegisterReloaded);
+            cg->setRegisterAssignmentFlag(TR_RegisterReloaded);
             self()->reverseGPRSpillState(currentInstruction, virtualRegister, targetRegister);
             }
          }
       else
          {
-         instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction,
+         instr = new (comp->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction,
                                              MOVRegReg(),
                                              currentAssignedRegister,
-                                             targetRegister, self()->cg());
+                                             targetRegister, cg);
          currentAssignedRegister->setState(TR::RealRegister::Free);
          currentAssignedRegister->setAssignedRegister(NULL);
          }
 
-      if (self()->cg()->enableBetterSpillPlacements())
-         self()->cg()->removeBetterSpillPlacementCandidate(targetRegister);
+      if (cg->enableBetterSpillPlacements())
+         cg->removeBetterSpillPlacementCandidate(targetRegister);
 
-      self()->cg()->traceRegAssigned(virtualRegister, targetRegister);
+      cg->traceRegAssigned(virtualRegister, targetRegister);
       if (instr)
-         self()->cg()->traceRAInstruction(instr);
+         cg->traceRAInstruction(instr);
       }
    else if (targetRegister->getState() == TR::RealRegister::Blocked ||
             targetRegister->getState() == TR::RealRegister::Assigned)
       {
       TR::Register *currentTargetVirtual = targetRegister->getAssignedRegister();
 
-      self()->cg()->setRegisterAssignmentFlag(TR_IndirectCoercion);
+      cg->setRegisterAssignmentFlag(TR_IndirectCoercion);
       if (currentAssignedRegister != NULL)
          {
-         instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction,
+         instr = new (comp->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction,
                                              XCHGRegReg(),
                                              currentAssignedRegister,
-                                             targetRegister, self()->cg());
+                                             targetRegister, cg);
 
          if (targetRegister->getState() == TR::RealRegister::Assigned)
             currentAssignedRegister->setState(TR::RealRegister::Assigned, currentTargetVirtual->isPlaceholderReg());
          currentAssignedRegister->setAssignedRegister(currentTargetVirtual);
          currentTargetVirtual->setAssignedRegister(currentAssignedRegister);
-         self()->cg()->traceRegAssigned(currentTargetVirtual, currentAssignedRegister);
-         self()->cg()->traceRAInstruction(instr);
+         cg->traceRegAssigned(currentTargetVirtual, currentAssignedRegister);
+         cg->traceRAInstruction(instr);
          }
       else
          {
@@ -1144,47 +1147,47 @@ void OMR::X86::Machine::coerceGPRegisterAssignment(TR::Instruction          *cur
 
          if (candidate)
             {
-            if (self()->cg()->enableBetterSpillPlacements())
-               self()->cg()->removeBetterSpillPlacementCandidate(candidate);
+            if (cg->enableBetterSpillPlacements())
+               cg->removeBetterSpillPlacementCandidate(candidate);
             }
          else
             {
             // A spill is needed, either to satisfy the coercion, or to free up a second
             // register whence the virtual currently occupying the target may be moved,
             // i.e. an indirect coercion.
-            self()->cg()->setRegisterAssignmentFlag(TR_RegisterSpilled);
+            cg->setRegisterAssignmentFlag(TR_RegisterSpilled);
             candidate = self()->freeBestGPRegister(currentInstruction, currentTargetVirtual, TR_WordReg, registerNumber, coerceToSatisfyRegDeps);
             }
 
          if ((targetRegister != candidate) && (candidate != currentTargetVirtual))
             {
-            instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction,
+            instr = new (comp->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction,
                                                 MOVRegReg(),
                                                 targetRegister,
-                                                candidate, self()->cg());
+                                                candidate, cg);
             currentTargetVirtual->setAssignedRegister(candidate);
             candidate->setAssignedRegister(currentTargetVirtual);
             candidate->setState(targetRegister->getState());
-            self()->cg()->traceRegAssigned(currentTargetVirtual, candidate);
-            self()->cg()->traceRAInstruction(instr);
-            self()->cg()->resetRegisterAssignmentFlag(TR_RegisterSpilled); // the spill (if any) has been traced
+            cg->traceRegAssigned(currentTargetVirtual, candidate);
+            cg->traceRAInstruction(instr);
+            cg->resetRegisterAssignmentFlag(TR_RegisterSpilled); // the spill (if any) has been traced
             }
 
          if (virtualRegister->getTotalUseCount() != virtualRegister->getFutureUseCount())
             {
-            self()->cg()->setRegisterAssignmentFlag(TR_RegisterReloaded);
+            cg->setRegisterAssignmentFlag(TR_RegisterReloaded);
             self()->reverseGPRSpillState(currentInstruction, virtualRegister, targetRegister);
             }
          }
 
       if (targetRegister->getState() == TR::RealRegister::Blocked)
          {
-         if (self()->cg()->enableBetterSpillPlacements())
-            self()->cg()->removeBetterSpillPlacementCandidate(targetRegister);
+         if (cg->enableBetterSpillPlacements())
+            cg->removeBetterSpillPlacementCandidate(targetRegister);
          }
 
-      self()->cg()->resetRegisterAssignmentFlag(TR_IndirectCoercion);
-      self()->cg()->traceRegAssigned(virtualRegister, targetRegister);
+      cg->resetRegisterAssignmentFlag(TR_IndirectCoercion);
+      cg->traceRegAssigned(virtualRegister, targetRegister);
       }
 
    targetRegister->setState(TR::RealRegister::Assigned, virtualRegister->isPlaceholderReg());
@@ -1198,6 +1201,9 @@ void OMR::X86::Machine::coerceXMMRegisterAssignment(TR::Instruction          *cu
                                                 TR::RealRegister::RegNum  regNum,
                                                 bool                     coerceToSatisfyRegDeps)
    {
+   TR::CodeGenerator *cg = self()->cg();
+   TR::Compilation *comp = cg->comp();
+
    TR::RealRegister *targetRegister          = _registerFile[regNum];
    TR::RealRegister    *currentAssignedRegister = virtualRegister->getAssignedRealRegister();
    TR::Instruction     *instr                   = NULL;
@@ -1208,7 +1214,7 @@ void OMR::X86::Machine::coerceXMMRegisterAssignment(TR::Instruction          *cu
          {
          if (virtualRegister->getTotalUseCount() != virtualRegister->getFutureUseCount())
             {
-            self()->cg()->setRegisterAssignmentFlag(TR_RegisterReloaded);
+            cg->setRegisterAssignmentFlag(TR_RegisterReloaded);
             self()->reverseGPRSpillState(currentInstruction, virtualRegister, targetRegister);
             }
          }
@@ -1216,39 +1222,39 @@ void OMR::X86::Machine::coerceXMMRegisterAssignment(TR::Instruction          *cu
          {
          if (virtualRegister->getKind() == TR_VRF)
             {
-            instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction,
+            instr = new (comp->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction,
                                                 MOVDQURegReg,
                                                 currentAssignedRegister,
-                                                targetRegister, self()->cg());
+                                                targetRegister, cg);
             }
          else if (virtualRegister->isSinglePrecision())
             {
-            instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction,
+            instr = new (comp->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction,
                                                 MOVAPSRegReg,
                                                 currentAssignedRegister,
-                                                targetRegister, self()->cg());
+                                                targetRegister, cg);
             }
          else
             {
-            instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction,
+            instr = new (comp->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction,
                                                 MOVAPDRegReg,
                                                 currentAssignedRegister,
-                                                targetRegister, self()->cg());
+                                                targetRegister, cg);
             }
          currentAssignedRegister->setState(TR::RealRegister::Free);
          currentAssignedRegister->setAssignedRegister(NULL);
          }
-      self()->cg()->removeBetterSpillPlacementCandidate(targetRegister);
+      cg->removeBetterSpillPlacementCandidate(targetRegister);
 
-      self()->cg()->traceRegAssigned(virtualRegister, targetRegister);
+      cg->traceRegAssigned(virtualRegister, targetRegister);
       if (instr)
-         self()->cg()->traceRAInstruction(instr);
+         cg->traceRAInstruction(instr);
       }
    else if (targetRegister->getState() == TR::RealRegister::Blocked)
       {
       TR::Register *currentTargetVirtual = targetRegister->getAssignedRegister();
 
-      self()->cg()->setRegisterAssignmentFlag(TR_IndirectCoercion);
+      cg->setRegisterAssignmentFlag(TR_IndirectCoercion);
       if (currentAssignedRegister != NULL)
          {
          // Exchange the contents of two XMM registers without an XCHG instruction.
@@ -1263,13 +1269,13 @@ void OMR::X86::Machine::coerceXMMRegisterAssignment(TR::Instruction          *cu
             xchgOp = XORPDRegReg;
             }
 
-         self()->cg()->traceRegAssigned(currentTargetVirtual, currentAssignedRegister);
-         instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, xchgOp, currentAssignedRegister, targetRegister, self()->cg());
-         self()->cg()->traceRAInstruction(instr);
-         instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, xchgOp, targetRegister, currentAssignedRegister, self()->cg());
-         self()->cg()->traceRAInstruction(instr);
-         instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, xchgOp, currentAssignedRegister, targetRegister, self()->cg());
-         self()->cg()->traceRAInstruction(instr);
+         cg->traceRegAssigned(currentTargetVirtual, currentAssignedRegister);
+         instr = new (comp->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, xchgOp, currentAssignedRegister, targetRegister, cg);
+         cg->traceRAInstruction(instr);
+         instr = new (comp->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, xchgOp, targetRegister, currentAssignedRegister, cg);
+         cg->traceRAInstruction(instr);
+         instr = new (comp->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, xchgOp, currentAssignedRegister, targetRegister, cg);
+         cg->traceRAInstruction(instr);
          currentAssignedRegister->setState(TR::RealRegister::Blocked);
          currentAssignedRegister->setAssignedRegister(currentTargetVirtual);
          currentTargetVirtual->setAssignedRegister(currentAssignedRegister);
@@ -1280,14 +1286,14 @@ void OMR::X86::Machine::coerceXMMRegisterAssignment(TR::Instruction          *cu
 
          if (candidate)
             {
-            self()->cg()->removeBetterSpillPlacementCandidate(candidate);
+            cg->removeBetterSpillPlacementCandidate(candidate);
             }
          else
             {
             // A spill is needed, either to satisfy the coercion, or to free up a second
             // register whence the virtual currently occupying the target may be moved,
             // i.e. an indirect coercion.
-            self()->cg()->setRegisterAssignmentFlag(TR_RegisterSpilled);
+            cg->setRegisterAssignmentFlag(TR_RegisterSpilled);
             candidate = self()->freeBestGPRegister(currentInstruction, currentTargetVirtual, TR_QuadWordReg, regNum, coerceToSatisfyRegDeps);
             }
 
@@ -1295,40 +1301,40 @@ void OMR::X86::Machine::coerceXMMRegisterAssignment(TR::Instruction          *cu
             {
             if (virtualRegister->getKind() == TR_VRF)
                {
-               instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, MOVDQURegReg, targetRegister, candidate, self()->cg());
+               instr = new (comp->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, MOVDQURegReg, targetRegister, candidate, cg);
                }
             else if (currentTargetVirtual->isSinglePrecision())
                {
-               instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, MOVAPSRegReg, targetRegister, candidate, self()->cg());
+               instr = new (comp->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, MOVAPSRegReg, targetRegister, candidate, cg);
                }
             else
                {
-               instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, MOVAPDRegReg, targetRegister, candidate, self()->cg());
+               instr = new (comp->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, MOVAPDRegReg, targetRegister, candidate, cg);
                }
             candidate->setState(TR::RealRegister::Blocked);
             candidate->setAssignedRegister(currentTargetVirtual);
             currentTargetVirtual->setAssignedRegister(candidate);
-            self()->cg()->traceRegAssigned(currentTargetVirtual, candidate);
-            self()->cg()->traceRAInstruction(instr);
-            self()->cg()->resetRegisterAssignmentFlag(TR_RegisterSpilled); // the spill (if any) has been traced
+            cg->traceRegAssigned(currentTargetVirtual, candidate);
+            cg->traceRAInstruction(instr);
+            cg->resetRegisterAssignmentFlag(TR_RegisterSpilled); // the spill (if any) has been traced
             }
 
          if (virtualRegister->getTotalUseCount() != virtualRegister->getFutureUseCount())
             {
-            self()->cg()->setRegisterAssignmentFlag(TR_RegisterReloaded);
+            cg->setRegisterAssignmentFlag(TR_RegisterReloaded);
             self()->reverseGPRSpillState(currentInstruction, virtualRegister, targetRegister);
             }
          }
 
-      self()->cg()->removeBetterSpillPlacementCandidate(targetRegister);
-      self()->cg()->resetRegisterAssignmentFlag(TR_IndirectCoercion);
-      self()->cg()->traceRegAssigned(virtualRegister, targetRegister);
+      cg->removeBetterSpillPlacementCandidate(targetRegister);
+      cg->resetRegisterAssignmentFlag(TR_IndirectCoercion);
+      cg->traceRegAssigned(virtualRegister, targetRegister);
       }
    else if (targetRegister->getState() == TR::RealRegister::Assigned)
       {
       TR::Register *currentTargetVirtual = targetRegister->getAssignedRegister();
 
-      self()->cg()->setRegisterAssignmentFlag(TR_IndirectCoercion);
+      cg->setRegisterAssignmentFlag(TR_IndirectCoercion);
       if (currentAssignedRegister != NULL)
          {
          TR_X86OpCodes xchgOp = BADIA32Op;
@@ -1341,13 +1347,13 @@ void OMR::X86::Machine::coerceXMMRegisterAssignment(TR::Instruction          *cu
             xchgOp = XORPDRegReg;
             }
 
-         self()->cg()->traceRegAssigned(currentTargetVirtual, currentAssignedRegister);
-         instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, xchgOp, currentAssignedRegister, targetRegister, self()->cg());
-         self()->cg()->traceRAInstruction(instr);
-         instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, xchgOp, targetRegister, currentAssignedRegister, self()->cg());
-         self()->cg()->traceRAInstruction(instr);
-         instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, xchgOp, currentAssignedRegister, targetRegister, self()->cg());
-         self()->cg()->traceRAInstruction(instr);
+         cg->traceRegAssigned(currentTargetVirtual, currentAssignedRegister);
+         instr = new (comp->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, xchgOp, currentAssignedRegister, targetRegister, cg);
+         cg->traceRAInstruction(instr);
+         instr = new (comp->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, xchgOp, targetRegister, currentAssignedRegister, cg);
+         cg->traceRAInstruction(instr);
+         instr = new (comp->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, xchgOp, currentAssignedRegister, targetRegister, cg);
+         cg->traceRAInstruction(instr);
          currentAssignedRegister->setState(TR::RealRegister::Assigned, currentTargetVirtual->isPlaceholderReg());
          currentAssignedRegister->setAssignedRegister(currentTargetVirtual);
          currentTargetVirtual->setAssignedRegister(currentAssignedRegister);
@@ -1357,14 +1363,14 @@ void OMR::X86::Machine::coerceXMMRegisterAssignment(TR::Instruction          *cu
          TR::RealRegister *candidate = self()->findBestFreeGPRegister(currentInstruction, currentTargetVirtual, TR_QuadWordReg);
          if (candidate)
             {
-            self()->cg()->removeBetterSpillPlacementCandidate(candidate);
+            cg->removeBetterSpillPlacementCandidate(candidate);
             }
          else
             {
             // A spill is needed, either to satisfy the coercion, or to free up a second
             // register whence the virtual currently occupying the target may be moved,
             // i.e. an indirect coercion.
-            self()->cg()->setRegisterAssignmentFlag(TR_RegisterSpilled);
+            cg->setRegisterAssignmentFlag(TR_RegisterSpilled);
             candidate = self()->freeBestGPRegister(currentInstruction, currentTargetVirtual, TR_QuadWordReg, regNum, coerceToSatisfyRegDeps);
             }
 
@@ -1372,33 +1378,33 @@ void OMR::X86::Machine::coerceXMMRegisterAssignment(TR::Instruction          *cu
             {
             if (virtualRegister->getKind() == TR_VRF)
                {
-               instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, MOVDQURegReg, targetRegister, candidate, self()->cg());
+               instr = new (comp->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, MOVDQURegReg, targetRegister, candidate, cg);
                }
             else if (currentTargetVirtual->isSinglePrecision())
                {
-               instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, MOVAPSRegReg, targetRegister, candidate, self()->cg());
+               instr = new (comp->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, MOVAPSRegReg, targetRegister, candidate, cg);
                }
             else
                {
-               instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, MOVAPDRegReg, targetRegister, candidate, self()->cg());
+               instr = new (comp->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, MOVAPDRegReg, targetRegister, candidate, cg);
                }
             candidate->setState(TR::RealRegister::Assigned, currentTargetVirtual->isPlaceholderReg());
             candidate->setAssignedRegister(currentTargetVirtual);
             currentTargetVirtual->setAssignedRegister(candidate);
-            self()->cg()->traceRegAssigned(currentTargetVirtual, candidate);
-            self()->cg()->traceRAInstruction(instr);
-            self()->cg()->setRegisterAssignmentFlag(TR_RegisterSpilled); // the spill (if any) has been traced
+            cg->traceRegAssigned(currentTargetVirtual, candidate);
+            cg->traceRAInstruction(instr);
+            cg->setRegisterAssignmentFlag(TR_RegisterSpilled); // the spill (if any) has been traced
             }
 
          if (virtualRegister->getTotalUseCount() != virtualRegister->getFutureUseCount())
             {
-            self()->cg()->setRegisterAssignmentFlag(TR_RegisterReloaded);
+            cg->setRegisterAssignmentFlag(TR_RegisterReloaded);
             self()->reverseGPRSpillState(currentInstruction, virtualRegister, targetRegister);
             }
          }
 
-      self()->cg()->resetRegisterAssignmentFlag(TR_IndirectCoercion);
-      self()->cg()->traceRegAssigned(virtualRegister, targetRegister);
+      cg->resetRegisterAssignmentFlag(TR_IndirectCoercion);
+      cg->traceRegAssigned(virtualRegister, targetRegister);
       }
 
    targetRegister->setState(TR::RealRegister::Assigned, virtualRegister->isPlaceholderReg());
@@ -1413,7 +1419,7 @@ void OMR::X86::Machine::swapGPRegisters(TR::Instruction          *currentInstruc
    {
    TR::RealRegister *realReg1 = self()->getRealRegister(regNum1);
    TR::RealRegister *realReg2 = self()->getRealRegister(regNum2);
-   TR::Instruction *instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, XCHGRegReg(), realReg1, realReg2, self()->cg());
+   TR::Instruction *instr = new (self()->cg()->comp()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, XCHGRegReg(), realReg1, realReg2, self()->cg());
 
    TR::Register *virtReg1 = realReg1->getAssignedRegister();
    TR::Register *virtReg2 = realReg2->getAssignedRegister();
@@ -1532,7 +1538,7 @@ OMR::X86::Machine::createRegisterAssociationDirective(TR::Instruction *cursor)
 
    associations->stopAddingPostConditions();
 
-   new (self()->cg()->trHeapMemory()) TR::Instruction(associations, ASSOCREGS, cursor, self()->cg());
+   new (comp->trHeapMemory()) TR::Instruction(associations, ASSOCREGS, cursor, self()->cg());
    if (cursor == self()->cg()->getAppendInstruction())
       self()->cg()->setAppendInstruction(cursor->getNext());
 
@@ -1559,6 +1565,9 @@ OMR::X86::Machine::initializeRegisterFile(const struct TR::X86LinkageProperties 
    {
    int reg;
 
+   TR::CodeGenerator *cg = self()->cg();
+   TR::Compilation *comp = cg->comp();
+
    // Special pseudo-registers
    //
    _registerFile[TR::RealRegister::NoReg] = NULL;
@@ -1567,87 +1576,87 @@ OMR::X86::Machine::initializeRegisterFile(const struct TR::X86LinkageProperties 
 
    // GPRs
    //
-   _registerFile[TR::RealRegister::eax] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR,
+   _registerFile[TR::RealRegister::eax] = new (comp->trHeapMemory()) TR::RealRegister(TR_GPR,
                                                properties.isPreservedRegister(TR::RealRegister::eax) ? PRESERVED_WEIGHT: NONPRESERVED_WEIGHT,
                                                TR::RealRegister::Free,
                                                TR::RealRegister::eax,
-                                               TR::RealRegister::eaxMask, self()->cg());
+                                               TR::RealRegister::eaxMask, cg);
 
    static char *dontUseEBXasGPR = feGetEnv("dontUseEBXasGPR");
 
    if (!dontUseEBXasGPR)
       {
-      _registerFile[TR::RealRegister::ebx] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR,
+      _registerFile[TR::RealRegister::ebx] = new (comp->trHeapMemory()) TR::RealRegister(TR_GPR,
                                                   properties.isPreservedRegister(TR::RealRegister::ebx) ? PRESERVED_WEIGHT: NONPRESERVED_WEIGHT,
                                                   TR::RealRegister::Free,
                                                   TR::RealRegister::ebx,
-                                                  TR::RealRegister::ebxMask, self()->cg());
+                                                  TR::RealRegister::ebxMask, cg);
       }
    else
       {
-      _registerFile[TR::RealRegister::ebx] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR,
+      _registerFile[TR::RealRegister::ebx] = new (comp->trHeapMemory()) TR::RealRegister(TR_GPR,
                                                   UNUSED_WEIGHT,
                                                   TR::RealRegister::Locked,
                                                   TR::RealRegister::ebx,
-                                                  TR::RealRegister::ebxMask, self()->cg());
+                                                  TR::RealRegister::ebxMask, cg);
       _registerFile[TR::RealRegister::ebx]->setAssignedRegister(_registerFile[TR::RealRegister::ebx]);
       }
 
-   _registerFile[TR::RealRegister::ecx] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR,
+   _registerFile[TR::RealRegister::ecx] = new (comp->trHeapMemory()) TR::RealRegister(TR_GPR,
                                                properties.isPreservedRegister(TR::RealRegister::ecx) ? PRESERVED_WEIGHT: NONPRESERVED_WEIGHT,
                                                TR::RealRegister::Free,
                                                TR::RealRegister::ecx,
-                                               TR::RealRegister::ecxMask, self()->cg());
+                                               TR::RealRegister::ecxMask, cg);
 
-   _registerFile[TR::RealRegister::edx] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR,
+   _registerFile[TR::RealRegister::edx] = new (comp->trHeapMemory()) TR::RealRegister(TR_GPR,
                                                properties.isPreservedRegister(TR::RealRegister::edx) ? PRESERVED_WEIGHT : NONPRESERVED_WEIGHT,
                                                TR::RealRegister::Free,
                                                TR::RealRegister::edx,
-                                               TR::RealRegister::edxMask, self()->cg());
+                                               TR::RealRegister::edxMask, cg);
 
-   _registerFile[TR::RealRegister::edi] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR,
+   _registerFile[TR::RealRegister::edi] = new (comp->trHeapMemory()) TR::RealRegister(TR_GPR,
                                                properties.isPreservedRegister(TR::RealRegister::edi) ? PRESERVED_WEIGHT : NONPRESERVED_WEIGHT,
                                                TR::RealRegister::Free,
                                                TR::RealRegister::edi,
-                                               TR::RealRegister::ediMask, self()->cg());
+                                               TR::RealRegister::ediMask, cg);
 
-   _registerFile[TR::RealRegister::esi] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR,
+   _registerFile[TR::RealRegister::esi] = new (comp->trHeapMemory()) TR::RealRegister(TR_GPR,
                                                properties.isPreservedRegister(TR::RealRegister::esi) ? PRESERVED_WEIGHT : NONPRESERVED_WEIGHT,
                                                TR::RealRegister::Free,
                                                TR::RealRegister::esi,
-                                               TR::RealRegister::esiMask, self()->cg());
+                                               TR::RealRegister::esiMask, cg);
 
    // Platforms that are able to use ebp as a GPR can set the state to Free and
    // clear the assigned register in the CodeGen constructor.
-   _registerFile[TR::RealRegister::ebp] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR,
+   _registerFile[TR::RealRegister::ebp] = new (comp->trHeapMemory()) TR::RealRegister(TR_GPR,
                                                UNUSED_WEIGHT,
                                                TR::RealRegister::Locked,
                                                TR::RealRegister::ebp,
-                                               TR::RealRegister::ebpMask, self()->cg());
+                                               TR::RealRegister::ebpMask, cg);
    _registerFile[TR::RealRegister::ebp]->setAssignedRegister(_registerFile[TR::RealRegister::ebp]);
 
-   _registerFile[TR::RealRegister::esp] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR,
+   _registerFile[TR::RealRegister::esp] = new (comp->trHeapMemory()) TR::RealRegister(TR_GPR,
                                                UNUSED_WEIGHT,
                                                TR::RealRegister::Locked,
                                                TR::RealRegister::esp,
-                                               TR::RealRegister::espMask, self()->cg());
+                                               TR::RealRegister::espMask, cg);
    _registerFile[TR::RealRegister::esp]->setAssignedRegister(_registerFile[TR::RealRegister::esp]);
 
-   _registerFile[TR::RealRegister::vfp] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR,
+   _registerFile[TR::RealRegister::vfp] = new (comp->trHeapMemory()) TR::RealRegister(TR_GPR,
                                                UNUSED_WEIGHT,
                                                TR::RealRegister::Locked,
                                                TR::RealRegister::vfp,
-                                               TR::RealRegister::noRegMask, self()->cg());
+                                               TR::RealRegister::noRegMask, cg);
    _registerFile[TR::RealRegister::vfp]->setAssignedRegister(_registerFile[TR::RealRegister::NoReg]);
 
 #ifdef TR_TARGET_64BIT
    for(reg = TR::RealRegister::r8; reg <= TR::RealRegister::LastAssignableGPR; reg++)
       {
-      _registerFile[reg] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR,
+      _registerFile[reg] = new (comp->trHeapMemory()) TR::RealRegister(TR_GPR,
                                                   properties.isPreservedRegister((TR::RealRegister::RegNum)reg) ? PRESERVED_WEIGHT : NONPRESERVED_WEIGHT,
                                                   TR::RealRegister::Free,
                                                   (TR::RealRegister::RegNum)reg,
-                                                  TR::RealRegister::gprMask((TR::RealRegister::RegNum)reg), self()->cg());
+                                                  TR::RealRegister::gprMask((TR::RealRegister::RegNum)reg), cg);
       }
 #endif
 
@@ -1655,29 +1664,29 @@ OMR::X86::Machine::initializeRegisterFile(const struct TR::X86LinkageProperties 
    //
    for(reg = TR::RealRegister::FirstFPR; reg <= TR::RealRegister::LastFPR; reg++)
       {
-      _registerFile[reg] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_X87,
+      _registerFile[reg] = new (comp->trHeapMemory()) TR::RealRegister(TR_X87,
                                                   properties.isPreservedRegister((TR::RealRegister::RegNum)reg) ? PRESERVED_WEIGHT : NONPRESERVED_WEIGHT,
                                                   TR::RealRegister::Free,
                                                   (TR::RealRegister::RegNum)reg,
-                                                  TR::RealRegister::fprMask((TR::RealRegister::RegNum)reg), self()->cg());
+                                                  TR::RealRegister::fprMask((TR::RealRegister::RegNum)reg), cg);
       }
 
    for(reg = TR::RealRegister::FirstMMXR; reg <= TR::RealRegister::LastMMXR; reg++)
       {
-      _registerFile[reg] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR,
+      _registerFile[reg] = new (comp->trHeapMemory()) TR::RealRegister(TR_GPR,
                                                   properties.isPreservedRegister((TR::RealRegister::RegNum)reg) ? PRESERVED_WEIGHT : NONPRESERVED_WEIGHT,
                                                   TR::RealRegister::Free,
                                                   (TR::RealRegister::RegNum)reg,
-                                                  TR::RealRegister::mmrMask((TR::RealRegister::RegNum)reg), self()->cg());
+                                                  TR::RealRegister::mmrMask((TR::RealRegister::RegNum)reg), cg);
       }
 
    for(reg = TR::RealRegister::FirstXMMR; reg <= TR::RealRegister::LastXMMR; reg++)
       {
-      _registerFile[reg] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR,
+      _registerFile[reg] = new (comp->trHeapMemory()) TR::RealRegister(TR_FPR,
                                                   properties.isPreservedRegister((TR::RealRegister::RegNum)reg) ? PRESERVED_WEIGHT : NONPRESERVED_WEIGHT,
                                                   TR::RealRegister::Free,
                                                   (TR::RealRegister::RegNum)reg,
-                                                  TR::RealRegister::xmmrMask((TR::RealRegister::RegNum)reg), self()->cg());
+                                                  TR::RealRegister::xmmrMask((TR::RealRegister::RegNum)reg), cg);
       }
 
    }
@@ -1965,7 +1974,8 @@ TR::list<TR::Register*> *OMR::X86::Machine::captureSpilledRegistersList()
 
    TR_ASSERT(self()->cg()->getSpilledRegisterList(), "expecting an existing spilledRegistersList before capture");
 
-   TR::list<TR::Register*> *srl = new (self()->cg()->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::Register*>(self()->cg()->comp()->allocator()));
+   TR::Compilation *comp = self()->cg()->comp();
+   TR::list<TR::Register*> *srl = new (comp->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::Register*>(comp->allocator()));
    for(auto iter = self()->cg()->getSpilledRegisterList()->begin(); iter != self()->cg()->getSpilledRegisterList()->end(); ++iter)
       {
       srl->push_front(*iter);
@@ -2349,30 +2359,33 @@ void OMR::X86::Machine::resetFPStackRegisters()
 
 void OMR::X86::Machine::initializeFPStackRegisterFile()
    {
-   _fpStack[TR_X86FPStackRegister::fp0] = new (self()->cg()->trHeapMemory()) TR_X86FPStackRegister(TR_X86FPStackRegister::Free,
+   TR::CodeGenerator *cg = self()->cg();
+   TR::Compilation *comp = cg->comp();
+
+   _fpStack[TR_X86FPStackRegister::fp0] = new (comp->trHeapMemory()) TR_X86FPStackRegister(TR_X86FPStackRegister::Free,
                                                                     TR_X86FPStackRegister::fp0,
-                                                                    TR::RealRegister::NoReg, self()->cg());
-   _fpStack[TR_X86FPStackRegister::fp1] = new (self()->cg()->trHeapMemory()) TR_X86FPStackRegister(TR_X86FPStackRegister::Free,
+                                                                    TR::RealRegister::NoReg, cg);
+   _fpStack[TR_X86FPStackRegister::fp1] = new (comp->trHeapMemory()) TR_X86FPStackRegister(TR_X86FPStackRegister::Free,
                                                                     TR_X86FPStackRegister::fp1,
-                                                                    TR::RealRegister::NoReg, self()->cg());
-   _fpStack[TR_X86FPStackRegister::fp2] = new (self()->cg()->trHeapMemory()) TR_X86FPStackRegister(TR_X86FPStackRegister::Free,
+                                                                    TR::RealRegister::NoReg, cg);
+   _fpStack[TR_X86FPStackRegister::fp2] = new (comp->trHeapMemory()) TR_X86FPStackRegister(TR_X86FPStackRegister::Free,
                                                                     TR_X86FPStackRegister::fp2,
-                                                                    TR::RealRegister::NoReg, self()->cg());
-   _fpStack[TR_X86FPStackRegister::fp3] = new (self()->cg()->trHeapMemory()) TR_X86FPStackRegister(TR_X86FPStackRegister::Free,
+                                                                    TR::RealRegister::NoReg, cg);
+   _fpStack[TR_X86FPStackRegister::fp3] = new (comp->trHeapMemory()) TR_X86FPStackRegister(TR_X86FPStackRegister::Free,
                                                                     TR_X86FPStackRegister::fp3,
-                                                                    TR::RealRegister::NoReg, self()->cg());
-   _fpStack[TR_X86FPStackRegister::fp4] = new (self()->cg()->trHeapMemory()) TR_X86FPStackRegister(TR_X86FPStackRegister::Free,
+                                                                    TR::RealRegister::NoReg, cg);
+   _fpStack[TR_X86FPStackRegister::fp4] = new (comp->trHeapMemory()) TR_X86FPStackRegister(TR_X86FPStackRegister::Free,
                                                                     TR_X86FPStackRegister::fp4,
-                                                                    TR::RealRegister::NoReg, self()->cg());
-   _fpStack[TR_X86FPStackRegister::fp5] = new (self()->cg()->trHeapMemory()) TR_X86FPStackRegister(TR_X86FPStackRegister::Free,
+                                                                    TR::RealRegister::NoReg, cg);
+   _fpStack[TR_X86FPStackRegister::fp5] = new (comp->trHeapMemory()) TR_X86FPStackRegister(TR_X86FPStackRegister::Free,
                                                                     TR_X86FPStackRegister::fp5,
-                                                                    TR::RealRegister::NoReg, self()->cg());
-   _fpStack[TR_X86FPStackRegister::fp6] = new (self()->cg()->trHeapMemory()) TR_X86FPStackRegister(TR_X86FPStackRegister::Free,
+                                                                    TR::RealRegister::NoReg, cg);
+   _fpStack[TR_X86FPStackRegister::fp6] = new (comp->trHeapMemory()) TR_X86FPStackRegister(TR_X86FPStackRegister::Free,
                                                                     TR_X86FPStackRegister::fp6,
-                                                                    TR::RealRegister::NoReg, self()->cg());
-   _fpStack[TR_X86FPStackRegister::fp7] = new (self()->cg()->trHeapMemory()) TR_X86FPStackRegister(TR_X86FPStackRegister::Free,
+                                                                    TR::RealRegister::NoReg, cg);
+   _fpStack[TR_X86FPStackRegister::fp7] = new (comp->trHeapMemory()) TR_X86FPStackRegister(TR_X86FPStackRegister::Free,
                                                                     TR_X86FPStackRegister::fp7,
-                                                                    TR::RealRegister::NoReg, self()->cg());
+                                                                    TR::RealRegister::NoReg, cg);
    }
 
 
@@ -2492,7 +2505,7 @@ TR::Instruction  *OMR::X86::Machine::fpStackFXCH(TR::Instruction *prevInstructio
       {
       cursor = prevInstruction;
       TR::RealRegister *realFPReg = self()->fpMapToStackRelativeRegister(vreg);
-      cursor = new (self()->cg()->trHeapMemory()) TR::X86FPRegInstruction(cursor, FXCHReg, realFPReg, self()->cg());
+      cursor = new (self()->cg()->comp()->trHeapMemory()) TR::X86FPRegInstruction(cursor, FXCHReg, realFPReg, self()->cg());
       }
 
    _fpStack[_fpTopOfStack] = _fpStack[vregNum];
@@ -2528,7 +2541,7 @@ TR::Instruction  *OMR::X86::Machine::fpStackFXCH(TR::Instruction *prevInstructio
    //
    TR::Instruction   *cursor = prevInstruction;
    TR::RealRegister  *realFPReg = self()->fpMapToStackRelativeRegister(stackReg);
-   cursor = new (self()->cg()->trHeapMemory()) TR::X86FPRegInstruction(cursor, FXCHReg, realFPReg, self()->cg());
+   cursor = new (self()->cg()->comp()->trHeapMemory()) TR::X86FPRegInstruction(cursor, FXCHReg, realFPReg, self()->cg());
 
    _fpStack[_fpTopOfStack] = _fpStack[vRegNum];
    _fpStack[vRegNum] = pTop;
@@ -2819,7 +2832,7 @@ TR::Instruction *OMR::X86::Machine::fpSpillFPR(TR::Instruction *prevInstruction,
       vreg->setBackingStorage(location);
       TR_ASSERT(offset == 0 || offset == 4, "assertion failure");
       vreg->setIsSpilledToSecondHalf(offset > 0);
-      cursor = new (self()->cg()->trHeapMemory()) TR::X86FPMemRegInstruction(cursor,
+      cursor = new (self()->cg()->comp()->trHeapMemory()) TR::X86FPMemRegInstruction(cursor,
                                               isFloat ? FSTPMemReg : DSTPMemReg,
                                               tempMR,
                                               self()->fpMapToStackRelativeRegister(vreg), self()->cg());
@@ -2852,7 +2865,7 @@ TR::Instruction *OMR::X86::Machine::reverseFPRSpillState(TR::Instruction *prevIn
    bool isFloat = spilledRegister->isSinglePrecision(); // && debug("floatSpills");
 
    TR::RealRegister *realFPReg = self()->fpMapToStackRelativeRegister(spilledRegister);
-   cursor = new (self()->cg()->trHeapMemory()) TR::X86FPRegMemInstruction(cursor,
+   cursor = new (self()->cg()->comp()->trHeapMemory()) TR::X86FPRegMemInstruction(cursor,
                                            isFloat ? FLDRegMem : DLDRegMem,
                                            realFPReg,
                                            tempMR, self()->cg());

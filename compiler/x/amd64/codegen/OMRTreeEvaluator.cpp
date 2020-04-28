@@ -359,6 +359,7 @@ TR::Register *OMR::X86::AMD64::TreeEvaluator::lbits2dEvaluator(TR::Node *node, T
 TR::Register *OMR::X86::AMD64::TreeEvaluator::dbits2lEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    // TODO:AMD64: Peepholing
+   TR::Compilation *comp = cg->comp();
    TR::Node      *child  = node->getFirstChild();
    TR::Register  *sreg   = cg->evaluate(child);
    TR::Register  *treg   = cg->allocateRegister(TR_GPR);
@@ -377,9 +378,9 @@ TR::Register *OMR::X86::AMD64::TreeEvaluator::dbits2lEvaluator(TR::Node *node, T
          TR::MemoryReference* nan1MR     = generateX86MemoryReference(cg->findOrCreate8ByteConstant(node, DOUBLE_NAN_1_LOW), cg);
          TR::MemoryReference* nan2MR     = generateX86MemoryReference(cg->findOrCreate8ByteConstant(node, DOUBLE_NAN_2_LOW), cg);
 
-         TR::LabelSymbol *startLabel     = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-         TR::LabelSymbol *normalizeLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-         TR::LabelSymbol *endLabel       = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+         TR::LabelSymbol *startLabel     = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
+         TR::LabelSymbol *normalizeLabel = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
+         TR::LabelSymbol *endLabel       = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
          startLabel->setStartInternalControlFlow();
          endLabel  ->setEndInternalControlFlow();
 
@@ -407,10 +408,10 @@ TR::Register *OMR::X86::AMD64::TreeEvaluator::dbits2lEvaluator(TR::Node *node, T
 
          TR::MemoryReference* nanDetectorMR = generateX86MemoryReference(cg->findOrCreate8ByteConstant(node, nanDetector),  cg);
 
-         TR::LabelSymbol *startLabel     = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-         TR::LabelSymbol *slowPathLabel  = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-         TR::LabelSymbol *normalizeLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-         TR::LabelSymbol *endLabel       = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+         TR::LabelSymbol *startLabel     = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
+         TR::LabelSymbol *slowPathLabel  = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
+         TR::LabelSymbol *normalizeLabel = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
+         TR::LabelSymbol *endLabel       = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
          startLabel->setStartInternalControlFlow();
          endLabel  ->setEndInternalControlFlow();
 

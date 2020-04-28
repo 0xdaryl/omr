@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -532,7 +532,7 @@ TR_X86RegisterDependencyIndex OMR::X86::RegisterDependencyConditions::unionRealD
 TR::RegisterDependencyConditions  *OMR::X86::RegisterDependencyConditions::clone(TR::CodeGenerator *cg, TR_X86RegisterDependencyIndex additionalRegDeps)
    {
    TR::RegisterDependencyConditions  *other =
-      new (cg->trHeapMemory()) TR::RegisterDependencyConditions(_numPreConditions  + additionalRegDeps,
+      new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(_numPreConditions  + additionalRegDeps,
                                               _numPostConditions + additionalRegDeps, cg->trMemory());
    int32_t i;
 
@@ -761,7 +761,7 @@ void TR_X86RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentIn
                   }
 
                TR::X86RegMemInstruction *inst =
-                  new (cg->trHeapMemory()) TR::X86RegMemInstruction(currentInstruction, op, assignedReg, tempMR, cg);
+                  new (comp->trHeapMemory()) TR::X86RegMemInstruction(currentInstruction, op, assignedReg, tempMR, cg);
 
                assignedReg->setAssignedRegister(NULL);
                virtReg->setAssignedRegister(NULL);
@@ -1347,7 +1347,7 @@ void TR_X86RegisterDependencyGroup::assignFPRegisters(TR::Instruction   *prevIns
                }
 
             TR::RealRegister *popRealRegister = machine->fpMapToStackRelativeRegister(popRegister);
-            cursor = new (cg->trHeapMemory()) TR::X86FPRegInstruction(cursor, FSTPReg, popRealRegister, cg);
+            cursor = new (cg->comp()->trHeapMemory()) TR::X86FPRegInstruction(cursor, FSTPReg, popRealRegister, cg);
             machine->fpStackPop();
             }
          }
@@ -1550,7 +1550,7 @@ generateRegisterDependencyConditions(TR_X86RegisterDependencyIndex numPreConds,
                                      TR_X86RegisterDependencyIndex numPostConds,
                                      TR::CodeGenerator * cg)
    {
-   return new (cg->trHeapMemory()) TR::RegisterDependencyConditions(numPreConds, numPostConds, cg->trMemory());
+   return new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(numPreConds, numPostConds, cg->trMemory());
    }
 
 TR::RegisterDependencyConditions  *
@@ -1559,5 +1559,5 @@ generateRegisterDependencyConditions(TR::Node           *node,
                                      TR_X86RegisterDependencyIndex           additionalRegDeps,
                                      List<TR::Register> *popRegisters)
    {
-   return new (cg->trHeapMemory()) TR::RegisterDependencyConditions(node, cg, additionalRegDeps, popRegisters);
+   return new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(node, cg, additionalRegDeps, popRegisters);
    }

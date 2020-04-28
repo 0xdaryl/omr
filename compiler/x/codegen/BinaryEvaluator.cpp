@@ -1989,7 +1989,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerMulEvaluator(TR::Node *node, TR::C
             }
 
          TR_X86IntegerMultiplyDecomposer *mulDecomposer =
-            new (cg->trHeapMemory()) TR_X86IntegerMultiplyDecomposer(value,
+            new (cg->comp()->trHeapMemory()) TR_X86IntegerMultiplyDecomposer(value,
                                                                      firstChild->getRegister(),
                                                                      node,
                                                                      cg,
@@ -2217,8 +2217,9 @@ TR::Register *OMR::X86::TreeEvaluator::signedIntegerDivOrRemAnalyser(TR::Node *n
          // code.  Hence, there's no point complicating this logic (which is
          // already complicated enough).
          //
-         TR::LabelSymbol *startLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-         TR::LabelSymbol *doneLabel  = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+         TR::Compilation *comp = cg->comp();
+         TR::LabelSymbol *startLabel = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
+         TR::LabelSymbol *doneLabel  = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
          startLabel->setStartInternalControlFlow();
          doneLabel->setEndInternalControlFlow();
          generateLabelInstruction(LABEL, node, startLabel, cg);
@@ -2592,10 +2593,11 @@ TR::Register *OMR::X86::TreeEvaluator::integerDivOrRemEvaluator(TR::Node *node, 
       //
       if (needsExplicitOverflowCheck)
          {
-         startLabel           = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-         divisionLabel        = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-         overflowSnippetLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-         restartLabel         = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+         TR::Compilation *comp = cg->comp();
+         startLabel           = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
+         divisionLabel        = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
+         overflowSnippetLabel = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
+         restartLabel         = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
 
          startLabel->setStartInternalControlFlow();
          restartLabel->setEndInternalControlFlow();
@@ -2668,7 +2670,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerDivOrRemEvaluator(TR::Node *node, 
          generateLabelInstruction(LABEL, node, restartLabel, allDeps, cg);
 
          TR_ASSERT(divisorRegister != NULL, "Divide check snippet needs divisor in a register");
-         cg->addSnippet(new (cg->trHeapMemory()) TR::X86DivideCheckSnippet(restartLabel,
+         cg->addSnippet(new (cg->comp()->trHeapMemory()) TR::X86DivideCheckSnippet(restartLabel,
                                                       overflowSnippetLabel,
                                                       divisionLabel,
                                                       node->getOpCode(),

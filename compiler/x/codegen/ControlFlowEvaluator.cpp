@@ -2378,12 +2378,13 @@ OMR::X86::CodeGenerator::addMetaDataForBranchTableAddress(
       TR::Node *caseNode,
       TR::X86MemTableInstruction *jmpTableInstruction)
    {
+   TR::Compilation *comp = self()->comp();
 
-   self()->addExternalRelocation(new (self()->trHeapMemory()) TR::ExternalRelocation(target, 0, TR_AbsoluteMethodAddress, self()),
+   self()->addExternalRelocation(new (comp->trHeapMemory()) TR::ExternalRelocation(target, 0, TR_AbsoluteMethodAddress, self()),
                            __FILE__, __LINE__, caseNode->getBranchDestination()->getNode());
 
    TR::LabelSymbol *label = caseNode->getBranchDestination()->getNode()->getLabel();
-   TR::LabelRelocation *relocation = new (self()->trHeapMemory()) TR::LabelAbsoluteRelocation(target, label);
+   TR::LabelRelocation *relocation = new (comp->trHeapMemory()) TR::LabelAbsoluteRelocation(target, label);
    self()->addRelocation(relocation);
 
    if (jmpTableInstruction)
