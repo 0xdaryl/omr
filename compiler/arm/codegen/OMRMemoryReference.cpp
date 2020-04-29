@@ -124,7 +124,7 @@ OMR::ARM::MemoryReference::MemoryReference(TR::Node          *rootLoadOrStore,
       {
       if (ref->isUnresolved())
          {
-         self()->setUnresolvedSnippet(new (cg->trHeapMemory()) TR::UnresolvedDataSnippet(cg, rootLoadOrStore, rootLoadOrStore->getSymbolReference(),isStore, false));
+         self()->setUnresolvedSnippet(new (comp->trHeapMemory()) TR::UnresolvedDataSnippet(cg, rootLoadOrStore, rootLoadOrStore->getSymbolReference(),isStore, false));
          cg->addSnippet(self()->getUnresolvedSnippet());
          }
       self()->populateMemoryReference(rootLoadOrStore->getFirstChild(), cg);
@@ -135,7 +135,7 @@ OMR::ARM::MemoryReference::MemoryReference(TR::Node          *rootLoadOrStore,
          {
          if (ref->isUnresolved())
             {
-            self()->setUnresolvedSnippet(new (cg->trHeapMemory()) TR::UnresolvedDataSnippet(cg, rootLoadOrStore, rootLoadOrStore->getSymbolReference(),isStore, false));
+            self()->setUnresolvedSnippet(new (comp->trHeapMemory()) TR::UnresolvedDataSnippet(cg, rootLoadOrStore, rootLoadOrStore->getSymbolReference(),isStore, false));
             cg->addSnippet(self()->getUnresolvedSnippet());
             }
          else
@@ -182,7 +182,7 @@ OMR::ARM::MemoryReference::MemoryReference(TR::Node *node, TR::SymbolReference *
       {
       if (symRef->isUnresolved())
          {
-         self()->setUnresolvedSnippet(new (cg->trHeapMemory()) TR::UnresolvedDataSnippet(cg, node, symRef,false, false));
+         self()->setUnresolvedSnippet(new (cg->comp()->trHeapMemory()) TR::UnresolvedDataSnippet(cg, node, symRef,false, false));
          cg->addSnippet(self()->getUnresolvedSnippet());
          }
       else
@@ -232,7 +232,7 @@ OMR::ARM::MemoryReference::MemoryReference(TR::MemoryReference &mr,
    if (mr.getUnresolvedSnippet() != NULL)
       {
 #ifdef J9_PROJECT_SPECIFIC
-      _unresolvedSnippet = new (cg->trHeapMemory()) TR::UnresolvedDataSnippet(cg, 0, &_symbolReference, mr.getUnresolvedSnippet()->resolveForStore(), false);
+      _unresolvedSnippet = new (cg->comp()->trHeapMemory()) TR::UnresolvedDataSnippet(cg, 0, &_symbolReference, mr.getUnresolvedSnippet()->resolveForStore(), false);
       cg->addSnippet(_unresolvedSnippet);
       _modBase = cg->allocateRegister();
 #endif
@@ -480,7 +480,7 @@ void OMR::ARM::MemoryReference::populateMemoryReference(TR::Node *subTree, TR::C
             {
             if (ref->isUnresolved())
                {
-               self()->setUnresolvedSnippet(new (cg->trHeapMemory()) TR::UnresolvedDataSnippet(cg, subTree, &_symbolReference, subTree->getOpCode().isStore(), false));
+               self()->setUnresolvedSnippet(new (cg->comp()->trHeapMemory()) TR::UnresolvedDataSnippet(cg, subTree, &_symbolReference, subTree->getOpCode().isStore(), false));
                cg->addSnippet(self()->getUnresolvedSnippet());
                }
             else
@@ -579,7 +579,7 @@ void OMR::ARM::MemoryReference::consolidateRegisters(TR::Register *srcReg, TR::N
             tempTargetRegister = cg->allocateCollectedReferenceRegister();
          else
             tempTargetRegister = cg->allocateRegister();
-         new (cg->trHeapMemory()) TR::ARMTrg1Src2Instruction(ARMOp_add, srcTree, tempTargetRegister, _indexRegister, srcReg, cg);
+         new (cg->comp()->trHeapMemory()) TR::ARMTrg1Src2Instruction(ARMOp_add, srcTree, tempTargetRegister, _indexRegister, srcReg, cg);
          if (_indexRegister != tempTargetRegister)
             {
             if (_indexNode != NULL)
@@ -616,7 +616,7 @@ void OMR::ARM::MemoryReference::consolidateRegisters(TR::Register *srcReg, TR::N
             tempTargetRegister = cg->allocateCollectedReferenceRegister();
          else
             tempTargetRegister = cg->allocateRegister();
-         new (cg->trHeapMemory()) TR::ARMTrg1Src2Instruction(ARMOp_add, srcTree, tempTargetRegister, _baseRegister, _indexRegister, cg);
+         new (cg->comp()->trHeapMemory()) TR::ARMTrg1Src2Instruction(ARMOp_add, srcTree, tempTargetRegister, _baseRegister, _indexRegister, cg);
          if (_baseRegister != tempTargetRegister)
             {
             self()->decNodeReferenceCounts();
@@ -643,7 +643,7 @@ void OMR::ARM::MemoryReference::consolidateRegisters(TR::Register *srcReg, TR::N
             tempTargetRegister = cg->allocateCollectedReferenceRegister();
          else
             tempTargetRegister = cg->allocateRegister();
-         new (cg->trHeapMemory()) TR::ARMTrg1Src2Instruction(ARMOp_add, srcTree, tempTargetRegister, _baseRegister, srcReg, cg);
+         new (cg->comp()->trHeapMemory()) TR::ARMTrg1Src2Instruction(ARMOp_add, srcTree, tempTargetRegister, _baseRegister, srcReg, cg);
          if (_baseRegister != tempTargetRegister)
             {
             self()->decNodeReferenceCounts();
@@ -854,7 +854,7 @@ uint8_t *OMR::ARM::MemoryReference::generateBinaryEncoding(TR::Instruction *curr
       TR::RealRegister *mBase = toRealRegister(self()->getModBase());
       self()->getUnresolvedSnippet()->setAddressOfDataReference(cursor);
       self()->getUnresolvedSnippet()->setMemoryReference(self());
-      cg->addRelocation(new (cg->trHeapMemory()) TR::LabelRelative24BitRelocation(cursor, self()->getUnresolvedSnippet()->getSnippetLabel()));
+      cg->addRelocation(new (cg->comp()->trHeapMemory()) TR::LabelRelative24BitRelocation(cursor, self()->getUnresolvedSnippet()->getSnippetLabel()));
       *wcursor = 0xEA000000; // insert a branch to the snippet
       wcursor++;
       cursor += ARM_INSTRUCTION_LENGTH;
@@ -1391,7 +1391,7 @@ static void loadRelocatableConstant(TR::Node               *node,
          }
       else
          {
-         cg->addSnippet(mr->setUnresolvedSnippet(new (cg->trHeapMemory()) TR::UnresolvedDataSnippet(cg, node, ref, node->getOpCode().isStore(), false)));
+         cg->addSnippet(mr->setUnresolvedSnippet(new (cg->comp()->trHeapMemory()) TR::UnresolvedDataSnippet(cg, node, ref, node->getOpCode().isStore(), false)));
          }
       }
    else

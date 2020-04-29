@@ -391,7 +391,7 @@ TR::Register *OMR::ARM::TreeEvaluator::lmulEvaluator(TR::Node *node, TR::CodeGen
    TR::Register *dd_lowReg, *dr_lowReg;
    TR::Register *dd_highReg, *dr_highReg;
    TR::Register *trgReg, *highReg, *lowReg;
-   TR::RegisterDependencyConditions *dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(4, 4, cg->trMemory());
+   TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(4, 4, cg->trMemory());
 
    if (firstChild->getReferenceCount() > 1)
       {
@@ -595,12 +595,12 @@ static TR::Register *signedIntegerDivisionOrRemainderAnalyser(TR::Node *node, in
 
       if (divisor > 0)
          {
-         TR_ARMOperand2 *shiftOp = new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2RegLSRImmed, dividendReg, 31);
+         TR_ARMOperand2 *shiftOp = new (cg->comp()->trHeapMemory()) TR_ARMOperand2(ARMOp2RegLSRImmed, dividendReg, 31);
          generateTrg1Src2Instruction(cg, ARMOp_add, node, temp4Reg, temp3Reg, shiftOp);
          }
       else
          {
-         TR_ARMOperand2 *shiftOp = new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2RegLSRImmed, temp3Reg, 31);
+         TR_ARMOperand2 *shiftOp = new (cg->comp()->trHeapMemory()) TR_ARMOperand2(ARMOp2RegLSRImmed, temp3Reg, 31);
          generateTrg1Src2Instruction(cg,ARMOp_add,node,temp4Reg,temp3Reg,shiftOp);
          }
 
@@ -642,7 +642,7 @@ static TR::Register *idivAndIRemHelper(TR::Node *node, bool isDivide, TR::CodeGe
    // can't be done cheaply, call helper
    TR::Register *dd_reg, *dr_reg;
    TR::Register *divisor = cg->evaluate(secondChild);
-   TR::RegisterDependencyConditions *dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->trMemory());
+   TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->trMemory());
 
    if (firstChild->getReferenceCount() > 1)
       {
@@ -693,7 +693,7 @@ static TR::Register *ldivAndLRemHelper(TR::Node *node, bool isDivide, TR::CodeGe
    TR::Register *dd_lowReg, *dr_lowReg;
    TR::Register *dd_highReg, *dr_highReg;
    TR::Register *trgReg, *highReg, *lowReg;
-   TR::RegisterDependencyConditions *dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(4, 4, cg->trMemory());
+   TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(4, 4, cg->trMemory());
 
    if (firstChild->getReferenceCount() > 1)
       {
@@ -821,22 +821,22 @@ static TR::Register *ishiftEvaluator(TR::Node *node, TR_ARMOperand2Type shiftTyp
          else
             {
             trgReg = cg->allocateRegister();
-            op = new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2Reg, src1Reg);
+            op = new (cg->comp()->trHeapMemory()) TR_ARMOperand2(ARMOp2Reg, src1Reg);
             }
          }
       else
          {
          trgReg = cg->allocateRegister();
-         op = new (cg->trHeapMemory()) TR_ARMOperand2(shiftTypeImmed, src1Reg, secondChild->getInt() & 0x1f);
+         op = new (cg->comp()->trHeapMemory()) TR_ARMOperand2(shiftTypeImmed, src1Reg, secondChild->getInt() & 0x1f);
          }
       }
    else
       {
       TR::Register *shiftAmountReg = cg->evaluate(secondChild);
       trgReg = cg->allocateRegister();
-      op = new (cg->trHeapMemory()) TR_ARMOperand2(0x1f, 0);
+      op = new (cg->comp()->trHeapMemory()) TR_ARMOperand2(0x1f, 0);
       generateTrg1Src2Instruction(cg, ARMOp_and, node, trgReg, shiftAmountReg, op);
-      op = new (cg->trHeapMemory()) TR_ARMOperand2(shiftTypeReg, src1Reg, trgReg);
+      op = new (cg->comp()->trHeapMemory()) TR_ARMOperand2(shiftTypeReg, src1Reg, trgReg);
       }
 
    if (trgReg != src1Reg)
@@ -939,7 +939,7 @@ static TR::Register *longRightShiftEvaluator(TR::Node *node, bool isLogical, TR:
             }
          else
             {
-            new (cg->trHeapMemory()) TR::ARMTrg1Src1Instruction(ARMOp_mov, node, trgReg->getHighOrder(), new (cg->trHeapMemory()) TR_ARMOperand2(shiftType, srcHighReg, 31), cg);
+            new (cg->comp()->trHeapMemory()) TR::ARMTrg1Src1Instruction(ARMOp_mov, node, trgReg->getHighOrder(), new (cg->comp()->trHeapMemory()) TR_ARMOperand2(shiftType, srcHighReg, 31), cg);
             }
          if (shiftAmount == 32)
             {
@@ -947,14 +947,14 @@ static TR::Register *longRightShiftEvaluator(TR::Node *node, bool isLogical, TR:
             }
          else
             {
-            new (cg->trHeapMemory()) TR::ARMTrg1Src1Instruction(ARMOp_mov, node, trgReg->getLowOrder(), new (cg->trHeapMemory()) TR_ARMOperand2(shiftType, srcHighReg, shiftAmount-32), cg);
+            new (cg->comp()->trHeapMemory()) TR::ARMTrg1Src1Instruction(ARMOp_mov, node, trgReg->getLowOrder(), new (cg->comp()->trHeapMemory()) TR_ARMOperand2(shiftType, srcHighReg, shiftAmount-32), cg);
             }
          }
       else // (shiftAmount < 32)
          {
          TR::Register *temp1Reg         = cg->allocateRegister();
          TR::Register *temp2Reg         = cg->allocateRegister();
-         generateTrg1Src1Instruction(cg, ARMOp_mov, node, trgReg->getHighOrder(), new (cg->trHeapMemory()) TR_ARMOperand2(shiftType, srcHighReg, shiftAmount));
+         generateTrg1Src1Instruction(cg, ARMOp_mov, node, trgReg->getHighOrder(), new (cg->comp()->trHeapMemory()) TR_ARMOperand2(shiftType, srcHighReg, shiftAmount));
          generateShiftRightLogicalImmediate(cg, node, temp1Reg, srcLowReg, shiftAmount);
          generateShiftLeftImmediate(cg, node, temp2Reg, srcHighReg, 32-shiftAmount);
          generateTrg1Src2Instruction(cg, ARMOp_orr, node, trgReg->getLowOrder(), temp1Reg, temp2Reg);
@@ -997,7 +997,7 @@ static TR::Register *longRightShiftEvaluator(TR::Node *node, bool isLogical, TR:
       else
          {
          // do an out of line call for full shift by register.
-         TR::RegisterDependencyConditions *dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(3, 3, cg->trMemory());
+         TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(3, 3, cg->trMemory());
 
          generateTrg1Src1Instruction(cg, ARMOp_mov, node, trgReg->getLowOrder(), srcLowReg);
          generateTrg1Src1Instruction(cg, ARMOp_mov, node, trgReg->getHighOrder(), srcHighReg);
@@ -1050,7 +1050,7 @@ TR::Register *OMR::ARM::TreeEvaluator::irolEvaluator(TR::Node *node, TR::CodeGen
       if (value != 0)
          {
          // Use ROR (Rotate Right) Operand2
-         generateTrg1Src1Instruction(cg, ARMOp_mov, node, trgReg, new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2RegRORImmed, srcReg, 32-value));
+         generateTrg1Src1Instruction(cg, ARMOp_mov, node, trgReg, new (cg->comp()->trHeapMemory()) TR_ARMOperand2(ARMOp2RegRORImmed, srcReg, 32-value));
          }
       else
          {
@@ -1062,7 +1062,7 @@ TR::Register *OMR::ARM::TreeEvaluator::irolEvaluator(TR::Node *node, TR::CodeGen
       TR::Register *shiftAmountReg = cg->evaluate(secondChild);
       generateTrg1Src1ImmInstruction(cg, ARMOp_rsb, node, trgReg, shiftAmountReg, 1, 5); // Subtract from 32 (1 << 5)
       // Use ROR (Rotate Right) Operand2
-      generateTrg1Src1Instruction(cg, ARMOp_mov, node, trgReg, new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2RegRORReg, srcReg, trgReg));
+      generateTrg1Src1Instruction(cg, ARMOp_mov, node, trgReg, new (cg->comp()->trHeapMemory()) TR_ARMOperand2(ARMOp2RegRORReg, srcReg, trgReg));
       }
 
    node->setRegister(trgReg);
@@ -1100,18 +1100,18 @@ TR::Register *OMR::ARM::TreeEvaluator::lrolEvaluator(TR::Node *node, TR::CodeGen
       else if (value < 32)
          {
          // Not tested
-         generateTrg1Src1Instruction(cg, ARMOp_mov, node, lowReg, new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2RegLSLImmed, srcLowReg, value));
-         generateTrg1Src1Instruction(cg, ARMOp_mov, node, highReg, new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2RegLSLImmed, srcHighReg, value));
-         generateTrg1Src2Instruction(cg, ARMOp_orr, node, lowReg, lowReg, new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2RegLSRImmed, srcHighReg, 32-value));
-         generateTrg1Src2Instruction(cg, ARMOp_orr, node, highReg, highReg, new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2RegLSRImmed, srcLowReg, 32-value));
+         generateTrg1Src1Instruction(cg, ARMOp_mov, node, lowReg, new (cg->comp()->trHeapMemory()) TR_ARMOperand2(ARMOp2RegLSLImmed, srcLowReg, value));
+         generateTrg1Src1Instruction(cg, ARMOp_mov, node, highReg, new (cg->comp()->trHeapMemory()) TR_ARMOperand2(ARMOp2RegLSLImmed, srcHighReg, value));
+         generateTrg1Src2Instruction(cg, ARMOp_orr, node, lowReg, lowReg, new (cg->comp()->trHeapMemory()) TR_ARMOperand2(ARMOp2RegLSRImmed, srcHighReg, 32-value));
+         generateTrg1Src2Instruction(cg, ARMOp_orr, node, highReg, highReg, new (cg->comp()->trHeapMemory()) TR_ARMOperand2(ARMOp2RegLSRImmed, srcLowReg, 32-value));
          }
       else // value > 32
          {
          // Not tested
-         generateTrg1Src1Instruction(cg, ARMOp_mov, node, lowReg, new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2RegLSLImmed, srcHighReg, value-32));
-         generateTrg1Src1Instruction(cg, ARMOp_mov, node, highReg, new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2RegLSLImmed, srcLowReg, value-32));
-         generateTrg1Src2Instruction(cg, ARMOp_orr, node, lowReg, lowReg, new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2RegLSRImmed, srcLowReg, 64-value));
-         generateTrg1Src2Instruction(cg, ARMOp_orr, node, highReg, highReg, new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2RegLSRImmed, srcHighReg, 64-value));
+         generateTrg1Src1Instruction(cg, ARMOp_mov, node, lowReg, new (cg->comp()->trHeapMemory()) TR_ARMOperand2(ARMOp2RegLSLImmed, srcHighReg, value-32));
+         generateTrg1Src1Instruction(cg, ARMOp_mov, node, highReg, new (cg->comp()->trHeapMemory()) TR_ARMOperand2(ARMOp2RegLSLImmed, srcLowReg, value-32));
+         generateTrg1Src2Instruction(cg, ARMOp_orr, node, lowReg, lowReg, new (cg->comp()->trHeapMemory()) TR_ARMOperand2(ARMOp2RegLSRImmed, srcLowReg, 64-value));
+         generateTrg1Src2Instruction(cg, ARMOp_orr, node, highReg, highReg, new (cg->comp()->trHeapMemory()) TR_ARMOperand2(ARMOp2RegLSRImmed, srcHighReg, 64-value));
          }
       }
    else
@@ -1144,8 +1144,8 @@ static TR::Register *ibooleanTypeImmediateEvaluator(TR::Node *srcNode, TR_ARMOpC
    else if (regOp == ARMOp_and && imm == 0xffff)
       {
       trgReg = cg->allocateRegister();
-      generateTrg1Src1Instruction(cg, ARMOp_mov, srcNode, trgReg, new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2RegLSLImmed, srcReg, 16));
-      generateTrg1Src1Instruction(cg, ARMOp_mov, srcNode, trgReg, new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2RegLSRImmed, trgReg, 16));
+      generateTrg1Src1Instruction(cg, ARMOp_mov, srcNode, trgReg, new (cg->comp()->trHeapMemory()) TR_ARMOperand2(ARMOp2RegLSLImmed, srcReg, 16));
+      generateTrg1Src1Instruction(cg, ARMOp_mov, srcNode, trgReg, new (cg->comp()->trHeapMemory()) TR_ARMOperand2(ARMOp2RegLSRImmed, trgReg, 16));
       }
    return trgReg;
    }
@@ -1167,13 +1167,13 @@ static inline TR::Register *lbooleanTypeEvaluator(TR::Node *node,
          {
          trgLow = cg->allocateRegister();
          armLoadConstant(node, (int32_t)imm64, trgLow, cg);
-         new (cg->trHeapMemory()) TR::ARMTrg1Src2Instruction(regOp, node, trgLow, src1Reg->getLowOrder(), trgLow, cg);
+         new (cg->comp()->trHeapMemory()) TR::ARMTrg1Src2Instruction(regOp, node, trgLow, src1Reg->getLowOrder(), trgLow, cg);
          }
       if (!(trgHigh = ibooleanTypeImmediateEvaluator(firstChild, regOp, src1Reg->getHighOrder(), (int32_t)(imm64>>32), cg)))
          {
          trgHigh = cg->allocateRegister();
          armLoadConstant(node, (int32_t)(imm64>>32), trgHigh, cg);
-         new (cg->trHeapMemory()) TR::ARMTrg1Src2Instruction(regOp, node, trgHigh, src1Reg->getHighOrder(), trgHigh, cg);
+         new (cg->comp()->trHeapMemory()) TR::ARMTrg1Src2Instruction(regOp, node, trgHigh, src1Reg->getHighOrder(), trgHigh, cg);
          }
       trgReg = cg->allocateRegisterPair(trgLow, trgHigh);
       }
@@ -1182,8 +1182,8 @@ static inline TR::Register *lbooleanTypeEvaluator(TR::Node *node,
       trgReg = cg->allocateRegisterPair(cg->allocateRegister(), cg->allocateRegister());
       src2Reg = cg->evaluate(secondChild);
 
-      new (cg->trHeapMemory()) TR::ARMTrg1Src2Instruction(regOp, node, trgReg->getLowOrder(), src2Reg->getLowOrder(), src1Reg->getLowOrder(), cg);
-      new (cg->trHeapMemory()) TR::ARMTrg1Src2Instruction(regOp, node, trgReg->getHighOrder(), src2Reg->getHighOrder(), src1Reg->getHighOrder(), cg);
+      new (cg->comp()->trHeapMemory()) TR::ARMTrg1Src2Instruction(regOp, node, trgReg->getLowOrder(), src2Reg->getLowOrder(), src1Reg->getLowOrder(), cg);
+      new (cg->comp()->trHeapMemory()) TR::ARMTrg1Src2Instruction(regOp, node, trgReg->getHighOrder(), src2Reg->getHighOrder(), src1Reg->getHighOrder(), cg);
       }
    node->setRegister(trgReg);
    firstChild->decReferenceCount();
@@ -1282,13 +1282,13 @@ static TR::Register *ishiftAnalyser(TR::Node *node, TR::CodeGenerator *cg,TR_ARM
 
       if (shiftSecondChild->getOpCodeValue() == TR::iconst)
          {
-         shiftOp = new (cg->trHeapMemory()) TR_ARMOperand2(shiftTypeImmed, src1Reg, shiftSecondChild->getInt() & 0x1f);
+         shiftOp = new (cg->comp()->trHeapMemory()) TR_ARMOperand2(shiftTypeImmed, src1Reg, shiftSecondChild->getInt() & 0x1f);
          }
       else
          {
          TR::Register *shiftAmountReg = cg->evaluate(shiftSecondChild);
-         generateTrg1Src2Instruction(cg, ARMOp_and, node, trgReg, shiftAmountReg, new (cg->trHeapMemory()) TR_ARMOperand2(0x1f,0));
-         shiftOp = new (cg->trHeapMemory()) TR_ARMOperand2(shiftTypeReg, src1Reg, trgReg);
+         generateTrg1Src2Instruction(cg, ARMOp_and, node, trgReg, shiftAmountReg, new (cg->comp()->trHeapMemory()) TR_ARMOperand2(0x1f,0));
+         shiftOp = new (cg->comp()->trHeapMemory()) TR_ARMOperand2(shiftTypeReg, src1Reg, trgReg);
          }
 
       if(shiftIsFirstChild)
@@ -1335,8 +1335,8 @@ static inline TR::Register *ibooleanTypeEvaluator(TR::Node *node,
       {
       trgReg = cg->allocateRegister();
       TR::Register *src = cg->evaluate(firstChild);
-      generateTrg1Src1Instruction(cg, ARMOp_mov, node, trgReg, new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2RegLSLImmed, src, 16));
-      generateTrg1Src1Instruction(cg, ARMOp_mov, node, trgReg, new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2RegLSRImmed, trgReg, 16));
+      generateTrg1Src1Instruction(cg, ARMOp_mov, node, trgReg, new (cg->comp()->trHeapMemory()) TR_ARMOperand2(ARMOp2RegLSLImmed, src, 16));
+      generateTrg1Src1Instruction(cg, ARMOp_mov, node, trgReg, new (cg->comp()->trHeapMemory()) TR_ARMOperand2(ARMOp2RegLSRImmed, trgReg, 16));
       }
    else
       {

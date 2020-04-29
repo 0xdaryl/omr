@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1000,7 +1000,7 @@ void TR::ARMControlFlowInstruction::assignRegisters(TR_RegisterKinds kindToBeAss
       }
    // Now that registers have been allocated, expand the code
    TR::Instruction *cursor = this;
-   TR::LabelSymbol *label2 = TR::LabelSymbol::create(cg()->trHeapMemory(),cg());
+   TR::LabelSymbol *label2 = TR::LabelSymbol::create(cg()->comp()->trHeapMemory(),cg());
 //   TR::LabelSymbol *label1;
    switch(getOpCode().getOpCodeValue())
       {
@@ -1065,22 +1065,22 @@ void TR::ARMControlFlowInstruction::assignRegisters(TR_RegisterKinds kindToBeAss
       case ARMOp_setbool:
          TR_ASSERT(0, "implement setbool");
          /*
-         cursor = new (cg()->trHeapMemory()) TR::ARMTrg1Src2Instruction(cursor, getCmpOpValue(), currentNode, getTargetRegister(0), getSourceRegister(0), getSourceRegister(1), cg());
-         cursor = new (cg()->trHeapMemory()) TR::ARMTrg1ImmInstruction(cursor, ARMOp_li, currentNode, getTargetRegister(1), 1, cg());
-         cursor = new (cg()->trHeapMemory()) TR::ARMConditionalBranchInstruction(cursor, getOpCode2Value(), currentNode, label2, getTargetRegister(0), cg());
-         cursor = new (cg()->trHeapMemory()) TR::ARMTrg1ImmInstruction(cursor, ARMOp_li, currentNode, getTargetRegister(1), 0, cg());
-         cursor = new (cg()->trHeapMemory()) TR::ARMLabelInstruction(cursor, ARMOp_label, currentNode, label2, cg());
+         cursor = new (cg()->comp()->trHeapMemory()) TR::ARMTrg1Src2Instruction(cursor, getCmpOpValue(), currentNode, getTargetRegister(0), getSourceRegister(0), getSourceRegister(1), cg());
+         cursor = new (cg()->comp()->trHeapMemory()) TR::ARMTrg1ImmInstruction(cursor, ARMOp_li, currentNode, getTargetRegister(1), 1, cg());
+         cursor = new (cg()->comp()->trHeapMemory()) TR::ARMConditionalBranchInstruction(cursor, getOpCode2Value(), currentNode, label2, getTargetRegister(0), cg());
+         cursor = new (cg()->comp()->trHeapMemory()) TR::ARMTrg1ImmInstruction(cursor, ARMOp_li, currentNode, getTargetRegister(1), 0, cg());
+         cursor = new (cg()->comp()->trHeapMemory()) TR::ARMLabelInstruction(cursor, ARMOp_label, currentNode, label2, cg());
          break;
          */
       case ARMOp_setbflt:
          TR_ASSERT(0, "implement setbflt");
          /*
-         cursor = new (cg()->trHeapMemory()) TR::ARMTrg1Src2Instruction(cursor, getCmpOpValue(), currentNode, getTargetRegister(0), getSourceRegister(0), getSourceRegister(1), cg());
-         cursor = new (cg()->trHeapMemory()) TR::ARMTrg1ImmInstruction(cursor, ARMOp_li, currentNode, getTargetRegister(1), 1, cg());
-         cursor = new (cg()->trHeapMemory()) TR::ARMConditionalBranchInstruction(cursor, getOpCode2Value(), currentNode, label2, getTargetRegister(0), cg());
-         cursor = new (cg()->trHeapMemory()) TR::ARMConditionalBranchInstruction(cursor, getOpCode3Value(), currentNode, label2, getTargetRegister(0), cg());
-         cursor = new (cg()->trHeapMemory()) TR::ARMTrg1ImmInstruction(cursor, ARMOp_li, currentNode, getTargetRegister(1), 0, cg());
-         cursor = new (cg()->trHeapMemory()) TR::ARMLabelInstruction(cursor, ARMOp_label, currentNode, label2, cg());
+         cursor = new (cg()->comp()->trHeapMemory()) TR::ARMTrg1Src2Instruction(cursor, getCmpOpValue(), currentNode, getTargetRegister(0), getSourceRegister(0), getSourceRegister(1), cg());
+         cursor = new (cg()->comp()->trHeapMemory()) TR::ARMTrg1ImmInstruction(cursor, ARMOp_li, currentNode, getTargetRegister(1), 1, cg());
+         cursor = new (cg()->comp()->trHeapMemory()) TR::ARMConditionalBranchInstruction(cursor, getOpCode2Value(), currentNode, label2, getTargetRegister(0), cg());
+         cursor = new (cg()->comp()->trHeapMemory()) TR::ARMConditionalBranchInstruction(cursor, getOpCode3Value(), currentNode, label2, getTargetRegister(0), cg());
+         cursor = new (cg()->comp()->trHeapMemory()) TR::ARMTrg1ImmInstruction(cursor, ARMOp_li, currentNode, getTargetRegister(1), 0, cg());
+         cursor = new (cg()->comp()->trHeapMemory()) TR::ARMLabelInstruction(cursor, ARMOp_label, currentNode, label2, cg());
          break;
          */
       case ARMOp_lcmp:
@@ -1119,39 +1119,39 @@ void TR::ARMControlFlowInstruction::assignRegisters(TR_RegisterKinds kindToBeAss
          break;
 /*
       case ARMOp_flcmpl:
-         cursor = new (cg()->trHeapMemory()) TR::ARMTrg1Src2Instruction(cursor, ARMOp_fcmpu, currentNode, getTargetRegister(0), getSourceRegister(0), getSourceRegister(2), cg());
-         cursor = new (cg()->trHeapMemory()) TR::ARMTrg1ImmInstruction(cursor, ARMOp_li, currentNode, getTargetRegister(1), 1, cg());
-         cursor = new (cg()->trHeapMemory()) TR::ARMConditionalBranchInstruction(cursor, ARMOp_bgt, currentNode, label2, getTargetRegister(0), cg());
-         cursor = new (cg()->trHeapMemory()) TR::ARMTrg1ImmInstruction(cursor, ARMOp_li, currentNode, getTargetRegister(1), 0, cg());
-         cursor = new (cg()->trHeapMemory()) TR::ARMConditionalBranchInstruction(cursor, ARMOp_beq, currentNode, label2, getTargetRegister(0), cg());
-         cursor = new (cg()->trHeapMemory()) TR::ARMTrg1ImmInstruction(cursor, ARMOp_li, currentNode, getTargetRegister(1), -1, cg());
-         cursor = new (cg()->trHeapMemory()) TR::ARMLabelInstruction(cursor, ARMOp_label, currentNode, label2, cg());
+         cursor = new (cg()->comp()->trHeapMemory()) TR::ARMTrg1Src2Instruction(cursor, ARMOp_fcmpu, currentNode, getTargetRegister(0), getSourceRegister(0), getSourceRegister(2), cg());
+         cursor = new (cg()->comp()->trHeapMemory()) TR::ARMTrg1ImmInstruction(cursor, ARMOp_li, currentNode, getTargetRegister(1), 1, cg());
+         cursor = new (cg()->comp()->trHeapMemory()) TR::ARMConditionalBranchInstruction(cursor, ARMOp_bgt, currentNode, label2, getTargetRegister(0), cg());
+         cursor = new (cg()->comp()->trHeapMemory()) TR::ARMTrg1ImmInstruction(cursor, ARMOp_li, currentNode, getTargetRegister(1), 0, cg());
+         cursor = new (cg()->comp()->trHeapMemory()) TR::ARMConditionalBranchInstruction(cursor, ARMOp_beq, currentNode, label2, getTargetRegister(0), cg());
+         cursor = new (cg()->comp()->trHeapMemory()) TR::ARMTrg1ImmInstruction(cursor, ARMOp_li, currentNode, getTargetRegister(1), -1, cg());
+         cursor = new (cg()->comp()->trHeapMemory()) TR::ARMLabelInstruction(cursor, ARMOp_label, currentNode, label2, cg());
          break;
       case ARMOp_flcmpg:
-         cursor = new (cg()->trHeapMemory()) TR::ARMTrg1Src2Instruction(cursor, ARMOp_fcmpu, currentNode, getTargetRegister(0), getSourceRegister(0), getSourceRegister(2), cg());
-         cursor = new (cg()->trHeapMemory()) TR::ARMTrg1ImmInstruction(cursor, ARMOp_li, currentNode, getTargetRegister(1), -1, cg());
-         cursor = new (cg()->trHeapMemory()) TR::ARMConditionalBranchInstruction(cursor, ARMOp_blt, currentNode, label2, getTargetRegister(0), cg());
-         cursor = new (cg()->trHeapMemory()) TR::ARMTrg1ImmInstruction(cursor, ARMOp_li, currentNode, getTargetRegister(1), 0, cg());
-         cursor = new (cg()->trHeapMemory()) TR::ARMConditionalBranchInstruction(cursor, ARMOp_beq, currentNode, label2, getTargetRegister(0), cg());
-         cursor = new (cg()->trHeapMemory()) TR::ARMTrg1ImmInstruction(cursor, ARMOp_li, currentNode, getTargetRegister(1), 1, cg());
-         cursor = new (cg()->trHeapMemory()) TR::ARMLabelInstruction(cursor, ARMOp_label, currentNode, label2, cg());
+         cursor = new (cg()->comp()->trHeapMemory()) TR::ARMTrg1Src2Instruction(cursor, ARMOp_fcmpu, currentNode, getTargetRegister(0), getSourceRegister(0), getSourceRegister(2), cg());
+         cursor = new (cg()->comp()->trHeapMemory()) TR::ARMTrg1ImmInstruction(cursor, ARMOp_li, currentNode, getTargetRegister(1), -1, cg());
+         cursor = new (cg()->comp()->trHeapMemory()) TR::ARMConditionalBranchInstruction(cursor, ARMOp_blt, currentNode, label2, getTargetRegister(0), cg());
+         cursor = new (cg()->comp()->trHeapMemory()) TR::ARMTrg1ImmInstruction(cursor, ARMOp_li, currentNode, getTargetRegister(1), 0, cg());
+         cursor = new (cg()->comp()->trHeapMemory()) TR::ARMConditionalBranchInstruction(cursor, ARMOp_beq, currentNode, label2, getTargetRegister(0), cg());
+         cursor = new (cg()->comp()->trHeapMemory()) TR::ARMTrg1ImmInstruction(cursor, ARMOp_li, currentNode, getTargetRegister(1), 1, cg());
+         cursor = new (cg()->comp()->trHeapMemory()) TR::ARMLabelInstruction(cursor, ARMOp_label, currentNode, label2, cg());
          break;
       case ARMOp_idiv:
-         cursor = new (cg()->trHeapMemory()) TR::ARMTrg1Src2Instruction(cursor, ARMOp_eqv, currentNode, getTargetRegister(2), getTargetRegister(1), getSourceRegister(1), cg());
-         cursor = new (cg()->trHeapMemory()) TR::ARMTrg1Src2Instruction(cursor, ARMOp_and, currentNode, getTargetRegister(2), getSourceRegister(2), getTargetRegister(2), cg());
-         cursor = new (cg()->trHeapMemory()) TR::ARMTrg1Src1ImmInstruction(cursor, ARMOp_cmpi4, currentNode, getTargetRegister(0), getTargetRegister(2), -1, cg());
-         cursor = new (cg()->trHeapMemory()) TR::ARMConditionalBranchInstruction(cursor, ARMOp_beq, currentNode, label2, getTargetRegister(0), cg());
-         cursor = new (cg()->trHeapMemory()) TR::ARMTrg1Src2Instruction(cursor, ARMOp_divw, currentNode, getTargetRegister(1), getSourceRegister(1), getSourceRegister(2), cg());
-         cursor = new (cg()->trHeapMemory()) TR::ARMLabelInstruction(cursor, ARMOp_label, currentNode, label2, cg());
+         cursor = new (cg()->comp()->trHeapMemory()) TR::ARMTrg1Src2Instruction(cursor, ARMOp_eqv, currentNode, getTargetRegister(2), getTargetRegister(1), getSourceRegister(1), cg());
+         cursor = new (cg()->comp()->trHeapMemory()) TR::ARMTrg1Src2Instruction(cursor, ARMOp_and, currentNode, getTargetRegister(2), getSourceRegister(2), getTargetRegister(2), cg());
+         cursor = new (cg()->comp()->trHeapMemory()) TR::ARMTrg1Src1ImmInstruction(cursor, ARMOp_cmpi4, currentNode, getTargetRegister(0), getTargetRegister(2), -1, cg());
+         cursor = new (cg()->comp()->trHeapMemory()) TR::ARMConditionalBranchInstruction(cursor, ARMOp_beq, currentNode, label2, getTargetRegister(0), cg());
+         cursor = new (cg()->comp()->trHeapMemory()) TR::ARMTrg1Src2Instruction(cursor, ARMOp_divw, currentNode, getTargetRegister(1), getSourceRegister(1), getSourceRegister(2), cg());
+         cursor = new (cg()->comp()->trHeapMemory()) TR::ARMLabelInstruction(cursor, ARMOp_label, currentNode, label2, cg());
          break;
       case ARMOp_irem:
-         cursor = new (cg()->trHeapMemory()) TR::ARMTrg1Src1ImmInstruction(cursor, ARMOp_cmpi4, currentNode, getTargetRegister(0), getSourceRegister(2), -1, cg());
-         cursor = new (cg()->trHeapMemory()) TR::ARMTrg1ImmInstruction(cursor, ARMOp_li, currentNode, getTargetRegister(1), 0, cg());
-         cursor = new (cg()->trHeapMemory()) TR::ARMConditionalBranchInstruction(cursor, ARMOp_beq, currentNode, label2, getTargetRegister(0), cg());
-         cursor = new (cg()->trHeapMemory()) TR::ARMTrg1Src2Instruction(cursor, ARMOp_divw, currentNode, getTargetRegister(2), getSourceRegister(1), getSourceRegister(2), cg());
-         cursor = new (cg()->trHeapMemory()) TR::ARMTrg1Src2Instruction(cursor, ARMOp_mullw, currentNode, getTargetRegister(2), getSourceRegister(2), getTargetRegister(2), cg());
-         cursor = new (cg()->trHeapMemory()) TR::ARMTrg1Src2Instruction(cursor, ARMOp_subf, currentNode, getTargetRegister(1), getTargetRegister(2), getSourceRegister(1), cg());
-         cursor = new (cg()->trHeapMemory()) TR::ARMLabelInstruction(cursor, ARMOp_label, currentNode, label2, cg());
+         cursor = new (cg()->comp()->trHeapMemory()) TR::ARMTrg1Src1ImmInstruction(cursor, ARMOp_cmpi4, currentNode, getTargetRegister(0), getSourceRegister(2), -1, cg());
+         cursor = new (cg()->comp()->trHeapMemory()) TR::ARMTrg1ImmInstruction(cursor, ARMOp_li, currentNode, getTargetRegister(1), 0, cg());
+         cursor = new (cg()->comp()->trHeapMemory()) TR::ARMConditionalBranchInstruction(cursor, ARMOp_beq, currentNode, label2, getTargetRegister(0), cg());
+         cursor = new (cg()->comp()->trHeapMemory()) TR::ARMTrg1Src2Instruction(cursor, ARMOp_divw, currentNode, getTargetRegister(2), getSourceRegister(1), getSourceRegister(2), cg());
+         cursor = new (cg()->comp()->trHeapMemory()) TR::ARMTrg1Src2Instruction(cursor, ARMOp_mullw, currentNode, getTargetRegister(2), getSourceRegister(2), getTargetRegister(2), cg());
+         cursor = new (cg()->comp()->trHeapMemory()) TR::ARMTrg1Src2Instruction(cursor, ARMOp_subf, currentNode, getTargetRegister(1), getTargetRegister(2), getSourceRegister(1), cg());
+         cursor = new (cg()->comp()->trHeapMemory()) TR::ARMLabelInstruction(cursor, ARMOp_label, currentNode, label2, cg());
          break;
 */
       default:

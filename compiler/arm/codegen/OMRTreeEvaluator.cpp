@@ -151,10 +151,10 @@ TR::Instruction *armLoadConstant(TR::Node *node, int32_t value, TR::Register *tr
         }
      else
         {
-        TR_ARMOperand2 *op2_3 = new (cg->trHeapMemory()) TR_ARMOperand2(localVal.getByte3(), 24);
-        TR_ARMOperand2 *op2_2 = new (cg->trHeapMemory()) TR_ARMOperand2(localVal.getByte2(), 16);
-        TR_ARMOperand2 *op2_1 = new (cg->trHeapMemory()) TR_ARMOperand2(localVal.getByte1(), 8);
-        TR_ARMOperand2 *op2_0 = new (cg->trHeapMemory()) TR_ARMOperand2(localVal.getByte0(), 0);
+        TR_ARMOperand2 *op2_3 = new (comp->trHeapMemory()) TR_ARMOperand2(localVal.getByte3(), 24);
+        TR_ARMOperand2 *op2_2 = new (comp->trHeapMemory()) TR_ARMOperand2(localVal.getByte2(), 16);
+        TR_ARMOperand2 *op2_1 = new (comp->trHeapMemory()) TR_ARMOperand2(localVal.getByte1(), 8);
+        TR_ARMOperand2 *op2_0 = new (comp->trHeapMemory()) TR_ARMOperand2(localVal.getByte0(), 0);
         cursor = generateTrg1Src1Instruction(cg, ARMOp_mov, node, trgReg, op2_3, cursor);
         cursor = generateTrg1Src2Instruction(cg, ARMOp_add, node, trgReg, trgReg, op2_2, cursor);
         cursor = generateTrg1Src2Instruction(cg, ARMOp_add, node, trgReg, trgReg, op2_1, cursor);
@@ -177,17 +177,17 @@ TR::Instruction *fixedSeqMemAccess(TR::CodeGenerator *cg, TR::Node *node, int32_
    if (cursor == NULL)
       cursor = cg->getAppendInstruction();
 
-   TR_ARMOperand2 *op2_3 = new (cg->trHeapMemory()) TR_ARMOperand2(localVal.getByte3(), 24);
-   TR_ARMOperand2 *op2_2 = new (cg->trHeapMemory()) TR_ARMOperand2(localVal.getByte2(), 16);
-   TR_ARMOperand2 *op2_1 = new (cg->trHeapMemory()) TR_ARMOperand2(localVal.getByte1(), 8);
-   TR_ARMOperand2 *op2_0 = new (cg->trHeapMemory()) TR_ARMOperand2(localVal.getByte0(), 0);
+   TR_ARMOperand2 *op2_3 = new (comp->trHeapMemory()) TR_ARMOperand2(localVal.getByte3(), 24);
+   TR_ARMOperand2 *op2_2 = new (comp->trHeapMemory()) TR_ARMOperand2(localVal.getByte2(), 16);
+   TR_ARMOperand2 *op2_1 = new (comp->trHeapMemory()) TR_ARMOperand2(localVal.getByte1(), 8);
+   TR_ARMOperand2 *op2_0 = new (comp->trHeapMemory()) TR_ARMOperand2(localVal.getByte0(), 0);
 
    nibbles[0] = cursor = generateTrg1Src1Instruction(cg, ARMOp_mov, node, trgReg, op2_3, cursor);
    nibbles[1] = cursor = generateTrg1Src2Instruction(cg, ARMOp_add, node, trgReg, trgReg, op2_2, cursor);
    nibbles[2] = cursor = generateTrg1Src2Instruction(cg, ARMOp_add, node, trgReg, trgReg, op2_1, cursor);
    nibbles[3] = cursor = generateTrg1Src2Instruction(cg, ARMOp_add, node, trgReg, trgReg, op2_0, cursor);
 
-   TR::MemoryReference *memRef = new (cg->trHeapMemory()) TR::MemoryReference(trgReg, 0, sizeof(addr), cg);
+   TR::MemoryReference *memRef = new (comp->trHeapMemory()) TR::MemoryReference(trgReg, 0, sizeof(addr), cg);
    nibbles[4] = cursor = generateTrg1MemInstruction(cg, ARMOp_ldr, node, trgReg, memRef, cursor);
 
    if (cursorCopy == NULL)
@@ -215,10 +215,10 @@ TR::Instruction *loadAddressConstantFixed(TR::CodeGenerator *cg, TR::Node * node
    if (cursor == NULL)
       cursor = cg->getAppendInstruction();
 
-   TR_ARMOperand2 *op2_3 = new (cg->trHeapMemory()) TR_ARMOperand2(localVal.getByte3(), 24);
-   TR_ARMOperand2 *op2_2 = new (cg->trHeapMemory()) TR_ARMOperand2(localVal.getByte2(), 16);
-   TR_ARMOperand2 *op2_1 = new (cg->trHeapMemory()) TR_ARMOperand2(localVal.getByte1(), 8);
-   TR_ARMOperand2 *op2_0 = new (cg->trHeapMemory()) TR_ARMOperand2(localVal.getByte0(), 0);
+   TR_ARMOperand2 *op2_3 = new (comp->trHeapMemory()) TR_ARMOperand2(localVal.getByte3(), 24);
+   TR_ARMOperand2 *op2_2 = new (comp->trHeapMemory()) TR_ARMOperand2(localVal.getByte2(), 16);
+   TR_ARMOperand2 *op2_1 = new (comp->trHeapMemory()) TR_ARMOperand2(localVal.getByte1(), 8);
+   TR_ARMOperand2 *op2_0 = new (comp->trHeapMemory()) TR_ARMOperand2(localVal.getByte0(), 0);
 
    cursor = generateTrg1Src1Instruction(cg, ARMOp_mov, node, trgReg, op2_3, cursor);
 
@@ -229,7 +229,7 @@ TR::Instruction *loadAddressConstantFixed(TR::CodeGenerator *cg, TR::Node * node
       if (typeAddress == -1)
          {
          if (doAOTRelocation)
-            cg->addExternalRelocation(new (cg->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
+            cg->addExternalRelocation(new (comp->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
                               cursor,
                               (uint8_t *)value,
                               (uint8_t *)seqKind,
@@ -249,7 +249,7 @@ TR::Instruction *loadAddressConstantFixed(TR::CodeGenerator *cg, TR::Node * node
                recordInfo->data2 = (uintptr_t)node->getInlinedSiteIndex();
                recordInfo->data3 = (uintptr_t)seqKind;
 
-               cg->addExternalRelocation(new (cg->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
+               cg->addExternalRelocation(new (comp->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
                                  cursor,
                                  (uint8_t *)recordInfo,
                                  (TR_ExternalRelocationTargetKind)typeAddress, cg),
@@ -267,7 +267,7 @@ TR::Instruction *loadAddressConstantFixed(TR::CodeGenerator *cg, TR::Node * node
                 recordInfo->data2 = (uintptr_t)targetAddress2;
                 recordInfo->data3 = (uintptr_t)seqKind;
 
-                cg->addExternalRelocation(new (cg->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
+                cg->addExternalRelocation(new (comp->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
                                   cursor,
                                   (uint8_t *)recordInfo,
                                   (TR_ExternalRelocationTargetKind)typeAddress, cg),
@@ -280,7 +280,7 @@ TR::Instruction *loadAddressConstantFixed(TR::CodeGenerator *cg, TR::Node * node
             {
             if (doAOTRelocation)
                {
-               cg->addExternalRelocation(new (cg->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
+               cg->addExternalRelocation(new (comp->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
                                  cursor,
                                  targetAddress,
                                  targetAddress2,
@@ -293,7 +293,7 @@ TR::Instruction *loadAddressConstantFixed(TR::CodeGenerator *cg, TR::Node * node
          else
             {
             if (doAOTRelocation)
-               cg->addExternalRelocation(new (cg->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
+               cg->addExternalRelocation(new (comp->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
                                  cursor,
                                  (uint8_t *)value,
                                  (uint8_t *)seqKind,
@@ -337,7 +337,7 @@ TR::Register *OMR::ARM::TreeEvaluator::iloadEvaluator(TR::Node *node, TR::CodeGe
       }
 
    node->setRegister(tempReg);
-   TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, 4, cg);
+   TR::MemoryReference *tempMR = new (cg->comp()->trHeapMemory()) TR::MemoryReference(node, 4, cg);
    generateTrg1MemInstruction(cg, ARMOp_ldr, node, tempReg, tempMR);
 
    if (needSync && cg->comp()->target().cpu.id() != TR_DefaultARMProcessor)
@@ -449,7 +449,7 @@ TR::Register *OMR::ARM::TreeEvaluator::aloadEvaluator(TR::Node *node, TR::CodeGe
       }
 
    node->setRegister(tempReg);
-   TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, 4, cg);
+   TR::MemoryReference *tempMR = new (comp->trHeapMemory()) TR::MemoryReference(node, 4, cg);
    generateTrg1MemInstruction(cg, ARMOp_ldr, node, tempReg, tempMR);
 
 #ifdef J9_PROJECT_SPECIFIC
@@ -480,11 +480,11 @@ TR::Register *OMR::ARM::TreeEvaluator::lloadEvaluator(TR::Node *node, TR::CodeGe
 
    if (needSync && cg->comp()->target().cpu.id() != TR_DefaultARMProcessor)
       {
-      TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, 8, cg);
+      TR::MemoryReference *tempMR = new (comp->trHeapMemory()) TR::MemoryReference(node, 8, cg);
       TR::SymbolReference *vrlRef = comp->getSymRefTab()->findOrCreateVolatileReadLongSymbolRef(comp->getMethodSymbol());
 
       generateTrg1MemInstruction(cg, ARMOp_add, node, bigEndian ? highReg: lowReg, tempMR);
-      TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->trMemory());
+      TR::RegisterDependencyConditions *deps = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->trMemory());
       TR::addDependency(deps, lowReg, bigEndian ? TR::RealRegister::gr1 : TR::RealRegister::gr0, TR_GPR, cg);
       TR::addDependency(deps, highReg, bigEndian ? TR::RealRegister::gr0 : TR::RealRegister::gr1, TR_GPR, cg);
 
@@ -498,8 +498,8 @@ TR::Register *OMR::ARM::TreeEvaluator::lloadEvaluator(TR::Node *node, TR::CodeGe
       }
    else
       {
-      TR::MemoryReference *lowMR        = new (cg->trHeapMemory()) TR::MemoryReference(node, 4, cg);
-      TR::MemoryReference *highMR       = new (cg->trHeapMemory()) TR::MemoryReference(*lowMR, 4, 4, cg);
+      TR::MemoryReference *lowMR        = new (comp->trHeapMemory()) TR::MemoryReference(node, 4, cg);
+      TR::MemoryReference *highMR       = new (comp->trHeapMemory()) TR::MemoryReference(*lowMR, 4, 4, cg);
 
       generateTrg1MemInstruction(cg, ARMOp_ldr, node, bigEndian ? highReg : lowReg, lowMR);
       generateTrg1MemInstruction(cg, ARMOp_ldr, node, bigEndian ? lowReg : highReg, highMR);
@@ -533,7 +533,7 @@ TR::Register *OMR::ARM::TreeEvaluator::cloadEvaluator(TR::Node *node, TR::CodeGe
 TR::Register *OMR::ARM::TreeEvaluator::commonLoadEvaluator(TR::Node *node,  TR_ARMOpCodes memToRegOp, int32_t memSize, TR::CodeGenerator *cg)
    {
    TR::Register *tempReg = node->setRegister(cg->allocateRegister());
-   TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, memSize, cg);
+   TR::MemoryReference *tempMR = new (cg->comp()->trHeapMemory()) TR::MemoryReference(node, memSize, cg);
    bool needSync = (node->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP());
    generateTrg1MemInstruction(cg, memToRegOp, node, tempReg, tempMR);
    if (needSync && cg->comp()->target().cpu.id() != TR_DefaultARMProcessor)
@@ -547,7 +547,7 @@ TR::Register *OMR::ARM::TreeEvaluator::commonLoadEvaluator(TR::Node *node,  TR_A
 #if J9_PROJECT_SPECIFIC
 TR::Register *OMR::ARM::TreeEvaluator::awrtbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::MemoryReference *tempMR              = new (cg->trHeapMemory()) TR::MemoryReference(node, 4, cg);
+   TR::MemoryReference *tempMR              = new (cg->comp()->trHeapMemory()) TR::MemoryReference(node, 4, cg);
    TR::Register            *destinationRegister = cg->evaluate(node->getSecondChild());
    TR::Node                *firstChild = node->getFirstChild();
    TR::Register            *sourceRegister;
@@ -593,7 +593,7 @@ TR::Register *OMR::ARM::TreeEvaluator::awrtbarEvaluator(TR::Node *node, TR::Code
 
 TR::Register *OMR::ARM::TreeEvaluator::awrtbariEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::MemoryReference *tempMR              = new (cg->trHeapMemory()) TR::MemoryReference(node, 4, cg);
+   TR::MemoryReference *tempMR              = new (cg->comp()->trHeapMemory()) TR::MemoryReference(node, 4, cg);
    TR::Register            *destinationRegister = cg->evaluate(node->getChild(2));
    TR::Node                *secondChild = node->getSecondChild();
    TR::Register            *sourceRegister;
@@ -659,11 +659,11 @@ TR::Register *OMR::ARM::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR::CodeG
    if (needSync && cg->comp()->target().cpu.id() != TR_DefaultARMProcessor)
       {
       TR::Register           *addrReg  = cg->allocateRegister();
-      TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, 8, cg);
+      TR::MemoryReference *tempMR = new (comp->trHeapMemory()) TR::MemoryReference(node, 8, cg);
       TR::SymbolReference *vwlRef = comp->getSymRefTab()->findOrCreateVolatileWriteLongSymbolRef(comp->getMethodSymbol());
 
       generateTrg1MemInstruction(cg, ARMOp_add, node, addrReg, tempMR);
-      TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(3, 3, cg->trMemory());
+      TR::RegisterDependencyConditions *deps = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(3, 3, cg->trMemory());
       TR::addDependency(deps, addrReg, TR::RealRegister::gr0, TR_GPR, cg);
       TR::addDependency(deps, valueReg->getLowOrder(), TR::RealRegister::gr1, TR_GPR, cg);
       TR::addDependency(deps, valueReg->getHighOrder(), TR::RealRegister::gr2, TR_GPR, cg);
@@ -678,8 +678,8 @@ TR::Register *OMR::ARM::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR::CodeG
       }
    else
       {
-      TR::MemoryReference *lowMR  = new (cg->trHeapMemory()) TR::MemoryReference(node, 4, cg);
-      TR::MemoryReference *highMR = new (cg->trHeapMemory()) TR::MemoryReference(*lowMR, 4, 4, cg);
+      TR::MemoryReference *lowMR  = new (comp->trHeapMemory()) TR::MemoryReference(node, 4, cg);
+      TR::MemoryReference *highMR = new (comp->trHeapMemory()) TR::MemoryReference(*lowMR, 4, 4, cg);
 
       if (bigEndian)
          {
@@ -717,7 +717,7 @@ TR::Register *OMR::ARM::TreeEvaluator::istoreEvaluator(TR::Node *node, TR::CodeG
 
 TR::Register *OMR::ARM::TreeEvaluator::commonStoreEvaluator(TR::Node *node, TR_ARMOpCodes memToRegOp, int32_t memSize, TR::CodeGenerator *cg)
    {
-   TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, memSize, cg);
+   TR::MemoryReference *tempMR = new (cg->comp()->trHeapMemory()) TR::MemoryReference(node, memSize, cg);
    bool needSync = (node->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP());
    TR::Node *valueChild;
    if (node->getOpCode().isIndirect())
@@ -842,7 +842,7 @@ static void constLengthArrayCopyEvaluator(TR::Node *node, int32_t byteLen, TR::R
    int32_t ri_x = 0, ri;
    TR::Register                        *regs[4] = {NULL, NULL, NULL, NULL};
 
-   TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(7,7, cg->trMemory());
+   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(7,7, cg->trMemory());
 
    TR::addDependency(deps, src, TR::RealRegister::NoReg, TR_GPR, cg);
    deps->getPreConditions()->getRegisterDependency(0)->setExcludeGPR0();
@@ -876,18 +876,18 @@ static void constLengthArrayCopyEvaluator(TR::Node *node, int32_t byteLen, TR::R
       else
          armLoadConstant(node, groups,countReg,cg);
 
-      TR::LabelSymbol *loopStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+      TR::LabelSymbol *loopStart = TR::LabelSymbol::create(cg->comp()->trHeapMemory(),cg);
       generateLabelInstruction(cg, ARMOp_label, node, loopStart);
 
       for( ri = 0; ri < 4; ri++)
          {
-         TR::MemoryReference *mr = new (cg->trHeapMemory()) TR::MemoryReference(src, 4*ri, cg);
+         TR::MemoryReference *mr = new (cg->comp()->trHeapMemory()) TR::MemoryReference(src, 4*ri, cg);
        //  mr->setImmediatePreIndexed();  //store the base + offset back to the base reg
          generateTrg1MemInstruction(cg, ARMOp_ldr, node, regs[ri], mr);
          }
       for( ri = 0; ri < 4; ri++)
          {
-         TR::MemoryReference *mr = new (cg->trHeapMemory()) TR::MemoryReference(dst, 4*ri, cg);
+         TR::MemoryReference *mr = new (cg->comp()->trHeapMemory()) TR::MemoryReference(dst, 4*ri, cg);
        //  mr->setImmediatePreIndexed();
          generateMemSrc1Instruction(cg, ARMOp_str, node, mr, regs[ri]);
          }
@@ -902,20 +902,20 @@ static void constLengthArrayCopyEvaluator(TR::Node *node, int32_t byteLen, TR::R
    for ( ri = 0; ri < residual>>2; ri++)
       {
       //TR::Register *oneReg = regs[ri];
-      generateTrg1MemInstruction(cg, ARMOp_ldr, node, regs[0], new (cg->trHeapMemory()) TR::MemoryReference(src, 4*ri, cg));
-      generateMemSrc1Instruction(cg, ARMOp_str, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, 4*ri, cg), regs[0]);
+      generateTrg1MemInstruction(cg, ARMOp_ldr, node, regs[0], new (cg->comp()->trHeapMemory()) TR::MemoryReference(src, 4*ri, cg));
+      generateMemSrc1Instruction(cg, ARMOp_str, node, new (cg->comp()->trHeapMemory()) TR::MemoryReference(dst, 4*ri, cg), regs[0]);
       }
    if(residual & 2)
       {
-      generateTrg1MemInstruction(cg, ARMOp_ldrh, node, regs[0], new (cg->trHeapMemory()) TR::MemoryReference(src, 4*ri, cg));
-      generateMemSrc1Instruction(cg, ARMOp_strh, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, 4*ri, cg), regs[0]);
+      generateTrg1MemInstruction(cg, ARMOp_ldrh, node, regs[0], new (cg->comp()->trHeapMemory()) TR::MemoryReference(src, 4*ri, cg));
+      generateMemSrc1Instruction(cg, ARMOp_strh, node, new (cg->comp()->trHeapMemory()) TR::MemoryReference(dst, 4*ri, cg), regs[0]);
       ri++;
       ri_x = 2;
       }
    if(residual & 1)
       {
-      generateTrg1MemInstruction(cg, ARMOp_ldrb, node, regs[0], new (cg->trHeapMemory()) TR::MemoryReference(src, (4*ri)+ri_x, cg));
-      generateMemSrc1Instruction(cg, ARMOp_strb, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, (4*ri)+ri_x, cg), regs[0]);
+      generateTrg1MemInstruction(cg, ARMOp_ldrb, node, regs[0], new (cg->comp()->trHeapMemory()) TR::MemoryReference(src, (4*ri)+ri_x, cg));
+      generateMemSrc1Instruction(cg, ARMOp_strb, node, new (cg->comp()->trHeapMemory()) TR::MemoryReference(dst, (4*ri)+ri_x, cg), regs[0]);
       }
 
    return;
@@ -964,7 +964,7 @@ TR::Register *OMR::ARM::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::Co
       stopUsingCopyReg5 = true;
       }
 
-   TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(3,3, cg->trMemory());
+   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(3,3, cg->trMemory());
    // Build up the dependency conditions
    // r0 is length in bytes, r1 is srcAddr, r2 is dstAddr
    TR::addDependency(deps, lengthReg, TR::RealRegister::gr0, TR_GPR, cg);
@@ -1171,7 +1171,7 @@ TR::Register *OMR::ARM::TreeEvaluator::loadaddrEvaluator(TR::Node *node, TR::Cod
    // TODO: DANGER: the following needs rewriting...
    TR::Register            *resultReg;
    TR::Symbol *sym = node->getSymbol();
-   TR::MemoryReference  *mref = new (cg->trHeapMemory()) TR::MemoryReference(node, node->getSymbolReference(), 4, cg);
+   TR::MemoryReference  *mref = new (cg->comp()->trHeapMemory()) TR::MemoryReference(node, node->getSymbolReference(), 4, cg);
 
    if (mref->getUnresolvedSnippet() != NULL)
       {
@@ -1428,7 +1428,7 @@ TR::Register *OMR::ARM::TreeEvaluator::conversionAnalyser(TR::Node          *nod
 
    if (child->getReferenceCount() == 1 && child->getRegister() == NULL && child->getOpCode().isMemoryReference())
       {
-      TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(child, dstBits >> 3, cg);
+      TR::MemoryReference *tempMR = new (cg->comp()->trHeapMemory()) TR::MemoryReference(child, dstBits >> 3, cg);
       if (cg->comp()->target().cpu.isBigEndian() && node->getSize() < child->getSize())
          {
          tempMR->addToOffset(node, child->getSize() - (dstBits>>3), cg);
@@ -1489,9 +1489,9 @@ static void generateSignOrZeroExtend(TR::Node *node, TR::Register *dst, TR::Regi
       {
       TR_ARMOperand2 *op;
 
-      op = new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2RegLSLImmed, src, 32 - bitsInDst);
+      op = new (cg->comp()->trHeapMemory()) TR_ARMOperand2(ARMOp2RegLSLImmed, src, 32 - bitsInDst);
       generateTrg1Src1Instruction(cg, ARMOp_mov, node, dst, op);
-      op = new (cg->trHeapMemory()) TR_ARMOperand2((needSignExtend ? ARMOp2RegASRImmed : ARMOp2RegLSRImmed), dst, 32 - bitsInDst);
+      op = new (cg->comp()->trHeapMemory()) TR_ARMOperand2((needSignExtend ? ARMOp2RegASRImmed : ARMOp2RegLSRImmed), dst, 32 - bitsInDst);
       generateTrg1Src1Instruction(cg, ARMOp_mov, node, dst, op);
       }
    }

@@ -81,7 +81,7 @@ uint32_t encodeHelperBranch(bool isBranchAndLink, TR::SymbolReference *symRef, u
       }
 
    cg->addExternalRelocation(
-      new (cg->trHeapMemory()) TR::ExternalRelocation(cursor,
+      new (cg->comp()->trHeapMemory()) TR::ExternalRelocation(cursor,
                                      (uint8_t *)symRef,
                                      TR_HelperAddress, cg),
       __FILE__, __LINE__, node);
@@ -109,7 +109,7 @@ uint8_t *TR::ARMLabelInstruction::generateBinaryEncoding()
          if (destination != 0)
             *(int32_t *)cursor |= encodeBranchDistance((uintptr_t)cursor, destination);
          else
-            cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative24BitRelocation(cursor, label));
+            cg()->addRelocation(new (cg()->comp()->trHeapMemory()) TR::LabelRelative24BitRelocation(cursor, label));
          }
       else
          {
@@ -118,7 +118,7 @@ uint8_t *TR::ARMLabelInstruction::generateBinaryEncoding()
          insertTargetRegister(toARMCursor(cursor));
          insertSource1Register(toARMCursor(cursor));
          *((uint32_t *)cursor) |= 1 << 25;    // set the I bit
-         cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative8BitRelocation(cursor, label));
+         cg()->addRelocation(new (cg()->comp()->trHeapMemory()) TR::LabelRelative8BitRelocation(cursor, label));
          }
       cursor += ARM_INSTRUCTION_LENGTH;
       }
@@ -217,13 +217,13 @@ uint8_t *TR::ARMImmInstruction::generateBinaryEncoding()
       switch(getReloKind())
          {
          case TR_AbsoluteHelperAddress:
-            cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *)getSymbolReference(), TR_AbsoluteHelperAddress, cg()), __FILE__, __LINE__, getNode());
+            cg()->addExternalRelocation(new (comp->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *)getSymbolReference(), TR_AbsoluteHelperAddress, cg()), __FILE__, __LINE__, getNode());
             break;
          case TR_RamMethod:
-            cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, NULL, TR_RamMethod, cg()), __FILE__, __LINE__, getNode());
+            cg()->addExternalRelocation(new (comp->trHeapMemory()) TR::ExternalRelocation(cursor, NULL, TR_RamMethod, cg()), __FILE__, __LINE__, getNode());
             break;
          case TR_BodyInfoAddress:
-            cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, 0, TR_BodyInfoAddress, cg()), __FILE__, __LINE__, getNode());
+            cg()->addExternalRelocation(new (comp->trHeapMemory()) TR::ExternalRelocation(cursor, 0, TR_BodyInfoAddress, cg()), __FILE__, __LINE__, getNode());
             break;
          default:
             TR_ASSERT(false, "Unsupported AOT relocation type specified.");
@@ -235,7 +235,7 @@ uint8_t *TR::ARMImmInstruction::generateBinaryEncoding()
       //
       void **locationToPatch = (void**)cursor;
       cg()->jitAddPicToPatchOnClassRedefinition(*locationToPatch, locationToPatch);
-      cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation((uint8_t *)locationToPatch, (uint8_t *)*locationToPatch, TR_HCR, cg()), __FILE__,__LINE__, getNode());
+      cg()->addExternalRelocation(new (comp->trHeapMemory()) TR::ExternalRelocation((uint8_t *)locationToPatch, (uint8_t *)*locationToPatch, TR_HCR, cg()), __FILE__,__LINE__, getNode());
       }
 
    cursor += ARM_INSTRUCTION_LENGTH;
@@ -275,7 +275,7 @@ uint8_t *TR::ARMImmSymInstruction::generateBinaryEncoding()
          }
       else if (label != NULL)
          {
-         cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative24BitRelocation(cursor, label));
+         cg()->addRelocation(new (comp->trHeapMemory()) TR::LabelRelative24BitRelocation(cursor, label));
 #ifdef J9_PROJECT_SPECIFIC
          ((TR::ARMCallSnippet *)getCallSnippet())->setCallRA(cursor+4);
 #endif
@@ -329,7 +329,7 @@ uint8_t *TR::ARMImmSymInstruction::generateBinaryEncoding()
 #endif
                // no need to add 4 to cursor, it is done below in the
                // common path
-               cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(
+               cg()->addExternalRelocation(new (comp->trHeapMemory()) TR::ExternalRelocation(
                   cursor,
                   NULL,
                   TR_AbsoluteMethodAddress,
@@ -418,7 +418,7 @@ uint8_t *TR::ARMLoadStartPCInstruction::generateBinaryEncoding()
 
    if (constantIsImmed8r(offset, &base, &rotate))
       {
-      TR_ARMOperand2 *op2 = new (cg()->trHeapMemory()) TR_ARMOperand2(base, rotate);
+      TR_ARMOperand2 *op2 = new (cg()->comp()->trHeapMemory()) TR_ARMOperand2(base, rotate);
       setSource2Operand(op2);
       /* Remove the following 3 Trg1Src2Instructions */
       getNext()->remove();
@@ -435,8 +435,8 @@ uint8_t *TR::ARMLoadStartPCInstruction::generateBinaryEncoding()
 
       if ((base & 0xFFFF0000) == 0)
          {
-         TR_ARMOperand2 *op2_1 = new (cg()->trHeapMemory()) TR_ARMOperand2((base >> 8) & 0x000000FF, 8 + bitTrailing);
-         TR_ARMOperand2 *op2_0 = new (cg()->trHeapMemory()) TR_ARMOperand2(base & 0x000000FF, bitTrailing);
+         TR_ARMOperand2 *op2_1 = new (cg()->comp()->trHeapMemory()) TR_ARMOperand2((base >> 8) & 0x000000FF, 8 + bitTrailing);
+         TR_ARMOperand2 *op2_0 = new (cg()->comp()->trHeapMemory()) TR_ARMOperand2(base & 0x000000FF, bitTrailing);
          setSource2Operand(op2_1);
          TR::ARMTrg1Src2Instruction *secondInstruction = (TR::ARMTrg1Src2Instruction *)getNext();
          secondInstruction->setSource2Operand(op2_0);
@@ -450,10 +450,10 @@ uint8_t *TR::ARMLoadStartPCInstruction::generateBinaryEncoding()
       else
          {
          intParts localVal(offset);
-         TR_ARMOperand2 *op2_3 = new (cg()->trHeapMemory()) TR_ARMOperand2(localVal.getByte3(), 24);
-         TR_ARMOperand2 *op2_2 = new (cg()->trHeapMemory()) TR_ARMOperand2(localVal.getByte2(), 16);
-         TR_ARMOperand2 *op2_1 = new (cg()->trHeapMemory()) TR_ARMOperand2(localVal.getByte1(), 8);
-         TR_ARMOperand2 *op2_0 = new (cg()->trHeapMemory()) TR_ARMOperand2(localVal.getByte0(), 0);
+         TR_ARMOperand2 *op2_3 = new (cg()->comp()->trHeapMemory()) TR_ARMOperand2(localVal.getByte3(), 24);
+         TR_ARMOperand2 *op2_2 = new (cg()->comp()->trHeapMemory()) TR_ARMOperand2(localVal.getByte2(), 16);
+         TR_ARMOperand2 *op2_1 = new (cg()->comp()->trHeapMemory()) TR_ARMOperand2(localVal.getByte1(), 8);
+         TR_ARMOperand2 *op2_0 = new (cg()->comp()->trHeapMemory()) TR_ARMOperand2(localVal.getByte0(), 0);
 
          setSource2Operand(op2_3);
          TR::ARMTrg1Src2Instruction *secondInstruction = (TR::ARMTrg1Src2Instruction *)getNext();
@@ -603,7 +603,7 @@ uint8_t *TR::ARMVirtualGuardNOPInstruction::generateBinaryEncoding()
    if (label->getCodeLocation() == NULL)
       {
       _site->setDestination(cursor);
-      cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelAbsoluteRelocation((uint8_t *) (&_site->getDestination()), label));
+      cg()->addRelocation(new (cg()->comp()->trHeapMemory()) TR::LabelAbsoluteRelocation((uint8_t *) (&_site->getDestination()), label));
 
 #ifdef DEBUG
    if (debug("traceVGNOP"))

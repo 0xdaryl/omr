@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -185,7 +185,7 @@ TR::Register *OMR::ARM::TreeEvaluator::labsEvaluator(TR::Node *node, TR::CodeGen
    TR::Register *srcReg = cg->evaluate(firstChild);
    TR::Register *tmpReg = cg->allocateRegister();
 
-   generateTrg1Src1Instruction(cg, ARMOp_mov, node, tmpReg, new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2RegASRImmed, srcReg->getHighOrder(), 31));
+   generateTrg1Src1Instruction(cg, ARMOp_mov, node, tmpReg, new (cg->comp()->trHeapMemory()) TR_ARMOperand2(ARMOp2RegASRImmed, srcReg->getHighOrder(), 31));
    generateTrg1Src2Instruction(cg, ARMOp_eor, node, lowReg, srcReg->getLowOrder(), tmpReg);
    generateTrg1Src2Instruction(cg, ARMOp_eor, node, highReg, srcReg->getHighOrder(), tmpReg);
    generateTrg1Src2Instruction(cg, ARMOp_sub_r, node, lowReg, lowReg, tmpReg);
@@ -235,7 +235,7 @@ TR::Register *OMR::ARM::TreeEvaluator::b2lEvaluator(TR::Node *node, TR::CodeGene
    TR_ARMOperand2 *op;
 
    // TODO: check
-   op = new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2RegASRImmed, trgReg->getLowOrder(), 31);
+   op = new (cg->comp()->trHeapMemory()) TR_ARMOperand2(ARMOp2RegASRImmed, trgReg->getLowOrder(), 31);
    generateTrg1Src1Instruction(cg, ARMOp_mov, node, trgReg->getHighOrder(), op);
    node->setRegister(trgReg);
    child->decReferenceCount();
@@ -265,7 +265,7 @@ TR::Register *OMR::ARM::TreeEvaluator::l2iEvaluator(TR::Node *node, TR::CodeGene
        child->getOpCode().isMemoryReference() && (temp == NULL))
       {
       trgReg = cg->allocateRegister();
-      TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(child, 4, cg);
+      TR::MemoryReference *tempMR = new (cg->comp()->trHeapMemory()) TR::MemoryReference(child, 4, cg);
       if (cg->comp()->target().cpu.isBigEndian())
          tempMR->addToOffset(node, 4, cg);
       generateTrg1MemInstruction(cg, ARMOp_ldr, node, trgReg, tempMR);
@@ -310,14 +310,14 @@ TR::Register *OMR::ARM::TreeEvaluator::su2lEvaluator(TR::Node *node, TR::CodeGen
    if (child->getReferenceCount()==1 &&
        child->getOpCode().isMemoryReference() && (temp == NULL))
       {
-      TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(temp, 2, cg);
+      TR::MemoryReference *tempMR = new (cg->comp()->trHeapMemory()) TR::MemoryReference(temp, 2, cg);
       generateTrg1MemInstruction(cg, ARMOp_ldrh, node, trgReg->getLowOrder(), tempMR);
       tempMR->decNodeReferenceCounts();
       }
    else
       {
-      generateTrg1Src1Instruction(cg, ARMOp_mov, node, trgReg->getLowOrder(), new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2RegLSLImmed, cg->evaluate(child), 16));
-      generateTrg1Src1Instruction(cg, ARMOp_mov, node, trgReg->getLowOrder(), new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2RegLSRImmed, trgReg->getLowOrder(), 16));
+      generateTrg1Src1Instruction(cg, ARMOp_mov, node, trgReg->getLowOrder(), new (cg->comp()->trHeapMemory()) TR_ARMOperand2(ARMOp2RegLSLImmed, cg->evaluate(child), 16));
+      generateTrg1Src1Instruction(cg, ARMOp_mov, node, trgReg->getLowOrder(), new (cg->comp()->trHeapMemory()) TR_ARMOperand2(ARMOp2RegLSRImmed, trgReg->getLowOrder(), 16));
       }
    generateTrg1ImmInstruction(cg, ARMOp_mov, node, trgReg->getHighOrder(), 0, 0);
 
@@ -338,7 +338,7 @@ TR::Register *OMR::ARM::TreeEvaluator::bu2iEvaluator(TR::Node *node, TR::CodeGen
    if (child->getReferenceCount()==1 &&
        child->getOpCode().isMemoryReference() && (temp == NULL))
       {
-      TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(child, 1, cg);
+      TR::MemoryReference *tempMR = new (cg->comp()->trHeapMemory()) TR::MemoryReference(child, 1, cg);
       generateTrg1MemInstruction(cg, ARMOp_ldrb, node, trgReg, tempMR);
       tempMR->decNodeReferenceCounts();
       }
@@ -361,7 +361,7 @@ TR::Register *OMR::ARM::TreeEvaluator::bu2lEvaluator(TR::Node *node, TR::CodeGen
    if (child->getReferenceCount()==1 &&
        child->getOpCode().isMemoryReference() && (temp == NULL))
       {
-      TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(temp, 1, cg);
+      TR::MemoryReference *tempMR = new (cg->comp()->trHeapMemory()) TR::MemoryReference(temp, 1, cg);
       generateTrg1MemInstruction(cg, ARMOp_ldrb, node, trgReg->getLowOrder(), tempMR);
       tempMR->decNodeReferenceCounts();
       }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -593,7 +593,7 @@ class ARMTrg1Src2Instruction : public TR::Instruction
                           TR::CodeGenerator *cg)
       : TR::Instruction(op, node, cg), _target1Register(treg), _source1Register(s1reg)
       {
-      TR_ARMOperand2 *s2op = new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2Reg, s2reg);
+      TR_ARMOperand2 *s2op = new (cg->comp()->trHeapMemory()) TR_ARMOperand2(ARMOp2Reg, s2reg);
       setSource2Operand(s2op);
       treg->incTotalUseCount();
       s1reg->incTotalUseCount();
@@ -609,7 +609,7 @@ class ARMTrg1Src2Instruction : public TR::Instruction
                           TR::CodeGenerator *cg)
       : TR::Instruction(precedingInstruction, op, node, cg), _target1Register(treg), _source1Register(s1reg)
       {
-      TR_ARMOperand2 *s2op = new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2Reg, s2reg);
+      TR_ARMOperand2 *s2op = new (cg->comp()->trHeapMemory()) TR_ARMOperand2(ARMOp2Reg, s2reg);
       setSource2Operand(s2op);
       treg->incTotalUseCount();
       s1reg->incTotalUseCount();
@@ -701,7 +701,7 @@ class ARMLoadStartPCInstruction : public TR::ARMTrg1Src2Instruction
                              TR::SymbolReference *symRef,
                              TR::CodeGenerator *cg)
       : TR::ARMTrg1Src2Instruction(ARMOp_sub, node, treg, cg->machine()->getRealRegister(TR::RealRegister::gr15),
-         new (cg->trHeapMemory()) TR_ARMOperand2(0xde, 24), cg), /* The value 0xde does not mean anything. It will be replaced in the binary encoding phase. */
+         new (cg->comp()->trHeapMemory()) TR_ARMOperand2(0xde, 24), cg), /* The value 0xde does not mean anything. It will be replaced in the binary encoding phase. */
         _symbolReference(symRef)
       {
       }
@@ -712,7 +712,7 @@ class ARMLoadStartPCInstruction : public TR::ARMTrg1Src2Instruction
                              TR::SymbolReference *symRef,
                              TR::CodeGenerator *cg)
       : TR::ARMTrg1Src2Instruction(precedingInstruction, ARMOp_sub, node, treg, cg->machine()->getRealRegister(TR::RealRegister::gr15),
-         new (cg->trHeapMemory()) TR_ARMOperand2(0xde, 0), cg),  /* The value 0xde does not mean anything. It will be replaced in the binary encoding phase. */
+         new (cg->comp()->trHeapMemory()) TR_ARMOperand2(0xde, 0), cg),  /* The value 0xde does not mean anything. It will be replaced in the binary encoding phase. */
         _symbolReference(symRef)
       {
       }
@@ -817,7 +817,7 @@ class ARMTrg1Src1Instruction : public TR::ARMTrg1Src2Instruction
                           TR::CodeGenerator *cg)
       : TR::ARMTrg1Src2Instruction(precedingInstruction, op, node, cg)
       {
-      TR_ARMOperand2 *sop = new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2Reg, sreg);
+      TR_ARMOperand2 *sop = new (cg->comp()->trHeapMemory()) TR_ARMOperand2(ARMOp2Reg, sreg);
       setTarget1Register(treg);
       setSource2Operand(sop);
       treg->incTotalUseCount();
@@ -831,7 +831,7 @@ class ARMTrg1Src1Instruction : public TR::ARMTrg1Src2Instruction
                           TR::CodeGenerator *cg)
       : TR::ARMTrg1Src2Instruction(op, node, cg)
       {
-      TR_ARMOperand2 *sop = new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2Reg, sreg);
+      TR_ARMOperand2 *sop = new (cg->comp()->trHeapMemory()) TR_ARMOperand2(ARMOp2Reg, sreg);
       setTarget1Register(treg);
       setSource2Operand(sop);
       treg->incTotalUseCount();
@@ -846,7 +846,7 @@ class ARMTrg1Src1Instruction : public TR::ARMTrg1Src2Instruction
                           TR::CodeGenerator                   *cg)
       : TR::ARMTrg1Src2Instruction(op, node, cond, cg)
       {
-      TR_ARMOperand2 *sop = new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2Reg, sreg);
+      TR_ARMOperand2 *sop = new (cg->comp()->trHeapMemory()) TR_ARMOperand2(ARMOp2Reg, sreg);
       setTarget1Register(treg);
       setSource2Operand(sop);
       treg->incTotalUseCount();

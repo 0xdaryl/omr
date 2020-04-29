@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -215,7 +215,7 @@ static TR::Register *callLong2DoubleHelper(TR::Node *node, TR::CodeGenerator *cg
    {
    TR::Node *child = node->getFirstChild();
    TR::Register *srcReg = cg->evaluate(child);
-   TR::RegisterDependencyConditions *dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(10, 10, cg->trMemory());
+   TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(10, 10, cg->trMemory());
    int i;
 
    TR::Register *highReg = cg->allocateRegister();
@@ -303,7 +303,7 @@ static TR::Register *callLong2FloatHelper(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node *child = node->getFirstChild();
    TR::Register *srcReg = cg->evaluate(child);
-   TR::RegisterDependencyConditions *dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(10, 10, cg->trMemory());
+   TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(10, 10, cg->trMemory());
    int i;
 
 #if defined(__ARM_PCS_VFP)
@@ -391,7 +391,7 @@ static TR::Register *callDouble2LongHelper(TR::Node *node, TR::CodeGenerator *cg
    TR::Node *child = node->getFirstChild();
    TR::Register *doubleSrcReg = cg->evaluate(child);
    TR::Register *srcReg = NULL;
-   TR::RegisterDependencyConditions *dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(11, 11, cg->trMemory());
+   TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(11, 11, cg->trMemory());
    int i;
    TR::Register *highReg = cg->allocateRegister();
    TR::Register *lowReg = cg->allocateRegister();
@@ -484,7 +484,7 @@ static TR::Register *callFloat2LongHelper(TR::Node *node, TR::CodeGenerator *cg)
    TR::Node *child = node->getFirstChild();
    TR::Register *floatSrcReg = cg->evaluate(child);
    TR::Register *srcReg = NULL;
-   TR::RegisterDependencyConditions *dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(11, 11, cg->trMemory());
+   TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(11, 11, cg->trMemory());
    int i;
    TR::Register *highReg = cg->allocateRegister();
    TR::Register *lowReg = cg->allocateRegister();
@@ -572,7 +572,7 @@ static TR::Register *callDoubleRemainderHelper(TR::Node *node, TR::CodeGenerator
    TR::Node *secondChild = node->getSecondChild();
    TR::Register *src1Reg = cg->evaluate(firstChild);
    TR::Register *src2Reg = cg->evaluate(secondChild);
-   TR::RegisterDependencyConditions *dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(10, 10, cg->trMemory());
+   TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(10, 10, cg->trMemory());
    int i;
    TR::Register *highReg = cg->allocateRegister();
    TR::Register *lowReg = cg->allocateRegister();
@@ -713,7 +713,7 @@ static TR::Register *callFloatRemainderHelper(TR::Node *node, TR::CodeGenerator 
    TR::Node *secondChild = node->getSecondChild();
    TR::Register *src1Reg = cg->evaluate(firstChild);
    TR::Register *src2Reg = cg->evaluate(secondChild);
-   TR::RegisterDependencyConditions *dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(11, 11, cg->trMemory());
+   TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(11, 11, cg->trMemory());
    int i;
 #if defined(__ARM_PCS_VFP)
    TR::Register *trgReg = cg->allocateSinglePrecisionRegister();
@@ -818,7 +818,7 @@ TR::Register *OMR::ARM::TreeEvaluator::ibits2fEvaluator(TR::Node *node, TR::Code
    if (child->getRegister() == NULL && child->getReferenceCount() == 1 &&
        child->getOpCode().isLoadVar())
       {
-      TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(child, 4, cg);
+      TR::MemoryReference *tempMR = new (cg->comp()->trHeapMemory()) TR::MemoryReference(child, 4, cg);
       if (noFPRA)
       	 {
 
@@ -837,7 +837,7 @@ TR::Register *OMR::ARM::TreeEvaluator::ibits2fEvaluator(TR::Node *node, TR::Code
             generateTrg1Src2Instruction(cg, ARMOp_add, node, tempReg, tempMR->getBaseRegister(), tempMR->getIndexRegister());
             tempMR->decNodeReferenceCounts();
 
-            tempMR = new (cg->trHeapMemory()) TR::MemoryReference(tempReg, 0, cg);
+            tempMR = new (cg->comp()->trHeapMemory()) TR::MemoryReference(tempReg, 0, cg);
             generateTrg1MemInstruction(cg, ARMOp_flds, node, target, tempMR);
             cg->stopUsingRegister(tempReg);
             }
@@ -874,7 +874,7 @@ TR::Register *OMR::ARM::TreeEvaluator::fbits2iEvaluator(TR::Node *node, TR::Code
    if (child->getRegister() == NULL && child->getReferenceCount() == 1 &&
        child->getOpCode().isLoadVar())
       {
-      TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(child, 4, cg);
+      TR::MemoryReference *tempMR = new (cg->comp()->trHeapMemory()) TR::MemoryReference(child, 4, cg);
       generateTrg1MemInstruction(cg, ARMOp_ldr, node, target, tempMR);
       tempMR->decNodeReferenceCounts();
       }
@@ -909,14 +909,14 @@ TR::Register *OMR::ARM::TreeEvaluator::lbits2dEvaluator(TR::Node *node, TR::Code
        child->getOpCode().isLoadVar())
       {
       TR::MemoryReference *highMem, *lowMem;
-      TR::MemoryReference  *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(child, 8, cg);
+      TR::MemoryReference  *tempMR = new (cg->comp()->trHeapMemory()) TR::MemoryReference(child, 8, cg);
       if (noFPRA)
       	 {
          lowReg  = cg->allocateRegister();
          highReg = cg->allocateRegister();
-         highMem = new (cg->trHeapMemory()) TR::MemoryReference(*tempMR, (cg->comp()->target().cpu.isBigEndian()) ? 0 : 4, 4, cg);
+         highMem = new (comp->trHeapMemory()) TR::MemoryReference(*tempMR, (cg->comp()->target().cpu.isBigEndian()) ? 0 : 4, 4, cg);
          generateTrg1MemInstruction(cg, ARMOp_ldr, node, highReg, highMem);
-         lowMem = new (cg->trHeapMemory()) TR::MemoryReference(*tempMR, (cg->comp()->target().cpu.isBigEndian()) ? 4 : 0, 4, cg);
+         lowMem = new (comp->trHeapMemory()) TR::MemoryReference(*tempMR, (cg->comp()->target().cpu.isBigEndian()) ? 4 : 0, 4, cg);
          generateTrg1MemInstruction(cg, ARMOp_ldr, node, lowReg, lowMem);
 
          highMem->decNodeReferenceCounts();
@@ -928,14 +928,14 @@ TR::Register *OMR::ARM::TreeEvaluator::lbits2dEvaluator(TR::Node *node, TR::Code
       else
       	 {
       	 target = cg->allocateRegister(TR_FPR);
-      	 highMem = new (cg->trHeapMemory()) TR::MemoryReference(*tempMR, 0, 8, cg);
+      	 highMem = new (comp->trHeapMemory()) TR::MemoryReference(*tempMR, 0, 8, cg);
          if (highMem->getIndexRegister() && highMem->getBaseRegister())
             {
             TR::Register *tempReg = cg->allocateRegister();
             generateTrg1Src2Instruction(cg, ARMOp_add, node, tempReg, highMem->getBaseRegister(), highMem->getIndexRegister());
             highMem->decNodeReferenceCounts();
 
-            highMem = new (cg->trHeapMemory()) TR::MemoryReference(tempReg, 0, cg);
+            highMem = new (comp->trHeapMemory()) TR::MemoryReference(tempReg, 0, cg);
             generateTrg1MemInstruction(cg, ARMOp_fldd, node, target, highMem);
             cg->stopUsingRegister(tempReg);
             }
@@ -979,12 +979,12 @@ TR::Register *OMR::ARM::TreeEvaluator::dbits2lEvaluator(TR::Node *node, TR::Code
        child->getOpCode().isLoadVar())
       {
       TR::MemoryReference *highMem, *lowMem;
-      TR::MemoryReference  *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(child, 8, cg);
+      TR::MemoryReference  *tempMR = new (comp->trHeapMemory()) TR::MemoryReference(child, 8, cg);
       lowReg  = cg->allocateRegister();
       highReg = cg->allocateRegister();
-      highMem = new (cg->trHeapMemory()) TR::MemoryReference(*tempMR, (cg->comp()->target().cpu.isBigEndian()) ? 0 : 4, 4, cg);
+      highMem = new (comp->trHeapMemory()) TR::MemoryReference(*tempMR, (cg->comp()->target().cpu.isBigEndian()) ? 0 : 4, 4, cg);
       generateTrg1MemInstruction(cg, ARMOp_ldr, node, highReg, highMem);
-      lowMem = new (cg->trHeapMemory()) TR::MemoryReference(*tempMR, (cg->comp()->target().cpu.isBigEndian()) ? 4 : 0, 4, cg);
+      lowMem = new (comp->trHeapMemory()) TR::MemoryReference(*tempMR, (cg->comp()->target().cpu.isBigEndian()) ? 4 : 0, 4, cg);
       generateTrg1MemInstruction(cg, ARMOp_ldr, node, lowReg, lowMem);
 
       highMem->decNodeReferenceCounts();
@@ -1027,7 +1027,7 @@ TR::Register *OMR::ARM::TreeEvaluator::fconstEvaluator(TR::Node *node, TR::CodeG
    uint32_t i32 = *(int32_t *)(&value);
    TR::Compilation *comp = cg->comp();
    TR::RealRegister *machineIPReg = cg->machine()->getRealRegister(TR::RealRegister::gr15);
-   TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->trMemory());
+   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->trMemory());
 
    traceMsg(comp, "In fconstEvaluator %x\n", i32);
    TR::addDependency(deps, tempReg, TR::RealRegister::NoReg, TR_GPR, cg);
@@ -1038,7 +1038,7 @@ TR::Register *OMR::ARM::TreeEvaluator::fconstEvaluator(TR::Node *node, TR::CodeG
    deps->stopAddingConditions();
 
    generateTrg1Src1ImmInstruction(cg, ARMOp_add, node, tempReg, machineIPReg, 8, 0);
-   TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(machineIPReg, NULL, cg);
+   TR::MemoryReference *tempMR = new (cg->comp()->trHeapMemory()) TR::MemoryReference(machineIPReg, NULL, cg);
    generateTrg1MemInstruction(cg, ARMOp_flds, node, floatTrgReg, tempMR);
    generateTrg1Src1Instruction(cg, ARMOp_mov, node, machineIPReg, tempReg);
    //cg->stopUsingRegister(tempReg);
@@ -1063,7 +1063,7 @@ TR::Register *OMR::ARM::TreeEvaluator::fconstEvaluator(TR::Node *node, TR::CodeG
    else
       trgReg = floatTrgReg;
 
-   TR::LabelSymbol *fenceLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol *fenceLabel = TR::LabelSymbol::create(cg->comp()->trHeapMemory(),cg);
    generateLabelInstruction(cg, ARMOp_label, node, fenceLabel, deps);
    cg->stopUsingRegister(tempReg);
    node->setRegister(trgReg);
@@ -1087,7 +1087,7 @@ TR::Register *OMR::ARM::TreeEvaluator::dconstEvaluator(TR::Node *node, TR::CodeG
    uint64_t i64 = (*(int64_t *)&value);
    TR::Compilation *comp = cg->comp();
    TR::RealRegister *machineIPReg = cg->machine()->getRealRegister(TR::RealRegister::gr15);
-   TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->trMemory());
+   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->trMemory());
 
    traceMsg(comp, "In dconstEvaluator %x\n", i64);
    TR::addDependency(deps, tempReg, TR::RealRegister::NoReg, TR_GPR, cg);
@@ -1098,7 +1098,7 @@ TR::Register *OMR::ARM::TreeEvaluator::dconstEvaluator(TR::Node *node, TR::CodeG
    deps->stopAddingConditions();
 
    generateTrg1Src1ImmInstruction(cg, ARMOp_add, node, tempReg, machineIPReg, 12, 0);
-   TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(machineIPReg, NULL, cg);
+   TR::MemoryReference *tempMR = new (cg->comp()->trHeapMemory()) TR::MemoryReference(machineIPReg, NULL, cg);
    generateTrg1MemInstruction(cg, ARMOp_fldd, node, doubleTrgReg, tempMR);
    generateTrg1Src1Instruction(cg, ARMOp_mov, node, machineIPReg, tempReg);
    //cg->stopUsingRegister(tempReg);
@@ -1132,7 +1132,7 @@ TR::Register *OMR::ARM::TreeEvaluator::dconstEvaluator(TR::Node *node, TR::CodeG
    else
       trgReg = doubleTrgReg;
 
-   TR::LabelSymbol *fenceLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol *fenceLabel = TR::LabelSymbol::create(cg->comp()->trHeapMemory(),cg);
    generateLabelInstruction(cg, ARMOp_label, node, fenceLabel, deps);
    cg->stopUsingRegister(tempReg);
    node->setRegister(trgReg);
@@ -1147,7 +1147,7 @@ TR::Register *OMR::ARM::TreeEvaluator::floadEvaluator(TR::Node *node, TR::CodeGe
 #ifdef STAYINFP
    TR::Register *floatTrgReg = cg->allocateSinglePrecisionRegister();
 #endif
-   TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, 4, cg);
+   TR::MemoryReference *tempMR = new (cg->comp()->trHeapMemory()) TR::MemoryReference(node, 4, cg);
 
 #ifdef STAYINFP
    if (tempMR->getIndexRegister() && tempMR->getBaseRegister())
@@ -1155,7 +1155,7 @@ TR::Register *OMR::ARM::TreeEvaluator::floadEvaluator(TR::Node *node, TR::CodeGe
       TR::Register *tempReg = cg->allocateRegister();
       generateTrg1Src2Instruction(cg, ARMOp_add, node, tempReg, tempMR->getBaseRegister(), tempMR->getIndexRegister());
       tempMR->decNodeReferenceCounts();
-      tempMR = new (cg->trHeapMemory()) TR::MemoryReference(tempReg, 0, cg);
+      tempMR = new (cg->comp()->trHeapMemory()) TR::MemoryReference(tempReg, 0, cg);
       generateTrg1MemInstruction(cg, ARMOp_flds, node, floatTrgReg, tempMR);
       cg->stopUsingRegister(tempReg);
       }
@@ -1193,7 +1193,7 @@ TR::Register *OMR::ARM::TreeEvaluator::floadEvaluator(TR::Node *node, TR::CodeGe
          generateTrg1Src2Instruction(cg, ARMOp_add, node, tempReg, tempMR->getBaseRegister(), tempMR->getIndexRegister());
          tempMR->decNodeReferenceCounts();
 
-         tempMR = new (cg->trHeapMemory()) TR::MemoryReference(tempReg, 0, cg);
+         tempMR = new (cg->comp()->trHeapMemory()) TR::MemoryReference(tempReg, 0, cg);
          generateTrg1MemInstruction(cg, ARMOp_flds, node, floatTrgReg, tempMR);
          cg->stopUsingRegister(tempReg);
          }
@@ -1216,7 +1216,7 @@ TR::Register *OMR::ARM::TreeEvaluator::dloadEvaluator(TR::Node *node, TR::CodeGe
    {
    TR::Register *trgReg = NULL;
    TR::Register *doubleTrgReg = cg->allocateRegister(TR_FPR);
-   TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, 8, cg);
+   TR::MemoryReference *tempMR = new (cg->comp()->trHeapMemory()) TR::MemoryReference(node, 8, cg);
 
    if (tempMR->getIndexRegister() && tempMR->getBaseRegister())
       {
@@ -1224,7 +1224,7 @@ TR::Register *OMR::ARM::TreeEvaluator::dloadEvaluator(TR::Node *node, TR::CodeGe
       generateTrg1Src2Instruction(cg, ARMOp_add, node, tempReg, tempMR->getBaseRegister(), tempMR->getIndexRegister());
       tempMR->decNodeReferenceCounts();
 
-      tempMR = new (cg->trHeapMemory()) TR::MemoryReference(tempReg, 0, cg);
+      tempMR = new (cg->comp()->trHeapMemory()) TR::MemoryReference(tempReg, 0, cg);
       generateTrg1MemInstruction(cg, ARMOp_fldd, node, doubleTrgReg, tempMR);
       cg->stopUsingRegister(tempReg);
       }
@@ -1262,7 +1262,7 @@ TR::Register *OMR::ARM::TreeEvaluator::fstoreEvaluator(TR::Node *node, TR::CodeG
    {
    TR::Node *firstChild = node->getFirstChild();
    TR::Register *sourceReg = cg->evaluate(firstChild);
-   TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, 4, cg);
+   TR::MemoryReference *tempMR = new (cg->comp()->trHeapMemory()) TR::MemoryReference(node, 4, cg);
 
    if (node->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP() && cg->comp()->target().cpu.id() != TR_DefaultARMProcessor)
       {
@@ -1329,8 +1329,8 @@ TR::Register *OMR::ARM::TreeEvaluator::dstoreEvaluator(TR::Node *node, TR::CodeG
       if (sourceReg->getKind() == TR_GPR)
          {
          // sourceReg is in general registers, mimic a lstore
-         TR::MemoryReference *lowMR  = new (cg->trHeapMemory()) TR::MemoryReference(node, 4, cg);
-         TR::MemoryReference *highMR = new (cg->trHeapMemory()) TR::MemoryReference(*lowMR, 4, 4, cg);
+         TR::MemoryReference *lowMR  = new (cg->comp()->trHeapMemory()) TR::MemoryReference(node, 4, cg);
+         TR::MemoryReference *highMR = new (cg->comp()->trHeapMemory()) TR::MemoryReference(*lowMR, 4, 4, cg);
          if (cg->comp()->target().cpu.isBigEndian())
             {
             generateMemSrc1Instruction(cg, ARMOp_str, node, lowMR, sourceReg->getHighOrder());
@@ -1344,7 +1344,7 @@ TR::Register *OMR::ARM::TreeEvaluator::dstoreEvaluator(TR::Node *node, TR::CodeG
          }
       else if (sourceReg->getKind() == TR_FPR)
          {
-         TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, 8, cg);
+         TR::MemoryReference *tempMR = new (cg->comp()->trHeapMemory()) TR::MemoryReference(node, 8, cg);
          if (tempMR->getIndexRegister() && tempMR->getBaseRegister())
             {
             TR::Register *tempReg = cg->allocateRegister();
@@ -1365,7 +1365,7 @@ TR::Register *OMR::ARM::TreeEvaluator::dstoreEvaluator(TR::Node *node, TR::CodeG
       }
    else
       {
-      TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, 8, cg);
+      TR::MemoryReference *tempMR = new (cg->comp()->trHeapMemory()) TR::MemoryReference(node, 8, cg);
       if (tempMR->getIndexRegister() && tempMR->getBaseRegister())
          {
          TR::Register *tempReg = cg->allocateRegister();
@@ -1389,7 +1389,7 @@ TR::Register *OMR::ARM::TreeEvaluator::ifstoreEvaluator(TR::Node *node, TR::Code
    {
    TR::Node *secondChild = node->getSecondChild();
    TR::Register *sourceReg = cg->evaluate(secondChild);
-   TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, 4, cg);
+   TR::MemoryReference *tempMR = new (cg->comp()->trHeapMemory()) TR::MemoryReference(node, 4, cg);
 
    if (node->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP() && cg->comp()->target().cpu.id() != TR_DefaultARMProcessor)
       {
@@ -1455,8 +1455,8 @@ TR::Register *OMR::ARM::TreeEvaluator::idstoreEvaluator(TR::Node *node, TR::Code
       if (sourceReg->getKind() == TR_GPR)
          {
          // sourceReg is in general registers, mimic a lstore
-         TR::MemoryReference *lowMR  = new (cg->trHeapMemory()) TR::MemoryReference(node, 4, cg);
-         TR::MemoryReference *highMR = new (cg->trHeapMemory()) TR::MemoryReference(*lowMR, 4, 4, cg);
+         TR::MemoryReference *lowMR  = new (cg->comp()->trHeapMemory()) TR::MemoryReference(node, 4, cg);
+         TR::MemoryReference *highMR = new (cg->comp()->trHeapMemory()) TR::MemoryReference(*lowMR, 4, 4, cg);
          if (cg->comp()->target().cpu.isBigEndian())
             {
             generateMemSrc1Instruction(cg, ARMOp_str, node, lowMR, sourceReg->getHighOrder());
@@ -1470,7 +1470,7 @@ TR::Register *OMR::ARM::TreeEvaluator::idstoreEvaluator(TR::Node *node, TR::Code
          }
       else if (sourceReg->getKind() == TR_FPR)
          {
-         TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, 8, cg);
+         TR::MemoryReference *tempMR = new (cg->comp()->trHeapMemory()) TR::MemoryReference(node, 8, cg);
          if (tempMR->getIndexRegister() && tempMR->getBaseRegister())
             {
             TR::Register *tempReg = cg->allocateRegister();
@@ -1490,7 +1490,7 @@ TR::Register *OMR::ARM::TreeEvaluator::idstoreEvaluator(TR::Node *node, TR::Code
       }
    else
       {
-      TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, 8, cg);
+      TR::MemoryReference *tempMR = new (cg->comp()->trHeapMemory()) TR::MemoryReference(node, 8, cg);
       if (tempMR->getIndexRegister() && tempMR->getBaseRegister())
          {
          TR::Register *tempReg = cg->allocateRegister();
@@ -1514,7 +1514,7 @@ TR::Register *OMR::ARM::TreeEvaluator::freturnEvaluator(TR::Node *node, TR::Code
    // SOFT-ABI uses general registers to return floats
    TR::Register *returnRegister = cg->evaluate(node->getFirstChild());
 
-   TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
+   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
    if (returnRegister->getKind() == TR_GPR)
       {
       TR::addDependency(deps, returnRegister, cg->getProperties().getIntegerReturnRegister(), TR_GPR, cg);
@@ -1534,7 +1534,7 @@ TR::Register *OMR::ARM::TreeEvaluator::freturnEvaluator(TR::Node *node, TR::Code
 TR::Register *OMR::ARM::TreeEvaluator::dreturnEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Register *returnRegister = cg->evaluate(node->getFirstChild());
-   TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->trMemory());
+   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->trMemory());
 
    if (returnRegister->getKind() == TR_GPR)
       {
@@ -1885,7 +1885,7 @@ TR::Register *OMR::ARM::TreeEvaluator::i2fEvaluator(TR::Node *node, TR::CodeGene
       !(firstChild->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP()))
       {
       // Coming from memory, last use. Use flds to save the move
-      TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(firstChild, 4, cg);
+      TR::MemoryReference *tempMR = new (cg->comp()->trHeapMemory()) TR::MemoryReference(firstChild, 4, cg);
       TR::Register *tempReg = cg->allocateSinglePrecisionRegister();
       TR::Register *floatTrgReg = cg->allocateSinglePrecisionRegister();
 
@@ -1938,7 +1938,7 @@ TR::Register *OMR::ARM::TreeEvaluator::i2dEvaluator(TR::Node *node, TR::CodeGene
       !(firstChild->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP()))
       {
       // Coming from memory, last use
-      TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(firstChild, 4, cg);
+      TR::MemoryReference *tempMR = new (cg->comp()->trHeapMemory()) TR::MemoryReference(firstChild, 4, cg);
 
       generateTrg1MemInstruction(cg, ARMOp_flds, firstChild, tempReg, tempMR);
       tempMR->decNodeReferenceCounts();
@@ -2010,7 +2010,7 @@ TR::Register *OMR::ARM::TreeEvaluator::f2dEvaluator(TR::Node *node, TR::CodeGene
       !(firstChild->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP()))
       {
       // Coming from memory, last use
-      TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(firstChild, 4, cg);
+      TR::MemoryReference *tempMR = new (cg->comp()->trHeapMemory()) TR::MemoryReference(firstChild, 4, cg);
       TR::Register *tempReg = cg->allocateSinglePrecisionRegister();
 
       generateTrg1MemInstruction(cg, ARMOp_flds, firstChild, tempReg, tempMR);
@@ -2065,7 +2065,7 @@ TR::Register *OMR::ARM::TreeEvaluator::f2iEvaluator(TR::Node *node, TR::CodeGene
       !(firstChild->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP()))
       {
       // Coming from memory, last use
-      TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(firstChild, 4, cg);
+      TR::MemoryReference *tempMR = new (cg->comp()->trHeapMemory()) TR::MemoryReference(firstChild, 4, cg);
       TR::Register *tempReg = cg->allocateSinglePrecisionRegister();
 
       generateTrg1MemInstruction(cg, ARMOp_flds, firstChild, tempReg, tempMR);
@@ -2105,7 +2105,7 @@ TR::Register *OMR::ARM::TreeEvaluator::d2iEvaluator(TR::Node *node, TR::CodeGene
       !(firstChild->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP()))
       {
       // Coming from memory, last use
-      TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(firstChild, 4, cg);
+      TR::MemoryReference *tempMR = new (cg->comp()->trHeapMemory()) TR::MemoryReference(firstChild, 4, cg);
       TR::Register *tempReg = cg->allocateRegister(TR_FPR); // double
 
       generateTrg1MemInstruction(cg, ARMOp_fldd, firstChild, tempReg, tempMR);
@@ -2179,7 +2179,7 @@ TR::Register *OMR::ARM::TreeEvaluator::d2fEvaluator(TR::Node *node, TR::CodeGene
       {
       // Coming from memory, last use
       TR::Register *tempReg = cg->allocateRegister(TR_FPR);
-      TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(firstChild, 8, cg);
+      TR::MemoryReference *tempMR = new (cg->comp()->trHeapMemory()) TR::MemoryReference(firstChild, 8, cg);
       generateTrg1MemInstruction(cg, ARMOp_fldd, firstChild, tempReg, tempMR);
       generateTrg1Src1Instruction(cg, ARMOp_fcvtsd, node, floatTrgReg, tempReg);
       tempMR->decNodeReferenceCounts();
@@ -2512,7 +2512,7 @@ static TR::Register *generateFloatMaxMin(TR::Node *node, TR::CodeGenerator *cg, 
 
    bool isFloat = (data_type == TR::Float);
    TR::Register *reg = cg->evaluate(firstChild);
-   TR::LabelSymbol *doneLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol *doneLabel = TR::LabelSymbol::create(cg->comp()->trHeapMemory(),cg);
 
    if (noFPRA && reg->getKind() == TR_GPR)
       {
@@ -2561,7 +2561,7 @@ static TR::Register *generateFloatMaxMin(TR::Node *node, TR::CodeGenerator *cg, 
          }
       }
 
-   TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 1, cg->trMemory());
+   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 1, cg->trMemory());
    deps->addPostCondition(trgFloatReg, TR::RealRegister::NoReg);
 
    // Check for NaN by comparing itself and leave
@@ -2671,7 +2671,7 @@ TR::Register *OMR::ARM::TreeEvaluator::ibits2fEvaluator(TR::Node *node, TR::Code
    if (child->getRegister() == NULL && child->getReferenceCount() == 1 &&
        child->getOpCode().isLoadVar())
       {
-      TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(child, 4, cg);
+      TR::MemoryReference *tempMR = new (cg->comp()->trHeapMemory()) TR::MemoryReference(child, 4, cg);
       generateTrg1MemInstruction(cg, ARMOp_ldr, node, target, tempMR);
       tempMR->decNodeReferenceCounts();
       }
@@ -2693,7 +2693,7 @@ TR::Register *OMR::ARM::TreeEvaluator::fbits2iEvaluator(TR::Node *node, TR::Code
    if (child->getRegister() == NULL && child->getReferenceCount() == 1 &&
        child->getOpCode().isLoadVar())
       {
-      TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(child, 4, cg);
+      TR::MemoryReference *tempMR = new (cg->comp()->trHeapMemory()) TR::MemoryReference(child, 4, cg);
       generateTrg1MemInstruction(cg, ARMOp_ldr, node, target, tempMR);
       tempMR->decNodeReferenceCounts();
       }
@@ -2719,12 +2719,12 @@ TR::Register *OMR::ARM::TreeEvaluator::lbits2dEvaluator(TR::Node *node, TR::Code
        child->getOpCode().isLoadVar())
       {
       TR::MemoryReference *highMem, *lowMem;
-      TR::MemoryReference  *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(child, 8, cg);
+      TR::MemoryReference  *tempMR = new (comp->trHeapMemory()) TR::MemoryReference(child, 8, cg);
       lowReg  = cg->allocateRegister();
       highReg = cg->allocateRegister();
-      highMem = new (cg->trHeapMemory()) TR::MemoryReference(*tempMR, (cg->comp()->target().cpu.isBigEndian()) ? 0 : 4, 4, cg);
+      highMem = new (comp->trHeapMemory()) TR::MemoryReference(*tempMR, (cg->comp()->target().cpu.isBigEndian()) ? 0 : 4, 4, cg);
       generateTrg1MemInstruction(cg, ARMOp_ldr, node, highReg, highMem);
-      lowMem = new (cg->trHeapMemory()) TR::MemoryReference(*tempMR, (cg->comp()->target().cpu.isBigEndian()) ? 4 : 0, 4, cg);
+      lowMem = new (comp->trHeapMemory()) TR::MemoryReference(*tempMR, (cg->comp()->target().cpu.isBigEndian()) ? 4 : 0, 4, cg);
       generateTrg1MemInstruction(cg, ARMOp_ldr, node, lowReg, lowMem);
 
       highMem->decNodeReferenceCounts();
@@ -2756,12 +2756,12 @@ TR::Register *OMR::ARM::TreeEvaluator::dbits2lEvaluator(TR::Node *node, TR::Code
        child->getOpCode().isLoadVar())
       {
       TR::MemoryReference *highMem, *lowMem;
-      TR::MemoryReference  *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(child, 8, cg);
+      TR::MemoryReference  *tempMR = new (cg->comp()->trHeapMemory()) TR::MemoryReference(child, 8, cg);
       lowReg  = cg->allocateRegister();
       highReg = cg->allocateRegister();
-      highMem = new (cg->trHeapMemory()) TR::MemoryReference(*tempMR, (cg->comp()->target().cpu.isBigEndian()) ? 0 : 4, 4, cg);
+      highMem = new (comp->trHeapMemory()) TR::MemoryReference(*tempMR, (cg->comp()->target().cpu.isBigEndian()) ? 0 : 4, 4, cg);
       generateTrg1MemInstruction(cg, ARMOp_ldr, node, highReg, highMem);
-      lowMem = new (cg->trHeapMemory()) TR::MemoryReference(*tempMR, (cg->comp()->target().cpu.isBigEndian()) ? 4 : 0, 4, cg);
+      lowMem = new (comp->trHeapMemory()) TR::MemoryReference(*tempMR, (cg->comp()->target().cpu.isBigEndian()) ? 4 : 0, 4, cg);
       generateTrg1MemInstruction(cg, ARMOp_ldr, node, lowReg, lowMem);
 
       highMem->decNodeReferenceCounts();

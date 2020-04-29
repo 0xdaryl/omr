@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -79,7 +79,7 @@ TR::Register *OMR::ARM::TreeEvaluator::ireturnEvaluator(TR::Node *node, TR::Code
    {
    TR::Register *returnRegister = cg->evaluate(node->getFirstChild());
 
-   TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
+   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
    TR::addDependency(deps, returnRegister, cg->getProperties().getIntegerReturnRegister(), TR_GPR, cg);
 
    generateAdminInstruction(cg, ARMOp_ret, node, deps);
@@ -93,7 +93,7 @@ TR::Register *OMR::ARM::TreeEvaluator::lreturnEvaluator(TR::Node *node, TR::Code
    TR::Register *lowReg                              = returnRegister->getLowOrder();
    TR::Register *highReg                             = returnRegister->getHighOrder();
 
-   TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->trMemory());
+   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->trMemory());
    TR::addDependency(deps, lowReg, cg->getProperties().getLongLowReturnRegister(), TR_GPR, cg);
    TR::addDependency(deps, highReg, cg->getProperties().getLongHighReturnRegister(), TR_GPR, cg);
 
@@ -363,7 +363,7 @@ static bool virtualGuardHelper(TR::Node *node, TR::CodeGenerator *cg)
       deps = generateRegisterDependencyConditions(cg, third, 0);
       }
    else
-      deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 0, cg->trMemory());
+      deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 0, cg->trMemory());
 
    if(virtualGuard->shouldGenerateChildrenCode())
       cg->evaluateChildrenWithMultipleRefCount(node);
@@ -555,9 +555,9 @@ static TR::Register *compareLongsForOrder(TR_ARMConditionCode branchOp, TR::Node
       }
    else
       {
-      TR::LabelSymbol *startOOLLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-      TR::LabelSymbol *doneOOLLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-      TR::LabelSymbol *returnLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);;
+      TR::LabelSymbol *startOOLLabel = TR::LabelSymbol::create(cg->comp()->trHeapMemory(),cg);
+      TR::LabelSymbol *doneOOLLabel = TR::LabelSymbol::create(cg->comp()->trHeapMemory(),cg);
+      TR::LabelSymbol *returnLabel = TR::LabelSymbol::create(cg->comp()->trHeapMemory(),cg);;
       TR_ARMOutOfLineCodeSection *outlinedSlowPath = NULL;
 
       TR::Register *tempReg = cg->allocateRegister();
@@ -569,7 +569,7 @@ static TR::Register *compareLongsForOrder(TR_ARMConditionCode branchOp, TR::Node
       if (debugObj)
          debugObj->addInstructionComment(cursor, "Branch to OOL iflong sequence");
       TR::Instruction *OOLBranchInstr = cursor;
-      outlinedSlowPath = new (cg->trHeapMemory()) TR_ARMOutOfLineCodeSection(startOOLLabel, doneOOLLabel, cg);
+      outlinedSlowPath = new (cg->comp()->trHeapMemory()) TR_ARMOutOfLineCodeSection(startOOLLabel, doneOOLLabel, cg);
       cg->getARMOutOfLineCodeSectionList().add(outlinedSlowPath);
 
       // Hot path
@@ -577,7 +577,7 @@ static TR::Register *compareLongsForOrder(TR_ARMConditionCode branchOp, TR::Node
 
       // Start OOL
       // The compare result has to be live until the end of the last instruction in the mainline, so put it as a dependency
-      TR::RegisterDependencyConditions *tempDeps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
+      TR::RegisterDependencyConditions *tempDeps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
       TR::addDependency(tempDeps, tempReg, TR::RealRegister::NoReg, TR_GPR, cg);
       //tempDeps->addPreCondition(tempReg, TR::RealRegister::NoReg);
       if (deps)
@@ -587,7 +587,7 @@ static TR::Register *compareLongsForOrder(TR_ARMConditionCode branchOp, TR::Node
 
       // Need the two sources for compare to survive until the returnLabel.  Use a dependency to hold that, and hold
       // until the compare for them are done.
-      TR::RegisterDependencyConditions *newDeps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->trMemory());
+      TR::RegisterDependencyConditions *newDeps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->trMemory());
       TR::addDependency(newDeps, src1Reg->getLowOrder(), TR::RealRegister::NoReg, TR_GPR, cg);
       TR::addDependency(newDeps, src2Reg->getLowOrder(), TR::RealRegister::NoReg, TR_GPR, cg);
 
@@ -1089,7 +1089,7 @@ static void lookupScheme1(TR::CodeGenerator *cg, TR::Node *node, bool unbalanced
    TR::Node     *defaultNode = node->getSecondChild();
    TR::Node     *defDepsNode = defaultNode->getNumChildren() > 0 ? defaultNode->getFirstChild() : NULL;
 
-   TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
+   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
    TR::addDependency(deps, selectorReg, TR::RealRegister::NoReg, TR_GPR, cg);
 
    TR::RegisterDependencyConditions *defaultDeps = deps;
@@ -1149,7 +1149,7 @@ static void lookupScheme2(TR::CodeGenerator *cg, TR::Node *node, bool unbalanced
    TR::Node     *defaultNode  = node->getSecondChild();
    TR::Node     *defDepsNode  = defaultNode->getNumChildren() > 0 ? defaultNode->getFirstChild() : NULL;
 
-   TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->trMemory());
+   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->trMemory());
    TR::addDependency(deps, selectorReg, TR::RealRegister::NoReg, TR_GPR, cg);
    TR::addDependency(deps, caseConstReg, TR::RealRegister::NoReg, TR_GPR, cg);
 
@@ -1217,7 +1217,7 @@ static void lookupScheme3(TR::CodeGenerator *cg, TR::Node *node, bool unbalanced
    TR::Register *selector = cg->evaluate(node->getFirstChild());
    TR::Register *addrRegister = cg->allocateRegister();
    TR::Register *dataRegister = cg->allocateRegister();
-   TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(3, 3, cg->trMemory());
+   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(3, 3, cg->trMemory());
    TR::Node     *defaultNode = node->getSecondChild();
    TR::Node     *defDepsNode = defaultNode->getNumChildren() > 0 ? defaultNode->getFirstChild() : 0;
 
@@ -1309,7 +1309,7 @@ static void lookupScheme4(TR::Node *node, TR::CodeGenerator *cg)
    TR::Register *lowRegister = cg->allocateRegister();
    TR::Register *highRegister = cg->allocateRegister();
    TR::Register *pivotRegister = cg->allocateRegister();
-   TR::RegisterDependencyConditions *conditions = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(7, 7);
+   TR::RegisterDependencyConditions *conditions = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(7, 7);
 
    cg->machine()->setLinkRegisterKilled(true);
    TR::addDependency(conditions, dataRegister, TR::RealRegister::NoReg, TR_GPR, cg);
@@ -1325,24 +1325,24 @@ static void lookupScheme4(TR::Node *node, TR::CodeGenerator *cg)
    armLoadConstant(node, (numberOfEntries-1)<<2, highRegister, cg);
    armLoadConstant(node, address, addrRegister, cg);
    generateTrg1ImmInstruction(node, cg, ARMOp_mov, lowRegister, 0);
-   TR::LabelSymbol *backLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol *searchLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol *biggerLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol *linkLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol *backLabel = TR::LabelSymbol::create(cg->comp()->trHeapMemory(),cg);
+   TR::LabelSymbol *searchLabel = TR::LabelSymbol::create(cg->comp()->trHeapMemory(),cg);
+   TR::LabelSymbol *biggerLabel = TR::LabelSymbol::create(cg->comp()->trHeapMemory(),cg);
+   TR::LabelSymbol *linkLabel = TR::LabelSymbol::create(cg->comp()->trHeapMemory(),cg);
 
    generateLabelInstruction(node, cg, ARMOp_label, backLabel);
    generateTrg1Src2Instruction(node, cg, ARMOp_add, pivotRegister, highRegister, lowRegister);
-   new (cg->trHeapMemory()) TR::ARMTrg1Src1Imm2Instruction(0xfffffffc, 31, pivotRegister, pivotRegister, ARMOp_rlwinm, cg);
-   generateTrg1MemInstruction(cg, ARMOp_lwzx, dataRegister, new (cg->trHeapMemory()) TR_ARMMemoryReference(addrRegister, pivotRegister, cg));
+   new (cg->comp()->trHeapMemory()) TR::ARMTrg1Src1Imm2Instruction(0xfffffffc, 31, pivotRegister, pivotRegister, ARMOp_rlwinm, cg);
+   generateTrg1MemInstruction(cg, ARMOp_lwzx, dataRegister, new (cg->comp()->trHeapMemory()) TR_ARMMemoryReference(addrRegister, pivotRegister, cg));
    generateTrg1Src2Instruction(node, cg, ARMOp_cmp4, cndRegister, dataRegister, selector);
    generateConditionalBranchInstruction(node, cg, ARMOp_bne, searchLabel, cndRegister);
    generateLabelInstruction(node, cg, ARMOp_bl, linkLabel);
    generateLabelInstruction(node, cg, ARMOp_label, linkLabel);
-   new (cg->trHeapMemory()) TR::ARMTrg1Instruction(ARMOp_mflr, dataRegister, cg);
+   new (cg->comp()->trHeapMemory()) TR::ARMTrg1Instruction(ARMOp_mflr, dataRegister, cg);
    generateTrg1Src1ImmInstruction(node, cg, ARMOp_addi, pivotRegister, pivotRegister, 20);
    generateTrg1Src2Instruction(node, cg, ARMOp_add, dataRegister, pivotRegister, dataRegister);
-   new (cg->trHeapMemory()) TR::ARMSrc1Instruction(ARMOp_mtctr, dataRegister, cg);
-   new (cg->trHeapMemory()) TR::Instruction(ARMOp_bctr, cg);
+   new (cg->comp()->trHeapMemory()) TR::ARMSrc1Instruction(ARMOp_mtctr, dataRegister, cg);
+   new (cg->comp()->trHeapMemory()) TR::Instruction(ARMOp_bctr, cg);
    for (int32_t ii=2; ii<total; ii++)
       {
       generateLabelInstruction(node, cg, ARMOp_b, node->getChild(ii)->getBranchDestination()->getNode()->getLabel());
@@ -1359,7 +1359,7 @@ static void lookupScheme4(TR::Node *node, TR::CodeGenerator *cg)
    generateTrg1Src2Instruction(node, cg, ARMOp_cmp4, cndRegister, pivotRegister, lowRegister);
    generateConditionalBranchInstruction(node, cg, ARMOp_beq, node->getSecondChild()->getBranchDestination()->getNode()->getLabel(), cndRegister);
    generateTrg1Src1ImmInstruction(node, cg, ARMOp_addi, highRegister, pivotRegister, -4);
-   new (cg->trHeapMemory()) TR::ARMDepLabelInstruction(ARMOp_b, backLabel, conditions, cg);
+   new (cg->comp()->trHeapMemory()) TR::ARMDepLabelInstruction(ARMOp_b, backLabel, conditions, cg);
    */
    }
 
@@ -1377,13 +1377,13 @@ TR::Register *OMR::ARM::TreeEvaluator::tableEvaluator(TR::Node *node, TR::CodeGe
       {
       // Note: When implementation is changed with regards to number of used registers (or dependency),
       // the matching GlDepRegs free checks in OMRCodeGenerator.cpp#getMaximumNumberOfGPRsAllowedAcrossEdge(..) must be updated to synch.
-      conditions  = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->trMemory());
+      conditions  = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->trMemory());
       t1Register = cg->allocateRegister();
       TR::addDependency(conditions, t1Register, TR::RealRegister::NoReg, TR_GPR, cg);
       }
    else
       {
-      conditions = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
+      conditions = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
       }
 
    TR::addDependency(conditions, selectorReg, TR::RealRegister::NoReg, TR_GPR, cg);
@@ -1426,7 +1426,7 @@ TR::Register *OMR::ARM::TreeEvaluator::tableEvaluator(TR::Node *node, TR::CodeGe
       // code at (A) decrements selector by 1 to adjust so that the 0th
       // elem is at the right addr.
       generateTrg1Src1ImmInstruction(cg, ARMOp_sub, node, t1Register, selectorReg, 1, 0);
-      generateTrg1Src2Instruction(cg, ARMOp_add, node, machineIP, machineIP, new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2RegLSLImmed, t1Register, 2));
+      generateTrg1Src2Instruction(cg, ARMOp_add, node, machineIP, machineIP, new (cg->comp()->trHeapMemory()) TR_ARMOperand2(ARMOp2RegLSLImmed, t1Register, 2));
 
       for (i = 2; i < total-1; i++)
          {
@@ -1463,7 +1463,7 @@ TR::Register *OMR::ARM::TreeEvaluator::ZEROCHKEvaluator(TR::Node *node, TR::Code
 
    // Outlined instructions for check failure
    //
-   TR_ARMOutOfLineCodeSection *outlinedHelperCall = new (cg->trHeapMemory()) TR_ARMOutOfLineCodeSection(node, TR::call, NULL, slowPathLabel, restartLabel, cg);
+   TR_ARMOutOfLineCodeSection *outlinedHelperCall = new (cg->comp()->trHeapMemory()) TR_ARMOutOfLineCodeSection(node, TR::call, NULL, slowPathLabel, restartLabel, cg);
    cg->getARMOutOfLineCodeSectionList().add(outlinedHelperCall);
 
    // Restore the first child
@@ -1615,7 +1615,7 @@ static void VMoutlinedHelperArrayStoreCHKEvaluator(TR::Node *node, TR::Register 
    TR::Compilation * comp = cg->comp();
    TR::SymbolReference *arrayStoreChkHelper = node->getSymbolReference();
 
-   TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->trMemory());
+   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->trMemory());
 
    TR::addDependency(deps, dstReg, TR::RealRegister::gr0, TR_GPR, cg);
    TR::addDependency(deps, srcReg, TR::RealRegister::gr1, TR_GPR, cg);
@@ -1638,7 +1638,7 @@ TR::Register *OMR::ARM::TreeEvaluator::ArrayStoreCHKEvaluator(TR::Node *node, TR
       VMoutlinedHelperArrayStoreCHKEvaluator(node, srcReg, dstReg, srcNode->isNonNull(), cg);
       }
 
-   TR::MemoryReference *storeMR = new (cg->trHeapMemory()) TR::MemoryReference(node->getFirstChild(), TR::Compiler->om.sizeofReferenceAddress(), cg);
+   TR::MemoryReference *storeMR = new (cg->comp()->trHeapMemory()) TR::MemoryReference(node->getFirstChild(), TR::Compiler->om.sizeofReferenceAddress(), cg);
 
    generateMemSrc1Instruction(cg, ARMOp_str, node, storeMR, srcReg);
 
@@ -1720,13 +1720,13 @@ static TR::Register *generateMaxMin(TR::Node *node, TR::CodeGenerator *cg, bool 
       TR::Register *reg = cg->evaluate(child);
       if (two_reg)
          {
-         TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 4, cg->trMemory());
+         TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 4, cg->trMemory());
          deps->addPostCondition(trgReg->getLowOrder(), TR::RealRegister::NoReg);
          deps->addPostCondition(trgReg->getHighOrder(), TR::RealRegister::NoReg);
          deps->addPostCondition(reg->getLowOrder(), TR::RealRegister::NoReg);
          deps->addPostCondition(reg->getHighOrder(), TR::RealRegister::NoReg);
 
-         TR::LabelSymbol *doneLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+         TR::LabelSymbol *doneLabel = TR::LabelSymbol::create(cg->comp()->trHeapMemory(),cg);
 
          // First compare
          cursor = generateSrc2Instruction(cg, ARMOp_cmp, node, trgReg->getHighOrder(), reg->getHighOrder());

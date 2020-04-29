@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -347,7 +347,7 @@ void TR_ARMRegisterDependencyGroup::assignRegisters(TR::Instruction  *currentIns
                traceMsg (comp,"\nOOL: Found register spilled in main line and re-assigned inside OOL");
                TR::Node *currentNode = currentInstruction->getNode();
                TR::RealRegister *assignedReg    = toRealRegister(virtReg->getAssignedRegister());
-               TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(currentNode, (TR::SymbolReference*)virtReg->getBackingStorage()->getSymbolReference(), sizeof(uintptr_t), cg);
+               TR::MemoryReference *tempMR = new (comp->trHeapMemory()) TR::MemoryReference(currentNode, (TR::SymbolReference*)virtReg->getBackingStorage()->getSymbolReference(), sizeof(uintptr_t), cg);
                TR_ARMOpCodes opCode;
                TR_RegisterKinds rk = virtReg->getKind();
                switch (rk)
@@ -544,7 +544,7 @@ TR::RegisterDependencyConditions *OMR::ARM::RegisterDependencyConditions::clone(
       }
    preNum = this->getAddCursorForPre();
    postNum = this->getAddCursorForPost();
-   result = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(preNum+addPre,
+   result = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(preNum+addPre,
       postNum+addPost, cg->trMemory());
 
    for (idx=0; idx<postNum; idx++)
@@ -614,7 +614,7 @@ TR::RegisterDependencyConditions *OMR::ARM::RegisterDependencyConditions::cloneA
       }
    preNum = this->getAddCursorForPre();
    postNum = this->getAddCursorForPost();
-   result = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(preNum + addPre, postNum + addPost, cg->trMemory());
+   result = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(preNum + addPre, postNum + addPost, cg->trMemory());
 
    for (idx=0; idx<postNum; idx++)
       {

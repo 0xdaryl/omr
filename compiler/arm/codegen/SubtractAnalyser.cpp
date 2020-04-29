@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -56,25 +56,25 @@ void TR_ARMSubtractAnalyser::integerSubtractAnalyser(TR::Node       *root,
       TR::Register *thirdReg = root->setRegister(cg()->allocateRegister());
       if (getSubReg3Reg2())
          {
-         new (cg()->trHeapMemory()) TR::ARMTrg1Src2Instruction(ARMOp_sub, root, thirdReg, secondRegister, firstRegister, cg());
+         new (cg()->comp()->trHeapMemory()) TR::ARMTrg1Src2Instruction(ARMOp_sub, root, thirdReg, secondRegister, firstRegister, cg());
          }
       else // assert getSubReg3Mem2() == true
          {
-//         TR_ARMMemoryReference *tempMR = new (cg()->trHeapMemory()) TR_ARMMemoryReference(secondChild);
-//         new (cg()->trHeapMemory()) TR::ARMRegMemInstruction(memToRegOpCode, thirdReg, tempMR, cg());
+//         TR_ARMMemoryReference *tempMR = new (cg()->comp()->trHeapMemory()) TR_ARMMemoryReference(secondChild);
+//         new (cg()->comp()->trHeapMemory()) TR::ARMRegMemInstruction(memToRegOpCode, thirdReg, tempMR, cg());
 //         tempMR->decNodeReferenceCounts();
          }
       root->setRegister(thirdReg);
       }
    else if (getSubReg1Reg2())
       {
-      new (cg()->trHeapMemory()) TR::ARMTrg1Src1Instruction(ARMOp_sub, root, firstRegister, secondRegister, cg());
+      new (cg()->comp()->trHeapMemory()) TR::ARMTrg1Src1Instruction(ARMOp_sub, root, firstRegister, secondRegister, cg());
       root->setRegister(firstRegister);
       }
    else // assert getSubReg1Mem2() == true
       {
-//      TR_ARMMemoryReference *tempMR = new (cg()->trHeapMemory()) TR_ARMMemoryReference(secondChild);
-//      new (cg()->trHeapMemory()) TR::ARMRegMemInstruction(memToRegOpCode, firstRegister, tempMR, cg());
+//      TR_ARMMemoryReference *tempMR = new (cg()->comp()->trHeapMemory()) TR_ARMMemoryReference(secondChild);
+//      new (cg()->comp()->trHeapMemory()) TR::ARMRegMemInstruction(memToRegOpCode, firstRegister, tempMR, cg());
 //      tempMR->decNodeReferenceCounts();
 //      root->setRegister(firstRegister);
       }
@@ -113,35 +113,35 @@ void TR_ARMSubtractAnalyser::longSubtractAnalyser(TR::Node *root)
       TR::Register     *highThird = cg()->allocateRegister();
       TR::RegisterPair *thirdReg  = cg()->allocateRegisterPair(lowThird, highThird);
       root->setRegister(thirdReg);
-      new (cg()->trHeapMemory()) TR::ARMTrg1Src1Instruction(ARMOp_mov, root, lowThird, firstRegister->getLowOrder(), cg());
-      new (cg()->trHeapMemory()) TR::ARMTrg1Src1Instruction(ARMOp_mov, root, highThird, firstRegister->getHighOrder(), cg());
+      new (cg()->comp()->trHeapMemory()) TR::ARMTrg1Src1Instruction(ARMOp_mov, root, lowThird, firstRegister->getLowOrder(), cg());
+      new (cg()->comp()->trHeapMemory()) TR::ARMTrg1Src1Instruction(ARMOp_mov, root, highThird, firstRegister->getHighOrder(), cg());
       if (getSubReg3Reg2())
          {
-         new (cg()->trHeapMemory()) TR::ARMTrg1Src1Instruction(ARMOp_sub, root, lowThird, secondRegister->getLowOrder(), cg());
-//         new (cg()->trHeapMemory()) TR::ARMTrg1Src1Instruction(SBB4RegReg, root, highThird, secondRegister->getHighOrder(), cg());
+         new (cg()->comp()->trHeapMemory()) TR::ARMTrg1Src1Instruction(ARMOp_sub, root, lowThird, secondRegister->getLowOrder(), cg());
+//         new (cg()->comp()->trHeapMemory()) TR::ARMTrg1Src1Instruction(SBB4RegReg, root, highThird, secondRegister->getHighOrder(), cg());
          }
       else // assert getSubReg3Mem2() == true
          {
-//         TR_ARMMemoryReference *lowMR = new (cg()->trHeapMemory()) TR_ARMMemoryReference(secondChild);
-//         new (cg()->trHeapMemory()) TR::ARMRegMemInstruction(SUB4RegMem, lowThird, lowMR, cg());
-//         TR_ARMMemoryReference *highMR = new (cg()->trHeapMemory()) TR_ARMMemoryReference(*lowMR, 4);
-//         new (cg()->trHeapMemory()) TR::ARMRegMemInstruction(SBB4RegMem, highThird, highMR, cg());
+//         TR_ARMMemoryReference *lowMR = new (cg()->comp()->trHeapMemory()) TR_ARMMemoryReference(secondChild);
+//         new (cg()->comp()->trHeapMemory()) TR::ARMRegMemInstruction(SUB4RegMem, lowThird, lowMR, cg());
+//         TR_ARMMemoryReference *highMR = new (cg()->comp()->trHeapMemory()) TR_ARMMemoryReference(*lowMR, 4);
+//         new (cg()->comp()->trHeapMemory()) TR::ARMRegMemInstruction(SBB4RegMem, highThird, highMR, cg());
 //         lowMR->decNodeReferenceCounts();
          }
       root->setRegister(thirdReg);
       }
    else if (getSubReg1Reg2())
       {
-//      new (cg()->trHeapMemory()) TR::ARMTrg1Src2Instruction(root, ARMOp_subf, firstRegister->getLowOrder(), secondRegister->getLowOrder(), cg());
-//      new (cg()->trHeapMemory()) TR::ARMRegRegInstruction(SBB4RegReg, firstRegister->getHighOrder(), secondRegister->getHighOrder(), cg());
+//      new (cg()->comp()->trHeapMemory()) TR::ARMTrg1Src2Instruction(root, ARMOp_subf, firstRegister->getLowOrder(), secondRegister->getLowOrder(), cg());
+//      new (cg()->comp()->trHeapMemory()) TR::ARMRegRegInstruction(SBB4RegReg, firstRegister->getHighOrder(), secondRegister->getHighOrder(), cg());
       root->setRegister(firstRegister);
       }
    else // assert getSubReg1Mem2() == true
       {
-//      TR_ARMMemoryReference *lowMR = new (cg()->trHeapMemory()) TR_ARMMemoryReference(secondChild);
-//      new (cg()->trHeapMemory()) TR::ARMRegMemInstruction(SUB4RegMem, firstRegister->getLowOrder(), lowMR, cg());
-//      TR_ARMMemoryReference *highMR = new (cg()->trHeapMemory()) TR_ARMMemoryReference(*lowMR, 4);
-//      new (cg()->trHeapMemory()) TR::ARMRegMemInstruction(SBB4RegMem, firstRegister->getHighOrder(), highMR, cg());
+//      TR_ARMMemoryReference *lowMR = new (cg()->comp()->trHeapMemory()) TR_ARMMemoryReference(secondChild);
+//      new (cg()->comp()->trHeapMemory()) TR::ARMRegMemInstruction(SUB4RegMem, firstRegister->getLowOrder(), lowMR, cg());
+//      TR_ARMMemoryReference *highMR = new (cg()->comp()->trHeapMemory()) TR_ARMMemoryReference(*lowMR, 4);
+//      new (cg()->comp()->trHeapMemory()) TR::ARMRegMemInstruction(SBB4RegMem, firstRegister->getHighOrder(), highMR, cg());
 //      lowMR->decNodeReferenceCounts();
 //      root->setRegister(firstRegister);
       }

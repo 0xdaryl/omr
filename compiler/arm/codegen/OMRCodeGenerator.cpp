@@ -63,11 +63,11 @@ TR::Linkage *OMR::ARM::CodeGenerator::createLinkage(TR_LinkageConventions lc)
       case TR_Private:
       case TR_Helper:
       case TR_System:
-         linkage = new (self()->trHeapMemory()) TR::ARMSystemLinkage(self());
+         linkage = new (self()->comp()->trHeapMemory()) TR::ARMSystemLinkage(self());
          break;
       default :
          TR_ASSERT(0, "using system linkage for unrecognized convention %d\n", lc);
-         linkage = new (self()->trHeapMemory()) TR::ARMSystemLinkage(self());
+         linkage = new (self()->comp()->trHeapMemory()) TR::ARMSystemLinkage(self());
       }
    self()->setLinkage(lc, linkage);
    return linkage;
@@ -147,7 +147,7 @@ OMR::ARM::CodeGenerator::CodeGenerator()
    self()->setSupportsNewInstanceImplOpt();
 
 #ifdef J9_PROJECT_SPECIFIC
-   self()->setAheadOfTimeCompile(new (self()->trHeapMemory()) TR::AheadOfTimeCompile(self()));
+   self()->setAheadOfTimeCompile(new (self()->comp()->trHeapMemory()) TR::AheadOfTimeCompile(self()));
 #endif
    self()->getLinkage()->initARMRealRegisterLinkage();
    //To enable this, we must change OMR::ARM::Linkage::saveArguments to support GRA registers
@@ -221,8 +221,8 @@ OMR::ARM::CodeGenerator::CodeGenerator()
 
    if (self()->comp()->getOption(TR_TraceRA))
       {
-      self()->setGPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstGPR, TR::RealRegister::LastGPR));
-      self()->setFPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstFPR, TR::RealRegister::LastFPR));
+      self()->setGPRegisterIterator(new (self()->comp()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstGPR, TR::RealRegister::LastGPR));
+      self()->setFPRegisterIterator(new (self()->comp()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstFPR, TR::RealRegister::LastFPR));
       }
 
 
@@ -291,9 +291,9 @@ TR::Instruction *OMR::ARM::CodeGenerator::generateSwitchToInterpreterPrePrologue
    uintptr_t             helperAddr = (uintptr_t)helperSymRef->getMethodAddress();
 
    // gr4 must contain the saved LR; see Recompilation.s
-   cursor = new (self()->trHeapMemory()) TR::ARMTrg1Src1Instruction(cursor, ARMOp_mov, node, gr4, lr, self());
+   cursor = new (comp->trHeapMemory()) TR::ARMTrg1Src1Instruction(cursor, ARMOp_mov, node, gr4, lr, self());
    cursor = self()->getLinkage()->flushArguments(cursor);
-   cursor = generateImmSymInstruction(self(), ARMOp_bl, node, (uintptr_t)revertToInterpreterSymRef->getMethodAddress(), new (self()->trHeapMemory()) TR::RegisterDependencyConditions((uint8_t)0,0, self()->trMemory()), revertToInterpreterSymRef, NULL, cursor);
+   cursor = generateImmSymInstruction(self(), ARMOp_bl, node, (uintptr_t)revertToInterpreterSymRef->getMethodAddress(), new (comp->trHeapMemory()) TR::RegisterDependencyConditions((uint8_t)0,0, self()->trMemory()), revertToInterpreterSymRef, NULL, cursor);
    cursor = generateImmInstruction(self(), ARMOp_dd, node, (int32_t)ramMethod, TR_RamMethod, cursor);
 
    if (comp->getOption(TR_EnableHCR))
@@ -361,17 +361,17 @@ void OMR::ARM::CodeGenerator::beginInstructionSelection()
       if (methodSymbol->isJNI())
          {
          uintptr_t JNIMethodAddress = (uintptr_t) methodSymbol->getResolvedMethod()->startAddressForJNIMethod(comp);
-         cursor = new (self()->trHeapMemory()) TR::ARMImmInstruction(cursor, ARMOp_dd, startNode, (int32_t)JNIMethodAddress, self());
+         cursor = new (comp->trHeapMemory()) TR::ARMImmInstruction(cursor, ARMOp_dd, startNode, (int32_t)JNIMethodAddress, self());
          }
 
-      _returnTypeInfoInstruction = new (self()->trHeapMemory()) TR::ARMImmInstruction(cursor, ARMOp_dd, startNode, 0, self());
-      new (self()->trHeapMemory()) TR::ARMAdminInstruction(_returnTypeInfoInstruction, ARMOp_proc, startNode, NULL, self());
+      _returnTypeInfoInstruction = new (comp->trHeapMemory()) TR::ARMImmInstruction(cursor, ARMOp_dd, startNode, 0, self());
+      new (comp->trHeapMemory()) TR::ARMAdminInstruction(_returnTypeInfoInstruction, ARMOp_proc, startNode, NULL, self());
 
       }
    else
       {
       _returnTypeInfoInstruction = NULL;
-      new (self()->trHeapMemory()) TR::ARMAdminInstruction((TR::Instruction *)NULL, ARMOp_proc, startNode, NULL, self());
+      new (comp->trHeapMemory()) TR::ARMAdminInstruction((TR::Instruction *)NULL, ARMOp_proc, startNode, NULL, self());
       }
    }
 
@@ -393,7 +393,7 @@ void OMR::ARM::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssig
    TR::Instruction *instructionCursor = self()->getAppendInstruction();
    if (!comp->getOption(TR_DisableOOL))
       {
-      TR::list<TR::Register*> *spilledRegisterList = new (self()->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::Register*>(comp->allocator()));
+      TR::list<TR::Register*> *spilledRegisterList = new (comp->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::Register*>(comp->allocator()));
       self()->setSpilledRegisterList(spilledRegisterList);
       }
    while (instructionCursor)
@@ -538,7 +538,7 @@ int32_t OMR::ARM::CodeGenerator::findOrCreateAddressConstant(void *v, TR::DataTy
                              TR::Node *node, bool isUnloadablePicSite)
    {
    if (_constantData == NULL)
-      _constantData = new (self()->trHeapMemory()) TR::ARMConstantDataSnippet(self());
+      _constantData = new (self()->comp()->trHeapMemory()) TR::ARMConstantDataSnippet(self());
    return(_constantData->addConstantRequest(v, t, n0, n1, n2, n3, n4, node, isUnloadablePicSite));
    }
 
