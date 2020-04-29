@@ -82,7 +82,7 @@ OMR::Power::MemoryReference::MemoryReference(
    _conditions(NULL),
    _flag(0)
    {
-   _symbolReference = new (cg->trHeapMemory()) TR::SymbolReference(cg->comp()->getSymRefTab());
+   _symbolReference = new (cg->comp()->trHeapMemory()) TR::SymbolReference(cg->comp()->getSymRefTab());
    _offset = _symbolReference->getOffset();
    }
 
@@ -102,7 +102,7 @@ OMR::Power::MemoryReference::MemoryReference(
    _length(len),
    _flag(0)
    {
-   _symbolReference = new (cg->trHeapMemory()) TR::SymbolReference(cg->comp()->getSymRefTab());
+   _symbolReference = new (cg->comp()->trHeapMemory()) TR::SymbolReference(cg->comp()->getSymRefTab());
    _offset = _symbolReference->getOffset();
    }
 
@@ -123,7 +123,7 @@ OMR::Power::MemoryReference::MemoryReference(
    _offset(disp),
    _flag(0)
    {
-   _symbolReference = new (cg->trHeapMemory()) TR::SymbolReference(cg->comp()->getSymRefTab());
+   _symbolReference = new (cg->comp()->trHeapMemory()) TR::SymbolReference(cg->comp()->getSymRefTab());
    }
 
 //
@@ -166,7 +166,7 @@ OMR::Power::MemoryReference::MemoryReference(TR::Node *rootLoadOrStore, uint32_t
             if (isLocalObject)
                cg->evaluate(base);
 
-            self()->setUnresolvedSnippet(new (cg->trHeapMemory()) TR::UnresolvedDataSnippet(cg, rootLoadOrStore, ref, isStore, false));
+            self()->setUnresolvedSnippet(new (comp->trHeapMemory()) TR::UnresolvedDataSnippet(cg, rootLoadOrStore, ref, isStore, false));
             cg->addSnippet(self()->getUnresolvedSnippet());
             }
          // if an aconst feeds a iaload, we need to load the constant
@@ -259,7 +259,7 @@ OMR::Power::MemoryReference::MemoryReference(TR::Node *node, TR::MemoryReference
 
    if (mr.getUnresolvedSnippet() != NULL)
       {
-      _unresolvedSnippet = new (cg->trHeapMemory()) TR::UnresolvedDataSnippet(cg, node, _symbolReference, mr.getUnresolvedSnippet()->isUnresolvedStore(), false);
+      _unresolvedSnippet = new (cg->comp()->trHeapMemory()) TR::UnresolvedDataSnippet(cg, node, _symbolReference, mr.getUnresolvedSnippet()->isUnresolvedStore(), false);
       cg->addSnippet(_unresolvedSnippet);
 
       self()->adjustForResolution(cg);
@@ -436,7 +436,7 @@ void OMR::Power::MemoryReference::forceIndexedForm(TR::Node * node, TR::CodeGene
 void OMR::Power::MemoryReference::adjustForResolution(TR::CodeGenerator *cg)
    {
    _modBase = cg->allocateRegister();
-   _conditions = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
+   _conditions = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
    TR::addDependency(_conditions, _modBase, TR::RealRegister::gr11, TR_GPR, cg);
    }
 
@@ -1458,7 +1458,7 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
       TR::Node *topNode = cg->getCurrentEvaluationTreeTop()->getNode();
       TR::UnresolvedDataSnippet *snippet = NULL;
       int32_t tocIndex = symbol->getStaticSymbol()->getTOCIndex();
- 
+
       /* don't want to trash node prematurely by the code for handling other symbols */
       TR::Node *nodeForSymbol = node;
       if (!nodeForSymbol)
@@ -1530,12 +1530,12 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
       if ((ref->isUnresolved() || useUnresSnippetToAvoidRelo) &&
           (topNode->getOpCodeValue() == TR::ResolveCHK || tocIndex == PTOC_FULL_INDEX))
          {
-         snippet = new (cg->trHeapMemory()) TR::UnresolvedDataSnippet(cg, node, ref, isStore, false);
+         snippet = new (comp->trHeapMemory()) TR::UnresolvedDataSnippet(cg, node, ref, isStore, false);
          cg->addSnippet(snippet);
          }
 
       // TODO: Improve the code sequence for cases when we know pTOC is full.
-      TR::MemoryReference *tocRef = new (cg->trHeapMemory()) TR::MemoryReference(cg->getTOCBaseRegister(), 0, sizeof(uintptr_t), cg);
+      TR::MemoryReference *tocRef = new (comp->trHeapMemory()) TR::MemoryReference(cg->getTOCBaseRegister(), 0, sizeof(uintptr_t), cg);
       tocRef->setSymbol(symbol, cg);
       tocRef->getSymbolReference()->copyFlags(ref);
       tocRef->setUsingStaticTOC();
@@ -1601,7 +1601,7 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
          }
       else if (refIsUnresolved || useUnresSnippetToAvoidRelo)
          {
-         self()->setUnresolvedSnippet(new (cg->trHeapMemory()) TR::UnresolvedDataSnippet(cg, node, ref, isStore, false));
+         self()->setUnresolvedSnippet(new (comp->trHeapMemory()) TR::UnresolvedDataSnippet(cg, node, ref, isStore, false));
          cg->addSnippet(self()->getUnresolvedSnippet());
          return;
          }
@@ -1638,7 +1638,7 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
          recordInfo->data1 = (uintptr_t)ref;
          recordInfo->data2 = node ? (uintptr_t)node->getInlinedSiteIndex() : (uintptr_t)-1;
          recordInfo->data3 = orderedPairSequence1;
-         staticRelocation = new (cg->trHeapMemory()) TR::PPCPairedRelocation(rel1, NULL, (uint8_t *)recordInfo, TR_ClassAddress, node);
+         staticRelocation = new (comp->trHeapMemory()) TR::PPCPairedRelocation(rel1, NULL, (uint8_t *)recordInfo, TR_ClassAddress, node);
          cg->getAheadOfTimeCompile()->getRelocationList().push_front(staticRelocation);
          self()->setStaticRelocation(staticRelocation);
          }

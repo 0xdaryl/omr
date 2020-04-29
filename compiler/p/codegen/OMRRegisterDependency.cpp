@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -77,7 +77,7 @@ TR::RegisterDependencyConditions* TR_PPCScratchRegisterDependencyConditions::cre
       postCount += 32;
       }
 
-   TR::RegisterDependencyConditions *dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(preCount,
+   TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(preCount,
                                                                                                                   postCount,
                                                                                                                   cg->trMemory());
    for (int i = 0; i < (pre ? pre->_numGPRDeps : 0); ++i)
@@ -450,7 +450,7 @@ void OMR::Power::RegisterDependencyConditions::bookKeepingRegisterUses(TR::Instr
    bool isOOL = cg->getIsInOOLSection();
 
    TR::Machine *machine = cg->machine();
-   assoc = !isOOL ? new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0,_addCursorForPre, cg->trMemory()) : 0;
+   assoc = !isOOL ? new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0,_addCursorForPre, cg->trMemory()) : 0;
 
    for (int i = 0; i < _addCursorForPre; i++)
       {
@@ -522,7 +522,7 @@ OMR::Power::RegisterDependencyConditions::clone(
       }
    preNum = this->getAddCursorForPre();
    postNum = this->getAddCursorForPost();
-   result = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(getNumPreConditions()+addPre,
+   result = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(getNumPreConditions()+addPre,
                    getNumPostConditions()+addPost, cg->trMemory());
 
    for (idx=0; idx<postNum; idx++)
@@ -592,7 +592,7 @@ TR::RegisterDependencyConditions *OMR::Power::RegisterDependencyConditions::clon
       addPost = added->getAddCursorForPost();
       }
    postNum = this->getAddCursorForPost();
-   result = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, postNum+addPost, cg->trMemory());
+   result = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, postNum+addPost, cg->trMemory());
 
    for (idx=0; idx<postNum; idx++)
       {
@@ -785,7 +785,7 @@ void TR_PPCRegisterDependencyGroup::assignRegisters(TR::Instruction   *currentIn
                   traceMsg(comp,"\nOOL: Found register spilled in main line and re-assigned inside OOL");
                TR::Node            *currentNode = currentInstruction->getNode();
                TR::RealRegister    *assignedReg = toRealRegister(virtReg->getAssignedRegister());
-               TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(currentNode, (TR::SymbolReference*)virtReg->getBackingStorage()->getSymbolReference(), sizeof(uintptr_t), cg);
+               TR::MemoryReference *tempMR = new (comp->trHeapMemory()) TR::MemoryReference(currentNode, (TR::SymbolReference*)virtReg->getBackingStorage()->getSymbolReference(), sizeof(uintptr_t), cg);
                TR_RegisterKinds     rk = virtReg->getKind();
 
                TR::InstOpCode::Mnemonic opCode;

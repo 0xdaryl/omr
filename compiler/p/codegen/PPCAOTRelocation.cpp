@@ -49,7 +49,7 @@ void TR::PPCPairedRelocation::mapRelocation(TR::CodeGenerator *cg)
       // the beginning to maintain the correct relative ordering.
 
       cg->addExternalRelocation(
-         new (cg->trHeapMemory()) TR::ExternalOrderedPair32BitRelocation(
+         new (cg->comp()->trHeapMemory()) TR::ExternalOrderedPair32BitRelocation(
             getSourceInstruction()->getBinaryEncoding(),
             getSource2Instruction()->getBinaryEncoding(),
             getRelocationTarget(),

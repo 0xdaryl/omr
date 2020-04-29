@@ -116,6 +116,8 @@ OMR::Power::CodeGenerator::CodeGenerator() :
      conversionBuffer(NULL),
      _outOfLineCodeSectionList(getTypedAllocator<TR_PPCOutOfLineCodeSection*>(self()->comp()->allocator()))
    {
+   TR::Compilation *comp = self()->comp();
+
    // Initialize Linkage for Code Generator
    self()->initializeLinkage();
 
@@ -127,10 +129,10 @@ OMR::Power::CodeGenerator::CodeGenerator() :
    _linkageProperties = &self()->getLinkage()->getProperties();
 
    // Set up to collect items for later TOC mapping
-   if (self()->comp()->target().is64Bit())
+   if (comp->target().is64Bit())
       {
-      self()->setTrackStatics(new (self()->trHeapMemory()) TR_Array<TR::SymbolReference *>(self()->trMemory()));
-      self()->setTrackItems(new (self()->trHeapMemory()) TR_Array<TR_PPCLoadLabelItem *>(self()->trMemory()));
+      self()->setTrackStatics(new (comp->trHeapMemory()) TR_Array<TR::SymbolReference *>(self()->trMemory()));
+      self()->setTrackItems(new (comp->trHeapMemory()) TR_Array<TR_PPCLoadLabelItem *>(self()->trMemory()));
       }
    else
       {
@@ -142,7 +144,7 @@ OMR::Power::CodeGenerator::CodeGenerator() :
    self()->setMethodMetaDataRegister(self()->machine()->getRealRegister(_linkageProperties->getMethodMetaDataRegister()));
    self()->setTOCBaseRegister(self()->machine()->getRealRegister(_linkageProperties->getTOCBaseRegister()));
    self()->getLinkage()->initPPCRealRegisterLinkage();
-   self()->getLinkage()->setParameterLinkageRegisterIndex(self()->comp()->getJittedMethodSymbol());
+   self()->getLinkage()->setParameterLinkageRegisterIndex(comp->getJittedMethodSymbol());
    self()->machine()->initREGAssociations();
 
    // Tactical GRA settings.
@@ -173,7 +175,7 @@ OMR::Power::CodeGenerator::CodeGenerator() :
 
    self()->setSupportsRecompilation();
 
-   if (self()->comp()->target().is32Bit())
+   if (comp->target().is32Bit())
       self()->setUsesRegisterPairsForLongs();
 
    self()->setPerformsChecksExplicitly();
@@ -194,12 +196,12 @@ OMR::Power::CodeGenerator::CodeGenerator() :
       self()->addSupportedLiveRegisterKind(TR_VSX_VECTOR);
       self()->addSupportedLiveRegisterKind(TR_VRF);
 
-      self()->setLiveRegisters(new (self()->trHeapMemory()) TR_LiveRegisters(self()->comp()), TR_GPR);
-      self()->setLiveRegisters(new (self()->trHeapMemory()) TR_LiveRegisters(self()->comp()), TR_FPR);
-      self()->setLiveRegisters(new (self()->trHeapMemory()) TR_LiveRegisters(self()->comp()), TR_CCR);
-      self()->setLiveRegisters(new (self()->trHeapMemory()) TR_LiveRegisters(self()->comp()), TR_VRF);
-      self()->setLiveRegisters(new (self()->trHeapMemory()) TR_LiveRegisters(self()->comp()), TR_VSX_SCALAR);
-      self()->setLiveRegisters(new (self()->trHeapMemory()) TR_LiveRegisters(self()->comp()), TR_VSX_VECTOR);
+      self()->setLiveRegisters(new (comp->trHeapMemory()) TR_LiveRegisters(comp), TR_GPR);
+      self()->setLiveRegisters(new (comp->trHeapMemory()) TR_LiveRegisters(comp), TR_FPR);
+      self()->setLiveRegisters(new (comp->trHeapMemory()) TR_LiveRegisters(comp), TR_CCR);
+      self()->setLiveRegisters(new (comp->trHeapMemory()) TR_LiveRegisters(comp), TR_VRF);
+      self()->setLiveRegisters(new (comp->trHeapMemory()) TR_LiveRegisters(comp), TR_VSX_SCALAR);
+      self()->setLiveRegisters(new (comp->trHeapMemory()) TR_LiveRegisters(comp), TR_VSX_VECTOR);
       }
 
 
@@ -211,14 +213,14 @@ OMR::Power::CodeGenerator::CodeGenerator() :
 
     // disabled for now
     //
-    if (self()->comp()->getOption(TR_AggressiveOpts) &&
-        !self()->comp()->getOption(TR_DisableArraySetOpts))
+    if (comp->getOption(TR_AggressiveOpts) &&
+        !comp->getOption(TR_DisableArraySetOpts))
        {
        self()->setSupportsArraySet();
        }
     self()->setSupportsArrayCmp();
 
-    if (self()->comp()->target().cpu.supportsFeature(OMR_FEATURE_PPC_HAS_VSX))
+    if (comp->target().cpu.supportsFeature(OMR_FEATURE_PPC_HAS_VSX))
        {
        static bool disablePPCTRTO = (feGetEnv("TR_disablePPCTRTO") != NULL);
        static bool disablePPCTRTO255 = (feGetEnv("TR_disablePPCTRTO255") != NULL);
@@ -248,14 +250,14 @@ OMR::Power::CodeGenerator::CodeGenerator() :
 
    self()->setSupportsDivCheck();
    self()->setSupportsLoweringConstIDiv();
-   if (self()->comp()->target().is64Bit())
+   if (comp->target().is64Bit())
       self()->setSupportsLoweringConstLDiv();
    self()->setSupportsLoweringConstLDivPower2();
 
    static bool disableDCAS = (feGetEnv("TR_DisablePPCDCAS") != NULL);
 
    if (!disableDCAS &&
-       self()->comp()->target().is64Bit() &&
+       comp->target().is64Bit() &&
        TR::Options::useCompressedPointers())
       {
       self()->setSupportsDoubleWordCAS();
@@ -267,28 +269,28 @@ OMR::Power::CodeGenerator::CodeGenerator() :
 
    // Standard allows only offset multiple of 4
    // TODO: either improves the query to be size-based or gets the offset into a register
-   if (self()->comp()->target().is64Bit())
+   if (comp->target().is64Bit())
       self()->setSupportsAlignedAccessOnly();
 
    // TODO: distinguishing among OOO and non-OOO implementations
-   if (self()->comp()->target().isSMP())
+   if (comp->target().isSMP())
       self()->setEnforceStoreOrder();
 
-   if (!self()->comp()->getOption(TR_DisableTraps) && TR::Compiler->vm.hasResumableTrapHandler(self()->comp()))
+   if (!comp->getOption(TR_DisableTraps) && TR::Compiler->vm.hasResumableTrapHandler(comp))
       self()->setHasResumableTrapHandler();
 
    /*
     * TODO: TM is currently not compatible with read barriers. If read barriers are required, TM is disabled until the issue is fixed.
     *       TM is now disabled by default, due to various reasons (OS, hardware, etc), unless it is explicitly enabled.
     */
-   if (self()->comp()->target().cpu.supportsFeature(OMR_FEATURE_PPC_HTM) && self()->comp()->getOption(TR_EnableTM) &&
-       !self()->comp()->getOption(TR_DisableTM) && TR::Compiler->om.readBarrierType() == gc_modron_readbar_none)
+   if (comp->target().cpu.supportsFeature(OMR_FEATURE_PPC_HTM) && comp->getOption(TR_EnableTM) &&
+       !comp->getOption(TR_DisableTM) && TR::Compiler->om.readBarrierType() == gc_modron_readbar_none)
       self()->setSupportsTM();
 
-   if (self()->comp()->target().cpu.supportsFeature(OMR_FEATURE_PPC_HAS_ALTIVEC) && self()->comp()->target().cpu.supportsFeature(OMR_FEATURE_PPC_HAS_VSX))
+   if (comp->target().cpu.supportsFeature(OMR_FEATURE_PPC_HAS_ALTIVEC) && comp->target().cpu.supportsFeature(OMR_FEATURE_PPC_HAS_VSX))
       self()->setSupportsAutoSIMD();
 
-   if (!self()->comp()->getOption(TR_DisableRegisterPressureSimulation))
+   if (!comp->getOption(TR_DisableRegisterPressureSimulation))
       {
       for (int32_t i = 0; i < TR_numSpillKinds; i++)
          _globalRegisterBitVectors[i].init(self()->getNumberOfGlobalRegisters(), self()->trMemory());
@@ -333,17 +335,17 @@ OMR::Power::CodeGenerator::CodeGenerator() :
    for (i=0; i < linkageProperties.getNumFloatArgRegs(); i++)
      _fprLinkageGlobalRegisterNumbers[i] = globalRegNumbers[linkageProperties.getFloatArgumentRegister(i)];
 
-   if (self()->comp()->getOption(TR_TraceRA))
+   if (comp->getOption(TR_TraceRA))
       {
-      self()->setGPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstGPR, TR::RealRegister::LastGPR));
-      self()->setFPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstFPR, TR::RealRegister::LastFPR));
+      self()->setGPRegisterIterator(new (comp->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstGPR, TR::RealRegister::LastGPR));
+      self()->setFPRegisterIterator(new (comp->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstFPR, TR::RealRegister::LastFPR));
       }
 
    self()->setSupportsProfiledInlining();
 
-   TR_ResolvedMethod *method = self()->comp()->getJittedMethodSymbol()->getResolvedMethod();
+   TR_ResolvedMethod *method = comp->getJittedMethodSymbol()->getResolvedMethod();
    TR_ReturnInfo      returnInfo = self()->getLinkage()->getReturnInfoFromReturnType(method->returnType());
-   self()->comp()->setReturnInfo(returnInfo);
+   comp->setReturnInfo(returnInfo);
    }
 
 TR::Linkage *
@@ -366,7 +368,7 @@ OMR::Power::CodeGenerator::getTOCBase()
 TR_PPCScratchRegisterManager*
 OMR::Power::CodeGenerator::generateScratchRegisterManager(int32_t capacity)
    {
-   return new (self()->trHeapMemory()) TR_PPCScratchRegisterManager(capacity, self());
+   return new (self()->comp()->trHeapMemory()) TR_PPCScratchRegisterManager(capacity, self());
    }
 
 // PPC codeGenerator hook for class unloading events
@@ -402,9 +404,9 @@ OMR::Power::CodeGenerator::generateSwitchToInterpreterPrePrologue(
    uintptr_t             helperAddr = (uintptr_t)helperSymRef->getMethodAddress();
 
    // gr0 must contain the saved LR; see Recompilation.s
-   cursor = new (self()->trHeapMemory()) TR::PPCTrg1Instruction(TR::InstOpCode::mflr, node, gr0, cursor, self());
+   cursor = new (self()->comp()->trHeapMemory()) TR::PPCTrg1Instruction(TR::InstOpCode::mflr, node, gr0, cursor, self());
    cursor = self()->getLinkage()->flushArguments(cursor);
-   cursor = generateDepImmSymInstruction(self(), TR::InstOpCode::bl, node, (uintptr_t)revertToInterpreterSymRef->getMethodAddress(), new (self()->trHeapMemory()) TR::RegisterDependencyConditions(0,0, self()->trMemory()), revertToInterpreterSymRef, NULL, cursor);
+   cursor = generateDepImmSymInstruction(self(), TR::InstOpCode::bl, node, (uintptr_t)revertToInterpreterSymRef->getMethodAddress(), new (self()->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0,0, self()->trMemory()), revertToInterpreterSymRef, NULL, cursor);
 
    if (self()->comp()->target().is64Bit())
       {
@@ -450,7 +452,7 @@ OMR::Power::CodeGenerator::beginInstructionSelection()
    _returnTypeInfoInstruction = NULL;
    if ((self()->comp()->getJittedMethodSymbol()->getLinkageConvention() == TR_Private))
       {
-      _returnTypeInfoInstruction = new (self()->trHeapMemory()) TR::PPCImmInstruction(TR::InstOpCode::dd, firstNode, 0, NULL, self());
+      _returnTypeInfoInstruction = new (self()->comp()->trHeapMemory()) TR::PPCImmInstruction(TR::InstOpCode::dd, firstNode, 0, NULL, self());
       }
 
    generateAdminInstruction(self(), TR::InstOpCode::proc, firstNode);
@@ -487,7 +489,7 @@ OMR::Power::CodeGenerator::itemTracking(
    {
    if (self()->comp()->target().is64Bit())
       {
-      self()->getTrackItems()->add(new (self()->trHeapMemory()) TR_PPCLoadLabelItem(offset, label));
+      self()->getTrackItems()->add(new (self()->comp()->trHeapMemory()) TR_PPCLoadLabelItem(offset, label));
       }
    }
 
@@ -547,7 +549,7 @@ void OMR::Power::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAss
 
    if (!self()->comp()->getOption(TR_DisableOOL))
       {
-      TR::list<TR::Register*> *spilledRegisterList = new (self()->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::Register*>(self()->comp()->allocator()));
+      TR::list<TR::Register*> *spilledRegisterList = new (self()->comp()->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::Register*>(self()->comp()->allocator()));
       self()->setSpilledRegisterList(spilledRegisterList);
       }
 
@@ -612,9 +614,9 @@ TR::Instruction *OMR::Power::CodeGenerator::generateNop(TR::Node *n, TR::Instruc
       }
 
    if (preced)
-      return new (self()->trHeapMemory()) TR::Instruction(nop, n, preced, self());
+      return new (self()->comp()->trHeapMemory()) TR::Instruction(nop, n, preced, self());
    else
-      return new (self()->trHeapMemory()) TR::Instruction(nop, n,  self());
+      return new (self()->comp()->trHeapMemory()) TR::Instruction(nop, n,  self());
    }
 
 TR::Instruction *OMR::Power::CodeGenerator::generateGroupEndingNop(TR::Node *node , TR::Instruction *preced)
@@ -1659,11 +1661,11 @@ OMR::Power::CodeGenerator::createLinkage(TR_LinkageConventions lc)
    switch (lc)
       {
       case TR_System:
-         linkage = new (self()->trHeapMemory()) TR::PPCSystemLinkage(self());
+         linkage = new (self()->comp()->trHeapMemory()) TR::PPCSystemLinkage(self());
          break;
 
       default:
-         linkage = new (self()->trHeapMemory()) TR::PPCSystemLinkage(self());
+         linkage = new (self()->comp()->trHeapMemory()) TR::PPCSystemLinkage(self());
       }
 
    self()->setLinkage(lc, linkage);
@@ -1884,6 +1886,7 @@ bool OMR::Power::CodeGenerator::canTransformUnsafeSetMemory()
 
 void OMR::Power::CodeGenerator::buildRegisterMapForInstruction(TR_GCStackMap *map)
    {
+   TR::Compilation *comp = self()->comp();
    TR_InternalPointerMap *internalPtrMap = NULL;
    TR::GCStackAtlas *atlas = self()->getStackAtlas();
 
@@ -1903,7 +1906,7 @@ void OMR::Power::CodeGenerator::buildRegisterMapForInstruction(TR_GCStackMap *ma
             if (virtReg->containsInternalPointer())
                {
                if (!internalPtrMap)
-                  internalPtrMap = new (self()->trHeapMemory()) TR_InternalPointerMap(self()->trMemory());
+                  internalPtrMap = new (comp->trHeapMemory()) TR_InternalPointerMap(self()->trMemory());
                internalPtrMap->addInternalPointerPair(virtReg->getPinningArrayPointer(), 31 - (i-1));
                atlas->addPinningArrayPtrForInternalPtrReg(virtReg->getPinningArrayPointer());
                }
@@ -1922,7 +1925,7 @@ int32_t OMR::Power::CodeGenerator::findOrCreateFloatConstant(void *v, TR::DataTy
                              TR::Instruction *n2, TR::Instruction *n3)
    {
    if (_constantData == NULL)
-      _constantData = new (self()->trHeapMemory()) TR::ConstantDataSnippet(self());
+      _constantData = new (self()->comp()->trHeapMemory()) TR::ConstantDataSnippet(self());
    return(_constantData->addConstantRequest(v, t, n0, n1, n2, n3, NULL, false));
    }
 
@@ -1932,7 +1935,7 @@ int32_t OMR::Power::CodeGenerator::findOrCreateAddressConstant(void *v, TR::Data
                              TR::Node *node, bool isUnloadablePicSite)
    {
    if (_constantData == NULL)
-      _constantData = new (self()->trHeapMemory()) TR::ConstantDataSnippet(self());
+      _constantData = new (self()->comp()->trHeapMemory()) TR::ConstantDataSnippet(self());
    return(_constantData->addConstantRequest(v, t, n0, n1, n2, n3, node, isUnloadablePicSite));
    }
 
@@ -2004,7 +2007,7 @@ inline static bool callInTree(TR::TreeTop *treeTop)
 TR_BitVector *OMR::Power::CodeGenerator::computeCallInfoBitVector()
    {
    uint32_t         bcount = self()->comp()->getFlowGraph()->getNextNodeNumber();
-   TR_BitVector     bvec, *ebvec = new (self()->trHeapMemory()) TR_BitVector(bcount, self()->trMemory());
+   TR_BitVector     bvec, *ebvec = new (self()->comp()->trHeapMemory()) TR_BitVector(bcount, self()->trMemory());
    TR::TreeTop      *pTree, *exitTree;
    TR::Block        *block;
    uint32_t         bnum, btemp;
@@ -2537,7 +2540,7 @@ TR_BackingStore * OMR::Power::CodeGenerator::allocateStackSlot()
    ListElement<TR_BackingStore> * tempElement;
    if (conversionBuffer == NULL)
      {
-     conversionBuffer = new (self()->trHeapMemory()) List<TR_BackingStore>(self()->trMemory());
+     conversionBuffer = new (self()->comp()->trHeapMemory()) List<TR_BackingStore>(self()->trMemory());
      static const char *TR_ConversionSlots = feGetEnv("TR_ConversionSlots");
      int numSlots = (TR_ConversionSlots == NULL ? 2 : atoi(TR_ConversionSlots));
      for(int i = 0; i < numSlots; i++)
@@ -2546,7 +2549,7 @@ TR_BackingStore * OMR::Power::CodeGenerator::allocateStackSlot()
         }
      tempElement = conversionBuffer->getLastElement();
      tempElement->setNextElement(conversionBuffer->getListHead());
-     conversionBufferIt = new (self()->trHeapMemory()) ListIterator<TR_BackingStore>(conversionBuffer);
+     conversionBufferIt = new (self()->comp()->trHeapMemory()) ListIterator<TR_BackingStore>(conversionBuffer);
      }
 
    conversionBufferIt->getNext();
@@ -2557,10 +2560,10 @@ TR_BackingStore * OMR::Power::CodeGenerator::allocateStackSlot()
      }
    else
      {
-     TR::AutomaticSymbol *spillSymbol = TR::AutomaticSymbol::create(self()->trHeapMemory(),TR::Int64,8);
+     TR::AutomaticSymbol *spillSymbol = TR::AutomaticSymbol::create(self()->comp()->trHeapMemory(),TR::Int64,8);
      spillSymbol->setSpillTempAuto();
      self()->comp()->getMethodSymbol()->addAutomatic(spillSymbol);
-     return tempElement->setData(new (self()->trHeapMemory()) TR_BackingStore(self()->comp()->getSymRefTab(), spillSymbol, 0));
+     return tempElement->setData(new (self()->comp()->trHeapMemory()) TR_BackingStore(self()->comp()->getSymRefTab(), spillSymbol, 0));
      }
    }
 
@@ -2697,10 +2700,10 @@ TR::Instruction *OMR::Power::CodeGenerator::generateDebugCounterBump(TR::Instruc
 
    cursor = loadAddressConstant(self(), self()->comp()->compileRelocatableCode(), node, addr, addrReg, cursor);
    cursor = generateTrg1MemInstruction(self(), TR::InstOpCode::lwz, node, counterReg,
-                                       new (self()->trHeapMemory()) TR::MemoryReference(addrReg, 0, 4, self()), cursor);
+                                       new (self()->comp()->trHeapMemory()) TR::MemoryReference(addrReg, 0, 4, self()), cursor);
    cursor = generateTrg1Src1ImmInstruction(self(), TR::InstOpCode::addi, node, counterReg, counterReg, delta, cursor);
    cursor = generateMemSrc1Instruction(self(), TR::InstOpCode::stw, node,
-                                       new (self()->trHeapMemory()) TR::MemoryReference(addrReg, 0, 4, self()), counterReg, cursor);
+                                       new (self()->comp()->trHeapMemory()) TR::MemoryReference(addrReg, 0, 4, self()), counterReg, cursor);
    if (cond)
       {
       uint32_t preCondCursor = cond->getAddCursorForPre();
@@ -2727,10 +2730,10 @@ TR::Instruction *OMR::Power::CodeGenerator::generateDebugCounterBump(TR::Instruc
 
    cursor = loadAddressConstant(self(), self()->comp()->compileRelocatableCode(), node, addr, addrReg, cursor);
    cursor = generateTrg1MemInstruction(self(), TR::InstOpCode::lwz, node, counterReg,
-                                       new (self()->trHeapMemory()) TR::MemoryReference(addrReg, 0, 4, self()), cursor);
+                                       new (self()->comp()->trHeapMemory()) TR::MemoryReference(addrReg, 0, 4, self()), cursor);
    cursor = generateTrg1Src2Instruction(self(), TR::InstOpCode::add, node, counterReg, counterReg, deltaReg, cursor);
    cursor = generateMemSrc1Instruction(self(), TR::InstOpCode::stw, node,
-                                       new (self()->trHeapMemory()) TR::MemoryReference(addrReg, 0, 4, self()), counterReg, cursor);
+                                       new (self()->comp()->trHeapMemory()) TR::MemoryReference(addrReg, 0, 4, self()), counterReg, cursor);
    if (cond)
       {
       uint32_t preCondCursor = cond->getAddCursorForPre();
@@ -2767,10 +2770,10 @@ TR::Instruction *OMR::Power::CodeGenerator::generateDebugCounterBump(TR::Instruc
 
    cursor = loadAddressConstant(self(), self()->comp()->compileRelocatableCode(), node, addr, addrReg, cursor);
    cursor = generateTrg1MemInstruction(self(), TR::InstOpCode::lwz, node, counterReg,
-                                       new (self()->trHeapMemory()) TR::MemoryReference(addrReg, 0, 4, self()), cursor);
+                                       new (self()->comp()->trHeapMemory()) TR::MemoryReference(addrReg, 0, 4, self()), cursor);
    cursor = generateTrg1Src1ImmInstruction(self(), TR::InstOpCode::addi, node, counterReg, counterReg, delta, cursor);
    cursor = generateMemSrc1Instruction(self(), TR::InstOpCode::stw, node,
-                                       new (self()->trHeapMemory()) TR::MemoryReference(addrReg, 0, 4, self()), counterReg, cursor);
+                                       new (self()->comp()->trHeapMemory()) TR::MemoryReference(addrReg, 0, 4, self()), counterReg, cursor);
    srm.reclaimScratchRegister(addrReg);
    srm.reclaimScratchRegister(counterReg);
    return cursor;
@@ -2788,10 +2791,10 @@ TR::Instruction *OMR::Power::CodeGenerator::generateDebugCounterBump(TR::Instruc
 
    cursor = loadAddressConstant(self(), self()->comp()->compileRelocatableCode(), node, addr, addrReg, cursor);
    cursor = generateTrg1MemInstruction(self(), TR::InstOpCode::lwz, node, counterReg,
-                                       new (self()->trHeapMemory()) TR::MemoryReference(addrReg, 0, 4, self()), cursor);
+                                       new (self()->comp()->trHeapMemory()) TR::MemoryReference(addrReg, 0, 4, self()), cursor);
    cursor = generateTrg1Src2Instruction(self(), TR::InstOpCode::add, node, counterReg, counterReg, deltaReg, cursor);
    cursor = generateMemSrc1Instruction(self(), TR::InstOpCode::stw, node,
-                                       new (self()->trHeapMemory()) TR::MemoryReference(addrReg, 0, 4, self()), counterReg, cursor);
+                                       new (self()->comp()->trHeapMemory()) TR::MemoryReference(addrReg, 0, 4, self()), counterReg, cursor);
    srm.reclaimScratchRegister(addrReg);
    srm.reclaimScratchRegister(counterReg);
    return cursor;
@@ -2961,7 +2964,7 @@ OMR::Power::CodeGenerator::addMetaDataForLoadAddressConstantFixed(
          recordInfo->data1 = (uintptr_t)node->getSymbolReference();
          recordInfo->data2 = (uintptr_t)node->getInlinedSiteIndex();
          recordInfo->data3 = (uintptr_t)seqKind;
-         relo = new (self()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
+         relo = new (comp->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
             firstInstruction,
             (uint8_t *)recordInfo,
             TR_DataAddress, self());
@@ -2991,7 +2994,7 @@ OMR::Power::CodeGenerator::addMetaDataForLoadAddressConstantFixed(
             recordInfo->data1 = (uintptr_t)symRef->getSymbol()->getStaticSymbol()->getStaticAddress();
             recordInfo->data2 = (uintptr_t)TR::SymbolType::typeClass;
             recordInfo->data3 = (uintptr_t)seqKind;
-            relo = new (self()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
+            relo = new (comp->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
                firstInstruction,
                (uint8_t *)recordInfo,
                TR_DiscontiguousSymbolFromManager,
@@ -3005,7 +3008,7 @@ OMR::Power::CodeGenerator::addMetaDataForLoadAddressConstantFixed(
             recordInfo->data1 = (uintptr_t)self()->comp()->getJittedMethodSymbol()->getResolvedMethod()->resolvedMethodAddress();
             recordInfo->data2 = (uintptr_t)TR::SymbolType::typeMethod;
             recordInfo->data3 = (uintptr_t)seqKind;
-            relo = new (self()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
+            relo = new (comp->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
                firstInstruction,
                (uint8_t *)recordInfo,
                TR_DiscontiguousSymbolFromManager,
@@ -3017,7 +3020,7 @@ OMR::Power::CodeGenerator::addMetaDataForLoadAddressConstantFixed(
 
    if (!relo)
       {
-      relo = new (self()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
+      relo = new (comp->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
          firstInstruction,
          (uint8_t *)value,
          (uint8_t *)seqKind,
@@ -3116,7 +3119,7 @@ OMR::Power::CodeGenerator::addMetaDataForLoadIntConstantFixed(
       recordInfo->data1 = (uintptr_t)node->getSymbolReference();
       recordInfo->data2 = node ? (uintptr_t)node->getInlinedSiteIndex() : (uintptr_t)-1;
       recordInfo->data3 = orderedPairSequence2;
-      self()->addExternalRelocation(new (self()->trHeapMemory()) TR::ExternalOrderedPair32BitRelocation((uint8_t *)firstInstruction,
+      self()->addExternalRelocation(new (comp->trHeapMemory()) TR::ExternalOrderedPair32BitRelocation((uint8_t *)firstInstruction,
                                                                                           (uint8_t *)secondInstruction,
                                                                                           (uint8_t *)recordInfo,
                                                                                           (TR_ExternalRelocationTargetKind)TR_DataAddress, self()),
@@ -3137,7 +3140,7 @@ OMR::Power::CodeGenerator::addMetaDataForLoadIntConstantFixed(
       TR_RelocationRecordInformation *recordInfo = ( TR_RelocationRecordInformation *)comp->trMemory()->allocateMemory(sizeof( TR_RelocationRecordInformation), heapAlloc);
       recordInfo->data1 = (uintptr_t)value;
       recordInfo->data3 = orderedPairSequence2;
-      self()->addExternalRelocation(new (self()->trHeapMemory()) TR::ExternalOrderedPair32BitRelocation((uint8_t *)firstInstruction,
+      self()->addExternalRelocation(new (comp->trHeapMemory()) TR::ExternalOrderedPair32BitRelocation((uint8_t *)firstInstruction,
                                                                                           (uint8_t *)secondInstruction,
                                                                                           (uint8_t *)recordInfo,
                                                                                           (TR_ExternalRelocationTargetKind)typeAddress, self()),
@@ -3194,11 +3197,11 @@ OMR::Power::CodeGenerator::addMetaDataFor32BitFixedLoadLabelAddressIntoReg(
    TR_RelocationRecordInformation *recordInfo = ( TR_RelocationRecordInformation *)comp->trMemory()->allocateMemory(sizeof( TR_RelocationRecordInformation), heapAlloc);
    recordInfo->data3 = orderedPairSequence1;
 
-   self()->getAheadOfTimeCompile()->getRelocationList().push_front(new (self()->trHeapMemory()) TR::PPCPairedRelocation
+   self()->getAheadOfTimeCompile()->getRelocationList().push_front(new (comp->trHeapMemory()) TR::PPCPairedRelocation
                         (firstInstruction, secondInstruction, (uint8_t *)recordInfo,
                          TR_AbsoluteMethodAddressOrderedPair, node));
 
-   self()->addRelocation(new (self()->trHeapMemory()) TR::PPCPairedLabelAbsoluteRelocation
+   self()->addRelocation(new (comp->trHeapMemory()) TR::PPCPairedLabelAbsoluteRelocation
                      (firstInstruction, secondInstruction, NULL, NULL, label));
 
    }
@@ -3214,10 +3217,10 @@ OMR::Power::CodeGenerator::addMetaDataFor64BitFixedLoadLabelAddressIntoReg(
 
    if (self()->canEmitDataForExternallyRelocatableInstructions())
       {
-      self()->addRelocation(new (self()->trHeapMemory()) TR::PPCPairedLabelAbsoluteRelocation(q[0], q[1], q[2], q[3], label));
+      self()->addRelocation(new (self()->comp()->trHeapMemory()) TR::PPCPairedLabelAbsoluteRelocation(q[0], q[1], q[2], q[3], label));
       }
 
-   self()->addExternalRelocation(new (self()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(q[0],
+   self()->addExternalRelocation(new (self()->comp()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(q[0],
                                                                             (uint8_t *)(label),
                                                                             (uint8_t *) (tempReg ? fixedSequence4 : fixedSequence2),
                                                                             TR_FixedSequenceAddress, self()),
@@ -3248,11 +3251,11 @@ OMR::Power::CodeGenerator::fixedLoadLabelAddressIntoReg(
             {
             TR_ASSERT_FATAL_WITH_NODE(node, 0x00008000 != self()->hiValue(offset), "TOC offset (0x%x) is unexpectedly high. Can not encode upper 16 bits into an addis instruction.", offset);
             generateTrg1Src1ImmInstruction(self(), TR::InstOpCode::addis, node, trgReg, self()->getTOCBaseRegister(), self()->hiValue(offset));
-            generateTrg1MemInstruction(self(),TR::InstOpCode::Op_load, node, trgReg, new (self()->trHeapMemory()) TR::MemoryReference(trgReg, LO_VALUE(offset), 8, self()));
+            generateTrg1MemInstruction(self(),TR::InstOpCode::Op_load, node, trgReg, new (comp->trHeapMemory()) TR::MemoryReference(trgReg, LO_VALUE(offset), 8, self()));
             }
          else
             {
-            generateTrg1MemInstruction(self(),TR::InstOpCode::Op_load, node, trgReg, new (self()->trHeapMemory()) TR::MemoryReference(self()->getTOCBaseRegister(), offset, 8, self()));
+            generateTrg1MemInstruction(self(),TR::InstOpCode::Op_load, node, trgReg, new (comp->trHeapMemory()) TR::MemoryReference(self()->getTOCBaseRegister(), offset, 8, self()));
             }
          }
       else

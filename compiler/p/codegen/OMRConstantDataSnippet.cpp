@@ -79,7 +79,7 @@ int32_t OMR::ConstantDataSnippet::addConstantRequest(void              *v,
             }
          if (fcursor == NULL)
             {
-            fcursor = new (_cg->trHeapMemory()) PPCConstant<float>(_cg, fin.fvalue);
+            fcursor = new (comp->trHeapMemory()) PPCConstant<float>(_cg, fin.fvalue);
             _floatConstants.add(fcursor);
             if (comp->target().is64Bit())
                {
@@ -108,7 +108,7 @@ int32_t OMR::ConstantDataSnippet::addConstantRequest(void              *v,
             }
          if (dcursor == NULL)
             {
-            dcursor = new (_cg->trHeapMemory()) PPCConstant<double>(_cg, din.dvalue);
+            dcursor = new (comp->trHeapMemory()) PPCConstant<double>(_cg, din.dvalue);
             _doubleConstants.add(dcursor);
             if (comp->target().is64Bit())
                {
@@ -145,7 +145,7 @@ int32_t OMR::ConstantDataSnippet::addConstantRequest(void              *v,
             }
          if (acursor == NULL)
             {
-            acursor = new (_cg->trHeapMemory()) PPCConstant<intptr_t>(_cg, ain, node, isUnloadablePicSite);
+            acursor = new (comp->trHeapMemory()) PPCConstant<intptr_t>(_cg, ain, node, isUnloadablePicSite);
             _addressConstants.add(acursor);
             }
             acursor->addValueRequest(nibble0, nibble1, nibble2, nibble3);
@@ -333,7 +333,7 @@ OMR::ConstantDataSnippet::emitFloatingPointConstant(
             }
          else
             {
-            cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(requestors[i],
+            cg()->addExternalRelocation(new (comp->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(requestors[i],
                                                                                          (uint8_t *)(addr),
                                                                                          (uint8_t *)fixedSequence4,
                                                                                          TR_FixedSequenceAddress2,
@@ -350,7 +350,7 @@ OMR::ConstantDataSnippet::emitFloatingPointConstant(
 
          TR_RelocationRecordInformation *recordInfo = ( TR_RelocationRecordInformation *)comp->trMemory()->allocateMemory(sizeof( TR_RelocationRecordInformation), heapAlloc);
          recordInfo->data3 = orderedPairSequence1;
-         cg()->addExternalRelocation(new (_cg->trHeapMemory()) TR::ExternalOrderedPair32BitRelocation(iloc1,
+         cg()->addExternalRelocation(new (comp->trHeapMemory()) TR::ExternalOrderedPair32BitRelocation(iloc1,
                                                                                                 iloc2,
                                                                                                 (uint8_t *)recordInfo,
                                                                                                 TR_AbsoluteMethodAddressOrderedPair,
@@ -393,7 +393,7 @@ OMR::ConstantDataSnippet::emitAddressConstant(
             else
                TR_ASSERT_FATAL(false, "Unable to relocate node %p", node);
 
-            TR::Relocation *relo = new (cg()->trHeapMemory()) TR::ExternalRelocation(codeCursor, (uint8_t *)node->getAddress(), (uint8_t*)type, TR_SymbolFromManager, cg());
+            TR::Relocation *relo = new (comp->trHeapMemory()) TR::ExternalRelocation(codeCursor, (uint8_t *)node->getAddress(), (uint8_t*)type, TR_SymbolFromManager, cg());
             cg()->addExternalRelocation(relo, __FILE__, __LINE__, node);
             }
          else
@@ -406,7 +406,7 @@ OMR::ConstantDataSnippet::emitAddressConstant(
 
             if (kind != TR_NoRelocation)
                {
-               TR::Relocation *relo = new (cg()->trHeapMemory()) TR::ExternalRelocation(codeCursor, (uint8_t *)node, kind, cg());
+               TR::Relocation *relo = new (comp->trHeapMemory()) TR::ExternalRelocation(codeCursor, (uint8_t *)node, kind, cg());
                cg()->addExternalRelocation(relo, __FILE__, __LINE__, node);
                }
             }
@@ -450,7 +450,7 @@ OMR::ConstantDataSnippet::emitAddressConstant(
             }
          else
             {
-            cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(requestors[i],
+            cg()->addExternalRelocation(new (comp->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(requestors[i],
                                                                                          (uint8_t *)(addr),
                                                                                          (uint8_t *)fixedSequence4,
                                                                                          TR_FixedSequenceAddress2,
@@ -467,7 +467,7 @@ OMR::ConstantDataSnippet::emitAddressConstant(
 
          TR_RelocationRecordInformation *recordInfo = (TR_RelocationRecordInformation *)comp->trMemory()->allocateMemory(sizeof( TR_RelocationRecordInformation), heapAlloc);
          recordInfo->data3 = orderedPairSequence1;
-         cg()->addExternalRelocation(new (_cg->trHeapMemory()) TR::ExternalOrderedPair32BitRelocation(iloc1, iloc2, (uint8_t *)recordInfo, TR_AbsoluteMethodAddressOrderedPair, cg()),
+         cg()->addExternalRelocation(new (comp->trHeapMemory()) TR::ExternalOrderedPair32BitRelocation(iloc1, iloc2, (uint8_t *)recordInfo, TR_AbsoluteMethodAddressOrderedPair, cg()),
                                 __FILE__, __LINE__, requestors[i]->getNode());
          }
       }

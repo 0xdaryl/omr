@@ -52,6 +52,7 @@
 
 TR::Register *OMR::Power::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+   TR::Compilation *comp = cg->comp();
    TR::Node *addrNode = node->getFirstChild();
    TR::Node *fillNode = node->getSecondChild();
    TR::Node *lenNode = node->getChild(2);
@@ -87,7 +88,7 @@ TR::Register *OMR::Power::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
                doubleword = (halfword << 48) | (halfword << 32) | (halfword << 16) | halfword;
                }
             fillReg = cg->allocateRegister();
-            if (dofastPath && cg->comp()->target().is64Bit())
+            if (dofastPath && comp->target().is64Bit())
                {
                generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, fillReg, (int16_t)halfword);
                generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwimi, node, fillReg, fillReg,  16, 0xffff0000);
@@ -108,7 +109,7 @@ TR::Register *OMR::Power::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
                doubleword = (halfword << 48) | (halfword << 32) | (halfword << 16) | halfword;
                }
             fillReg = cg->allocateRegister();
-            if (dofastPath && cg->comp()->target().is64Bit())
+            if (dofastPath && comp->target().is64Bit())
                {
                generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, fillReg, (int16_t)halfword);
                generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwimi, node, fillReg, fillReg,  16, 0xffff0000);
@@ -130,7 +131,7 @@ TR::Register *OMR::Power::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
                }
             fillReg = cg->allocateRegister();
             loadConstant(cg, node, ((int32_t)word), fillReg);
-            if (dofastPath && cg->comp()->target().is64Bit())
+            if (dofastPath && comp->target().is64Bit())
                generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rldimi, node, fillReg, fillReg,  32, 0xffffffff00000000ULL);
             }
             break;
@@ -143,7 +144,7 @@ TR::Register *OMR::Power::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
                   fp1Reg = cg->evaluate(fillNode);
                fillReg = cg->allocateRegister();
                }
-            else if (cg->comp()->target().is64Bit())  //long: 64 bit target
+            else if (comp->target().is64Bit())  //long: 64 bit target
                fillReg = cg->evaluate(fillNode);
             else                           //long: 32 bit target
                {
@@ -160,7 +161,7 @@ TR::Register *OMR::Power::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
       if (fillNode->getDataType() != TR::Double && dofastPath)
          {
          fp1Reg = cg->allocateRegister(TR_FPR);
-         if (cg->comp()->target().is32Bit())
+         if (comp->target().is32Bit())
             {
             fixedSeqMemAccess(cg, node, 0, q, fp1Reg, tempReg, TR::InstOpCode::lfd, 8, NULL, tempReg);
             cg->findOrCreateFloatConstant(&doubleword, TR::Double, q[0], q[1], q[2], q[3]);
@@ -195,7 +196,7 @@ TR::Register *OMR::Power::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
                {
                fp1Reg = cg->evaluate(fillNode);
                }
-            else if (cg->comp()->target().is64Bit())
+            else if (comp->target().is64Bit())
                {
                fp1Reg = cg->allocateRegister();
                fillReg = cg->evaluate(fillNode);
@@ -206,12 +207,12 @@ TR::Register *OMR::Power::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
                fp1Reg = cg->allocateRegister(TR_FPR);
                TR_BackingStore * location;
                location = cg->allocateSpill(8, false, NULL);
-               TR::MemoryReference *tempMRStore1 = new (cg->trHeapMemory()) TR::MemoryReference(node, location->getSymbolReference(), 4, cg);
-               TR::MemoryReference *tempMRStore2 =  new (cg->trHeapMemory()) TR::MemoryReference(node, *tempMRStore1, 4, 4, cg);
+               TR::MemoryReference *tempMRStore1 = new (comp->trHeapMemory()) TR::MemoryReference(node, location->getSymbolReference(), 4, cg);
+               TR::MemoryReference *tempMRStore2 =  new (comp->trHeapMemory()) TR::MemoryReference(node, *tempMRStore1, 4, 4, cg);
                generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, tempMRStore1, valueReg->getHighOrder());
                generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, tempMRStore2, valueReg->getLowOrder());
                generateInstruction(cg, TR::InstOpCode::lwsync, node);
-               generateTrg1MemInstruction(cg, TR::InstOpCode::lfd, node, fp1Reg, new (cg->trHeapMemory()) TR::MemoryReference(node, location->getSymbolReference(), 8, cg));
+               generateTrg1MemInstruction(cg, TR::InstOpCode::lfd, node, fp1Reg, new (comp->trHeapMemory()) TR::MemoryReference(node, location->getSymbolReference(), 8, cg));
                cg->freeSpill(location, 8, 0);
                }
             if (!fillReg)
@@ -238,7 +239,7 @@ TR::Register *OMR::Power::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
       TR::LabelSymbol *label10 = generateLabelSymbol(cg);
       TR::LabelSymbol *donelabel = generateLabelSymbol(cg);
 
-      TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(6, 6, cg->trMemory());
+      TR::RegisterDependencyConditions *deps = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(6, 6, cg->trMemory());
       TR::addDependency(deps, addrReg, TR::RealRegister::NoReg, TR_GPR, cg);
       deps->getPostConditions()->getRegisterDependency(0)->setExcludeGPR0();
       deps->getPreConditions()->getRegisterDependency(0)->setExcludeGPR0();
@@ -257,7 +258,7 @@ TR::Register *OMR::Power::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
          {
          generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::andi_r, node, tempReg, addrReg, 1); // 2 aligned??
          generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, label0, condReg);
-         generateMemSrc1Instruction(cg, TR::InstOpCode::stb, node,new (cg->trHeapMemory()) TR::MemoryReference(addrReg, 0, 1, cg), fillReg);
+         generateMemSrc1Instruction(cg, TR::InstOpCode::stb, node,new (comp->trHeapMemory()) TR::MemoryReference(addrReg, 0, 1, cg), fillReg);
          generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, addrReg, addrReg, 1);
          generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, lenReg, lenReg, -1);
          generateLabelInstruction(cg, TR::InstOpCode::label, node, label0); // L0
@@ -269,7 +270,7 @@ TR::Register *OMR::Power::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
          generateConditionalBranchInstruction(cg, TR::InstOpCode::blt, node, label1, condReg);
          generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::andi_r, node, tempReg, addrReg, 2); // 4 aligned??
          generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, label1, condReg);
-         generateMemSrc1Instruction(cg, TR::InstOpCode::sth, node,new (cg->trHeapMemory()) TR::MemoryReference(addrReg, 0, 2, cg), fillReg);
+         generateMemSrc1Instruction(cg, TR::InstOpCode::sth, node,new (comp->trHeapMemory()) TR::MemoryReference(addrReg, 0, 2, cg), fillReg);
          generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, addrReg, addrReg, 2);
          generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, lenReg, lenReg, -2);
          generateLabelInstruction(cg, TR::InstOpCode::label, node, label1); // L1
@@ -281,7 +282,7 @@ TR::Register *OMR::Power::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
          generateConditionalBranchInstruction(cg, TR::InstOpCode::blt, node, label6, condReg);
          generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::andi_r, node, tempReg, addrReg, 4); // 8 aligned??
          generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, label6, condReg);
-         generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node,new (cg->trHeapMemory()) TR::MemoryReference(addrReg, 0, 4, cg), fillReg);
+         generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node,new (comp->trHeapMemory()) TR::MemoryReference(addrReg, 0, 4, cg), fillReg);
          generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, addrReg, addrReg, 4);
          generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, lenReg, lenReg, -4);
          generateLabelInstruction(cg, TR::InstOpCode::label, node, label6); // L6
@@ -289,7 +290,7 @@ TR::Register *OMR::Power::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
 
       TR::InstOpCode::Mnemonic dblStoreOp = TR::InstOpCode::stfd;
       TR::Register *dblFillReg= fp1Reg;
-      if (cg->comp()->target().is64Bit() && fillNode->getDataType() != TR::Double)
+      if (comp->target().is64Bit() && fillNode->getDataType() != TR::Double)
          {
          dblStoreOp = TR::InstOpCode::std;
          dblFillReg = fillReg;
@@ -300,14 +301,14 @@ TR::Register *OMR::Power::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
       generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, label2, condReg);
       generateSrc1Instruction(cg, TR::InstOpCode::mtctr, node, tempReg);
       generateLabelInstruction(cg, TR::InstOpCode::label, node, label3); // L3
-      generateMemSrc1Instruction(cg, dblStoreOp, node,new (cg->trHeapMemory()) TR::MemoryReference(addrReg, 0, 8, cg), dblFillReg);
-      generateMemSrc1Instruction(cg, dblStoreOp, node,new (cg->trHeapMemory()) TR::MemoryReference(addrReg, 8, 8, cg), dblFillReg);
-      generateMemSrc1Instruction(cg, dblStoreOp, node,new (cg->trHeapMemory()) TR::MemoryReference(addrReg, 16, 8, cg), dblFillReg);
-      generateMemSrc1Instruction(cg, dblStoreOp, node,new (cg->trHeapMemory()) TR::MemoryReference(addrReg, 24, 8, cg), dblFillReg);
-      generateMemSrc1Instruction(cg, dblStoreOp, node,new (cg->trHeapMemory()) TR::MemoryReference(addrReg, 32, 8, cg), dblFillReg);
-      generateMemSrc1Instruction(cg, dblStoreOp, node,new (cg->trHeapMemory()) TR::MemoryReference(addrReg, 40, 8, cg), dblFillReg);
-      generateMemSrc1Instruction(cg, dblStoreOp, node,new (cg->trHeapMemory()) TR::MemoryReference(addrReg, 48, 8, cg), dblFillReg);
-      generateMemSrc1Instruction(cg, dblStoreOp, node,new (cg->trHeapMemory()) TR::MemoryReference(addrReg, 56, 8, cg), dblFillReg);
+      generateMemSrc1Instruction(cg, dblStoreOp, node,new (comp->trHeapMemory()) TR::MemoryReference(addrReg, 0, 8, cg), dblFillReg);
+      generateMemSrc1Instruction(cg, dblStoreOp, node,new (comp->trHeapMemory()) TR::MemoryReference(addrReg, 8, 8, cg), dblFillReg);
+      generateMemSrc1Instruction(cg, dblStoreOp, node,new (comp->trHeapMemory()) TR::MemoryReference(addrReg, 16, 8, cg), dblFillReg);
+      generateMemSrc1Instruction(cg, dblStoreOp, node,new (comp->trHeapMemory()) TR::MemoryReference(addrReg, 24, 8, cg), dblFillReg);
+      generateMemSrc1Instruction(cg, dblStoreOp, node,new (comp->trHeapMemory()) TR::MemoryReference(addrReg, 32, 8, cg), dblFillReg);
+      generateMemSrc1Instruction(cg, dblStoreOp, node,new (comp->trHeapMemory()) TR::MemoryReference(addrReg, 40, 8, cg), dblFillReg);
+      generateMemSrc1Instruction(cg, dblStoreOp, node,new (comp->trHeapMemory()) TR::MemoryReference(addrReg, 48, 8, cg), dblFillReg);
+      generateMemSrc1Instruction(cg, dblStoreOp, node,new (comp->trHeapMemory()) TR::MemoryReference(addrReg, 56, 8, cg), dblFillReg);
       generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, addrReg, addrReg, 64);
       generateConditionalBranchInstruction(cg, TR::InstOpCode::bdnz, node, label3, condReg);
       generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, lenReg, lenReg, 0, 63); // Mask
@@ -318,7 +319,7 @@ TR::Register *OMR::Power::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
       generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, label5, condReg);
       generateSrc1Instruction(cg, TR::InstOpCode::mtctr, node, tempReg);
       generateLabelInstruction(cg, TR::InstOpCode::label, node, label7); // L7
-      generateMemSrc1Instruction(cg, dblStoreOp, node,new (cg->trHeapMemory()) TR::MemoryReference(addrReg, 0, 8, cg), dblFillReg);
+      generateMemSrc1Instruction(cg, dblStoreOp, node,new (comp->trHeapMemory()) TR::MemoryReference(addrReg, 0, 8, cg), dblFillReg);
       generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, addrReg, addrReg, 8);
       generateConditionalBranchInstruction(cg, TR::InstOpCode::bdnz, node, label7, condReg);
       generateLabelInstruction(cg, TR::InstOpCode::label, node, label5); //L5
@@ -328,7 +329,7 @@ TR::Register *OMR::Power::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
          {
          generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::andi_r, node, tempReg, lenReg, 4);
          generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, label4, condReg);
-         generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node,new (cg->trHeapMemory()) TR::MemoryReference(addrReg, 0, 4, cg), fillReg);
+         generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node,new (comp->trHeapMemory()) TR::MemoryReference(addrReg, 0, 4, cg), fillReg);
          generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, addrReg, addrReg, 4);
          generateLabelInstruction(cg, TR::InstOpCode::label, node, label4); // L4
          }
@@ -338,7 +339,7 @@ TR::Register *OMR::Power::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
          {
          generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::andi_r, node, tempReg, lenReg, 2);
          generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, label9, condReg);
-         generateMemSrc1Instruction(cg, TR::InstOpCode::sth, node,new (cg->trHeapMemory()) TR::MemoryReference(addrReg, 0, 2, cg), fillReg);
+         generateMemSrc1Instruction(cg, TR::InstOpCode::sth, node,new (comp->trHeapMemory()) TR::MemoryReference(addrReg, 0, 2, cg), fillReg);
          generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, addrReg, addrReg, 2);
          generateLabelInstruction(cg, TR::InstOpCode::label, node, label9); // L9
          }
@@ -348,7 +349,7 @@ TR::Register *OMR::Power::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
          {
          generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::andi_r, node, tempReg, lenReg, 1);
          generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, donelabel, condReg);
-         generateMemSrc1Instruction(cg, TR::InstOpCode::stb, node,new (cg->trHeapMemory()) TR::MemoryReference(addrReg, 0, 1, cg), fillReg);
+         generateMemSrc1Instruction(cg, TR::InstOpCode::stb, node,new (comp->trHeapMemory()) TR::MemoryReference(addrReg, 0, 1, cg), fillReg);
          }
 
       generateDepLabelInstruction(cg, TR::InstOpCode::label, node, donelabel, deps); // LdoneLabel
@@ -366,7 +367,7 @@ TR::Register *OMR::Power::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
       TR::LabelSymbol *label10 = generateLabelSymbol(cg);
       TR::LabelSymbol *donelabel = generateLabelSymbol(cg);
 
-      TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(5, 5, cg->trMemory());
+      TR::RegisterDependencyConditions *deps = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(5, 5, cg->trMemory());
       TR::addDependency(deps, addrReg, TR::RealRegister::NoReg, TR_GPR, cg);
       deps->getPostConditions()->getRegisterDependency(0)->setExcludeGPR0();
       deps->getPreConditions()->getRegisterDependency(0)->setExcludeGPR0();
@@ -384,7 +385,7 @@ TR::Register *OMR::Power::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
          {
          generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::andi_r, node, tempReg, addrReg, 1); // 2 aligned??
          generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, label6, condReg);
-         generateMemSrc1Instruction(cg, TR::InstOpCode::stb, node,new (cg->trHeapMemory()) TR::MemoryReference(addrReg, 0, 1, cg), fillReg);
+         generateMemSrc1Instruction(cg, TR::InstOpCode::stb, node,new (comp->trHeapMemory()) TR::MemoryReference(addrReg, 0, 1, cg), fillReg);
          generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, addrReg, addrReg, 1);
          generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, lenReg, lenReg, -1);
          generateLabelInstruction(cg, TR::InstOpCode::label, node, label6); // L6
@@ -396,7 +397,7 @@ TR::Register *OMR::Power::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
          generateConditionalBranchInstruction(cg, TR::InstOpCode::blt, node, label5, condReg);
          generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::andi_r, node, tempReg, addrReg, 2); // 4 aligned??
          generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, label5, condReg);
-         generateMemSrc1Instruction(cg, TR::InstOpCode::sth, node,new (cg->trHeapMemory()) TR::MemoryReference(addrReg, 0, 2, cg), fillReg);
+         generateMemSrc1Instruction(cg, TR::InstOpCode::sth, node,new (comp->trHeapMemory()) TR::MemoryReference(addrReg, 0, 2, cg), fillReg);
          generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, addrReg, addrReg, 2);
          generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, lenReg, lenReg, -2);
          generateLabelInstruction(cg, TR::InstOpCode::label, node, label5); // L5
@@ -413,14 +414,14 @@ TR::Register *OMR::Power::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
       generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, label2, condReg);
       generateSrc1Instruction(cg, TR::InstOpCode::mtctr, node, tempReg);
       generateLabelInstruction(cg, TR::InstOpCode::label, node, label3); // L3
-      generateMemSrc1Instruction(cg, wdStoreOp, node,new (cg->trHeapMemory()) TR::MemoryReference(addrReg, 0, 4, cg), fillReg);
-      generateMemSrc1Instruction(cg, wdStoreOp, node,new (cg->trHeapMemory()) TR::MemoryReference(addrReg, 4, 4, cg), fillReg);
-      generateMemSrc1Instruction(cg, wdStoreOp, node,new (cg->trHeapMemory()) TR::MemoryReference(addrReg, 8, 4, cg), fillReg);
-      generateMemSrc1Instruction(cg, wdStoreOp, node,new (cg->trHeapMemory()) TR::MemoryReference(addrReg, 12, 4, cg), fillReg);
-      generateMemSrc1Instruction(cg, wdStoreOp, node,new (cg->trHeapMemory()) TR::MemoryReference(addrReg, 16, 4, cg), fillReg);
-      generateMemSrc1Instruction(cg, wdStoreOp, node,new (cg->trHeapMemory()) TR::MemoryReference(addrReg, 20, 4, cg), fillReg);
-      generateMemSrc1Instruction(cg, wdStoreOp, node,new (cg->trHeapMemory()) TR::MemoryReference(addrReg, 24, 4, cg), fillReg);
-      generateMemSrc1Instruction(cg, wdStoreOp, node,new (cg->trHeapMemory()) TR::MemoryReference(addrReg, 28, 4, cg), fillReg);
+      generateMemSrc1Instruction(cg, wdStoreOp, node,new (comp->trHeapMemory()) TR::MemoryReference(addrReg, 0, 4, cg), fillReg);
+      generateMemSrc1Instruction(cg, wdStoreOp, node,new (comp->trHeapMemory()) TR::MemoryReference(addrReg, 4, 4, cg), fillReg);
+      generateMemSrc1Instruction(cg, wdStoreOp, node,new (comp->trHeapMemory()) TR::MemoryReference(addrReg, 8, 4, cg), fillReg);
+      generateMemSrc1Instruction(cg, wdStoreOp, node,new (comp->trHeapMemory()) TR::MemoryReference(addrReg, 12, 4, cg), fillReg);
+      generateMemSrc1Instruction(cg, wdStoreOp, node,new (comp->trHeapMemory()) TR::MemoryReference(addrReg, 16, 4, cg), fillReg);
+      generateMemSrc1Instruction(cg, wdStoreOp, node,new (comp->trHeapMemory()) TR::MemoryReference(addrReg, 20, 4, cg), fillReg);
+      generateMemSrc1Instruction(cg, wdStoreOp, node,new (comp->trHeapMemory()) TR::MemoryReference(addrReg, 24, 4, cg), fillReg);
+      generateMemSrc1Instruction(cg, wdStoreOp, node,new (comp->trHeapMemory()) TR::MemoryReference(addrReg, 28, 4, cg), fillReg);
       generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, addrReg, addrReg, 32);
       generateConditionalBranchInstruction(cg, TR::InstOpCode::bdnz, node, label3, condReg);
       generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, lenReg, lenReg, 0, 31); // Mask
@@ -430,7 +431,7 @@ TR::Register *OMR::Power::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
       generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, label4, condReg);
       generateSrc1Instruction(cg, TR::InstOpCode::mtctr, node, tempReg);
       generateLabelInstruction(cg, TR::InstOpCode::label, node, label10); // L10
-      generateMemSrc1Instruction(cg, wdStoreOp, node,new (cg->trHeapMemory()) TR::MemoryReference(addrReg, 0, 4, cg), fillReg);
+      generateMemSrc1Instruction(cg, wdStoreOp, node,new (comp->trHeapMemory()) TR::MemoryReference(addrReg, 0, 4, cg), fillReg);
       generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, addrReg, addrReg, 4);
       generateConditionalBranchInstruction(cg, TR::InstOpCode::bdnz, node, label10, condReg);
       generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, lenReg, lenReg, 0, 3); // Mask
@@ -440,7 +441,7 @@ TR::Register *OMR::Power::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
          {
          generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::andi_r, node, tempReg, lenReg, 2);
          generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, label9, condReg);
-         generateMemSrc1Instruction(cg, TR::InstOpCode::sth, node,new (cg->trHeapMemory()) TR::MemoryReference(addrReg, 0, 2, cg), fillReg);
+         generateMemSrc1Instruction(cg, TR::InstOpCode::sth, node,new (comp->trHeapMemory()) TR::MemoryReference(addrReg, 0, 2, cg), fillReg);
          generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, addrReg, addrReg, 2);
          generateLabelInstruction(cg, TR::InstOpCode::label, node, label9); // L9
          }
@@ -449,7 +450,7 @@ TR::Register *OMR::Power::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
          {
          generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::andi_r, node, tempReg, lenReg, 1);
          generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, donelabel, condReg);
-         generateMemSrc1Instruction(cg, TR::InstOpCode::stb, node,new (cg->trHeapMemory()) TR::MemoryReference(addrReg, 0, 1, cg), fillReg);
+         generateMemSrc1Instruction(cg, TR::InstOpCode::stb, node,new (comp->trHeapMemory()) TR::MemoryReference(addrReg, 0, 1, cg), fillReg);
          }
 
       generateDepLabelInstruction(cg, TR::InstOpCode::label, node, donelabel, deps); // LdoneLabel

@@ -77,7 +77,7 @@ public:
     uint32_t buf[64];
 
     TR::RealRegister* createReg(TR_RegisterKinds kind, TR::RealRegister::RegNum reg, TR::RealRegister::RegMask mask) {
-        return new (cg()->trHeapMemory()) TR::RealRegister(kind, 0, TR::RealRegister::Free, reg, mask, cg());
+        return new (cg()->comp()->trHeapMemory()) TR::RealRegister(kind, 0, TR::RealRegister::Free, reg, mask, cg());
     }
 
     PowerBinaryEncoderTest() {

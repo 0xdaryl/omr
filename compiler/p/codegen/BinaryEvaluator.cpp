@@ -577,7 +577,7 @@ TR::Register *OMR::Power::TreeEvaluator::laddEvaluator(TR::Node *node, TR::CodeG
       if (hasCompressedPointers && doneSkipAdd)
          {
          int32_t numDeps = src2Reg ? 2 : 1;
-         TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, numDeps, cg->trMemory());
+         TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, numDeps, cg->trMemory());
          deps->addPostCondition(trgReg, TR::RealRegister::NoReg);
          if (src2Reg)
             deps->addPostCondition(src2Reg, TR::RealRegister::NoReg);
@@ -750,7 +750,7 @@ TR::Register *lsub64Evaluator(TR::Node *node, TR::CodeGenerator *cg)
       if (doneSkipSub)
          {
          int32_t numDeps = src2Reg ? 2 : 1;
-         TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, numDeps, cg->trMemory());
+         TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, numDeps, cg->trMemory());
          deps->addPostCondition(trgReg, TR::RealRegister::NoReg);
          if (src2Reg)
             deps->addPostCondition(src2Reg, TR::RealRegister::NoReg);
@@ -832,7 +832,7 @@ TR::Register *lsub64Evaluator(TR::Node *node, TR::CodeGenerator *cg)
    cg->decReferenceCount(secondChild);
    return trgReg;
    }
- 
+
 TR::Register *OMR::Power::TreeEvaluator::lsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    if (cg->comp()->target().is64Bit())
@@ -2106,7 +2106,7 @@ strengthReducingLongDivideOrRemainder32BitMode(TR::Node *node,      TR::CodeGene
 
    TR::SymbolReference *helperSym = cg->symRefTab()->findOrCreateRuntimeHelper(helper, false, false, false);
    uintptr_t addr = (uintptr_t)helperSym->getMethodAddress();
-   TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 0, cg->trMemory());
+   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 0, cg->trMemory());
 
    generateDepImmSymInstruction(cg, TR::InstOpCode::bl, node, addr, deps, helperSym);
    generateDepLabelInstruction(cg, TR::InstOpCode::label, node, doneLabel, dependencies);
@@ -2121,7 +2121,7 @@ TR::Register *OMR::Power::TreeEvaluator::ldivEvaluator(TR::Node *node, TR::CodeG
 
    TR::Register *dd_lowReg, *dr_lowReg;
    TR::Register *dd_highReg, *dr_highReg;
-   TR::RegisterDependencyConditions *dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(14, 14, cg->trMemory());
+   TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(14, 14, cg->trMemory());
    bool signed_div = (node->getOpCodeValue() == TR::ldiv);
 
    strengthReducingLongDivideOrRemainder32BitMode(node, cg, dependencies, &dd_highReg, &dd_lowReg, &dr_highReg, &dr_lowReg, signed_div, false);
@@ -2333,7 +2333,7 @@ TR::Register *OMR::Power::TreeEvaluator::lremEvaluator(TR::Node *node, TR::CodeG
 
    TR::Register *dd_lowReg, *dr_lowReg;
    TR::Register *dd_highReg, *dr_highReg;
-   TR::RegisterDependencyConditions *dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(14, 14, cg->trMemory());
+   TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(14, 14, cg->trMemory());
    bool signed_rem = (node->getOpCodeValue() == TR::lrem);
 
    strengthReducingLongDivideOrRemainder32BitMode(node, cg, dependencies, &dd_highReg, &dd_lowReg, &dr_highReg, &dr_lowReg, signed_rem, true);

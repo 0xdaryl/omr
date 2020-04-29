@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -59,7 +59,7 @@ void TR_PPCOutOfLineCodeSection::generatePPCOutOfLineCodeSectionDispatch()
    //
    swapInstructionListsWithCompilation();
 
-   new (_cg->trHeapMemory()) TR::PPCLabelInstruction(TR::InstOpCode::label, _callNode, _entryLabel, _cg);
+   new (_cg->comp()->trHeapMemory()) TR::PPCLabelInstruction(TR::InstOpCode::label, _callNode, _entryLabel, _cg);
 
    TR::Register *resultReg = NULL;
    if (_callNode->getOpCode().isCallIndirect())
@@ -77,7 +77,7 @@ void TR_PPCOutOfLineCodeSection::generatePPCOutOfLineCodeSectionDispatch()
    if (_restartLabel)
       generateLabelInstruction(_cg, TR::InstOpCode::b, _callNode, _restartLabel);
 
-   generateLabelInstruction(_cg, TR::InstOpCode::label, _callNode, TR::LabelSymbol::create(_cg->trHeapMemory(),_cg));
+   generateLabelInstruction(_cg, TR::InstOpCode::label, _callNode, TR::LabelSymbol::create(_cg->comp()->trHeapMemory(),_cg));
 
    // Switch from cold helper instruction stream.
    //

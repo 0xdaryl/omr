@@ -60,10 +60,11 @@ int estimateLikeliness(TR::CodeGenerator *cg, TR::Node *n);
 
 TR::Instruction *generateMvFprGprInstructions(TR::CodeGenerator *cg, TR::Node *node, MvFprGprMode mode, bool nonops, TR::Register *reg0, TR::Register *reg1, TR::Register *reg2, TR::Register * reg3, TR::Instruction *cursor)
    {
+   TR::Compilation *comp = cg->comp();
    TR::MemoryReference *tempMRStore1, *tempMRStore2, *tempMRLoad1, *tempMRLoad2;
    static bool disableDirectMove = feGetEnv("TR_disableDirectMove") ? true : false;
-   bool checkp8DirectMove = cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8) && !disableDirectMove && cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_PPC_HAS_VSX);
-   bool isLittleEndian = cg->comp()->target().cpu.isLittleEndian();
+   bool checkp8DirectMove = comp->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8) && !disableDirectMove && comp->target().cpu.supportsFeature(OMR_FEATURE_PPC_HAS_VSX);
+   bool isLittleEndian = comp->target().cpu.isLittleEndian();
 
    // it's fine if reg3 and reg2 are assigned in modes they are not used
    // what we want to avoid is them being NULL when we need to use them
@@ -119,33 +120,33 @@ TR::Instruction *generateMvFprGprInstructions(TR::CodeGenerator *cg, TR::Node *n
       location = cg->allocateSpill(8, false, NULL);
       if ((mode == gprSp2fpr) || (mode == fpr2gprSp) || (mode == gprLow2fpr))
          {
-         tempMRStore1 = new (cg->trHeapMemory()) TR::MemoryReference(node, location->getSymbolReference(), 4, cg);
-         tempMRLoad1 = new (cg->trHeapMemory()) TR::MemoryReference(node, *tempMRStore1, 0, 4, cg);
+         tempMRStore1 = new (comp->trHeapMemory()) TR::MemoryReference(node, location->getSymbolReference(), 4, cg);
+         tempMRLoad1 = new (comp->trHeapMemory()) TR::MemoryReference(node, *tempMRStore1, 0, 4, cg);
          }
       else if (mode == gpr2fprHost32)
          {
          if (isLittleEndian)
             {
-            tempMRStore2 = new (cg->trHeapMemory()) TR::MemoryReference(node, location->getSymbolReference(), 4, cg);
-            tempMRStore1 = new (cg->trHeapMemory()) TR::MemoryReference(node, *tempMRStore2, 4, 4, cg);
+            tempMRStore2 = new (comp->trHeapMemory()) TR::MemoryReference(node, location->getSymbolReference(), 4, cg);
+            tempMRStore1 = new (comp->trHeapMemory()) TR::MemoryReference(node, *tempMRStore2, 4, 4, cg);
             }
          else
             {
-            tempMRStore1 = new (cg->trHeapMemory()) TR::MemoryReference(node, location->getSymbolReference(), 4, cg);
-            tempMRStore2 = new (cg->trHeapMemory()) TR::MemoryReference(node, *tempMRStore1, 4, 4, cg);
+            tempMRStore1 = new (comp->trHeapMemory()) TR::MemoryReference(node, location->getSymbolReference(), 4, cg);
+            tempMRStore2 = new (comp->trHeapMemory()) TR::MemoryReference(node, *tempMRStore1, 4, 4, cg);
             }
-         tempMRLoad1 = new (cg->trHeapMemory()) TR::MemoryReference(node, location->getSymbolReference(), 8, cg);
+         tempMRLoad1 = new (comp->trHeapMemory()) TR::MemoryReference(node, location->getSymbolReference(), 8, cg);
          }
       else
          {
-         tempMRStore1 = new (cg->trHeapMemory()) TR::MemoryReference(node, location->getSymbolReference(), 8, cg);
+         tempMRStore1 = new (comp->trHeapMemory()) TR::MemoryReference(node, location->getSymbolReference(), 8, cg);
 
          if (mode == fpr2gprHost32)
-            tempMRLoad1 = new (cg->trHeapMemory()) TR::MemoryReference(node, *tempMRStore1, isLittleEndian ? 4 : 0, 4, cg);
+            tempMRLoad1 = new (comp->trHeapMemory()) TR::MemoryReference(node, *tempMRStore1, isLittleEndian ? 4 : 0, 4, cg);
          if ((mode == fpr2gprHost64) || (mode == gpr2fprHost64))
-            tempMRLoad1 = new (cg->trHeapMemory()) TR::MemoryReference(node, *tempMRStore1, 0, 8, cg);
+            tempMRLoad1 = new (comp->trHeapMemory()) TR::MemoryReference(node, *tempMRStore1, 0, 8, cg);
          else
-            tempMRLoad2 = new (cg->trHeapMemory()) TR::MemoryReference(node, *tempMRStore1, isLittleEndian ? 0 : 4, 4, cg);
+            tempMRLoad2 = new (comp->trHeapMemory()) TR::MemoryReference(node, *tempMRStore1, isLittleEndian ? 0 : 4, 4, cg);
          }
 
       if ((mode == fpr2gprHost64) || (mode == fpr2gprLow))
@@ -166,10 +167,10 @@ TR::Instruction *generateMvFprGprInstructions(TR::CodeGenerator *cg, TR::Node *n
       else if (mode == gprLow2fpr)
          cursor = generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, tempMRStore1, reg1, cursor);
 
-      if ((nonops == false) && (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_GP)))
+      if ((nonops == false) && (comp->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_GP)))
          {
-    	 // Insert 3 nops to break up the load/stores into separate groupings,
-    	 // thus preventing a costly stall
+         // Insert 3 nops to break up the load/stores into separate groupings,
+         // thus preventing a costly stall
          cursor = cg->generateGroupEndingNop(node, cursor);
          }
 
@@ -202,8 +203,8 @@ TR::Instruction *generateMvFprGprInstructions(TR::CodeGenerator *cg, TR::Node *n
 TR::Instruction *generateInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Instruction *preced)
    {
    if (preced)
-      return new (cg->trHeapMemory()) TR::Instruction(op, n, preced, cg);
-   return new (cg->trHeapMemory()) TR::Instruction(op, n, cg);
+      return new (cg->comp()->trHeapMemory()) TR::Instruction(op, n, preced, cg);
+   return new (cg->comp()->trHeapMemory()) TR::Instruction(op, n, cg);
    }
 
 TR::Instruction *generateAlignmentNopInstruction(TR::CodeGenerator *cg, TR::Node * n, uint32_t alignment, TR::Instruction *preced)
@@ -211,104 +212,104 @@ TR::Instruction *generateAlignmentNopInstruction(TR::CodeGenerator *cg, TR::Node
    auto op = cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P6) ? TR::InstOpCode::genop : TR::InstOpCode::nop;
 
    if (preced)
-      return new (cg->trHeapMemory()) TR::PPCAlignmentNopInstruction(op, n, alignment, preced, cg);
-   return new (cg->trHeapMemory()) TR::PPCAlignmentNopInstruction(op, n, alignment, cg);
+      return new (cg->comp()->trHeapMemory()) TR::PPCAlignmentNopInstruction(op, n, alignment, preced, cg);
+   return new (cg->comp()->trHeapMemory()) TR::PPCAlignmentNopInstruction(op, n, alignment, cg);
    }
 
 TR::Instruction *generateImmInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node * n, uint32_t imm,
                                        TR::Instruction *preced)
    {
    if (preced)
-      return new (cg->trHeapMemory()) TR::PPCImmInstruction(op, n, imm, preced, cg);
-   return new (cg->trHeapMemory()) TR::PPCImmInstruction(op, n, imm, cg);
+      return new (cg->comp()->trHeapMemory()) TR::PPCImmInstruction(op, n, imm, preced, cg);
+   return new (cg->comp()->trHeapMemory()) TR::PPCImmInstruction(op, n, imm, cg);
    }
 
 TR::Instruction *generateImmInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *n, uint32_t imm,
                                        TR_ExternalRelocationTargetKind relocationKind, TR::Instruction *preced)
    {
    if (preced)
-      return new (cg->trHeapMemory()) TR::PPCImmInstruction(op, n, imm, relocationKind, preced, cg);
-   return new (cg->trHeapMemory()) TR::PPCImmInstruction(op, n, imm, relocationKind, cg);
+      return new (cg->comp()->trHeapMemory()) TR::PPCImmInstruction(op, n, imm, relocationKind, preced, cg);
+   return new (cg->comp()->trHeapMemory()) TR::PPCImmInstruction(op, n, imm, relocationKind, cg);
    }
 
 TR::Instruction *generateImmInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *n, uint32_t imm,
                                        TR_ExternalRelocationTargetKind relocationKind, TR::SymbolReference *sr, TR::Instruction *preced)
    {
    if (preced)
-      return new (cg->trHeapMemory()) TR::PPCImmInstruction(op, n, imm, relocationKind, sr, preced, cg);
-   return new (cg->trHeapMemory()) TR::PPCImmInstruction(op, n, imm, relocationKind, sr, cg);
+      return new (cg->comp()->trHeapMemory()) TR::PPCImmInstruction(op, n, imm, relocationKind, sr, preced, cg);
+   return new (cg->comp()->trHeapMemory()) TR::PPCImmInstruction(op, n, imm, relocationKind, sr, cg);
    }
 
 TR::Instruction *generateImm2Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node * n, uint32_t imm, uint32_t imm2,
                                        TR::Instruction *preced)
    {
    if (preced)
-      return new (cg->trHeapMemory()) TR::PPCImm2Instruction(op, n, imm, imm2, preced, cg);
-   return new (cg->trHeapMemory()) TR::PPCImm2Instruction(op, n, imm, imm2, cg);
+      return new (cg->comp()->trHeapMemory()) TR::PPCImm2Instruction(op, n, imm, imm2, preced, cg);
+   return new (cg->comp()->trHeapMemory()) TR::PPCImm2Instruction(op, n, imm, imm2, cg);
    }
 
 TR::Instruction *generateDepInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node * n,
    TR::RegisterDependencyConditions *cond, TR::Instruction *preced)
    {
    if (preced)
-      return new (cg->trHeapMemory()) TR::PPCDepInstruction(op, n, cond, preced, cg);
-   return new (cg->trHeapMemory()) TR::PPCDepInstruction(op, n, cond, cg);
+      return new (cg->comp()->trHeapMemory()) TR::PPCDepInstruction(op, n, cond, preced, cg);
+   return new (cg->comp()->trHeapMemory()) TR::PPCDepInstruction(op, n, cond, cg);
    }
 
 TR::Instruction *generateMemSrc1Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node * n,
    TR::MemoryReference *mf, TR::Register *sreg, TR::Instruction *preced)
    {
    if (preced)
-      return new (cg->trHeapMemory()) TR::PPCMemSrc1Instruction(op, n, mf, sreg, preced, cg);
-   return new (cg->trHeapMemory()) TR::PPCMemSrc1Instruction(op, n, mf, sreg, cg);
+      return new (cg->comp()->trHeapMemory()) TR::PPCMemSrc1Instruction(op, n, mf, sreg, preced, cg);
+   return new (cg->comp()->trHeapMemory()) TR::PPCMemSrc1Instruction(op, n, mf, sreg, cg);
    }
 
 TR::Instruction *generateTrg1MemInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node * n,
    TR::Register *treg, TR::MemoryReference *mf, TR::Instruction *preced)
    {
    if (preced)
-      return new (cg->trHeapMemory()) TR::PPCTrg1MemInstruction(op, n, treg, mf, preced, cg);
-   return new (cg->trHeapMemory()) TR::PPCTrg1MemInstruction(op, n, treg, mf, cg);
+      return new (cg->comp()->trHeapMemory()) TR::PPCTrg1MemInstruction(op, n, treg, mf, preced, cg);
+   return new (cg->comp()->trHeapMemory()) TR::PPCTrg1MemInstruction(op, n, treg, mf, cg);
    }
 
 TR::Instruction *generateMemInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node * n,
    TR::MemoryReference *mf, TR::Instruction *preced)
    {
    if (preced)
-      return new (cg->trHeapMemory()) TR::PPCMemInstruction(op, n, mf, preced, cg);
-   return new (cg->trHeapMemory()) TR::PPCMemInstruction(op, n, mf, cg);
+      return new (cg->comp()->trHeapMemory()) TR::PPCMemInstruction(op, n, mf, preced, cg);
+   return new (cg->comp()->trHeapMemory()) TR::PPCMemInstruction(op, n, mf, cg);
    }
 
 TR::Instruction *generateTrg1MemInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, int32_t hint, TR::Node * n,
    TR::Register *treg, TR::MemoryReference *mf, TR::Instruction *preced)
    {
    if (preced)
-      return new (cg->trHeapMemory()) TR::PPCTrg1MemInstruction(op, n, treg, mf, preced, cg, hint);
-   return new (cg->trHeapMemory()) TR::PPCTrg1MemInstruction(op, n, treg, mf, cg, hint);
+      return new (cg->comp()->trHeapMemory()) TR::PPCTrg1MemInstruction(op, n, treg, mf, preced, cg, hint);
+   return new (cg->comp()->trHeapMemory()) TR::PPCTrg1MemInstruction(op, n, treg, mf, cg, hint);
    }
 
 TR::Instruction *generateTrg1ImmInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node * n,
    TR::Register *treg, uint32_t imm, TR::Instruction *preced)
    {
    if (preced)
-      return new (cg->trHeapMemory()) TR::PPCTrg1ImmInstruction(op, n, treg, imm, preced, cg);
-   return new (cg->trHeapMemory()) TR::PPCTrg1ImmInstruction(op, n, treg, imm, cg);
+      return new (cg->comp()->trHeapMemory()) TR::PPCTrg1ImmInstruction(op, n, treg, imm, preced, cg);
+   return new (cg->comp()->trHeapMemory()) TR::PPCTrg1ImmInstruction(op, n, treg, imm, cg);
    }
 
 TR::Instruction *generateLabelInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node * n,
    TR::LabelSymbol *sym, TR::Instruction *preced)
    {
    if (preced)
-      return new (cg->trHeapMemory()) TR::PPCLabelInstruction(op, n, sym, preced, cg);
-   return new (cg->trHeapMemory()) TR::PPCLabelInstruction(op, n, sym, cg);
+      return new (cg->comp()->trHeapMemory()) TR::PPCLabelInstruction(op, n, sym, preced, cg);
+   return new (cg->comp()->trHeapMemory()) TR::PPCLabelInstruction(op, n, sym, cg);
    }
 
 TR::Instruction *generateDepLabelInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node * n,
    TR::LabelSymbol *sym, TR::RegisterDependencyConditions *cond, TR::Instruction *preced)
    {
    if (preced)
-      return new (cg->trHeapMemory()) TR::PPCDepLabelInstruction(op, n, sym, cond, preced, cg);
-   return new (cg->trHeapMemory()) TR::PPCDepLabelInstruction(op, n, sym, cond, cg);
+      return new (cg->comp()->trHeapMemory()) TR::PPCDepLabelInstruction(op, n, sym, cond, preced, cg);
+   return new (cg->comp()->trHeapMemory()) TR::PPCDepLabelInstruction(op, n, sym, cond, cg);
    }
 
 TR::Instruction *generateConditionalBranchInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, bool likeliness, TR::Node * n,
@@ -322,8 +323,8 @@ TR::Instruction *generateConditionalBranchInstruction(TR::CodeGenerator *cg, TR:
       op = flipBranch(cg, op);
 
    if (preced)
-      return new (cg->trHeapMemory()) TR::PPCConditionalBranchInstruction(op, n, sym, cr, preced, cg, likeliness);
-   return new (cg->trHeapMemory()) TR::PPCConditionalBranchInstruction(op, n, sym, cr, cg, likeliness);
+      return new (cg->comp()->trHeapMemory()) TR::PPCConditionalBranchInstruction(op, n, sym, cr, preced, cg, likeliness);
+   return new (cg->comp()->trHeapMemory()) TR::PPCConditionalBranchInstruction(op, n, sym, cr, cg, likeliness);
    }
 
 TR::Instruction *generateDepConditionalBranchInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op,  bool likeliness, TR::Node * n,
@@ -337,8 +338,8 @@ TR::Instruction *generateDepConditionalBranchInstruction(TR::CodeGenerator *cg, 
       op = flipBranch(cg, op);
 
    if (preced)
-      return new (cg->trHeapMemory()) TR::PPCDepConditionalBranchInstruction(op, n, sym, cr, cond, preced, cg, likeliness);
-   return new (cg->trHeapMemory()) TR::PPCDepConditionalBranchInstruction(op, n, sym, cr, cond, cg, likeliness);
+      return new (cg->comp()->trHeapMemory()) TR::PPCDepConditionalBranchInstruction(op, n, sym, cr, cond, preced, cg, likeliness);
+   return new (cg->comp()->trHeapMemory()) TR::PPCDepConditionalBranchInstruction(op, n, sym, cr, cond, cg, likeliness);
    }
 
 TR::Instruction *generateConditionalBranchInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node * n,
@@ -357,12 +358,12 @@ TR::Instruction *generateConditionalBranchInstruction(TR::CodeGenerator *cg, TR:
    if(prediction)
       {
       if (preced)
-         return new (cg->trHeapMemory()) TR::PPCConditionalBranchInstruction(op, n, sym, cr, preced, cg, likeliness);
-      return new (cg->trHeapMemory()) TR::PPCConditionalBranchInstruction(op, n, sym, cr, cg, likeliness);
+         return new (cg->comp()->trHeapMemory()) TR::PPCConditionalBranchInstruction(op, n, sym, cr, preced, cg, likeliness);
+      return new (cg->comp()->trHeapMemory()) TR::PPCConditionalBranchInstruction(op, n, sym, cr, cg, likeliness);
       }
    if (preced)
-      return new (cg->trHeapMemory()) TR::PPCConditionalBranchInstruction(op, n, sym, cr, preced, cg);
-   return new (cg->trHeapMemory()) TR::PPCConditionalBranchInstruction(op, n, sym, cr, cg);
+      return new (cg->comp()->trHeapMemory()) TR::PPCConditionalBranchInstruction(op, n, sym, cr, preced, cg);
+   return new (cg->comp()->trHeapMemory()) TR::PPCConditionalBranchInstruction(op, n, sym, cr, cg);
    }
 
 TR::Instruction *generateDepConditionalBranchInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node * n,
@@ -381,13 +382,13 @@ TR::Instruction *generateDepConditionalBranchInstruction(TR::CodeGenerator *cg, 
    if(prediction)
       {
       if (preced)
-         return new (cg->trHeapMemory()) TR::PPCDepConditionalBranchInstruction(op, n, sym, cr, cond, preced, cg, likeliness);
-      return new (cg->trHeapMemory()) TR::PPCDepConditionalBranchInstruction(op, n, sym, cr, cond, cg, likeliness);
+         return new (cg->comp()->trHeapMemory()) TR::PPCDepConditionalBranchInstruction(op, n, sym, cr, cond, preced, cg, likeliness);
+      return new (cg->comp()->trHeapMemory()) TR::PPCDepConditionalBranchInstruction(op, n, sym, cr, cond, cg, likeliness);
       }
 
    if (preced)
-      return new (cg->trHeapMemory()) TR::PPCDepConditionalBranchInstruction(op, n, sym, cr, cond, preced, cg);
-   return new (cg->trHeapMemory()) TR::PPCDepConditionalBranchInstruction(op, n, sym, cr, cond, cg);
+      return new (cg->comp()->trHeapMemory()) TR::PPCDepConditionalBranchInstruction(op, n, sym, cr, cond, preced, cg);
+   return new (cg->comp()->trHeapMemory()) TR::PPCDepConditionalBranchInstruction(op, n, sym, cr, cond, cg);
    }
 
 TR::Instruction *generateTrg1Src1ImmInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node * n,
@@ -396,8 +397,8 @@ TR::Instruction *generateTrg1Src1ImmInstruction(TR::CodeGenerator *cg, TR::InstO
    if (cg->comp()->target().cpu.is(OMR_PROCESSOR_PPC_P6) && TR::InstOpCode(op).isCompare())
       treg->resetFlippedCCR();
    if (preced)
-      return new (cg->trHeapMemory()) TR::PPCTrg1Src1ImmInstruction(op, n, treg, s1reg, imm, preced, cg);
-   return new (cg->trHeapMemory()) TR::PPCTrg1Src1ImmInstruction(op, n,treg, s1reg, imm, cg);
+      return new (cg->comp()->trHeapMemory()) TR::PPCTrg1Src1ImmInstruction(op, n, treg, s1reg, imm, preced, cg);
+   return new (cg->comp()->trHeapMemory()) TR::PPCTrg1Src1ImmInstruction(op, n,treg, s1reg, imm, cg);
    }
 
 TR::Instruction *generateTrg1Src1ImmInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node * n,
@@ -406,40 +407,40 @@ TR::Instruction *generateTrg1Src1ImmInstruction(TR::CodeGenerator *cg, TR::InstO
    if (cg->comp()->target().cpu.is(OMR_PROCESSOR_PPC_P6))
       cr0reg->resetFlippedCCR();
    if (preced)
-      return new (cg->trHeapMemory()) TR::PPCTrg1Src1ImmInstruction(op, n,treg, s1reg, cr0reg, imm, preced, cg);
-   return new (cg->trHeapMemory()) TR::PPCTrg1Src1ImmInstruction(op, n,treg, s1reg, cr0reg, imm, cg);
+      return new (cg->comp()->trHeapMemory()) TR::PPCTrg1Src1ImmInstruction(op, n,treg, s1reg, cr0reg, imm, preced, cg);
+   return new (cg->comp()->trHeapMemory()) TR::PPCTrg1Src1ImmInstruction(op, n,treg, s1reg, cr0reg, imm, cg);
    }
 
 TR::Instruction *generateSrc1Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node * n,
    TR::Register *s1reg, int32_t imm, TR::Instruction *preced)
    {
    if (preced)
-      return new (cg->trHeapMemory()) TR::PPCSrc1Instruction(op, n, s1reg, imm, preced, cg);
-   return new (cg->trHeapMemory()) TR::PPCSrc1Instruction(op, n, s1reg, imm, cg);
+      return new (cg->comp()->trHeapMemory()) TR::PPCSrc1Instruction(op, n, s1reg, imm, preced, cg);
+   return new (cg->comp()->trHeapMemory()) TR::PPCSrc1Instruction(op, n, s1reg, imm, cg);
    }
 
 TR::Instruction *generateSrc2Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node * n,
    TR::Register *s1reg, TR::Register *s2reg, TR::Instruction *preced)
    {
    if (preced)
-      return new (cg->trHeapMemory()) TR::PPCSrc2Instruction(op, n, s1reg, s2reg, preced, cg);
-   return new (cg->trHeapMemory()) TR::PPCSrc2Instruction(op, n, s1reg, s2reg, cg);
+      return new (cg->comp()->trHeapMemory()) TR::PPCSrc2Instruction(op, n, s1reg, s2reg, preced, cg);
+   return new (cg->comp()->trHeapMemory()) TR::PPCSrc2Instruction(op, n, s1reg, s2reg, cg);
    }
 
 TR::Instruction *generateSrc3Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node * n,
    TR::Register *s1reg, TR::Register *s2reg, TR::Register *s3reg, TR::Instruction *preced)
    {
    if (preced)
-      return new (cg->trHeapMemory()) TR::PPCSrc3Instruction(op, n, s1reg, s2reg, s3reg, preced, cg);
-   return new (cg->trHeapMemory()) TR::PPCSrc3Instruction(op, n, s1reg, s2reg, s3reg, cg);
+      return new (cg->comp()->trHeapMemory()) TR::PPCSrc3Instruction(op, n, s1reg, s2reg, s3reg, preced, cg);
+   return new (cg->comp()->trHeapMemory()) TR::PPCSrc3Instruction(op, n, s1reg, s2reg, s3reg, cg);
    }
 
 TR::Instruction *generateTrg1Src1Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node * n,
    TR::Register *treg, TR::Register *s1reg, TR::Instruction *preced)
    {
    if (preced)
-      return new (cg->trHeapMemory()) TR::PPCTrg1Src1Instruction(op, n, treg, s1reg, preced, cg);
-   return new (cg->trHeapMemory()) TR::PPCTrg1Src1Instruction(op, n, treg, s1reg, cg);
+      return new (cg->comp()->trHeapMemory()) TR::PPCTrg1Src1Instruction(op, n, treg, s1reg, preced, cg);
+   return new (cg->comp()->trHeapMemory()) TR::PPCTrg1Src1Instruction(op, n, treg, s1reg, cg);
    }
 
 static bool registerRecentlyWritten(TR::Register *reg, TR::Instruction *cursor)
@@ -485,8 +486,8 @@ TR::Instruction *generateTrg1Src2Instruction(TR::CodeGenerator *cg, TR::InstOpCo
       }
 
    if (preced)
-      return new (cg->trHeapMemory()) TR::PPCTrg1Src2Instruction(op, n, treg, s1reg, s2reg, preced, cg);
-   return new (cg->trHeapMemory()) TR::PPCTrg1Src2Instruction(op, n, treg, s1reg, s2reg, cg);
+      return new (cg->comp()->trHeapMemory()) TR::PPCTrg1Src2Instruction(op, n, treg, s1reg, s2reg, preced, cg);
+   return new (cg->comp()->trHeapMemory()) TR::PPCTrg1Src2Instruction(op, n, treg, s1reg, s2reg, cg);
    }
 
 TR::Instruction *generateTrg1Src2Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node * n,
@@ -494,31 +495,31 @@ TR::Instruction *generateTrg1Src2Instruction(TR::CodeGenerator *cg, TR::InstOpCo
    {
    if (cg->comp()->target().cpu.is(OMR_PROCESSOR_PPC_P6))
       cr0Reg->resetFlippedCCR();
-   return new (cg->trHeapMemory()) TR::PPCTrg1Src2Instruction(op, n, treg, s1reg, s2reg, cr0Reg, preced, cg);
+   return new (cg->comp()->trHeapMemory()) TR::PPCTrg1Src2Instruction(op, n, treg, s1reg, s2reg, cr0Reg, preced, cg);
    }
 
 TR::Instruction *generateTrg1Src2ImmInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node * n,
    TR::Register *treg, TR::Register *s1reg, TR::Register *s2reg, int64_t imm, TR::Instruction *preced)
    {
    if (preced)
-      return new (cg->trHeapMemory()) TR::PPCTrg1Src2ImmInstruction(op, n, treg, s1reg, s2reg, imm, preced, cg);
-   return new (cg->trHeapMemory()) TR::PPCTrg1Src2ImmInstruction(op, n, treg, s1reg, s2reg, imm, cg);
+      return new (cg->comp()->trHeapMemory()) TR::PPCTrg1Src2ImmInstruction(op, n, treg, s1reg, s2reg, imm, preced, cg);
+   return new (cg->comp()->trHeapMemory()) TR::PPCTrg1Src2ImmInstruction(op, n, treg, s1reg, s2reg, imm, cg);
    }
 
 TR::Instruction *generateTrg1Src3Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node * n,
    TR::Register *treg, TR::Register *s1reg, TR::Register *s2reg, TR::Register *s3reg, TR::Instruction *preced)
    {
    if (preced)
-      return new (cg->trHeapMemory()) TR::PPCTrg1Src3Instruction(op, n, treg, s1reg, s2reg, s3reg, preced, cg);
-   return new (cg->trHeapMemory()) TR::PPCTrg1Src3Instruction(op, n, treg, s1reg, s2reg, s3reg, cg);
+      return new (cg->comp()->trHeapMemory()) TR::PPCTrg1Src3Instruction(op, n, treg, s1reg, s2reg, s3reg, preced, cg);
+   return new (cg->comp()->trHeapMemory()) TR::PPCTrg1Src3Instruction(op, n, treg, s1reg, s2reg, s3reg, cg);
    }
 
 TR::Instruction *generateTrg1Src1Imm2Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node * n,
    TR::Register *trgReg, TR::Register *srcReg, int32_t imm1, int64_t imm2, TR::Instruction *preced)
    {
    if (preced)
-      return new (cg->trHeapMemory()) TR::PPCTrg1Src1Imm2Instruction(op, n, trgReg, srcReg, imm1, imm2, preced, cg);
-   return new (cg->trHeapMemory()) TR::PPCTrg1Src1Imm2Instruction(op, n, trgReg, srcReg, imm1, imm2, cg);
+      return new (cg->comp()->trHeapMemory()) TR::PPCTrg1Src1Imm2Instruction(op, n, trgReg, srcReg, imm1, imm2, preced, cg);
+   return new (cg->comp()->trHeapMemory()) TR::PPCTrg1Src1Imm2Instruction(op, n, trgReg, srcReg, imm1, imm2, cg);
    }
 
 TR::Instruction *generateTrg1Src1Imm2Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node * n,
@@ -527,8 +528,8 @@ TR::Instruction *generateTrg1Src1Imm2Instruction(TR::CodeGenerator *cg, TR::Inst
    if (cg->comp()->target().cpu.is(OMR_PROCESSOR_PPC_P6))
       cr0reg->resetFlippedCCR();
    if (preced)
-      return new (cg->trHeapMemory()) TR::PPCTrg1Src1Imm2Instruction(op, n, trgReg, srcReg, cr0reg, imm1, imm2, preced, cg);
-   return new (cg->trHeapMemory()) TR::PPCTrg1Src1Imm2Instruction(op, n, trgReg, srcReg, cr0reg, imm1, imm2, cg);
+      return new (cg->comp()->trHeapMemory()) TR::PPCTrg1Src1Imm2Instruction(op, n, trgReg, srcReg, cr0reg, imm1, imm2, preced, cg);
+   return new (cg->comp()->trHeapMemory()) TR::PPCTrg1Src1Imm2Instruction(op, n, trgReg, srcReg, cr0reg, imm1, imm2, cg);
    }
 
 TR::Instruction *generateShiftLeftImmediate(TR::CodeGenerator *cg, TR::Node * n,
@@ -538,12 +539,12 @@ TR::Instruction *generateShiftLeftImmediate(TR::CodeGenerator *cg, TR::Node * n,
    if (shiftAmount == 1)
       {
       if (preced)
-         return new (cg->trHeapMemory()) TR::PPCTrg1Src2Instruction(TR::InstOpCode::add, n, trgReg, srcReg, srcReg, preced, cg);
-      return new (cg->trHeapMemory()) TR::PPCTrg1Src2Instruction(TR::InstOpCode::add, n, trgReg, srcReg, srcReg, cg);
+         return new (cg->comp()->trHeapMemory()) TR::PPCTrg1Src2Instruction(TR::InstOpCode::add, n, trgReg, srcReg, srcReg, preced, cg);
+      return new (cg->comp()->trHeapMemory()) TR::PPCTrg1Src2Instruction(TR::InstOpCode::add, n, trgReg, srcReg, srcReg, cg);
       }
    if (preced)
-      return new (cg->trHeapMemory()) TR::PPCTrg1Src1Imm2Instruction(TR::InstOpCode::rlwinm, n, trgReg, srcReg, shiftAmount%32, temp, preced, cg);
-   return new (cg->trHeapMemory()) TR::PPCTrg1Src1Imm2Instruction(TR::InstOpCode::rlwinm, n, trgReg, srcReg, shiftAmount%32, temp, cg);
+      return new (cg->comp()->trHeapMemory()) TR::PPCTrg1Src1Imm2Instruction(TR::InstOpCode::rlwinm, n, trgReg, srcReg, shiftAmount%32, temp, preced, cg);
+   return new (cg->comp()->trHeapMemory()) TR::PPCTrg1Src1Imm2Instruction(TR::InstOpCode::rlwinm, n, trgReg, srcReg, shiftAmount%32, temp, cg);
    }
 
 TR::Instruction *generateShiftRightLogicalImmediate(TR::CodeGenerator *cg, TR::Node * n,
@@ -552,8 +553,8 @@ TR::Instruction *generateShiftRightLogicalImmediate(TR::CodeGenerator *cg, TR::N
    int32_t temp1 = 32-shiftAmount;
    int32_t temp2 = (1<<temp1)-1;
    if (preced)
-      return new (cg->trHeapMemory()) TR::PPCTrg1Src1Imm2Instruction(TR::InstOpCode::rlwinm, n, trgReg, srcReg, temp1%32, temp2, preced, cg);
-   return new (cg->trHeapMemory()) TR::PPCTrg1Src1Imm2Instruction(TR::InstOpCode::rlwinm, n, trgReg, srcReg, temp1%32, temp2, cg);
+      return new (cg->comp()->trHeapMemory()) TR::PPCTrg1Src1Imm2Instruction(TR::InstOpCode::rlwinm, n, trgReg, srcReg, temp1%32, temp2, preced, cg);
+   return new (cg->comp()->trHeapMemory()) TR::PPCTrg1Src1Imm2Instruction(TR::InstOpCode::rlwinm, n, trgReg, srcReg, temp1%32, temp2, cg);
    }
 
 TR::Instruction *generateShiftLeftImmediateLong(TR::CodeGenerator *cg, TR::Node * n,
@@ -565,12 +566,12 @@ TR::Instruction *generateShiftLeftImmediateLong(TR::CodeGenerator *cg, TR::Node 
    if (shiftAmount == 1)
       {
       if (preced)
-         return new (cg->trHeapMemory()) TR::PPCTrg1Src2Instruction(TR::InstOpCode::add, n, trgReg, srcReg, srcReg, preced, cg);
-      return new (cg->trHeapMemory()) TR::PPCTrg1Src2Instruction(TR::InstOpCode::add, n, trgReg, srcReg, srcReg, cg);
+         return new (cg->comp()->trHeapMemory()) TR::PPCTrg1Src2Instruction(TR::InstOpCode::add, n, trgReg, srcReg, srcReg, preced, cg);
+      return new (cg->comp()->trHeapMemory()) TR::PPCTrg1Src2Instruction(TR::InstOpCode::add, n, trgReg, srcReg, srcReg, cg);
       }
    if (preced)
-      return new (cg->trHeapMemory()) TR::PPCTrg1Src1Imm2Instruction(TR::InstOpCode::rldicr, n, trgReg, srcReg, shiftAmount%64, mask, preced, cg);
-   return new (cg->trHeapMemory()) TR::PPCTrg1Src1Imm2Instruction(TR::InstOpCode::rldicr, n, trgReg, srcReg, shiftAmount%64, mask, cg);
+      return new (cg->comp()->trHeapMemory()) TR::PPCTrg1Src1Imm2Instruction(TR::InstOpCode::rldicr, n, trgReg, srcReg, shiftAmount%64, mask, preced, cg);
+   return new (cg->comp()->trHeapMemory()) TR::PPCTrg1Src1Imm2Instruction(TR::InstOpCode::rldicr, n, trgReg, srcReg, shiftAmount%64, mask, cg);
    }
 
 TR::Instruction *generateShiftRightLogicalImmediateLong(TR::CodeGenerator *cg, TR::Node * n,
@@ -579,8 +580,8 @@ TR::Instruction *generateShiftRightLogicalImmediateLong(TR::CodeGenerator *cg, T
    int32_t temp1 = 64-shiftAmount;
    int64_t mask = ((uint64_t)1<<temp1)-1;
    if (preced)
-      return new (cg->trHeapMemory()) TR::PPCTrg1Src1Imm2Instruction(TR::InstOpCode::rldicl, n, trgReg, srcReg, temp1%64, mask, preced, cg);
-   return new (cg->trHeapMemory()) TR::PPCTrg1Src1Imm2Instruction(TR::InstOpCode::rldicl, n, trgReg, srcReg, temp1%64, mask, cg);
+      return new (cg->comp()->trHeapMemory()) TR::PPCTrg1Src1Imm2Instruction(TR::InstOpCode::rldicl, n, trgReg, srcReg, temp1%64, mask, preced, cg);
+   return new (cg->comp()->trHeapMemory()) TR::PPCTrg1Src1Imm2Instruction(TR::InstOpCode::rldicl, n, trgReg, srcReg, temp1%64, mask, cg);
    }
 
 
@@ -588,32 +589,32 @@ TR::Instruction *generateControlFlowInstruction(TR::CodeGenerator *cg, TR::InstO
    TR::RegisterDependencyConditions *deps, TR::Instruction *preced, bool useRegPairForResult, bool useRegPairForCond)
    {
    if (preced)
-      return new (cg->trHeapMemory()) TR::PPCControlFlowInstruction(op, n, preced, cg, deps, useRegPairForResult, useRegPairForCond);
-   return new (cg->trHeapMemory()) TR::PPCControlFlowInstruction(op, n, cg, deps, useRegPairForResult, useRegPairForCond);
+      return new (cg->comp()->trHeapMemory()) TR::PPCControlFlowInstruction(op, n, preced, cg, deps, useRegPairForResult, useRegPairForCond);
+   return new (cg->comp()->trHeapMemory()) TR::PPCControlFlowInstruction(op, n, cg, deps, useRegPairForResult, useRegPairForCond);
    }
 
 TR::Instruction *generateAdminInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node * n,
    TR::Node *fenceNode, TR::Instruction *preced)
    {
    if (preced)
-      return new (cg->trHeapMemory()) TR::PPCAdminInstruction(op, n, fenceNode, preced, cg);
-   return new (cg->trHeapMemory()) TR::PPCAdminInstruction(op, n, fenceNode, cg);
+      return new (cg->comp()->trHeapMemory()) TR::PPCAdminInstruction(op, n, fenceNode, preced, cg);
+   return new (cg->comp()->trHeapMemory()) TR::PPCAdminInstruction(op, n, fenceNode, cg);
    }
 
 TR::Instruction *generateDepImmSymInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node * n,
    uintptr_t imm, TR::RegisterDependencyConditions *cond, TR::SymbolReference *sr, TR::Snippet *s, TR::Instruction *preced)
    {
    if (preced)
-      return new (cg->trHeapMemory()) TR::PPCDepImmSymInstruction(op, n, imm, cond, sr, s, preced, cg);
-   return new (cg->trHeapMemory()) TR::PPCDepImmSymInstruction(op, n, imm, cond, sr, s, cg);
+      return new (cg->comp()->trHeapMemory()) TR::PPCDepImmSymInstruction(op, n, imm, cond, sr, s, preced, cg);
+   return new (cg->comp()->trHeapMemory()) TR::PPCDepImmSymInstruction(op, n, imm, cond, sr, s, cg);
    }
 
 TR::Instruction *generateTrg1Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node * n,
    TR::Register *trg, TR::Instruction *preced)
    {
    if (preced)
-      return new (cg->trHeapMemory()) TR::PPCTrg1Instruction(op, n, trg, preced, cg);
-   return new (cg->trHeapMemory()) TR::PPCTrg1Instruction(op, n, trg, cg);
+      return new (cg->comp()->trHeapMemory()) TR::PPCTrg1Instruction(op, n, trg, preced, cg);
+   return new (cg->comp()->trHeapMemory()) TR::PPCTrg1Instruction(op, n, trg, cg);
    }
 
 TR::InstOpCode::Mnemonic flipBranch(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op)

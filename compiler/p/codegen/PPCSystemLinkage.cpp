@@ -1440,7 +1440,7 @@ void TR::PPCSystemLinkage::buildDirectCall(TR::Node *callNode,
             //For Little Endian, load target's Global Entry Point into r12, TOC will be restored at branch target.
             TR::Register *geReg = dependencies->searchPreConditionRegister(TR::RealRegister::gr12);
             generateTrg1MemInstruction( cg(),TR::InstOpCode::Op_load, callNode, geReg,
-                  new (cg()->trHeapMemory()) TR::MemoryReference(cg()->getTOCBaseRegister(),
+                  new (cg()->comp()->trHeapMemory()) TR::MemoryReference(cg()->getTOCBaseRegister(),
                         (refNum-1)*TR::Compiler->om.sizeofReferenceAddress(),
                         TR::Compiler->om.sizeofReferenceAddress(), cg()));
             }

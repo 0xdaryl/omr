@@ -995,7 +995,7 @@ class PPCTrg1Src1ImmInstruction : public PPCTrg1Src1Instruction
            : PPCTrg1Src1Instruction(op, n, treg, sreg, codeGen),
              _source1Immediate(imm)
       {
-      TR::RegisterDependencyConditions *cond = new (codeGen->trHeapMemory()) TR::RegisterDependencyConditions( 0, 1, codeGen->trMemory() );
+      TR::RegisterDependencyConditions *cond = new (codeGen->comp()->trHeapMemory()) TR::RegisterDependencyConditions( 0, 1, codeGen->trMemory() );
       cond->addPostCondition(cr0reg, TR::RealRegister::cr0, DefinesDependentRegister );
       setDependencyConditions( cond );
       cond->bookKeepingRegisterUses(this, codeGen);
@@ -1007,7 +1007,7 @@ class PPCTrg1Src1ImmInstruction : public PPCTrg1Src1Instruction
            : PPCTrg1Src1Instruction(op, n, treg, sreg, precedingInstruction, codeGen),
              _source1Immediate(imm)
       {
-      TR::RegisterDependencyConditions *cond = new (codeGen->trHeapMemory()) TR::RegisterDependencyConditions( 0, 1, codeGen->trMemory() );
+      TR::RegisterDependencyConditions *cond = new (codeGen->comp()->trHeapMemory()) TR::RegisterDependencyConditions( 0, 1, codeGen->trMemory() );
       cond->addPostCondition(cr0reg, TR::RealRegister::cr0, DefinesDependentRegister );
       setDependencyConditions( cond );
       cond->bookKeepingRegisterUses(this, codeGen);
@@ -1172,7 +1172,7 @@ class PPCTrg1Src2Instruction : public PPCTrg1Src1Instruction
                              _source2Register(s2reg)
       {
       useRegister(s2reg);
-      TR::RegisterDependencyConditions *cond = new (codeGen->trHeapMemory()) TR::RegisterDependencyConditions( 0, 1, codeGen->trMemory() );
+      TR::RegisterDependencyConditions *cond = new (codeGen->comp()->trHeapMemory()) TR::RegisterDependencyConditions( 0, 1, codeGen->trMemory() );
       cond->addPostCondition(cr0reg, TR::RealRegister::cr0, DefinesDependentRegister );
       setDependencyConditions( cond );
       cond->bookKeepingRegisterUses(this, codeGen);
