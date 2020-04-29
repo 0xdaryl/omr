@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -135,7 +135,7 @@ TR::Register *inlineTrtEvaluator(
       generateRRInstruction(cg, TR::InstOpCode::XR, node, r2Reg, r2Reg);
       }
 
-   TR::RegisterDependencyConditions *regDeps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg);
+   TR::RegisterDependencyConditions *regDeps = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg);
    regDeps->addPostCondition(r1Reg, TR::RealRegister::GPR1,DefinesDependentRegister);
    regDeps->addPostCondition(r2Reg, TR::RealRegister::GPR2,DefinesDependentRegister);
 
@@ -312,8 +312,8 @@ TR::Register *inlineTrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       TR::Register *length = cg->evaluate(lengthNode);
 
       TR::Instruction * cursor = generateSS1Instruction(cg, TR::InstOpCode::TR, node, 0,
-                                   new (cg->trHeapMemory()) TR::MemoryReference(source, 0, cg),
-                                   new (cg->trHeapMemory()) TR::MemoryReference(table, 0, cg));
+                                   new (cg->comp()->trHeapMemory()) TR::MemoryReference(source, 0, cg),
+                                   new (cg->comp()->trHeapMemory()) TR::MemoryReference(table, 0, cg));
 
       cursor = generateEXDispatch(node, cg, length, cursor);
 

@@ -73,7 +73,7 @@ class TR_OpaqueClassBlock;
 class TR_OpaqueMethodBlock;
 class TR_VirtualGuardSite;
 
-#define INSN_HEAP cg->trHeapMemory()
+#define INSN_HEAP cg->comp()->trHeapMemory()
 
 ////////////////////////////////////////////////////////////////////////////////
 // Generate methods
@@ -360,7 +360,7 @@ generateS390CompareAndBranchInstruction(TR::CodeGenerator * cg,
 
    return returnInstruction;
    }
-   
+
 /**
  * Generate a compare and a branch instruction.  if z10 is available, this will
  * attempt to generate a COMPARE AND BRANCH instruction, otherwise the a
@@ -2913,9 +2913,9 @@ generateS390BranchPredictionRelativePreloadInstruction(TR::CodeGenerator * cg, T
    {
    if (preced)
       {
-      return new (cg->trHeapMemory()) TR::S390MIIInstruction(op, n, mask, sym, sym3, preced, cg);
+      return new (INSN_HEAP) TR::S390MIIInstruction(op, n, mask, sym, sym3, preced, cg);
       }
-   return new (cg->trHeapMemory()) TR::S390MIIInstruction(op, n, mask, sym, sym3, cg);
+   return new (INSN_HEAP) TR::S390MIIInstruction(op, n, mask, sym, sym3, cg);
    }
 
 TR::Instruction *
@@ -3234,7 +3234,7 @@ template TR::Instruction * generateS390CompareAndBranchInstruction<int64_t>(
                     bool needsCC = true,
                     bool targetIsFarAndCold = false,
                     TR::Instruction        *preced = 0,
-                    TR::RegisterDependencyConditions *cond = 0); 
+                    TR::RegisterDependencyConditions *cond = 0);
 
 TR::Instruction*
 generateAlignmentNopInstruction(TR::CodeGenerator *cg, TR::Node *node, uint32_t alignment, TR::Instruction *preced)

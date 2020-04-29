@@ -430,21 +430,21 @@ OMR::Z::CodeGenerator::CodeGenerator()
    bool enableBranchPreload = comp->getOption(TR_EnableBranchPreload);
    bool disableBranchPreload = comp->getOption(TR_DisableBranchPreload);
 
-   if (enableBranchPreload || (!disableBranchPreload && comp->isOptServer() && self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_ZEC12)))
+   if (enableBranchPreload || (!disableBranchPreload && comp->isOptServer() && comp->target().cpu.isAtLeast(OMR_PROCESSOR_S390_ZEC12)))
       self()->setEnableBranchPreload();
    else
       self()->setDisableBranchPreload();
 
    static bool bpp = (feGetEnv("TR_BPRP")!=NULL);
 
-   if ((enableBranchPreload && bpp) || (bpp && !disableBranchPreload && comp->isOptServer() && self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_ZEC12)))
+   if ((enableBranchPreload && bpp) || (bpp && !disableBranchPreload && comp->isOptServer() && comp->target().cpu.isAtLeast(OMR_PROCESSOR_S390_ZEC12)))
       self()->setEnableBranchPreloadForCalls();
    else
       self()->setDisableBranchPreloadForCalls();
 
    if (self()->supportsBranchPreloadForCalls())
       {
-      _callsForPreloadList = new (self()->trHeapMemory()) TR::list<TR_BranchPreloadCallData*>(getTypedAllocator<TR_BranchPreloadCallData*>(comp->allocator()));
+      _callsForPreloadList = new (comp->trHeapMemory()) TR::list<TR_BranchPreloadCallData*>(getTypedAllocator<TR_BranchPreloadCallData*>(comp->allocator()));
       }
 
    self()->setOnDemandLiteralPoolRun(true);
@@ -495,7 +495,7 @@ OMR::Z::CodeGenerator::CodeGenerator()
    self()->setSupportsSearchCharString(); // CISC Transformation into SRSTU loop - only on z9.
    self()->setSupportsTranslateAndTestCharString(); // CISC Transformation into TRTE loop - only on z6.
 
-   if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10))
+   if (comp->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10))
       {
       self()->setSupportsTranslateAndTestCharString();
 
@@ -514,7 +514,7 @@ OMR::Z::CodeGenerator::CodeGenerator()
       comp->setOption(TR_DisableTraps);
       }
 
-   if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z196))
+   if (comp->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z196))
       {
       self()->setSupportsAtomicLoadAndAdd();
       }
@@ -525,17 +525,17 @@ OMR::Z::CodeGenerator::CodeGenerator()
       comp->setOption(TR_DisableMaxMinOptimization);
       }
 
-   if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_ZEC12))
+   if (comp->target().cpu.isAtLeast(OMR_PROCESSOR_S390_ZEC12))
       {
       self()->setSupportsZonedDFPConversions();
-      if (self()->comp()->target().cpu.supportsFeature(OMR_FEATURE_S390_TE) && !comp->getOption(TR_DisableTM))
+      if (comp->target().cpu.supportsFeature(OMR_FEATURE_S390_TE) && !comp->getOption(TR_DisableTM))
          self()->setSupportsTM();
       }
 
-   if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z13) && !comp->getOption(TR_DisableArch11PackedToDFP))
+   if (comp->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z13) && !comp->getOption(TR_DisableArch11PackedToDFP))
       self()->setSupportsFastPackedDFPConversions();
 
-   if (!self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z14))
+   if (!comp->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z14))
       {
       comp->setOption(TR_DisableVectorBCD);
       }
@@ -573,9 +573,9 @@ OMR::Z::CodeGenerator::CodeGenerator()
    self()->addSupportedLiveRegisterKind(TR_FPR);
    self()->addSupportedLiveRegisterKind(TR_VRF);
 
-   self()->setLiveRegisters(new (self()->trHeapMemory()) TR_LiveRegisters(comp), TR_GPR);
-   self()->setLiveRegisters(new (self()->trHeapMemory()) TR_LiveRegisters(comp), TR_FPR);
-   self()->setLiveRegisters(new (self()->trHeapMemory()) TR_LiveRegisters(comp), TR_VRF);
+   self()->setLiveRegisters(new (comp->trHeapMemory()) TR_LiveRegisters(comp), TR_GPR);
+   self()->setLiveRegisters(new (comp->trHeapMemory()) TR_LiveRegisters(comp), TR_FPR);
+   self()->setLiveRegisters(new (comp->trHeapMemory()) TR_LiveRegisters(comp), TR_VRF);
 
    self()->setSupportsPrimitiveArrayCopy();
    self()->setSupportsReferenceArrayCopy();
@@ -600,9 +600,9 @@ OMR::Z::CodeGenerator::CodeGenerator()
 
    if (comp->getOption(TR_TraceRA))
       {
-      self()->setGPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstGPR, TR::RealRegister::LastAssignableGPR));
-      self()->setFPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstFPR, TR::RealRegister::LastFPR));
-      self()->setVRFRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstVRF, TR::RealRegister::LastVRF));
+      self()->setGPRegisterIterator(new (comp->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstGPR, TR::RealRegister::LastAssignableGPR));
+      self()->setFPRegisterIterator(new (comp->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstFPR, TR::RealRegister::LastFPR));
+      self()->setVRFRegisterIterator(new (comp->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstVRF, TR::RealRegister::LastVRF));
       }
 
    if (!comp->getOption(TR_DisableTLHPrefetch) && !comp->compileRelocatableCode())
@@ -1016,7 +1016,7 @@ OMR::Z::CodeGenerator::isUsing32BitEvaluator(TR::Node *node)
 TR::Instruction *
 OMR::Z::CodeGenerator::generateNop(TR::Node *n, TR::Instruction *preced, TR_NOPKind nopKind)
    {
-   return new (self()->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 2, n, preced, self());
+   return new (self()->comp()->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 2, n, preced, self());
    }
 
 TR::Instruction*
@@ -1029,24 +1029,25 @@ OMR::Z::CodeGenerator::insertPad(TR::Node* node, TR::Instruction* cursor, uint32
          cursor = cursor->getPrev();
          }
 
+      TR::Compilation *comp = self()->comp();
       switch (size)
          {
          case 2:
             {
-            cursor = new (self()->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 2, node, cursor, self());
+            cursor = new (comp->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 2, node, cursor, self());
             }
          break;
 
          case 4:
             {
-            cursor = new (self()->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 4, node, cursor, self());
+            cursor = new (comp->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 4, node, cursor, self());
             }
          break;
 
          case 6:
             {
-            cursor = new (self()->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 4, node, cursor, self());
-            cursor = new (self()->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 2, node, cursor, self());
+            cursor = new (comp->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 4, node, cursor, self());
+            cursor = new (comp->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 2, node, cursor, self());
             }
          break;
 
@@ -1081,15 +1082,15 @@ OMR::Z::CodeGenerator::beginInstructionSelection()
          TR::ResolvedMethodSymbol * methodSymbol = self()->comp()->getJittedMethodSymbol();
          intptr_t jniMethodTargetAddress = (intptr_t)methodSymbol->getResolvedMethod()->startAddressForJNIMethod(self()->comp());
 
-         cursor = new (self()->trHeapMemory()) TR::S390ImmInstruction(TR::InstOpCode::DC, startNode, UPPER_4_BYTES(jniMethodTargetAddress), cursor, self());
+         cursor = new (self()->comp()->trHeapMemory()) TR::S390ImmInstruction(TR::InstOpCode::DC, startNode, UPPER_4_BYTES(jniMethodTargetAddress), cursor, self());
 
          if (self()->comp()->target().is64Bit())
             {
-            cursor = new (self()->trHeapMemory()) TR::S390ImmInstruction(TR::InstOpCode::DC, startNode, LOWER_4_BYTES(jniMethodTargetAddress), cursor, self());
+            cursor = new (self()->comp()->trHeapMemory()) TR::S390ImmInstruction(TR::InstOpCode::DC, startNode, LOWER_4_BYTES(jniMethodTargetAddress), cursor, self());
             }
          }
 
-      _returnTypeInfoInstruction = new (self()->trHeapMemory()) TR::S390ImmInstruction(TR::InstOpCode::DC, startNode, 0, NULL, cursor, self());
+      _returnTypeInfoInstruction = new (self()->comp()->trHeapMemory()) TR::S390ImmInstruction(TR::InstOpCode::DC, startNode, 0, NULL, cursor, self());
       }
 
    generateS390PseudoInstruction(self(), TR::InstOpCode::PROC, startNode);
@@ -1151,7 +1152,7 @@ OMR::Z::CodeGenerator::hasWarmCallsBeforeReturn()
 void
 OMR::Z::CodeGenerator::createBranchPreloadCallData(TR::LabelSymbol *callLabel, TR::SymbolReference * callSymRef, TR::Instruction * instr)
       {
-      TR_BranchPreloadCallData * data = new (self()->trHeapMemory()) TR_BranchPreloadCallData(instr, callLabel, self()->comp()->getCurrentBlock(), callSymRef, self()->comp()->getCurrentBlock()->getFrequency());
+      TR_BranchPreloadCallData * data = new (self()->comp()->trHeapMemory()) TR_BranchPreloadCallData(instr, callLabel, self()->comp()->getCurrentBlock(), callSymRef, self()->comp()->getCurrentBlock()->getFrequency());
       _callsForPreloadList->push_front(data);
       }
 
@@ -1471,7 +1472,7 @@ OMR::Z::CodeGenerator::insertInstructionPrefetchesForCalls(TR_BranchPreloadCallD
             TR::MemoryReference * tempMR;
             TR::Register * tempReg = self()->allocateRegister();
 
-            cursor =  new (self()->trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::LARL, node, tempReg, (data->_callSymRef)->getSymbol(),data->_callSymRef, cursor, self());
+            cursor =  new (self()->comp()->trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::LARL, node, tempReg, (data->_callSymRef)->getSymbol(),data->_callSymRef, cursor, self());
 
             tempMR = generateS390MemoryReference(tempReg, 0, self());
             cursor = generateS390BranchPredictionPreloadInstruction(self(), TR::InstOpCode::BPP, node, data->_callLabel, (int8_t) 0xD, tempMR, cursor);
@@ -1496,7 +1497,7 @@ OMR::Z::CodeGenerator::insertInstructionPrefetchesForCalls(TR_BranchPreloadCallD
          {
          TR::Register * tempReg = self()->allocateRegister();
 
-         cursor =  new (self()->trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::LARL, node, tempReg, (data->_callSymRef)->getSymbol(),  data->_callSymRef, cursor, self());
+         cursor =  new (self()->comp()->trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::LARL, node, tempReg, (data->_callSymRef)->getSymbol(),  data->_callSymRef, cursor, self());
          TR::MemoryReference * tempMR = generateS390MemoryReference(tempReg, 0, self());
          tempMR->setCreatedDuringInstructionSelection();
          cursor = generateS390BranchPredictionPreloadInstruction(self(), TR::InstOpCode::BPP, node, data->_callLabel, (int8_t) 0xD, tempMR, cursor);
@@ -1741,12 +1742,12 @@ OMR::Z::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
 
    if (!self()->comp()->getOption(TR_DisableOOL))
       {
-      TR::list<TR::Register*> *firstTimeLiveOOLRegisterList = new (self()->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::Register*>(self()->comp()->allocator()));
+      TR::list<TR::Register*> *firstTimeLiveOOLRegisterList = new (self()->comp()->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::Register*>(self()->comp()->allocator()));
       self()->setFirstTimeLiveOOLRegisterList(firstTimeLiveOOLRegisterList);
 
       if (!self()->isOutOfLineColdPath())
          {
-         TR::list<TR::Register*> *spilledRegisterList = new (self()->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::CFGEdge*>(self()->comp()->allocator()));
+         TR::list<TR::Register*> *spilledRegisterList = new (self()->comp()->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::CFGEdge*>(self()->comp()->allocator()));
          self()->setSpilledRegisterList(spilledRegisterList);
          }
       }
@@ -2126,7 +2127,7 @@ void
 OMR::Z::CodeGenerator::addPICsListForInterfaceSnippet(TR::S390ConstantDataSnippet * ifcSnippet, TR::list<TR_OpaqueClassBlock*> * PICSlist)
    {
    if (_interfaceSnippetToPICsListHashTab == NULL)
-      {_interfaceSnippetToPICsListHashTab = new (self()->trHeapMemory()) TR_HashTab(self()->comp()->trMemory(), heapAlloc, 10, true);}
+      {_interfaceSnippetToPICsListHashTab = new (self()->comp()->trHeapMemory()) TR_HashTab(self()->comp()->trMemory(), heapAlloc, 10, true);}
 
    TR_HashId hashIndex = 0;
    _interfaceSnippetToPICsListHashTab->add((void *)ifcSnippet, hashIndex, (void *)PICSlist);
@@ -2222,7 +2223,7 @@ OMR::Z::CodeGenerator::getSupportsEncodeUtf16BigWithSurrogateTest()
 TR_S390ScratchRegisterManager*
 OMR::Z::CodeGenerator::generateScratchRegisterManager(int32_t capacity)
    {
-   return new (self()->trHeapMemory()) TR_S390ScratchRegisterManager(capacity, self());
+   return new (self()->comp()->trHeapMemory()) TR_S390ScratchRegisterManager(capacity, self());
    }
 
 void
@@ -2231,7 +2232,7 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
    // Generate the first label by using the placement new operator such that we are guaranteed to call the correct
    // overload of the constructor which can accept a NULL preceding instruction. If cursor is NULL the generated
    // label instruction will be prepended to the start of the instruction stream.
-   _methodBegin = new (self()->trHeapMemory()) TR::S390LabelInstruction(TR::InstOpCode::LABEL, self()->comp()->getStartTree()->getNode(), generateLabelSymbol(self()), static_cast<TR::Instruction*>(NULL), self());
+   _methodBegin = new (self()->comp()->trHeapMemory()) TR::S390LabelInstruction(TR::InstOpCode::LABEL, self()->comp()->getStartTree()->getNode(), generateLabelSymbol(self()), static_cast<TR::Instruction*>(NULL), self());
 
    _methodEnd = generateS390LabelInstruction(self(), TR::InstOpCode::LABEL, self()->comp()->findLastTree()->getNode(), generateLabelSymbol(self()));
 
@@ -2610,7 +2611,7 @@ TR::RegisterDependencyConditions*
 OMR::Z::CodeGenerator::createDepsForRRMemoryInstructions(TR::Node *node, TR::RegisterPair * sourceReg, TR::RegisterPair * targetReg, uint8_t extraDeps)
    {
    uint8_t numDeps = 8 + extraDeps; // TODO: only 6 deps are created below so why is there is always an implicit 2 extra deps created?
-   TR::RegisterDependencyConditions * dependencies = new (self()->trHeapMemory()) TR::RegisterDependencyConditions(0, numDeps, self());
+   TR::RegisterDependencyConditions * dependencies = new (self()->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, numDeps, self());
    dependencies->addPostCondition(sourceReg->getHighOrder(), TR::RealRegister::LegalEvenOfPair);
    dependencies->addPostCondition(sourceReg->getLowOrder(), TR::RealRegister::LegalOddOfPair);
    dependencies->addPostCondition(sourceReg, TR::RealRegister::EvenOddPair);
@@ -3562,7 +3563,7 @@ OMR::Z::CodeGenerator::findOrCreateConstant(TR::Node * node, void * c, uint16_t 
 
    // Constant was not found: create a new snippet for it and add it to the constant list.
    //
-   data = new (self()->trHeapMemory()) TR::S390ConstantDataSnippet(self(), node, c, size);
+   data = new (self()->comp()->trHeapMemory()) TR::S390ConstantDataSnippet(self(), node, c, size);
    key.c = (void *)data->getRawData();
    key.size = size;
    if (self()->profiledPointersRequireRelocation() && node &&
@@ -3579,7 +3580,7 @@ OMR::Z::CodeGenerator::findOrCreateConstant(TR::Node * node, void * c, uint16_t 
 TR::S390ConstantInstructionSnippet *
 OMR::Z::CodeGenerator::createConstantInstruction(TR::Node *node, TR::Instruction * instr)
    {
-   TR::S390ConstantInstructionSnippet * cis = new (self()->trHeapMemory()) TR::S390ConstantInstructionSnippet(self(),node,instr);
+   TR::S390ConstantInstructionSnippet * cis = new (self()->comp()->trHeapMemory()) TR::S390ConstantInstructionSnippet(self(),node,instr);
    _constantList.push_front(cis);
    return cis;
    }
@@ -3591,14 +3592,14 @@ OMR::Z::CodeGenerator::CreateConstant(TR::Node * node, void * c, uint16_t size, 
    if (writable)
       {
       TR::S390WritableDataSnippet * cursor;
-      cursor = new (self()->trHeapMemory()) TR::S390WritableDataSnippet(self(), node, c, size);
+      cursor = new (self()->comp()->trHeapMemory()) TR::S390WritableDataSnippet(self(), node, c, size);
       _writableList.push_front(cursor);
       return (TR::S390ConstantDataSnippet *) cursor;
       }
    else
       {
       TR::S390ConstantDataSnippet * cursor;
-      cursor = new (self()->trHeapMemory()) TR::S390ConstantDataSnippet(self(), node, c, size);
+      cursor = new (self()->comp()->trHeapMemory()) TR::S390ConstantDataSnippet(self(), node, c, size);
       TR_S390ConstantDataSnippetKey key;
       key.c = (void *)cursor->getRawData();
       key.size = size;
@@ -3924,7 +3925,7 @@ OMR::Z::CodeGenerator::createLinkage(TR_LinkageConventions lc)
    switch (lc)
       {
       case TR_Helper:
-         linkage = new (self()->trHeapMemory()) TR::S390zLinuxSystemLinkage(self());
+         linkage = new (comp->trHeapMemory()) TR::S390zLinuxSystemLinkage(self());
          break;
 
       case TR_Private:
@@ -3932,9 +3933,9 @@ OMR::Z::CodeGenerator::createLinkage(TR_LinkageConventions lc)
 
       case TR_System:
          if (self()->comp()->target().isLinux())
-            linkage = new (self()->trHeapMemory()) TR::S390zLinuxSystemLinkage(self());
+            linkage = new (comp->trHeapMemory()) TR::S390zLinuxSystemLinkage(self());
          else
-            linkage = new (self()->trHeapMemory()) TR::S390zOSSystemLinkage(self());
+            linkage = new (comp->trHeapMemory()) TR::S390zOSSystemLinkage(self());
          break;
 
       default :
@@ -4157,6 +4158,7 @@ OMR::Z::CodeGenerator::buildRegisterMapForInstruction(TR_GCStackMap * map)
    {
    // Build the register map
    //
+   TR::Compilation *comp = self()->comp();
    TR_InternalPointerMap * internalPtrMap = NULL;
    TR::GCStackAtlas * atlas = self()->getStackAtlas();
 
@@ -4172,7 +4174,7 @@ OMR::Z::CodeGenerator::buildRegisterMapForInstruction(TR_GCStackMap * map)
                {
                if (!internalPtrMap)
                   {
-                  internalPtrMap = new (self()->trHeapMemory()) TR_InternalPointerMap(self()->trMemory());
+                  internalPtrMap = new (comp->trHeapMemory()) TR_InternalPointerMap(self()->trMemory());
                   }
                internalPtrMap->addInternalPointerPair(virtReg->getPinningArrayPointer(), i);
                atlas->addPinningArrayPtrForInternalPtrReg(virtReg->getPinningArrayPointer());
@@ -5380,10 +5382,11 @@ OMR::Z::CodeGenerator::getLocalF2ISpill()
       }
    else
       {
-      TR::AutomaticSymbol *spillSymbol = TR::AutomaticSymbol::create(self()->trHeapMemory(),TR::Float,4);
+      TR::Compilation *comp = self()->comp();
+      TR::AutomaticSymbol *spillSymbol = TR::AutomaticSymbol::create(comp->trHeapMemory(),TR::Float,4);
       spillSymbol->setSpillTempAuto();
-      self()->comp()->getMethodSymbol()->addAutomatic(spillSymbol);
-      _localF2ISpill = new (self()->trHeapMemory()) TR_BackingStore(self()->comp()->getSymRefTab(), spillSymbol, 0);
+      comp->getMethodSymbol()->addAutomatic(spillSymbol);
+      _localF2ISpill = new (comp->trHeapMemory()) TR_BackingStore(comp->getSymRefTab(), spillSymbol, 0);
       return _localF2ISpill;
       }
    }
@@ -5397,10 +5400,11 @@ OMR::Z::CodeGenerator::getLocalD2LSpill()
       }
    else
       {
-      TR::AutomaticSymbol *spillSymbol = TR::AutomaticSymbol::create(self()->trHeapMemory(),TR::Double,8);
+      TR::Compilation *comp = self()->comp();
+      TR::AutomaticSymbol *spillSymbol = TR::AutomaticSymbol::create(comp->trHeapMemory(),TR::Double,8);
       spillSymbol->setSpillTempAuto();
-      self()->comp()->getMethodSymbol()->addAutomatic(spillSymbol);
-      _localD2LSpill = new (self()->trHeapMemory()) TR_BackingStore(self()->comp()->getSymRefTab(), spillSymbol, 0);
+      comp->getMethodSymbol()->addAutomatic(spillSymbol);
+      _localD2LSpill = new (comp->trHeapMemory()) TR_BackingStore(comp->getSymRefTab(), spillSymbol, 0);
       return _localD2LSpill;
       }
    }

@@ -3118,7 +3118,7 @@ generateS390CompareAndBranchOpsHelper(TR::Node * node, TR::CodeGenerator * cg, T
       TR_S390BinaryCommutativeAnalyser temp(cg);
       TR_ASSERT_FATAL(firstChild->getDataType() == secondChild->getDataType(), "Data type of firstChild (%s) and secondChild (%s) should match for generating compare and branch", firstChild->getDataType().toString(), secondChild->getDataType().toString());
 
-      // On 64-Bit platforms with compressed references it is possible that one (or both) of the children of the 
+      // On 64-Bit platforms with compressed references it is possible that one (or both) of the children of the
       // compare is loading a class from the object (VFT symbol). This symbol is specially treated within the JIT at
       // the moment because it is an `aloadi` which loads a 32-bit value (64-bit compressed references) and zero
       // extends it to a 64-bit address. Unfortunately the generic analyzers used below are unaware of this fact
@@ -3231,7 +3231,7 @@ generateS390CompareBool(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpCode:
    {
    TR::Instruction * cursor = NULL;
 
-   TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 3, cg);
+   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 3, cg);
 
 
    // Create a label
@@ -6444,7 +6444,7 @@ OMR::Z::TreeEvaluator::z990PopCountHelper(TR::Node *node, TR::CodeGenerator *cg,
    cFlowRegionStart->setStartInternalControlFlow();
    generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BRE, node, cFlowRegionEnd);
    TR::RegisterDependencyConditions *regDeps =
-         new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 7, cg);
+         new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 7, cg);
 
    regDeps->addPostCondition(inReg, TR::RealRegister::AssignAny);
    regDeps->addPostCondition(outReg, TR::RealRegister::AssignAny);
@@ -6603,7 +6603,7 @@ inlineHighestOneBit(
    cursor = generateRRInstruction(cg, TR::InstOpCode::LGR, node, retReg, oddReg);
    cursor = generateRRInstruction(cg, TR::InstOpCode::XGR, node, retReg, srcReg);
 
-   TR::RegisterDependencyConditions * flogrDeps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 5, cg);
+   TR::RegisterDependencyConditions * flogrDeps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 5, cg);
    flogrDeps->addPostCondition(srcReg, TR::RealRegister::AssignAny);
 
    // these are required regardless
@@ -8661,16 +8661,16 @@ OMR::Z::TreeEvaluator::arraycmpHelper(TR::Node *node,
          if (isFoldedIf)
             {
             if (deps == NULL)
-               regDeps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, numDeps, cg);
+               regDeps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, numDeps, cg);
             else
-               regDeps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(deps, 0, numDeps, cg);
+               regDeps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(deps, 0, numDeps, cg);
             }
          else
             {
             if (needResultReg)
                {
                numDeps++; // for retValReg
-               regDeps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, numDeps, cg);
+               regDeps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, numDeps, cg);
                regDeps->addPostCondition(retValReg, TR::RealRegister::AssignAny);
                }
             }
@@ -8900,7 +8900,7 @@ OMR::Z::TreeEvaluator::arraycmpHelper(TR::Node *node,
 
       TR::RegisterDependencyConditions *deps = getGLRegDepsDependenciesFromIfNode(cg, ificmpNode);
 
-      TR::RegisterDependencyConditions *branchDeps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(deps, 0,
+      TR::RegisterDependencyConditions *branchDeps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(deps, 0,
                                                                                                                      maxLenIn256 ? 5 : (isWideChar ? (isFoldedIf ? 10 : 11) : 5 + 4),
                                                                                                                      cg);
 
@@ -8964,7 +8964,7 @@ OMR::Z::TreeEvaluator::arraycmpHelper(TR::Node *node,
 
             branchDeps = cg->createDepsForRRMemoryInstructions(node, source1Pair, source2Pair);
 
-            //compareDeps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, isFoldedIf ? 6 : 7, cg);
+            //compareDeps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, isFoldedIf ? 6 : 7, cg);
 
             if(!isFoldedIf && needResultReg)
                {
@@ -9112,7 +9112,7 @@ OMR::Z::TreeEvaluator::arraycmpHelper(TR::Node *node,
 
             if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10) && !comp->getOption(TR_DisableInlineEXTarget))
                {
-               cursor = new (cg->trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::EXRL, node, lengthReg, EXTargetLabel, cg);
+               cursor = new (cg->comp()->trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::EXRL, node, lengthReg, EXTargetLabel, cg);
                }
             else
                {
@@ -9157,7 +9157,7 @@ OMR::Z::TreeEvaluator::arraycmpHelper(TR::Node *node,
          }
 
 
-      TR::RegisterDependencyConditions *regDepsCopy = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(branchDeps, 0, 0, cg);
+      TR::RegisterDependencyConditions *regDepsCopy = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(branchDeps, 0, 0, cg);
 
       generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionEnd, regDepsCopy);
 
@@ -9451,7 +9451,7 @@ OMR::Z::TreeEvaluator::loadaddrEvaluator(TR::Node * node, TR::CodeGenerator * cg
    if (symRef->isUnresolved())
       {
 #ifdef J9_PROJECT_SPECIFIC
-      TR::UnresolvedDataSnippet * uds = new (cg->trHeapMemory()) TR::UnresolvedDataSnippet(cg, node, symRef, false, false);
+      TR::UnresolvedDataSnippet * uds = new (cg->comp()->trHeapMemory()) TR::UnresolvedDataSnippet(cg, node, symRef, false, false);
       cg->addSnippet(uds);
 
       // Generate branch to the unresolved data snippet
@@ -9555,7 +9555,7 @@ OMR::Z::TreeEvaluator::loadaddrEvaluator(TR::Node * node, TR::CodeGenerator * cg
          }
       else if (node->getSymbol()->isLabel() || node->getSymbol()->isMethod())
          {
-         new (cg->trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::LARL, node, targetRegister, symRef->getSymbol(), symRef, cg);
+         new (cg->comp()->trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::LARL, node, targetRegister, symRef->getSymbol(), symRef, cg);
          }
       else
          {
@@ -10022,7 +10022,7 @@ OMR::Z::TreeEvaluator::arraytranslateAndTestEvaluator(TR::Node * node, TR::CodeG
       TR::Register * stopCharReg = cg->gprClobberEvaluate(node->getChild(1));
       TR::Register * endReg = cg->gprClobberEvaluate(node->getChild(2));
 
-      TR::RegisterDependencyConditions * dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 3, cg);
+      TR::RegisterDependencyConditions * dependencies = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(0, 3, cg);
       dependencies->addPostCondition(stopCharReg, TR::RealRegister::GPR0);
       dependencies->addPostCondition(inputReg, TR::RealRegister::AssignAny);
       dependencies->addPostCondition(endReg, TR::RealRegister::AssignAny);
@@ -10127,7 +10127,7 @@ OMR::Z::TreeEvaluator::arraytranslateAndTestEvaluator(TR::Node * node, TR::CodeG
       TR::LabelSymbol * labelEnd = generateLabelSymbol(cg);
       TR::LabelSymbol * boundCheckFailureLabel = generateLabelSymbol(cg);
       TR::LabelSymbol * cFlowRegionEnd = generateLabelSymbol(cg);
-      dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, numRegister, cg);
+      dependencies = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(0, numRegister, cg);
 
       // For chars, scale the index and array/search length by 2 (size of char) to convert into bytes.
       if (elementChar)
@@ -10163,7 +10163,7 @@ OMR::Z::TreeEvaluator::arraytranslateAndTestEvaluator(TR::Node * node, TR::CodeG
          cFlowRegionStart->setStartInternalControlFlow();
          generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BNH, node, labelSkip);
          generateRRInstruction(cg, TR::InstOpCode::getLoadRegOpCode(), node, minReg, lenReg);
-         TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 1, cg);
+         TR::RegisterDependencyConditions *deps = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(0, 1, cg);
          deps->addPostCondition(minReg, TR::RealRegister::AssignAny);
          generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, labelSkip, deps);
          labelSkip->setEndInternalControlFlow();
@@ -10231,7 +10231,7 @@ OMR::Z::TreeEvaluator::arraytranslateAndTestEvaluator(TR::Node * node, TR::CodeG
 
          generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::CLR, node, indexReg, minReg, TR::InstOpCode::COND_BNHR, label256Top);
 
-         TR::RegisterDependencyConditions *loopDeps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 4, cg);
+         TR::RegisterDependencyConditions *loopDeps = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(0, 4, cg);
          loopDeps->addPostCondition(indexReg, TR::RealRegister::AssignAny);
          loopDeps->addPostCondition(minReg, TR::RealRegister::AssignAny);
          loopDeps->addPostCondition(ptrReg, TR::RealRegister::AssignAny);
@@ -10257,7 +10257,7 @@ OMR::Z::TreeEvaluator::arraytranslateAndTestEvaluator(TR::Node * node, TR::CodeG
             generateShiftThenKeepSelected31Bit(node, cg, tmpReg, tmpReg, 20, 27, 4);
 
          // Helper table address is stored in raReg.  Branch to helper to execute TRT and return.
-         TR::MemoryReference * targetMR = new (cg->trHeapMemory()) TR::MemoryReference(raReg, tmpReg, 0, cg);
+         TR::MemoryReference * targetMR = new (comp->trHeapMemory()) TR::MemoryReference(raReg, tmpReg, 0, cg);
          generateRXInstruction(cg, TR::InstOpCode::BAS, node, raReg, targetMR);
 
          cg->stopUsingRegister(raReg);
@@ -10288,7 +10288,7 @@ OMR::Z::TreeEvaluator::arraytranslateAndTestEvaluator(TR::Node * node, TR::CodeG
             {
             generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BZ, node, boundCheckFailureLabel); // not find !!
             }
-         cg->addSnippet(new (cg->trHeapMemory()) TR::S390HelperCallSnippet(cg, node, boundCheckFailureLabel,
+         cg->addSnippet(new (comp->trHeapMemory()) TR::S390HelperCallSnippet(cg, node, boundCheckFailureLabel,
                                                      comp->getSymRefTab()->findOrCreateArrayBoundsCheckSymbolRef(comp->getMethodSymbol())));
          cg->stopUsingRegister(alenReg);
 
@@ -10398,7 +10398,7 @@ OMR::Z::TreeEvaluator::arraytranslateAndTestEvaluator(TR::Node * node, TR::CodeG
             {
             generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BP, node, boundCheckFailureLabel);   // if the searching byte is NOT found
             }
-         cg->addSnippet(new (cg->trHeapMemory()) TR::S390HelperCallSnippet(cg, node, boundCheckFailureLabel,
+         cg->addSnippet(new (comp->trHeapMemory()) TR::S390HelperCallSnippet(cg, node, boundCheckFailureLabel,
                                                      comp->getSymRefTab()->findOrCreateArrayBoundsCheckSymbolRef(comp->getMethodSymbol())));
          cg->stopUsingRegister(alenReg);
 
@@ -10586,7 +10586,7 @@ OMR::Z::TreeEvaluator::arraytranslateEvaluator(TR::Node * node, TR::CodeGenerato
    topOfLoop->setStartInternalControlFlow();
 
 
-   new (cg->trHeapMemory()) TR::S390TranslateInstruction(opCode, node, outputPair, inputReg, tableReg, termCharReg, 0, cg, node->getTermCharNodeIsHint() && (opCode != TR::InstOpCode::TRTO) ? 1 : 0 );
+   new (comp->trHeapMemory()) TR::S390TranslateInstruction(opCode, node, outputPair, inputReg, tableReg, termCharReg, 0, cg, node->getTermCharNodeIsHint() && (opCode != TR::InstOpCode::TRTO) ? 1 : 0 );
 
    generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BO, node, topOfLoop); // repeat if CPU-defined limit hit
    // LL: Only have to do this if not Golden Eagle when termination character is a guess.
@@ -10639,7 +10639,7 @@ OMR::Z::TreeEvaluator::arraytranslateEvaluator(TR::Node * node, TR::CodeGenerato
       }
 
    // Create Dependencies for the TRXX instruction
-   TR::RegisterDependencyConditions * dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 6, cg);
+   TR::RegisterDependencyConditions * dependencies = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(0, 6, cg);
    dependencies->addPostCondition(outputReg, TR::RealRegister::LegalEvenOfPair);
    dependencies->addPostCondition(inputLenReg, TR::RealRegister::LegalOddOfPair);
    dependencies->addPostCondition(outputPair, TR::RealRegister::EvenOddPair);
@@ -11085,10 +11085,10 @@ OMR::Z::TreeEvaluator::arraysetEvaluator(TR::Node * node, TR::CodeGenerator * cg
 
       for (int i=0; i < 8; i++)
          {
-         generateRXInstruction(cg, TR::InstOpCode::STG, node, constExprRegister, new (cg->trHeapMemory()) TR::MemoryReference(baseReg, indexReg, i*8, cg));
+         generateRXInstruction(cg, TR::InstOpCode::STG, node, constExprRegister, new (comp->trHeapMemory()) TR::MemoryReference(baseReg, indexReg, i*8, cg));
          }
       generateRIInstruction(cg, TR::InstOpCode::getAddHalfWordImmOpCode(), node, indexReg, 64);
-      TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 4, cg);
+      TR::RegisterDependencyConditions *deps = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(0, 4, cg);
       deps->addPostCondition(indexReg, TR::RealRegister::AssignAny);
       deps->addPostCondition(baseReg, TR::RealRegister::AssignAny);
       deps->addPostCondition(constExprRegister, TR::RealRegister::AssignAny);
@@ -11102,7 +11102,7 @@ OMR::Z::TreeEvaluator::arraysetEvaluator(TR::Node * node, TR::CodeGenerator * cg
          TR::LabelSymbol * topOfLoop1 = generateLabelSymbol(cg);
          TR::LabelSymbol * endOfLoop1 = generateLabelSymbol(cg);
          TR::Register* residueReg = cg->allocateRegister();
-         dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 6, cg);
+         dependencies = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(0, 6, cg);
          dependencies->addPostCondition(itersReg, TR::RealRegister::AssignAny);
          dependencies->addPostCondition(indexReg, TR::RealRegister::AssignAny);
          dependencies->addPostCondition(elemsRegister, TR::RealRegister::AssignAny);
@@ -11128,7 +11128,7 @@ OMR::Z::TreeEvaluator::arraysetEvaluator(TR::Node * node, TR::CodeGenerator * cg
          generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BE, node, endOfLoop1);
          generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, topOfLoop1);
          topOfLoop1->setStartInternalControlFlow();
-         generateRXInstruction(cg, TR::InstOpCode::STH, node, constExprRegister, new (cg->trHeapMemory()) TR::MemoryReference(baseReg, indexReg, 0, cg));
+         generateRXInstruction(cg, TR::InstOpCode::STH, node, constExprRegister, new (comp->trHeapMemory()) TR::MemoryReference(baseReg, indexReg, 0, cg));
          generateRXInstruction(cg, TR::InstOpCode::LA, node, indexReg, generateS390MemoryReference(indexReg, 2, cg));
          generateS390BranchInstruction(cg, TR::InstOpCode::BRCT, node, residueReg, topOfLoop1);
          generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, endOfLoop1, dependencies);
@@ -11147,7 +11147,7 @@ OMR::Z::TreeEvaluator::arraysetEvaluator(TR::Node * node, TR::CodeGenerator * cg
          int offset = 0;
          for (int i=0; i< iterDwords; i++)
             {
-            generateRXInstruction(cg, TR::InstOpCode::STG, node, constExprRegister, new (cg->trHeapMemory()) TR::MemoryReference(baseReg, indexReg, offset, cg));
+            generateRXInstruction(cg, TR::InstOpCode::STG, node, constExprRegister, new (comp->trHeapMemory()) TR::MemoryReference(baseReg, indexReg, offset, cg));
             offset += 8;
             }
 
@@ -11159,7 +11159,7 @@ OMR::Z::TreeEvaluator::arraysetEvaluator(TR::Node * node, TR::CodeGenerator * cg
 
          for (int i=0; i< iterWords; i++)
             {
-            generateRXInstruction(cg, TR::InstOpCode::ST, node, tmpConstExprRegister, new (cg->trHeapMemory()) TR::MemoryReference(baseReg, indexReg, offset, cg));
+            generateRXInstruction(cg, TR::InstOpCode::ST, node, tmpConstExprRegister, new (comp->trHeapMemory()) TR::MemoryReference(baseReg, indexReg, offset, cg));
             offset += 4;
             }
 
@@ -11167,12 +11167,12 @@ OMR::Z::TreeEvaluator::arraysetEvaluator(TR::Node * node, TR::CodeGenerator * cg
             {
             case 1:
                generateRSInstruction(cg, TR::InstOpCode::SRL, node, tmpConstExprRegister, 24);
-               generateRXInstruction(cg, TR::InstOpCode::STC, node, tmpConstExprRegister, new (cg->trHeapMemory()) TR::MemoryReference(baseReg, indexReg, offset, cg));
+               generateRXInstruction(cg, TR::InstOpCode::STC, node, tmpConstExprRegister, new (comp->trHeapMemory()) TR::MemoryReference(baseReg, indexReg, offset, cg));
                offset++;
                break;
             case 2:
                generateRSInstruction(cg, TR::InstOpCode::SRL, node, tmpConstExprRegister, 16);
-               generateRXInstruction(cg, TR::InstOpCode::STH, node, tmpConstExprRegister, new (cg->trHeapMemory()) TR::MemoryReference(baseReg, indexReg, offset, cg));
+               generateRXInstruction(cg, TR::InstOpCode::STH, node, tmpConstExprRegister, new (comp->trHeapMemory()) TR::MemoryReference(baseReg, indexReg, offset, cg));
                offset += 2;
                break;
             case 3:
@@ -11180,9 +11180,9 @@ OMR::Z::TreeEvaluator::arraysetEvaluator(TR::Node * node, TR::CodeGenerator * cg
                TR::Register *tmpByteConstReg = cg->allocateRegister();
                generateShiftThenKeepSelected31Bit(node, cg, tmpByteConstReg, tmpConstExprRegister, 24, 31, -8);
                generateRSInstruction(cg, TR::InstOpCode::SRL, node, tmpConstExprRegister, 16); //0x0000aabb
-               generateRXInstruction(cg, TR::InstOpCode::STH, node, tmpConstExprRegister, new (cg->trHeapMemory()) TR::MemoryReference(baseReg, indexReg, offset, cg));
+               generateRXInstruction(cg, TR::InstOpCode::STH, node, tmpConstExprRegister, new (comp->trHeapMemory()) TR::MemoryReference(baseReg, indexReg, offset, cg));
                offset += 2;
-               generateRXInstruction(cg, TR::InstOpCode::STC, node, tmpByteConstReg, new (cg->trHeapMemory()) TR::MemoryReference(baseReg, indexReg, offset, cg));
+               generateRXInstruction(cg, TR::InstOpCode::STC, node, tmpByteConstReg, new (comp->trHeapMemory()) TR::MemoryReference(baseReg, indexReg, offset, cg));
                offset++;
                cg->stopUsingRegister(tmpByteConstReg);
                break;
@@ -11196,7 +11196,7 @@ OMR::Z::TreeEvaluator::arraysetEvaluator(TR::Node * node, TR::CodeGenerator * cg
          cg->stopUsingRegister(tmpConstExprRegister);
          /*
          // this code sequence is extremely slow due to 2 bytes MVC copy
-         generateRXInstruction(cg, TR::InstOpCode::STH, node, constExprRegister, new (cg->trHeapMemory()) TR::MemoryReference(baseReg, 0, cg));
+         generateRXInstruction(cg, TR::InstOpCode::STH, node, constExprRegister, new (comp->trHeapMemory()) TR::MemoryReference(baseReg, 0, cg));
          generateSS1Instruction(cg, TR::InstOpCode::MVC, node,
          elems-2,
          generateS390MemoryReference(baseReg, 2, cg),
@@ -11675,7 +11675,7 @@ OMR::Z::TreeEvaluator::primitiveArraycopyEvaluator(TR::Node* node, TR::CodeGener
    cursor = generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, mergeLabel);
    if (!(isConstantByteLen && node->isForwardArrayCopy() && byteLenNode->getConst<int64_t>() <= 256))
       {
-      deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(deps, 0, 3+srm->numAvailableRegisters(), cg);
+      deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(deps, 0, 3+srm->numAvailableRegisters(), cg);
       deps->addPostCondition(byteSrcReg, TR::RealRegister::AssignAny);
       deps->addPostCondition(byteDstReg, TR::RealRegister::AssignAny);
       if (byteLenReg != NULL)
@@ -11993,7 +11993,7 @@ OMR::Z::TreeEvaluator::long2StringEvaluator(TR::Node * node, TR::CodeGenerator *
    TR::Instruction *cursor;
 
    TR::RegisterDependencyConditions * dependencies;
-   dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 5, cg);
+   dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 5, cg);
    dependencies->addPostCondition(inputReg, TR::RealRegister::AssignAny);
    dependencies->addPostCondition(baseReg, TR::RealRegister::GPR2);  // for helper
    dependencies->addPostCondition(workReg, TR::RealRegister::GPR1);  // for helper
@@ -12032,7 +12032,7 @@ OMR::Z::TreeEvaluator::long2StringEvaluator(TR::Node * node, TR::CodeGenerator *
    generateRSInstruction(cg, TR::InstOpCode::SLL, node, countReg, 4);
 
    // call helper (UNPKU)
-   TR::MemoryReference * targetMR = new (cg->trHeapMemory()) TR::MemoryReference(raReg, countReg, 0, cg);
+   TR::MemoryReference * targetMR = new (cg->comp()->trHeapMemory()) TR::MemoryReference(raReg, countReg, 0, cg);
    generateRXInstruction(cg, TR::InstOpCode::BAS, node, raReg, targetMR);
    generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BRC, node, cFlowRegionEnd);
 
@@ -13122,7 +13122,7 @@ void arraycmpWithPadHelper::generateConstCLCSetup()
    //May need two more regDeps for later use: in generateConstCLCRemainder and in generateCLCUnequal
    dependencyCount += 2;
 
-   regDeps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(branchDeps, 0, dependencyCount, cg);
+   regDeps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(branchDeps, 0, dependencyCount, cg);
    if(source1Len != 0 && source1Reg)
       regDeps->addPostCondition(source1Reg, TR::RealRegister::AssignAny);
    if(source2Len != 0 && source2Reg)
@@ -13168,7 +13168,7 @@ void arraycmpWithPadHelper::generateVarCLCSetup()
       paddingPosReg = cg->allocateRegister();
       paddingUnequalRetValReg = cg->allocateRegister();
 
-      TR::RegisterDependencyConditions *regDeps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 6, cg);
+      TR::RegisterDependencyConditions *regDeps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 6, cg);
       regDeps->addPostCondition(source1LenReg, TR::RealRegister::AssignAny);
       regDeps->addPostCondition(source2LenReg, TR::RealRegister::AssignAny);
       regDeps->addPostCondition(source1Reg, TR::RealRegister::AssignAny);
@@ -13231,7 +13231,7 @@ void arraycmpWithPadHelper::generateVarCLCSetup()
    //May need two more regDeps for later use: in generateConstCLCRemainder and in generateCLCUnequal
    int32_t dependencyCount = isEqual ? 6 : 11;
 
-   regDeps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, dependencyCount, cg);
+   regDeps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, dependencyCount, cg);
    regDeps->addPostCondition(source1Reg, TR::RealRegister::AssignAny);
    regDeps->addPostCondition(source2Reg, TR::RealRegister::AssignAny);
    regDeps->addPostCondition(loopCountReg, TR::RealRegister::AssignAny);
@@ -14412,7 +14412,7 @@ OMR::Z::TreeEvaluator::vloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    TR::Register * targetReg = cg->allocateRegister(TR_VRF);
    node->setRegister(targetReg);
 
-   TR::MemoryReference * srcMemRef = new (cg->trHeapMemory()) TR::MemoryReference(node, cg);
+   TR::MemoryReference * srcMemRef = new (cg->comp()->trHeapMemory()) TR::MemoryReference(node, cg);
    breakInst = generateVRXInstruction(cg, TR::InstOpCode::VL, node, targetReg, srcMemRef);
    srcMemRef->stopUsingMemRefRegister(cg);
 
@@ -14471,7 +14471,7 @@ OMR::Z::TreeEvaluator::vstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    TR::Node * valueChild = node->getOpCode().isStoreDirect() ? node->getFirstChild() : node->getSecondChild();
    TR::Register * valueReg = cg->evaluate(valueChild);
 
-   TR::MemoryReference * srcMemRef = new (cg->trHeapMemory()) TR::MemoryReference(node, cg);
+   TR::MemoryReference * srcMemRef = new (cg->comp()->trHeapMemory()) TR::MemoryReference(node, cg);
 
    breakInst = generateVRXInstruction(cg, opcode, node, valueReg, srcMemRef);
 
@@ -14751,7 +14751,7 @@ OMR::Z::TreeEvaluator::arraytranslateDecodeSIMDEvaluator(TR::Node * node, TR::Co
    generateVRSbInstruction(cg, TR::InstOpCode::VSTL, node, vOutput2, inputLenMinus1, generateS390MemoryReference(output, 0, cg), 0);
 
    // Set up the proper register dependencies
-   TR::RegisterDependencyConditions* dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 11, cg);
+   TR::RegisterDependencyConditions* dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 11, cg);
 
    dependencies->addPostCondition(input,      TR::RealRegister::AssignAny);
    dependencies->addPostCondition(inputLen,   TR::RealRegister::AssignAny);
@@ -15076,7 +15076,7 @@ OMR::Z::TreeEvaluator::arraytranslateEncodeSIMDEvaluator(TR::Node * node, TR::Co
    generateRRInstruction (cg, TR::InstOpCode::getAddRegOpCode(), node, translated, inputLen);
 
    // Set up the proper register dependencies
-   TR::RegisterDependencyConditions* dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 11, cg);
+   TR::RegisterDependencyConditions* dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 11, cg);
 
    dependencies->addPostCondition(input,      TR::RealRegister::AssignAny);
    dependencies->addPostCondition(inputLen,   TR::RealRegister::AssignAny);
@@ -15174,7 +15174,7 @@ inlineStringHashCode(TR::Node* node, TR::CodeGenerator* cg, bool isCompressed)
 
    TR::Register* registerEnd = cg->allocateRegister(TR_GPR);
 
-   TR::RegisterDependencyConditions* dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 12, cg);
+   TR::RegisterDependencyConditions* dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 12, cg);
 
    generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
    cFlowRegionStart->setStartInternalControlFlow();
@@ -15509,7 +15509,7 @@ inlineUTF16BEEncodeSIMD(TR::Node *node, TR::CodeGenerator *cg)
    generateRRInstruction(cg, TR::InstOpCode::getAddRegOpCode(), node, translated, inputLen);
 
    // Set up the proper register dependencies
-   TR::RegisterDependencyConditions* dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 9, cg);
+   TR::RegisterDependencyConditions* dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 9, cg);
 
    dependencies->addPostCondition(input,      TR::RealRegister::AssignAny);
    dependencies->addPostCondition(inputLen,   TR::RealRegister::AssignAny);
@@ -15589,7 +15589,7 @@ inlineUTF16BEEncode(TR::Node *node, TR::CodeGenerator *cg)
    const uint32_t surrogateMaskAND = 0xF800F800;
    const uint32_t surrogateMaskXOR = 0xD800D800;
 
-   TR::RegisterDependencyConditions* dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 7, cg);
+   TR::RegisterDependencyConditions* dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 7, cg);
 
    // ----------------- Incoming branch -----------------
 
@@ -15829,7 +15829,7 @@ OMR::Z::TreeEvaluator::arraycmpSIMDHelper(TR::Node *node,
 
 
    int numConditions = 8;
-   TR::RegisterDependencyConditions * dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, numConditions, cg);
+   TR::RegisterDependencyConditions * dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, numConditions, cg);
    dependencies->addPostCondition(firstAddrReg, TR::RealRegister::AssignAny);
    dependencies->addPostCondition(secondAddrReg, TR::RealRegister::AssignAny);
    dependencies->addPostCondition(lastByteIndexReg, TR::RealRegister::AssignAny);
@@ -16228,7 +16228,7 @@ OMR::Z::TreeEvaluator::vDivOrRemHelper(TR::Node *node, TR::CodeGenerator *cg, bo
       TR::Register *dividendVRF = cg->evaluate(dividend);
       TR::Register *divisorVRF = cg->evaluate(divisor);
 
-      TR::RegisterDependencyConditions * dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 4, cg);
+      TR::RegisterDependencyConditions * dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 4, cg);
       dependencies->addPostCondition(dividendGPR, TR::RealRegister::EvenOddPair);
       dependencies->addPostCondition(dividendGPRHigh, TR::RealRegister::LegalEvenOfPair);
       dependencies->addPostCondition(dividendGPRLow, TR::RealRegister::LegalOddOfPair);
@@ -16557,7 +16557,7 @@ OMR::Z::TreeEvaluator::vreturnEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    returnValRegister = cg->evaluate(node->getFirstChild());
 
    TR::RegisterDependencyConditions * dependencies = NULL ;
-   dependencies= new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 1, cg);
+   dependencies= new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 1, cg);
    dependencies->addPostCondition(returnValRegister, linkage->getVectorReturnRegister());
    TR::Instruction * inst = generateS390PseudoInstruction(cg, TR::InstOpCode::RET, node, dependencies);
    cg->stopUsingRegister(returnAddressReg);
@@ -16845,7 +16845,7 @@ OMR::Z::TreeEvaluator::vsetelemEvaluator(TR::Node *node, TR::CodeGenerator *cg)
                   }
                }
 
-            memRef = new (cg->trHeapMemory()) TR::MemoryReference(litReg, offset, cg);
+            memRef = new (cg->comp()->trHeapMemory()) TR::MemoryReference(litReg, offset, cg);
             cg->stopUsingRegister(litReg);
             }
          else
@@ -17000,7 +17000,7 @@ OMR::Z::TreeEvaluator::intrinsicAtomicSwap(TR::Node* node, TR::CodeGenerator* cg
    TR::Register* valueReg = cg->evaluate(valueNode);
    TR::Register* returnReg = cg->allocateRegister();
 
-   TR::RegisterDependencyConditions* dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 3, cg);
+   TR::RegisterDependencyConditions* dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 3, cg);
 
    dependencies->addPostCondition(addressReg, TR::RealRegister::AssignAny);
    dependencies->addPostCondition(valueReg, TR::RealRegister::AssignAny);

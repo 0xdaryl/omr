@@ -189,7 +189,7 @@ class MemToMemMacroOp
             {
             if (_srcReg!=NULL)
                {
-               _srcMR=new (_cg->trHeapMemory()) TR::MemoryReference(_srcReg, offset, _cg);
+               _srcMR=new (_cg->comp()->trHeapMemory()) TR::MemoryReference(_srcReg, offset, _cg);
                }
             else
                {
@@ -208,7 +208,7 @@ class MemToMemMacroOp
             {
             if (_dstReg!=NULL)
                {
-               _dstMR=new (_cg->trHeapMemory()) TR::MemoryReference(_dstReg, offset, _cg);
+               _dstMR=new (_cg->comp()->trHeapMemory()) TR::MemoryReference(_dstReg, offset, _cg);
                }
             else
                {

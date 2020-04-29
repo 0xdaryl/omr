@@ -160,10 +160,10 @@ MemToMemVarLenMacroOp::generateLoop()
    generateS390LabelInstruction(_cg, TR::InstOpCode::LABEL, _rootNode, topOfLoop);
 
    generateInstruction(0, 256);
-   generateRXInstruction(_cg, TR::InstOpCode::LA, _srcNode, _srcReg, new (_cg->trHeapMemory()) TR::MemoryReference(_srcReg, 256, _cg));
+   generateRXInstruction(_cg, TR::InstOpCode::LA, _srcNode, _srcReg, new (comp->trHeapMemory()) TR::MemoryReference(_srcReg, 256, _cg));
    if (_srcReg != _dstReg)
       {
-      generateRXInstruction(_cg, TR::InstOpCode::LA, _dstNode, _dstReg, new (_cg->trHeapMemory()) TR::MemoryReference(_dstReg, 256, _cg));
+      generateRXInstruction(_cg, TR::InstOpCode::LA, _dstNode, _dstReg, new (comp->trHeapMemory()) TR::MemoryReference(_dstReg, 256, _cg));
       }
 
    generateS390BranchInstruction(_cg, TR::InstOpCode::BRCT, _rootNode, _itersReg, topOfLoop);
@@ -273,7 +273,7 @@ MemToMemConstLenMacroOp::generateLoop()
          if (_srcReg == NULL)
             cursor = genSrcLoadAddress(_offset, cursor);
          else
-            cursor = generateRXInstruction(_cg, TR::InstOpCode::LA, _srcNode, _srcReg, new (_cg->trHeapMemory()) TR::MemoryReference(_srcReg, _offset, _cg), cursor);
+            cursor = generateRXInstruction(_cg, TR::InstOpCode::LA, _srcNode, _srcReg, new (comp->trHeapMemory()) TR::MemoryReference(_srcReg, _offset, _cg), cursor);
          _offset = 0;
          }
 
@@ -290,7 +290,7 @@ MemToMemConstLenMacroOp::generateLoop()
             if (_dstReg == NULL)
                cursor = genDstLoadAddress(0, cursor);
             else
-               cursor = generateRXInstruction(_cg, TR::InstOpCode::LA, _dstNode, _dstReg, new (_cg->trHeapMemory()) TR::MemoryReference(_dstReg, 0, _cg), cursor);
+               cursor = generateRXInstruction(_cg, TR::InstOpCode::LA, _dstNode, _dstReg, new (comp->trHeapMemory()) TR::MemoryReference(_dstReg, 0, _cg), cursor);
             }
          }
 
@@ -408,10 +408,10 @@ MemToMemConstLenMacroOp::generateLoop()
    _startControlFlow = cursor = generateS390LabelInstruction(_cg, TR::InstOpCode::LABEL, _rootNode, topOfLoop, cursor);
 
    cursor = generateInstruction(_offset, 256, cursor);
-   cursor = generateRXInstruction(_cg, TR::InstOpCode::LA, _srcNode, _srcReg, new (_cg->trHeapMemory()) TR::MemoryReference(_srcReg, 256, _cg), cursor);
+   cursor = generateRXInstruction(_cg, TR::InstOpCode::LA, _srcNode, _srcReg, new (comp->trHeapMemory()) TR::MemoryReference(_srcReg, 256, _cg), cursor);
    if (_srcReg != _dstReg)
       {
-      cursor = generateRXInstruction(_cg, TR::InstOpCode::LA, _dstNode, _dstReg, new (_cg->trHeapMemory()) TR::MemoryReference(_dstReg, 256, _cg), cursor);
+      cursor = generateRXInstruction(_cg, TR::InstOpCode::LA, _dstNode, _dstReg, new (comp->trHeapMemory()) TR::MemoryReference(_dstReg, 256, _cg), cursor);
       }
 
    cursor = generateS390BranchInstruction(_cg, TR::InstOpCode::BRCT, _rootNode, _itersReg, topOfLoop, cursor);
@@ -458,7 +458,7 @@ MemInitConstLenMacroOp::generateLoop()
 
    if (_dstReg!=NULL)
       {
-      _dstMR=new (_cg->trHeapMemory()) TR::MemoryReference(_dstReg, _offset, _cg);
+      _dstMR=new (comp->trHeapMemory()) TR::MemoryReference(_dstReg, _offset, _cg);
       }
    else
       {
@@ -496,7 +496,7 @@ MemInitConstLenMacroOp::generateLoop()
       // the offset may put the displacement beyond 4K
       if (largeCopies * 256 + _offset >= 4096)
          {
-         cursor = generateRXInstruction(_cg, TR::InstOpCode::LA, _srcNode, _srcReg, new (_cg->trHeapMemory()) TR::MemoryReference(_srcReg, _offset, _cg), cursor);
+         cursor = generateRXInstruction(_cg, TR::InstOpCode::LA, _srcNode, _srcReg, new (comp->trHeapMemory()) TR::MemoryReference(_srcReg, _offset, _cg), cursor);
          _offset = 0;
          }
 
@@ -504,8 +504,8 @@ MemInitConstLenMacroOp::generateLoop()
       while (largeCopies > 0)
          {
          local_offset = _offset + (copies - largeCopies) * 256;
-         cursor = generateSS1Instruction(_cg, TR::InstOpCode::MVC, _rootNode, 255, new (_cg->trHeapMemory()) TR::MemoryReference(_dstReg, local_offset + 1, _cg),
-                     new (_cg->trHeapMemory()) TR::MemoryReference(_srcReg, local_offset, _cg), cursor);
+         cursor = generateSS1Instruction(_cg, TR::InstOpCode::MVC, _rootNode, 255, new (comp->trHeapMemory()) TR::MemoryReference(_dstReg, local_offset + 1, _cg),
+                     new (comp->trHeapMemory()) TR::MemoryReference(_srcReg, local_offset, _cg), cursor);
          --largeCopies;
          }
       len = len - copies * 256;
@@ -532,12 +532,12 @@ MemInitConstLenMacroOp::generateLoop()
 
    _startControlFlow = cursor = generateS390LabelInstruction(_cg, TR::InstOpCode::LABEL, _rootNode, topOfLoop, cursor);
 
-   cursor = generateSS1Instruction(_cg, TR::InstOpCode::MVC, _rootNode, 255, new (_cg->trHeapMemory()) TR::MemoryReference(_dstReg, _offset + 1, _cg),
-               new (_cg->trHeapMemory()) TR::MemoryReference(_srcReg, _offset, _cg), cursor);
-   cursor = generateRXInstruction(_cg, TR::InstOpCode::LA, _srcNode, _srcReg, new (_cg->trHeapMemory()) TR::MemoryReference(_srcReg, 256, _cg), cursor);
+   cursor = generateSS1Instruction(_cg, TR::InstOpCode::MVC, _rootNode, 255, new (comp->trHeapMemory()) TR::MemoryReference(_dstReg, _offset + 1, _cg),
+               new (comp->trHeapMemory()) TR::MemoryReference(_srcReg, _offset, _cg), cursor);
+   cursor = generateRXInstruction(_cg, TR::InstOpCode::LA, _srcNode, _srcReg, new (comp->trHeapMemory()) TR::MemoryReference(_srcReg, 256, _cg), cursor);
    if (_srcReg != _dstReg)
       {
-      cursor = generateRXInstruction(_cg, TR::InstOpCode::LA, _dstNode, _dstReg, new (_cg->trHeapMemory()) TR::MemoryReference(_dstReg, 256, _cg), cursor);
+      cursor = generateRXInstruction(_cg, TR::InstOpCode::LA, _dstNode, _dstReg, new (comp->trHeapMemory()) TR::MemoryReference(_dstReg, 256, _cg), cursor);
       }
 
    cursor = generateS390BranchInstruction(_cg, TR::InstOpCode::BRCT, _rootNode, _itersReg, topOfLoop, cursor);
@@ -965,10 +965,10 @@ MemCmpVarLenMacroOp::generateDependencies()
 TR::Instruction *
 MemToMemVarLenMacroOp::generateRemainder()
    {
+   TR::Compilation* comp = _cg->comp();
+
    if (useEXForRemainder())
       {
-      TR::Compilation* comp = _cg->comp();
-
       TR::Instruction* cursor = NULL;
 
       if (!_cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10) || comp->getOption(TR_DisableInlineEXTarget))
@@ -995,7 +995,7 @@ MemToMemVarLenMacroOp::generateRemainder()
          {
          TR_ASSERT(_EXTargetLabel != NULL, "Assert: EXTarget label must not be NULL");
 
-         _cursor = new (_cg->trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::EXRL, _rootNode, _regLen, _EXTargetLabel, _cg);
+         _cursor = new (comp->trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::EXRL, _rootNode, _regLen, _EXTargetLabel, _cg);
          }
          else
          {
@@ -1018,12 +1018,12 @@ MemToMemVarLenMacroOp::generateRemainder()
    else
       {
       TR::LabelSymbol *remainderDoneLabel = generateLabelSymbol(_cg);
-      if (_cg->comp()->target().is64Bit())
+      if (comp->target().is64Bit())
          generateShiftThenKeepSelected64Bit(_rootNode, _cg, _regLen, _regLen, 52, 59, 4);
       else
          generateShiftThenKeepSelected31Bit(_rootNode, _cg, _regLen, _regLen, 20, 27, 4);
 
-      TR::MemoryReference * targetMR = new (_cg->trHeapMemory()) TR::MemoryReference(_raReg, _regLen, 0, _cg);
+      TR::MemoryReference * targetMR = new (comp->trHeapMemory()) TR::MemoryReference(_raReg, _regLen, 0, _cg);
       generateRXInstruction(_cg, TR::InstOpCode::BAS, _rootNode, _raReg, targetMR);
       _cursor = generateS390LabelInstruction(_cg, TR::InstOpCode::LABEL, _rootNode, remainderDoneLabel);
       }
@@ -1034,6 +1034,7 @@ MemToMemVarLenMacroOp::generateRemainder()
 TR::Instruction *
 MemInitVarLenMacroOp::generateRemainder()
    {
+   TR::Compilation *comp = _cg->comp();
    TR::Instruction * cursor = NULL;
    if(!useEXForRemainder())
       {
@@ -1043,7 +1044,7 @@ MemInitVarLenMacroOp::generateRemainder()
       {
       // can't use generateS390ImmOp as it may generate a temporary register
       // which wouldn't have a dependency
-      if(_cg->comp()->target().is64Bit())
+      if(comp->target().is64Bit())
          {
          generateRILInstruction(_cg, TR::InstOpCode::NILF, _rootNode, _regLen, 0xFF);
          generateRILInstruction(_cg, TR::InstOpCode::NIHF, _rootNode, _regLen, 0);
@@ -1059,17 +1060,17 @@ MemInitVarLenMacroOp::generateRemainder()
       if (!_doneLabel)
          _doneLabel  = generateLabelSymbol(_cg);
 
-      if(_cg->comp()->target().is64Bit())
+      if(comp->target().is64Bit())
          generateS390CompareAndBranchInstruction(_cg, TR::InstOpCode::CG, _rootNode, _regLen, (int32_t)0, TR::InstOpCode::COND_BNH, _doneLabel, false, false);
       else
          generateS390CompareAndBranchInstruction(_cg, TR::InstOpCode::C, _rootNode, _regLen, (int32_t)0, TR::InstOpCode::COND_BNH, _doneLabel, false, false);
 
       if (_firstByteInitialized)
-         generateRIInstruction(_cg, _cg->comp()->target().is64Bit() ? TR::InstOpCode::AGHI : TR::InstOpCode::AHI, _rootNode, _regLen, -1);
+         generateRIInstruction(_cg, comp->target().is64Bit() ? TR::InstOpCode::AGHI : TR::InstOpCode::AHI, _rootNode, _regLen, -1);
 
       TR::Instruction * MVCInstr = generateSS1Instruction(_cg, TR::InstOpCode::MVC, _rootNode, 0,
-               new (_cg->trHeapMemory()) TR::MemoryReference(_dstReg, 1, _cg),
-               new (_cg->trHeapMemory()) TR::MemoryReference(_srcReg, 0, _cg));
+               new (comp->trHeapMemory()) TR::MemoryReference(_dstReg, 1, _cg),
+               new (comp->trHeapMemory()) TR::MemoryReference(_srcReg, 0, _cg));
 
       if (_raReg == NULL)
          {
@@ -1087,7 +1088,7 @@ MemInitVarLenMacroOp::generateRemainder()
       {
       //Need to compensate the length as the first byte has been set in generateLoop
       //and check if there is a remainder.
-      generateRIInstruction(_cg, _cg->comp()->target().is64Bit() ? TR::InstOpCode::AGHI : TR::InstOpCode::AHI, _rootNode, _regLen, -1);
+      generateRIInstruction(_cg, comp->target().is64Bit() ? TR::InstOpCode::AGHI : TR::InstOpCode::AHI, _rootNode, _regLen, -1);
 
       if (!_doneLabel)
          _doneLabel  = generateLabelSymbol(_cg);
@@ -1095,8 +1096,8 @@ MemInitVarLenMacroOp::generateRemainder()
       generateS390BranchInstruction(_cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BNH, _rootNode, _doneLabel);
 
       cursor = generateSS1Instruction(_cg, TR::InstOpCode::MVC, _rootNode, 0,
-               new (_cg->trHeapMemory()) TR::MemoryReference(_dstReg, 1, _cg),
-               new (_cg->trHeapMemory()) TR::MemoryReference(_srcReg, 0, _cg));
+               new (comp->trHeapMemory()) TR::MemoryReference(_dstReg, 1, _cg),
+               new (comp->trHeapMemory()) TR::MemoryReference(_srcReg, 0, _cg));
 
       if (_litPoolReg == NULL)
          {
@@ -1143,8 +1144,8 @@ MemClearVarLenMacroOp::generateRemainder()
      _litReg=litMemRef->getBaseRegister();
 
    TR::Instruction * XCInstr = generateSS1Instruction(_cg, TR::InstOpCode::XC, _rootNode, 0,
-         new (_cg->trHeapMemory()) TR::MemoryReference(_dstReg, 0, _cg),
-         new (_cg->trHeapMemory()) TR::MemoryReference(_srcReg, 0, _cg));
+         new (comp->trHeapMemory()) TR::MemoryReference(_dstReg, 0, _cg),
+         new (comp->trHeapMemory()) TR::MemoryReference(_srcReg, 0, _cg));
 
    if (_raReg == NULL)
       {
@@ -1180,7 +1181,7 @@ MemInitConstLenMacroOp::generateInstruction(int32_t offset, int64_t length, TR::
       }
    else if (_srcReg!=NULL)
       {
-      _srcMR=new (_cg->trHeapMemory()) TR::MemoryReference(_srcReg, offset, _cg);
+      _srcMR=new (comp->trHeapMemory()) TR::MemoryReference(_srcReg, offset, _cg);
       }
    else
       {
@@ -1220,7 +1221,7 @@ MemClearConstLenMacroOp::generateInstruction(int32_t offset, int64_t length, TR:
       {
       if (_srcReg != NULL)
          {
-         srcMR = new (_cg->trHeapMemory()) TR::MemoryReference(_srcReg, offset, _cg);
+         srcMR = new (comp->trHeapMemory()) TR::MemoryReference(_srcReg, offset, _cg);
          }
       else
          {
@@ -1270,7 +1271,7 @@ MemClearConstLenMacroOp::generateInstruction(int32_t offset, int64_t length, TR:
       }
    else if (_dstReg != NULL)
       {
-      dstMR = new (_cg->trHeapMemory()) TR::MemoryReference(_dstReg, offset, _cg);
+      dstMR = new (comp->trHeapMemory()) TR::MemoryReference(_dstReg, offset, _cg);
       }
    else if (dstMR == NULL)
       {
@@ -1302,7 +1303,7 @@ MemToMemConstLenMacroOp::generateInstruction(int32_t offset, int64_t length, TR:
    if (srcMR == NULL)
       {
       if (_srcReg!=NULL)
-         srcMR=new (_cg->trHeapMemory()) TR::MemoryReference(_srcReg, offset, _cg);
+         srcMR=new (comp->trHeapMemory()) TR::MemoryReference(_srcReg, offset, _cg);
       else
          srcMR= generateS390MemoryReference(_cg, _rootNode, _srcNode , offset, true);
       _srcMR = srcMR;
@@ -1315,7 +1316,7 @@ MemToMemConstLenMacroOp::generateInstruction(int32_t offset, int64_t length, TR:
    if (dstMR == NULL)
       {
       if (_dstReg!=NULL)
-         dstMR=new (_cg->trHeapMemory()) TR::MemoryReference(_dstReg, offset, _cg);
+         dstMR=new (comp->trHeapMemory()) TR::MemoryReference(_dstReg, offset, _cg);
       else
          dstMR= generateS390MemoryReference(_cg, _rootNode, _dstNode, offset, true);
       _dstMR = dstMR;
@@ -1342,7 +1343,7 @@ MemCmpConstLenMacroOp::generateInstruction(int32_t offset, int64_t length, TR::I
 
    if (_srcReg!=NULL)
       {
-      srcMR=new (_cg->trHeapMemory()) TR::MemoryReference(_srcReg, offset, _cg);
+      srcMR=new (comp->trHeapMemory()) TR::MemoryReference(_srcReg, offset, _cg);
       }
    else
       {
@@ -1351,7 +1352,7 @@ MemCmpConstLenMacroOp::generateInstruction(int32_t offset, int64_t length, TR::I
 
    if (_dstReg!=NULL)
       {
-      dstMR=new (_cg->trHeapMemory()) TR::MemoryReference(_dstReg, offset, _cg);
+      dstMR=new (comp->trHeapMemory()) TR::MemoryReference(_dstReg, offset, _cg);
       }
    else
       {
@@ -1382,9 +1383,9 @@ MemInitVarLenMacroOp::generateInstruction(int32_t offset, int64_t length)
    if (!_firstByteInitialized)
       {
       if (_useByteVal)
-         cursor = generateSIInstruction(_cg, TR::InstOpCode::MVI, _rootNode, new (_cg->trHeapMemory()) TR::MemoryReference(_dstReg, offset, _cg), _byteVal);
+         cursor = generateSIInstruction(_cg, TR::InstOpCode::MVI, _rootNode, new (comp->trHeapMemory()) TR::MemoryReference(_dstReg, offset, _cg), _byteVal);
       else
-         cursor = generateRXInstruction(_cg, TR::InstOpCode::STC, _rootNode, _initReg, new (_cg->trHeapMemory()) TR::MemoryReference(_dstReg, offset, _cg));
+         cursor = generateRXInstruction(_cg, TR::InstOpCode::STC, _rootNode, _initReg, new (comp->trHeapMemory()) TR::MemoryReference(_dstReg, offset, _cg));
 
      _firstByteInitialized=true;
     length--;
@@ -1392,8 +1393,8 @@ MemInitVarLenMacroOp::generateInstruction(int32_t offset, int64_t length)
 
    if (length > 0)
       {
-      cursor = generateSS1Instruction(_cg, TR::InstOpCode::MVC, _rootNode, length - 1, new (_cg->trHeapMemory()) TR::MemoryReference(_dstReg, 1 + offset, _cg),
-                  new (_cg->trHeapMemory()) TR::MemoryReference(_srcReg, offset, _cg), cursor);
+      cursor = generateSS1Instruction(_cg, TR::InstOpCode::MVC, _rootNode, length - 1, new (comp->trHeapMemory()) TR::MemoryReference(_dstReg, 1 + offset, _cg),
+                  new (comp->trHeapMemory()) TR::MemoryReference(_srcReg, offset, _cg), cursor);
       }
 
    return cursor;
@@ -1409,7 +1410,7 @@ MemClearVarLenMacroOp::generateInstruction(int32_t offset, int64_t length)
 
    if (_srcReg != NULL)
       {
-      srcMR = new (_cg->trHeapMemory()) TR::MemoryReference(_srcReg, offset, _cg);
+      srcMR = new (comp->trHeapMemory()) TR::MemoryReference(_srcReg, offset, _cg);
       }
    else
       {
@@ -1421,7 +1422,7 @@ MemClearVarLenMacroOp::generateInstruction(int32_t offset, int64_t length)
       }
    else if (_dstReg != NULL)
       {
-      dstMR = new (_cg->trHeapMemory()) TR::MemoryReference(_dstReg, offset, _cg);
+      dstMR = new (comp->trHeapMemory()) TR::MemoryReference(_dstReg, offset, _cg);
       }
    else
       {
@@ -1812,7 +1813,7 @@ MemToMemTypedVarLenMacroOp::generateLoop()
       generateInstruction();
 
       if (_srcReg != _startReg)
-         generateRXInstruction(_cg, TR::InstOpCode::LA, _srcNode, _srcReg, new (_cg->trHeapMemory()) TR::MemoryReference(_srcReg, strideSize(), _cg));
+         generateRXInstruction(_cg, TR::InstOpCode::LA, _srcNode, _srcReg, new (_cg->comp()->trHeapMemory()) TR::MemoryReference(_srcReg, strideSize(), _cg));
 
       generateS390BranchInstruction(_cg, TR::InstOpCode::getBranchRelIndexEqOrLowOpCode(), _dstNode, _bxhReg, _endReg, topOfLoop);
       }
@@ -1844,7 +1845,7 @@ MemToMemTypedVarLenMacroOp::generateLoop()
 
       if (_srcReg != _startReg)
          {
-         generateRXInstruction(_cg, TR::InstOpCode::LAY, _srcNode, _srcReg, new (_cg->trHeapMemory()) TR::MemoryReference(_srcReg, -1 * strideSize(), _cg));
+         generateRXInstruction(_cg, TR::InstOpCode::LAY, _srcNode, _srcReg, new (_cg->comp()->trHeapMemory()) TR::MemoryReference(_srcReg, -1 * strideSize(), _cg));
          }
 
       // _dstReg is decremented as part of BRXH
@@ -1929,7 +1930,7 @@ void
 MemInitVarLenTypedMacroOp::createLoopDependencies(TR::Instruction * cursor)
    {
    int32_t core = numCoreDependencies();
-   TR::RegisterDependencyConditions * loopDep = new (_cg->trHeapMemory()) TR::RegisterDependencyConditions(core, core + 1, _cg);
+   TR::RegisterDependencyConditions * loopDep = new (_cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(core, core + 1, _cg);
    loopDep->addPostCondition(_initReg, TR::RealRegister::AssignAny);
 
    addCoreDependencies(loopDep);
@@ -2021,7 +2022,7 @@ void
 MemCpyVarLenTypedMacroOp::createLoopDependencies(TR::Instruction * cursor)
    {
    int32_t core = numCoreDependencies();
-   TR::RegisterDependencyConditions * loopDep = new (_cg->trHeapMemory()) TR::RegisterDependencyConditions(core, core + 1, _cg);
+   TR::RegisterDependencyConditions * loopDep = new (_cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(core, core + 1, _cg);
    loopDep->addPostCondition(_workReg, TR::RealRegister::AssignAny);
 
    addCoreDependencies(loopDep);
@@ -2118,15 +2119,15 @@ TR::Instruction * MemCpyAtomicMacroOp::generateSTXLoop(int32_t strideSize, TR::I
       {
       if (!_isForward)
          {
-         cursor = generateRXInstruction(_cg, TR::InstOpCode::LA, _srcNode, _srcReg, new (_cg->trHeapMemory()) TR::MemoryReference(_srcReg, -1 * _unrollFactor * strideSize, _cg));
+         cursor = generateRXInstruction(_cg, TR::InstOpCode::LA, _srcNode, _srcReg, new (comp->trHeapMemory()) TR::MemoryReference(_srcReg, -1 * _unrollFactor * strideSize, _cg));
          }
       else
          {
-         cursor = generateRXInstruction(_cg, TR::InstOpCode::LA, _srcNode, _srcReg, new (_cg->trHeapMemory()) TR::MemoryReference(_srcReg, _unrollFactor * strideSize, _cg));
+         cursor = generateRXInstruction(_cg, TR::InstOpCode::LA, _srcNode, _srcReg, new (comp->trHeapMemory()) TR::MemoryReference(_srcReg, _unrollFactor * strideSize, _cg));
          }
       }
 
-   cursor = generateRXInstruction(_cg, TR::InstOpCode::LA, _lenNode, _lenReg, new (_cg->trHeapMemory()) TR::MemoryReference(_lenReg, -1 * _unrollFactor * strideSize, _cg));
+   cursor = generateRXInstruction(_cg, TR::InstOpCode::LA, _lenNode, _lenReg, new (comp->trHeapMemory()) TR::MemoryReference(_lenReg, -1 * _unrollFactor * strideSize, _cg));
 
    if (!_isForward)
       {
@@ -2159,7 +2160,7 @@ MemCpyAtomicMacroOp::generateSTXLoopLabel(TR::LabelSymbol * oolStartLabel, TR::L
       traceMsg(comp, "MemCpyAtomicMacroOp: generateSTXLoopLabel\n");
    TR::Instruction * cursor;
 
-   TR_S390OutOfLineCodeSection *oolPath = new (_cg->trHeapMemory()) TR_S390OutOfLineCodeSection(oolStartLabel, doneCopyLabel, _cg);
+   TR_S390OutOfLineCodeSection *oolPath = new (comp->trHeapMemory()) TR_S390OutOfLineCodeSection(oolStartLabel, doneCopyLabel, _cg);
    _cg->getS390OutOfLineCodeSectionList().push_front(oolPath);
    oolPath->swapInstructionListsWithCompilation();
 
@@ -2185,7 +2186,7 @@ MemCpyAtomicMacroOp::generateOneSTXthenSTYLoopLabel(TR::LabelSymbol * oolStartLa
       traceMsg(comp, "MemCpyAtomicMacroOp: generateOneSTXthenSTYLoopLabel\n");
    TR::Instruction * cursor;
 
-   TR_S390OutOfLineCodeSection *oolPath = new (_cg->trHeapMemory()) TR_S390OutOfLineCodeSection(oolStartLabel, doneCopyLabel, _cg);
+   TR_S390OutOfLineCodeSection *oolPath = new (comp->trHeapMemory()) TR_S390OutOfLineCodeSection(oolStartLabel, doneCopyLabel, _cg);
    _cg->getS390OutOfLineCodeSectionList().push_front(oolPath);
    oolPath->swapInstructionListsWithCompilation();
 
@@ -2229,15 +2230,15 @@ MemCpyAtomicMacroOp::generateOneSTXthenSTYLoopLabel(TR::LabelSymbol * oolStartLa
       {
       if (false && !_isForward)
          {
-         cursor = generateRXInstruction(_cg, TR::InstOpCode::LA, _srcNode, _srcReg, new (_cg->trHeapMemory()) TR::MemoryReference(_srcReg, -1 * strideSize1, _cg));
+         cursor = generateRXInstruction(_cg, TR::InstOpCode::LA, _srcNode, _srcReg, new (comp->trHeapMemory()) TR::MemoryReference(_srcReg, -1 * strideSize1, _cg));
          }
       else
          {
-         cursor = generateRXInstruction(_cg, TR::InstOpCode::LA, _srcNode, _srcReg, new (_cg->trHeapMemory()) TR::MemoryReference(_srcReg, strideSize1, _cg));
+         cursor = generateRXInstruction(_cg, TR::InstOpCode::LA, _srcNode, _srcReg, new (comp->trHeapMemory()) TR::MemoryReference(_srcReg, strideSize1, _cg));
          }
       }
 
-   cursor = generateRXInstruction(_cg, TR::InstOpCode::LA, _lenNode, _lenReg, new (_cg->trHeapMemory()) TR::MemoryReference(_lenReg, -1 * strideSize1, _cg));
+   cursor = generateRXInstruction(_cg, TR::InstOpCode::LA, _lenNode, _lenReg, new (comp->trHeapMemory()) TR::MemoryReference(_lenReg, -1 * strideSize1, _cg));
 
    // Update _endReg by strideSize1
    if (false && !_isForward)
@@ -2676,7 +2677,7 @@ void MemCpyAtomicMacroOp::createLoopDependencies(TR::Instruction * cursor)
 
    int32_t core = numCoreDependencies();
 
-   loopDep = new (_cg->trHeapMemory()) TR::RegisterDependencyConditions(core, core + 2 + _unrollFactor, _cg);
+   loopDep = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(core, core + 2 + _unrollFactor, _cg);
 
    loopDep->addPostCondition(_workReg, TR::RealRegister::AssignAny);
    loopDep->addPostCondition(_alignedReg, TR::RealRegister::AssignAny);

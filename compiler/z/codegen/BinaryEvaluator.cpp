@@ -83,7 +83,7 @@ TR::RegisterPair * lnegFor32Bit(TR::Node * node, TR::CodeGenerator * cg, TR::Reg
    //
    if (!dep)
       {
-      localDeps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 1, cg);
+      localDeps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 1, cg);
       localDeps->addPostCondition(targetRegisterPair->getHighOrder(), TR::RealRegister::AssignAny);
       }
    else
@@ -126,7 +126,7 @@ TR::RegisterPair * lnegFor128Bit(TR::Node * node, TR::CodeGenerator * cg, TR::Re
    //
    if (!dep)
       {
-      localDeps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 1, cg);
+      localDeps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 1, cg);
       localDeps->addPostCondition(targetRegisterPair->getHighOrder(), TR::RealRegister::AssignAny);
       }
    else
@@ -204,7 +204,7 @@ laddConst(TR::Node * node, TR::CodeGenerator * cg, TR::RegisterPair * targetRegi
          // On other hardware, we use highOrder
          //
          TR::Register * tempReg = cg->allocateRegister();
-         dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg);
+         dependencies = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg);
          dependencies->addPostCondition(tempReg, TR::RealRegister::AssignAny);
          dependencies->addPostCondition(highOrder, TR::RealRegister::AssignAny);
 
@@ -394,7 +394,7 @@ laddHelper64(TR::Node * node, TR::CodeGenerator * cg)
       if (skipAdd)
          {
          TR::RegisterDependencyConditions *conditions;
-         conditions = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg);
+         conditions = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg);
 
          conditions->addPostCondition(targetRegister, TR::RealRegister::AssignAny);
          conditions->addPostCondition(secondRegister, TR::RealRegister::AssignAny);
@@ -421,7 +421,7 @@ laddHelper64(TR::Node * node, TR::CodeGenerator * cg)
 
       if (hasCompressedPointers && skipAdd)
          {
-         TR::RegisterDependencyConditions *conditions = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 1, cg);
+         TR::RegisterDependencyConditions *conditions = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(0, 1, cg);
          conditions->addPostCondition(targetRegister, TR::RealRegister::AssignAny);
          generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, skipAdd, conditions);
          }
@@ -765,7 +765,7 @@ lDivRemGenericEvaluator64(TR::Node * node, TR::CodeGenerator * cg, bool isDivisi
             // Do complements on reg
             generateRRInstruction(cg, TR::InstOpCode::LCGR, node, firstRegister, firstRegister);
 
-            TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 1, cg);
+            TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 1, cg);
             deps->addPostCondition(firstRegister, TR::RealRegister::AssignAny);
             generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionEnd, deps);
             cFlowRegionEnd->setEndInternalControlFlow();
@@ -812,7 +812,7 @@ lDivRemGenericEvaluator64(TR::Node * node, TR::CodeGenerator * cg, bool isDivisi
                generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::CG, node, firstRegister, 0,TR::InstOpCode::COND_BNL, skipSet);
 
                //adjustment to dividend if dividend is negative
-               TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg);
+               TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg);
                deps->addPostCondition(firstRegister, TR::RealRegister::AssignAny);
                generateS390ImmOp(cg, TR::InstOpCode::AG, node, firstRegister, firstRegister, absValueOfDenominator-1, deps);
                generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, skipSet, deps);
@@ -902,7 +902,7 @@ lDivRemGenericEvaluator64(TR::Node * node, TR::CodeGenerator * cg, bool isDivisi
 
    // Setup dependency for reg pairs
    TR::RegisterPair * targetRegisterPair = cg->allocateConsecutiveRegisterPair(quoRegister, remRegister);
-   TR::RegisterDependencyConditions * dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, numPostConditions, cg);
+   TR::RegisterDependencyConditions * dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, numPostConditions, cg);
    dependencies->addPostCondition(targetRegisterPair, TR::RealRegister::EvenOddPair);
    dependencies->addPostCondition(remRegister, TR::RealRegister::LegalEvenOfPair);
    dependencies->addPostCondition(quoRegister, TR::RealRegister::LegalOddOfPair);
@@ -1103,7 +1103,7 @@ iDivRemGenericEvaluator(TR::Node * node, TR::CodeGenerator * cg, bool isDivision
    // Setup dependency for reg pairs
    TR::RegisterPair * targetRegisterPair = cg->allocateConsecutiveRegisterPair(quoRegister, remRegister);
 
-   TR::RegisterDependencyConditions * dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, sourceMR ? 6 : 4, cg);
+   TR::RegisterDependencyConditions * dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, sourceMR ? 6 : 4, cg);
    dependencies->addPostCondition(targetRegisterPair, TR::RealRegister::EvenOddPair);
    dependencies->addPostCondition(remRegister, TR::RealRegister::LegalEvenOfPair);
    dependencies->addPostCondition(quoRegister, TR::RealRegister::LegalOddOfPair);
@@ -1894,7 +1894,7 @@ OMR::Z::TreeEvaluator::tryToReplaceShiftLandWithRotateInstruction(TR::Node * nod
             //    half and bottom half of the register), then it's better to use RISBG.
             //    This is because there are no NI** instructions allowing us to specify bits in
             //    the top half and bottom half of the register to zero out.
-               
+
             if (firstChild->getReferenceCount() > 1 || lZeros > 31 || tZeros > 31
                 || (lZeros > 0 && tZeros > 0))
                {
@@ -1977,7 +1977,7 @@ OMR::Z::TreeEvaluator::tryToReplaceShiftLandWithRotateInstruction(TR::Node * nod
                   }
                }
             else if (shiftAmount > 0)
-               {                  
+               {
                rangeEnd = lsBit - shiftAmount;
                if (msBit - shiftAmount < 0)
                   {
@@ -2087,7 +2087,7 @@ lsubHelper64(TR::Node * node, TR::CodeGenerator * cg)
 
       if (skipAdd)
          {
-         TR::RegisterDependencyConditions *conditions = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg);
+         TR::RegisterDependencyConditions *conditions = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg);
          conditions->addPostCondition(targetRegister, TR::RealRegister::AssignAny);
          conditions->addPostCondition(secondRegister, TR::RealRegister::AssignAny);
          generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, skipAdd, conditions);
@@ -2109,7 +2109,7 @@ lsubHelper64(TR::Node * node, TR::CodeGenerator * cg)
 
       if (hasCompressedPointers && skipAdd)
          {
-         TR::RegisterDependencyConditions *conditions = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 1, cg);
+         TR::RegisterDependencyConditions *conditions = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 1, cg);
          conditions->addPostCondition(targetRegister, TR::RealRegister::AssignAny);
          generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, skipAdd, conditions);
          }
@@ -2136,7 +2136,7 @@ lsubHelper64(TR::Node * node, TR::CodeGenerator * cg)
 
       if (hasCompressedPointers && skipAdd)
          {
-         TR::RegisterDependencyConditions *conditions = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 1, cg);
+         TR::RegisterDependencyConditions *conditions = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 1, cg);
          conditions->addPostCondition(targetRegister, TR::RealRegister::AssignAny);
          generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, skipAdd, conditions);
          }
@@ -2188,7 +2188,7 @@ OMR::Z::TreeEvaluator::dualMulHelper64(TR::Node * node, TR::Node * lmulNode, TR:
    TR::Register * lumulhTargetRegister = cg->allocateRegister();
    TR::RegisterPair * trgtRegPair = cg->allocateConsecutiveRegisterPair(lmulTargetRegister, lumulhTargetRegister);
 
-   TR::RegisterDependencyConditions * dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 3, cg);
+   TR::RegisterDependencyConditions * dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 3, cg);
    dependencies->addPostCondition(trgtRegPair, TR::RealRegister::EvenOddPair);
    dependencies->addPostCondition(trgtRegPair->getHighOrder(), TR::RealRegister::LegalEvenOfPair);
    dependencies->addPostCondition(trgtRegPair->getLowOrder(), TR::RealRegister::LegalOddOfPair);
@@ -2475,7 +2475,7 @@ OMR::Z::TreeEvaluator::lmulhEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    TR::Compilation *comp = cg->comp();
 
    TR::RegisterDependencyConditions * dependencies =
-      new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 4, cg);
+      new (comp->trHeapMemory()) TR::RegisterDependencyConditions(0, 4, cg);
    TR::RegisterPair * targetRegisterPair = cg->allocateConsecutiveRegisterPair(sourceRegister, targetRegister);
 
    dependencies->addPostCondition(targetRegisterPair, TR::RealRegister::EvenOddPair);
@@ -2551,7 +2551,7 @@ OMR::Z::TreeEvaluator::mulhEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    TR::Register * targetRegister = cg->allocateRegister();
    TR::Instruction * cursor = NULL;
 
-   TR::RegisterDependencyConditions * dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 3, cg);
+   TR::RegisterDependencyConditions * dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 3, cg);
 
    TR::RegisterPair * targetRegisterPair = cg->allocateConsecutiveRegisterPair(firstRegister, targetRegister);
    dependencies->addPostCondition(targetRegisterPair, TR::RealRegister::EvenOddPair);
@@ -2783,7 +2783,7 @@ OMR::Z::TreeEvaluator::idivEvaluator(TR::Node * node, TR::CodeGenerator * cg)
          generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BNE, node, doDiv);
 
          TR::RegisterDependencyConditions * dependencies
-           = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 1, cg);
+           = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 1, cg);
          dependencies->addPostCondition(targetRegister, TR::RealRegister::AssignAny);
          generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BRC, node, skipDiv);
 
@@ -2806,7 +2806,7 @@ OMR::Z::TreeEvaluator::idivEvaluator(TR::Node * node, TR::CodeGenerator * cg)
          if (!firstChild->isNonNegative() && !node->getOpCode().isUnsigned())
             {
             TR::RegisterDependencyConditions * dependencies
-               = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg);
+               = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg);
             dependencies->addPostCondition(targetRegister, TR::RealRegister::AssignAny);
 
             // load and test

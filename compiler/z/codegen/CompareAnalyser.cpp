@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -218,7 +218,7 @@ TR_S390CompareAnalyser::longOrderedCompareAndBranchAnalyser(TR::Node * root, TR:
          }
       else
          {
-         deps = new (_cg->trHeapMemory()) TR::RegisterDependencyConditions(0, numAdditionalRegDeps, _cg);
+         deps = new (_cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, numAdditionalRegDeps, _cg);
          }
 
       if (firstHighZero == false)
@@ -334,7 +334,7 @@ TR_S390CompareAnalyser::longOrderedCompareAndBranchAnalyser(TR::Node * root, TR:
          }
       else
          {
-         deps = new (_cg->trHeapMemory()) TR::RegisterDependencyConditions(0, numAdditionalRegDeps, _cg);
+         deps = new (_cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, numAdditionalRegDeps, _cg);
          }
       if (highMR != NULL)
          deps->addAssignAnyPostCondOnMemRef(highMR);
@@ -452,7 +452,7 @@ TR_S390CompareAnalyser::longOrderedCompareAndBranchAnalyser(TR::Node * root, TR:
          }
       else
          {
-         deps = new (_cg->trHeapMemory()) TR::RegisterDependencyConditions(0, numAdditionalRegDeps, _cg);
+         deps = new (_cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, numAdditionalRegDeps, _cg);
          }
 
       if (highMR != NULL)

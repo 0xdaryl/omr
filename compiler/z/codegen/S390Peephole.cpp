@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 IBM Corp. and others
+ * Copyright (c) 2018, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -561,7 +561,7 @@ TR_S390PostRAPeephole::ICMReduction()
          }
 
       // Do the reduction - create the icm instruction
-      TR::S390RSInstruction* icm = new (_cg->trHeapMemory()) TR::S390RSInstruction(TR::InstOpCode::ICM, load->getNode(), load->getRegisterOperand(1), 0xF, memcp, prev, _cg);
+      TR::S390RSInstruction* icm = new (comp()->trHeapMemory()) TR::S390RSInstruction(TR::InstOpCode::ICM, load->getNode(), load->getRegisterOperand(1), 0xF, memcp, prev, _cg);
       _cursor = icm;
 
       // Check if the load has an implicit NULLCHK.  If so, we need to ensure a GCmap is copied.
@@ -2145,13 +2145,13 @@ TR_S390PostRAPeephole::revertTo32BitShift()
 
       if (instr->getSourceImmediate())
          {
-         newInstr = new (_cg->trHeapMemory()) TR::S390RSInstruction(newOpCode, instr->getNode(), instr->getRegisterOperand(1), instr->getSourceImmediate(), instr->getPrev(), _cg);
+         newInstr = new (comp()->trHeapMemory()) TR::S390RSInstruction(newOpCode, instr->getNode(), instr->getRegisterOperand(1), instr->getSourceImmediate(), instr->getPrev(), _cg);
          }
       else if (instr->getMemoryReference())
          {
          TR::MemoryReference* memRef = instr->getMemoryReference();
          memRef->resetMemRefUsedBefore();
-         newInstr = new (_cg->trHeapMemory()) TR::S390RSInstruction(newOpCode, instr->getNode(), instr->getRegisterOperand(1), memRef, instr->getPrev(), _cg);
+         newInstr = new (comp()->trHeapMemory()) TR::S390RSInstruction(newOpCode, instr->getNode(), instr->getRegisterOperand(1), memRef, instr->getPrev(), _cg);
          }
       else
          {
@@ -2230,7 +2230,7 @@ TR_S390PostRAPeephole::inlineEXtargetHelper(TR::Instruction *inst, TR::Instructi
       cnstDataInstr->setPrev(labelInstr);
 
       // generate EXRL
-      TR::S390RILInstruction * newEXRLInst = new (_cg->trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::EXRL, _cursor->getNode(), _cursor->getRegisterOperand(1), ssInstrLabel, _cursor->getPrev(), _cg);
+      TR::S390RILInstruction * newEXRLInst = new (comp()->trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::EXRL, _cursor->getNode(), _cursor->getRegisterOperand(1), ssInstrLabel, _cursor->getPrev(), _cg);
 
       // Replace the EX with EXRL
       TR::Instruction * oldCursor = _cursor;

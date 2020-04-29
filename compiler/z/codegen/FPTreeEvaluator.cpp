@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -900,7 +900,7 @@ OMR::Z::TreeEvaluator::floatRemHelper(TR::Node * node, TR::CodeGenerator * cg)
       }
 
    // Putting call-out part in the OOL as we only need to call helper when result is not exact which is very rare.
-   TR_S390OutOfLineCodeSection *outlinedSlowPath = new (cg->trHeapMemory()) TR_S390OutOfLineCodeSection(labelNotExact,labelOK,cg);
+   TR_S390OutOfLineCodeSection *outlinedSlowPath = new (cg->comp()->trHeapMemory()) TR_S390OutOfLineCodeSection(labelNotExact,labelOK,cg);
    cg->getS390OutOfLineCodeSectionList().push_front(outlinedSlowPath);
    outlinedSlowPath->swapInstructionListsWithCompilation();
 
@@ -994,7 +994,7 @@ FPtoIntBitsTypeCoercionHelper(TR::Node * node, TR::CodeGenerator * cg)
 
     if (node->normalizeNanValues())
        {
-       TR::RegisterDependencyConditions * deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 3, cg);
+       TR::RegisterDependencyConditions * deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 3, cg);
 
        TR::Register * targetFPR = cg->allocateRegister(TR_FPR);
        deps->addPostCondition(targetFPR, TR::RealRegister::AssignAny);
@@ -1318,7 +1318,7 @@ f2lHelper64(TR::Node * node, TR::CodeGenerator * cg)
    generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
    cFlowRegionStart->setStartInternalControlFlow();
    generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BO, node, cFlowRegionEnd);
-   dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg);
+   dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg);
    dependencies->addPostCondition(targetRegister, TR::RealRegister::AssignAny);
    dependencies->addPostCondition(floatRegister, TR::RealRegister::AssignAny);
 
@@ -1391,7 +1391,7 @@ d2lHelper64(TR::Node * node, TR::CodeGenerator * cg)
       generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
       cFlowRegionStart->setStartInternalControlFlow();
       generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BNZ, node, label1);
-      dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg);
+      dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg);
       dependencies->addPostCondition(targetRegister, TR::RealRegister::AssignAny);
       dependencies->addPostCondition(floatRegister, TR::RealRegister::AssignAny);
       }

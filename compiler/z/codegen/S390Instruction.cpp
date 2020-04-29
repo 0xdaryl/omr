@@ -87,7 +87,7 @@ TR::S390RSInstruction::generateAdditionalSourceRegisters(TR::Register * fReg, TR
       {
       TR::Machine *machine = cg()->machine();
       int8_t numRegsToAdd = lastRegNum - firstRegNum - 1;
-      // _additionalRegisters = new (cg()->trHeapMemory(),TR_MemoryBase::Array) TR_Array<TR::Register *>(cg()->trMemory(), numRegsToAdd, false);
+      // _additionalRegisters = new (cg()->comp()->trHeapMemory(),TR_MemoryBase::Array) TR_Array<TR::Register *>(cg()->trMemory(), numRegsToAdd, false);
       int8_t curReg = firstRegNum+1;
       for (int8_t i=0; i < numRegsToAdd; i++)
          {
@@ -311,7 +311,7 @@ TR::S390LabelInstruction::generateBinaryEncoding()
    if (getOpCode().getOpCodeValue() == TR::InstOpCode::DC)
       {
       AOTcgDiag1(comp, "add TR_AbsoluteMethodAddress cursor=%x\n", cursor);
-      cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelAbsoluteRelocation(cursor, label));
+      cg()->addRelocation(new (comp->trHeapMemory()) TR::LabelAbsoluteRelocation(cursor, label));
       cg()->addProjectSpecializedRelocation(cursor, NULL, NULL, TR_AbsoluteMethodAddress,
                              __FILE__, __LINE__, getNode());
 
@@ -429,21 +429,21 @@ TR::S390LabelInstruction::generateBinaryEncoding()
          uint8_t *curBeforeNOPs = cursor;
          if(offset<=250)
             {
-            instr = new (cg()->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 6, getNode(), prevInstr, cg());
+            instr = new (comp->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 6, getNode(), prevInstr, cg());
             if (doUseLabelTargetNOPs && traceLabelTargetNOPs)
                traceMsg(comp,"\tgen 6 byte NOP at offset %lld\n",offset);
             instr->setEstimatedBinaryLength(6);
             }
          else if(offset<=252)
             {
-            instr = new (cg()->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 4, getNode(), prevInstr, cg());
+            instr = new (comp->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 4, getNode(), prevInstr, cg());
             if (doUseLabelTargetNOPs && traceLabelTargetNOPs)
                traceMsg(comp,"\tgen 4 byte NOP at offset %lld\n",offset);
             instr->setEstimatedBinaryLength(4);
             }
          else if(offset<=254)
             {
-            instr = new (cg()->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 2, getNode(), prevInstr, cg());
+            instr = new (comp->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 2, getNode(), prevInstr, cg());
             if (doUseLabelTargetNOPs && traceLabelTargetNOPs)
                traceMsg(comp,"\tgen 2 byte NOP at offset %lld\n",offset);
             instr->setEstimatedBinaryLength(2);
@@ -800,16 +800,16 @@ TR::S390BranchInstruction::generateBinaryEncoding()
       {
       if (shortRelocation)
          {
-         cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative16BitRelocation(relocationPoint, label));
+         cg()->addRelocation(new (comp->trHeapMemory()) TR::LabelRelative16BitRelocation(relocationPoint, label));
          }
       else if (longRelocation)
          {
-         cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative32BitRelocation(relocationPoint, label));
+         cg()->addRelocation(new (comp->trHeapMemory()) TR::LabelRelative32BitRelocation(relocationPoint, label));
          }
       else
          {
          AOTcgDiag1(comp, "add TR_AbsoluteMethodAddress cursor=%x\n", cursor);
-         cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelAbsoluteRelocation(relocationPoint, label));
+         cg()->addRelocation(new (comp->trHeapMemory()) TR::LabelAbsoluteRelocation(relocationPoint, label));
          cg()->addProjectSpecializedRelocation(relocationPoint, NULL, NULL, TR_AbsoluteMethodAddress,
                                 __FILE__, __LINE__, getNode());
 
@@ -904,7 +904,7 @@ TR::S390BranchOnCountInstruction::generateBinaryEncoding()
       toRealRegister(getRegisterOperand(1))->setRegisterField((uint32_t *) instructionStart);
       if (doRelocation)
          {
-         cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative32BitRelocation(relocationPoint, label));
+         cg()->addRelocation(new (comp->trHeapMemory()) TR::LabelRelative32BitRelocation(relocationPoint, label));
          }
       }
    else
@@ -923,12 +923,12 @@ TR::S390BranchOnCountInstruction::generateBinaryEncoding()
          {
          TR_ASSERT(((binOpCode & 0xFF0F) == 0xA706), "Only TR::InstOpCode::BRCT is handled here\n");
 
-         TR::LabelSymbol *relLabel = TR::LabelSymbol::createRelativeLabel(cg()->trHeapMemory(),
+         TR::LabelSymbol *relLabel = TR::LabelSymbol::createRelativeLabel(comp->trHeapMemory(),
                                                                         cg(),
                                                                         +4);
          setLabelSymbol(relLabel);
 
-         relLabel = TR::LabelSymbol::createRelativeLabel(cg()->trHeapMemory(),
+         relLabel = TR::LabelSymbol::createRelativeLabel(comp->trHeapMemory(),
                                                         cg(),
                                                         +5);
 
@@ -944,12 +944,12 @@ TR::S390BranchOnCountInstruction::generateBinaryEncoding()
          {
          if (shortRelocation)
             {
-            cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative16BitRelocation(relocationPoint, label));
+            cg()->addRelocation(new (comp->trHeapMemory()) TR::LabelRelative16BitRelocation(relocationPoint, label));
             }
          else
             {
             AOTcgDiag1(comp, "add TR_AbsoluteMethodAddress cursor=%x\n", relocationPoint);
-            cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelAbsoluteRelocation(relocationPoint, label));
+            cg()->addRelocation(new (comp->trHeapMemory()) TR::LabelAbsoluteRelocation(relocationPoint, label));
             cg()->addProjectSpecializedRelocation(relocationPoint, NULL, NULL, TR_AbsoluteMethodAddress,
                                    __FILE__, __LINE__, getNode());
             }
@@ -1060,13 +1060,13 @@ TR::S390BranchOnIndexInstruction::generateBinaryEncoding()
       {
       if (shortRelocation)
          {
-         cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative16BitRelocation(relocationPoint, label));
+         cg()->addRelocation(new (cg()->comp()->trHeapMemory()) TR::LabelRelative16BitRelocation(relocationPoint, label));
          }
       else
          {
          AOTcgDiag1(cg()->comp(), "add TR_AbsoluteMethodAddress cursor=%x\n", relocationPoint);
 
-         cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelAbsoluteRelocation(relocationPoint, label));
+         cg()->addRelocation(new (cg()->comp()->trHeapMemory()) TR::LabelAbsoluteRelocation(relocationPoint, label));
          cg()->addProjectSpecializedRelocation(relocationPoint, NULL, NULL, TR_AbsoluteMethodAddress,
                                 __FILE__, __LINE__, getNode());
          }
@@ -1254,7 +1254,7 @@ TR::S390DebugCounterBumpInstruction::generateBinaryEncoding()
 
    *(int16_t *) cursor  = bos(0xC408);                                                    // LGRL Rscrtch, counterRelocation
    scratchReg->setRegisterField((uint32_t *)cursor);                                      //
-   cg()->addRelocation(new (cg()->trHeapMemory())                                         //
+   cg()->addRelocation(new (comp->trHeapMemory())                                         //
       TR::LabelRelative32BitRelocation(cursor, getCounterSnippet()->getSnippetLabel()));   //
    cursor += 6;                                                                           //
 
@@ -1326,7 +1326,7 @@ TR::S390ImmInstruction::generateBinaryEncoding()
       //
       void **locationToPatch = (void**)(cursor - (comp->target().is64Bit()?4:0));
       cg()->jitAddPicToPatchOnClassRedefinition(*locationToPatch, locationToPatch);
-      cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation((uint8_t *)locationToPatch, (uint8_t *)*locationToPatch, TR_HCR, cg()), __FILE__,__LINE__, getNode());
+      cg()->addExternalRelocation(new (comp->trHeapMemory()) TR::ExternalRelocation((uint8_t *)locationToPatch, (uint8_t *)*locationToPatch, TR_HCR, cg()), __FILE__,__LINE__, getNode());
       }
 
    cursor += getOpCode().getInstructionLength();
@@ -1990,7 +1990,7 @@ TR::S390RILInstruction::generateBinaryEncoding()
       //
       getOpCode().copyBinaryToBuffer(instructionStart);
       toRealRegister(getRegisterOperand(1))->setRegister1Field((uint32_t *) cursor);
-      cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative32BitRelocation(cursor, getTargetSnippet()->getSnippetLabel()));
+      cg()->addRelocation(new (comp->trHeapMemory()) TR::LabelRelative32BitRelocation(cursor, getTargetSnippet()->getSnippetLabel()));
       cursor += getOpCode().getInstructionLength();
       }
    else if (getTargetSnippet() &&
@@ -2000,7 +2000,7 @@ TR::S390RILInstruction::generateBinaryEncoding()
       //
       getOpCode().copyBinaryToBuffer(instructionStart);
       toRealRegister(getRegisterOperand(1))->setRegister1Field((uint32_t *) cursor);
-      cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative32BitRelocation(cursor, getTargetSnippet()->getSnippetLabel()));
+      cg()->addRelocation(new (comp->trHeapMemory()) TR::LabelRelative32BitRelocation(cursor, getTargetSnippet()->getSnippetLabel()));
       cursor += getOpCode().getInstructionLength();
       }
    else if (getOpCode().getOpCodeValue() == TR::InstOpCode::LRL   ||
@@ -2191,11 +2191,11 @@ TR::S390RILInstruction::generateBinaryEncoding()
 
       if (getTargetSnippet() != NULL)
          {
-         cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative32BitRelocation(cursor, getTargetSnippet()->getSnippetLabel()));
+         cg()->addRelocation(new (comp->trHeapMemory()) TR::LabelRelative32BitRelocation(cursor, getTargetSnippet()->getSnippetLabel()));
          }
       else if (getTargetLabel() != NULL)
          {
-         cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative32BitRelocation(cursor, getTargetLabel()));
+         cg()->addRelocation(new (comp->trHeapMemory()) TR::LabelRelative32BitRelocation(cursor, getTargetLabel()));
          }
 
       cursor += getOpCode().getInstructionLength();
@@ -2243,13 +2243,13 @@ TR::S390RILInstruction::generateBinaryEncoding()
       toRealRegister(getRegisterOperand(1))->setRegister1Field((uint32_t *) cursor);
       if (getTargetLabel() != NULL)
          {
-         cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative32BitRelocation(cursor, getTargetLabel()));
+         cg()->addRelocation(new (comp->trHeapMemory()) TR::LabelRelative32BitRelocation(cursor, getTargetLabel()));
          }
       else
          {
          if (getTargetSnippet() != NULL)
             {
-            cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative32BitRelocation(cursor, getTargetSnippet()->getSnippetLabel()));
+            cg()->addRelocation(new (comp->trHeapMemory()) TR::LabelRelative32BitRelocation(cursor, getTargetSnippet()->getSnippetLabel()));
             }
          else
             {
@@ -2330,7 +2330,7 @@ TR::S390RILInstruction::generateBinaryEncoding()
       if (getTargetSnippet() != NULL)
          {
          // delegate to targetSnippet Label to patch the imm. operand
-         cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative32BitRelocation(cursor, getTargetSnippet()->getSnippetLabel()));
+         cg()->addRelocation(new (comp->trHeapMemory()) TR::LabelRelative32BitRelocation(cursor, getTargetSnippet()->getSnippetLabel()));
          }
       else
          {
@@ -2392,7 +2392,7 @@ TR::S390RILInstruction::generateBinaryEncoding()
       // delegate to targetSnippet Label to patch the imm. operand
       if (getTargetSnippet() != NULL)
          {
-         cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative32BitRelocation(cursor, getTargetSnippet()->getSnippetLabel()));
+         cg()->addRelocation(new (comp->trHeapMemory()) TR::LabelRelative32BitRelocation(cursor, getTargetSnippet()->getSnippetLabel()));
          }
       else
          {
@@ -2772,7 +2772,7 @@ TR::S390RIEInstruction::generateBinaryEncoding()
          {
          if (doRelocation)
             {
-            cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative16BitRelocation(cursor, label));
+            cg()->addRelocation(new (cg()->comp()->trHeapMemory()) TR::LabelRelative16BitRelocation(cursor, label));
             }
          else
             {
@@ -2878,7 +2878,7 @@ TR::S390RIEInstruction::generateBinaryEncoding()
 
          if (doRelocation)
             {
-            cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative32BitRelocation(cursor, label));
+            cg()->addRelocation(new (cg()->comp()->trHeapMemory()) TR::LabelRelative32BitRelocation(cursor, label));
             }
          else
             {
@@ -5246,7 +5246,8 @@ TR::S390AlignmentNopInstruction::estimateBinaryLength(int32_t currentEstimate)
 uint8_t*
 TR::S390AlignmentNopInstruction::generateBinaryEncoding()
    {
-   bool trace = cg()->comp()->getOption(TR_TraceCG);
+   TR::Compilation *comp = cg()->comp();
+   bool trace = comp->getOption(TR_TraceCG);
    uint32_t currentMisalign = reinterpret_cast<uintptr_t>(cg()->getBinaryBufferCursor()) % _alignment;
 
    if (currentMisalign != 0)
@@ -5254,41 +5255,41 @@ TR::S390AlignmentNopInstruction::generateBinaryEncoding()
       uint32_t nopsOfLength6ToAdd = (_alignment - currentMisalign) / 6;
       uint32_t nopsOfLength4ToAdd = ((_alignment - currentMisalign) % 6) / 4;
       uint32_t nopsOfLength2ToAdd = (((_alignment - currentMisalign) % 6) % 4) / 2;
-      
+
       if (trace)
-         traceMsg(cg()->comp(), "Expanding alignment nop %p into %u instructions: [ ", self(), nopsOfLength6ToAdd + nopsOfLength4ToAdd + nopsOfLength2ToAdd);
+         traceMsg(comp, "Expanding alignment nop %p into %u instructions: [ ", self(), nopsOfLength6ToAdd + nopsOfLength4ToAdd + nopsOfLength2ToAdd);
 
       for (uint32_t i = 0; i < nopsOfLength2ToAdd; ++i)
          {
-         TR::Instruction *nop = new (cg()->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 2, getNode(), self(), cg());
+         TR::Instruction *nop = new (comp->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 2, getNode(), self(), cg());
 
          if (trace)
-            traceMsg(cg()->comp(), "%p ", nop);
+            traceMsg(comp, "%p ", nop);
          }
 
       for (uint32_t i = 0; i < nopsOfLength4ToAdd; ++i)
          {
-         TR::Instruction *nop = new (cg()->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 4, getNode(), self(), cg());
+         TR::Instruction *nop = new (comp->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 4, getNode(), self(), cg());
 
          if (trace)
-            traceMsg(cg()->comp(), "%p ", nop);
+            traceMsg(comp, "%p ", nop);
          }
-      
+
       for (uint32_t i = 0; i < nopsOfLength6ToAdd; ++i)
          {
-         TR::Instruction *nop = new (cg()->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 6, getNode(), self(), cg());
+         TR::Instruction *nop = new (comp->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 6, getNode(), self(), cg());
 
          if (trace)
-            traceMsg(cg()->comp(), "%p ", nop);
+            traceMsg(comp, "%p ", nop);
          }
 
       if (trace)
-         traceMsg(cg()->comp(), "]\n");
+         traceMsg(comp, "]\n");
       }
    else
       {
       if (trace)
-         traceMsg(cg()->comp(), "Eliminating alignment nop %p, since the next instruction is already aligned\n", self());
+         traceMsg(comp, "Eliminating alignment nop %p, since the next instruction is already aligned\n", self());
       }
 
    cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - currentMisalign);
@@ -5354,7 +5355,7 @@ TR::S390MIIInstruction::generateBinaryEncoding()
 
       //add relocation 12-24 bits
       //TODO: later add TR::12BitInstructionRelativeRelocation
-      cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative12BitRelocation(cursor, getLabelSymbol(),false));
+      cg()->addRelocation(new (cg()->comp()->trHeapMemory()) TR::LabelRelative12BitRelocation(cursor, getLabelSymbol(),false));
 
       // add the comparison mask for the instruction to the buffer.
       *(int16_t *) cursor |= ((uint16_t)getMask() << 12);
@@ -5452,7 +5453,7 @@ TR::S390SMIInstruction::generateBinaryEncoding()
       cursor += 2;
       // add relocation
       //TODO: later add TR::16BitInstructionRelativeRelocation
-      cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative16BitRelocation(cursor, getLabelSymbol(), 4, true));
+      cg()->addRelocation(new (cg()->comp()->trHeapMemory()) TR::LabelRelative16BitRelocation(cursor, getLabelSymbol(), 4, true));
 
       // advance the cursor past the immediate.
       cursor += 2;
@@ -5505,7 +5506,7 @@ TR::S390VirtualGuardNOPInstruction::generateBinaryEncoding()
       setBinaryEncoding(cursor);
       if (label->getCodeLocation() == NULL)
          {
-         cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelAbsoluteRelocation((uint8_t *) (&_site->getDestination()), label));
+         cg()->addRelocation(new (comp->trHeapMemory()) TR::LabelAbsoluteRelocation((uint8_t *) (&_site->getDestination()), label));
          }
       else
          {
@@ -5542,7 +5543,7 @@ TR::S390VirtualGuardNOPInstruction::generateBinaryEncoding()
       //bool brcRangeExceeded = (distance<MIN_IMMEDIATE_VAL || distance>MAX_IMMEDIATE_VAL);
 
       AOTcgDiag1(comp, "add TR_AbsoluteMethodAddress cursor=%x\n", (uint8_t *) (&_site->getDestination()));
-      cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelAbsoluteRelocation((uint8_t *) (&_site->getDestination()), label));
+      cg()->addRelocation(new (comp->trHeapMemory()) TR::LabelAbsoluteRelocation((uint8_t *) (&_site->getDestination()), label));
 
       doRelocation = true;
 #ifdef DEBUG
@@ -5702,12 +5703,12 @@ TR::S390VirtualGuardNOPInstruction::generateBinaryEncoding()
       {
       if (shortRelocation)
          {
-         cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative16BitRelocation(relocationPoint, label));
+         cg()->addRelocation(new (comp->trHeapMemory()) TR::LabelRelative16BitRelocation(relocationPoint, label));
          }
       else
          {
          TR_ASSERT( longRelocation, "how did I get here??\n");
-         cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative32BitRelocation(relocationPoint, label));
+         cg()->addRelocation(new (comp->trHeapMemory()) TR::LabelRelative32BitRelocation(relocationPoint, label));
          }
       }
 

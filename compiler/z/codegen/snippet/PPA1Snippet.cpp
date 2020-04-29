@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -51,7 +51,7 @@ TR::PPA1Snippet::emitSnippetBody()
    *reinterpret_cast<uint16_t*>(cursor) = _linkage->getGPRSaveMask();
    cursor += sizeof(uint16_t);
 
-   cg()->addRelocation(new (cg()->trHeapMemory()) PPA1OffsetToPPA2Relocation(cursor, _linkage->getPPA2Snippet()->getSnippetLabel()));
+   cg()->addRelocation(new (cg()->comp()->trHeapMemory()) PPA1OffsetToPPA2Relocation(cursor, _linkage->getPPA2Snippet()->getSnippetLabel()));
 
    // Signed offset to PPA2 from start of PPA1
    *reinterpret_cast<int32_t*>(cursor) = 0x00000000;
@@ -85,7 +85,7 @@ TR::PPA1Snippet::emitSnippetBody()
    // Flags 4
    *reinterpret_cast<uint8_t*>(cursor) = flags4;
    cursor += sizeof(uint8_t);
-      
+
    // Length/4 of parameters
    *reinterpret_cast<uint16_t*>(cursor) = _linkage->getIncomingParameterBlockSize() / 4;
    cursor += sizeof(uint16_t);
@@ -105,11 +105,11 @@ TR::PPA1Snippet::emitSnippetBody()
       {
       prologueEnd = prologueEnd->getNext();
       }
-      
+
    size_t prologueSize = prologueEnd->getBinaryEncoding() - prologueBegin->getBinaryEncoding();
 
    TR_ASSERT_FATAL(prologueSize <= 510, "XPLink prologue size (%d) is > 510 bytes", prologueSize);
-      
+
    // Length/2 of prologue
    *reinterpret_cast<uint8_t*>(cursor) = prologueSize / 2;
    cursor += sizeof(uint8_t);
@@ -123,11 +123,11 @@ TR::PPA1Snippet::emitSnippetBody()
 
    // We must encode this value in 4 bits as the most significant 4 bits are used for alloca register
    TR_ASSERT_FATAL(offsetToStackPointerUpdate <= 30, "Offset to stack pointer update from the entry point (%d) is > 30 bytes", offsetToStackPointerUpdate);
-      
+
    // Alloca register and offset/2 to stack pointer update
    *reinterpret_cast<uint8_t*>(cursor) = offsetToStackPointerUpdate / 2;
    cursor += sizeof(uint8_t);
-      
+
    // Length of code section
    *reinterpret_cast<uint32_t*>(cursor) = cg()->getAppendInstruction()->getBinaryEncoding() - cg()->getFirstInstruction()->getBinaryEncoding();
    cursor += sizeof(uint32_t);

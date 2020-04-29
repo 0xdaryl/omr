@@ -265,7 +265,7 @@ void TR::S390zOSSystemLinkage::createPrologue(TR::Instruction* cursor)
    cursor = generateDataConstantInstruction(cg, TR::InstOpCode::DC, node, 0x00C500F1, cursor);
    cursor = generateDataConstantInstruction(cg, TR::InstOpCode::DC, node, 0x00000000, cursor);
 
-   cg->addRelocation(new (cg->trHeapMemory()) InstructionLabelRelative32BitRelocation(cursor, -8, _ppa1Snippet->getSnippetLabel(), 1));
+   cg->addRelocation(new (comp()->trHeapMemory()) InstructionLabelRelative32BitRelocation(cursor, -8, _ppa1Snippet->getSnippetLabel(), 1));
 
    // DSA size is the frame size aligned to 32-bytes which means it's least significant 5 bits are zero and are used to
    // represent the flags which are always 0 for OMR as we do not support leaf frames or direct calls to alloca()
@@ -329,7 +329,7 @@ TR::S390zOSSystemLinkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSym
                {
                lri = numFPRArgs;
                }
-            
+
             // On 64-bit XPLINK floating point arguments leave "holes" in the GPR linkage registers, but not vice versa
             numGPRArgs++;
             numFPRArgs++;
@@ -352,7 +352,7 @@ TR::S390zOSSystemLinkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSym
                {
                lri = numVRFArgs;
                }
-            
+
             // On 64-bit XPLINK floating point arguments leave "holes" in the GPR linkage registers, but not vice versa
             numGPRArgs++;
             numVRFArgs++;
@@ -550,7 +550,7 @@ TR::S390zOSSystemLinkage::generateInstructionsForCall(TR::Node * callNode, TR::R
     //             a) disp is an offset in the environment (aka ADA) containing the
     //                function descriptor body (i.e. not pointer to function descriptor)
     TR_XPLinkCallTypes callType;
-    
+
     TR::Register* aeReg = deps->searchPostConditionRegister(getENVPointerRegister());
     TR::Register* epReg = deps->searchPostConditionRegister(getEntryPointRegister());
     TR::Register* raReg = deps->searchPostConditionRegister(getReturnAddressRegister());
@@ -575,7 +575,7 @@ TR::S390zOSSystemLinkage::generateInstructionsForCall(TR::Node * callNode, TR::R
           {
           // No need to load the environment or the entry point for recursive calls because these values are not used
           // within OMR compiled methods
-          TR::Instruction* callInstr = new (cg()->trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::BRASL, callNode, raReg, callSymbol, callSymRef, cg());
+          TR::Instruction* callInstr = new (comp()->trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::BRASL, callNode, raReg, callSymbol, callSymRef, cg());
           callInstr->setDependencyConditions(preDeps);
           }
        else
@@ -591,7 +591,7 @@ TR::S390zOSSystemLinkage::generateInstructionsForCall(TR::Node * callNode, TR::R
           genLoadAddressConstant(cg(), callNode, reinterpret_cast<uintptr_t>(fd), epReg);
           generateRSInstruction(cg(), TR::InstOpCode::getLoadMultipleOpCode(), callNode, aeReg, epReg, generateS390MemoryReference(epReg, 0, cg()));
 
-          TR::Instruction* callInstr = new (cg()->trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::BRASL, callNode, raReg, fd->func, callSymRef, cg());
+          TR::Instruction* callInstr = new (comp()->trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::BRASL, callNode, raReg, fd->func, callSymRef, cg());
           callInstr->setDependencyConditions(preDeps);
           }
 
@@ -636,15 +636,15 @@ TR::S390zOSSystemLinkage::genCallNOPAndDescriptor(TR::Instruction* cursor, TR::N
    if (comp()->target().is32Bit())
       {
       // The XPLINK Call Descriptor is created only on 31-bit targets when:
-      // 
+      //
       // 1. The call site is so far removed from the Entry Point Marker of the function that its offset cannot be contained
       // in the space available in the call NOP descriptor following the call site.
-      // 
+      //
       // 2. The call contains a return value or parameters that are passed in registers or in ways incompatible with non-
       // XPLINK code.
-      // 
+      //
       // The XPLINK Call Descriptor has the following format:
-      // 
+      //
       //                                        0x01                               0x02                               0x03
       // 0x00 +----------------------------------+----------------------------------+----------------------------------+----------------------------------+
       //      | Signed offset, in bytes, to Entry Point Marker (if it exists)                                                                             |
@@ -662,7 +662,7 @@ TR::S390zOSSystemLinkage::genCallNOPAndDescriptor(TR::Instruction* cursor, TR::N
       uint32_t nopDescriptor = 0x47000000 | (static_cast<uint32_t>(callType) << 16);
       cursor = generateDataConstantInstruction(cg(), TR::InstOpCode::DC, node, nopDescriptor, cursor);
 
-      cg()->addRelocation(new (cg()->trHeapMemory()) XPLINKCallDescriptorRelocation(cursor, xplinkCallDescriptorBeginLabel));
+      cg()->addRelocation(new (comp()->trHeapMemory()) XPLINKCallDescriptorRelocation(cursor, xplinkCallDescriptorBeginLabel));
 
       cursor = generateS390BranchInstruction(cg(), InstOpCode::BRC, InstOpCode::COND_BRC, node, xplinkCallDescriptorEndLabel, cursor);
       cursor = generateAlignmentNopInstruction(cg(), node, 8, cursor);
@@ -678,7 +678,7 @@ TR::S390zOSSystemLinkage::genCallNOPAndDescriptor(TR::Instruction* cursor, TR::N
       // TODO: Once we support generic TR::InstOpCode::DC of any size we need to modify this line to use it, similarly
       // to what we do above for the 31-bit case.
       uint16_t nopDescriptor = 0x1800 | static_cast<uint16_t>(callType);
-      cursor = new (cg()->trHeapMemory()) TR::S390Imm2Instruction(TR::InstOpCode::DC2, node, nopDescriptor, cursor, cg());
+      cursor = new (comp()->trHeapMemory()) TR::S390Imm2Instruction(TR::InstOpCode::DC2, node, nopDescriptor, cursor, cg());
       }
 
    return cursor;

@@ -107,7 +107,7 @@ OMR::Z::Instruction::setDependencyConditionsNoBookKeeping(TR::RegisterDependency
   // If register dependency conditions exist, merge with the argument conditions
   if( _conditions )
      {
-  TR::RegisterDependencyConditions * n = new (self()->cg()->trHeapMemory()) TR::RegisterDependencyConditions( _conditions, cond, self()->cg() );
+     TR::RegisterDependencyConditions * n = new (self()->cg()->comp()->trHeapMemory()) TR::RegisterDependencyConditions( _conditions, cond, self()->cg() );
      _conditions = 0;
      cond = n;
      }
@@ -128,7 +128,7 @@ OMR::Z::Instruction::setDependencyConditions(TR::RegisterDependencyConditions *c
      oldPreAddCursor  = _conditions->getAddCursorForPre();
      oldPostAddCursor = _conditions->getAddCursorForPost();
 
-     TR::RegisterDependencyConditions * n = new (self()->cg()->trHeapMemory()) TR::RegisterDependencyConditions( _conditions, cond, self()->cg() );
+     TR::RegisterDependencyConditions * n = new (self()->cg()->comp()->trHeapMemory()) TR::RegisterDependencyConditions( _conditions, cond, self()->cg() );
      _conditions = 0;
      cond = n;
      }
@@ -752,7 +752,7 @@ OMR::Z::Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
          {
          outOfLineEXInstr->resetDependencyConditions();
          TR::RegisterDependencyConditions * exDeps = (self())->getDependencyConditions();
-         TR::RegisterDependencyConditions * newDeps = new (self()->cg()->trHeapMemory()) TR::RegisterDependencyConditions(deps, exDeps, self()->cg());
+         TR::RegisterDependencyConditions * newDeps = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(deps, exDeps, self()->cg());
          (self())->setDependencyConditionsNoBookKeeping(newDeps);
          }
 

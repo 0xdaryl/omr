@@ -730,7 +730,7 @@ OMR::Z::MemoryReference::MemoryReference(TR::Node *addressChild, bool canUseInde
       {
       _baseRegister = cg->evaluate(addressChild);
       }
-   _symbolReference = new (cg->trHeapMemory()) TR::SymbolReference(cg->comp()->getSymRefTab());
+   _symbolReference = new (cg->comp()->trHeapMemory()) TR::SymbolReference(cg->comp()->getSymRefTab());
    _originalSymbolReference = _symbolReference;
    _listingSymbolReference = _symbolReference;
    self()->setupCausesImplicitNullPointerException(cg);
@@ -818,7 +818,7 @@ OMR::Z::MemoryReference::MemoryReference(TR::Snippet * s, TR::Register * indx, i
     _offset(disp), _flags(0), _storageReference(NULL), _fixedSizeForAlignment(0), _leftMostByte(0), _name(NULL),
     _incrementedNodesList(cg->comp()->trMemory())
    {
-   _symbolReference = new (cg->trHeapMemory()) TR::SymbolReference(cg->comp()->getSymRefTab());
+   _symbolReference = new (cg->comp()->trHeapMemory()) TR::SymbolReference(cg->comp()->getSymRefTab());
    _originalSymbolReference = _symbolReference;
    _listingSymbolReference = TR::MemoryReference::shouldLabelForRAS(_symbolReference, cg)? _symbolReference : NULL;
 
@@ -840,7 +840,7 @@ OMR::Z::MemoryReference::MemoryReference(TR::Snippet * s, TR::CodeGenerator * cg
    if (s->getKind() == TR::Snippet::IsConstantData)
       _symbolReference = comp->getSymRefTab()->findOrCreateConstantAreaSymbolReference();
    else
-      _symbolReference = new (cg->trHeapMemory()) TR::SymbolReference(comp->getSymRefTab());
+      _symbolReference = new (comp->trHeapMemory()) TR::SymbolReference(comp->getSymRefTab());
    _originalSymbolReference = _symbolReference;
    _listingSymbolReference = TR::MemoryReference::shouldLabelForRAS(_symbolReference, cg)? _symbolReference : NULL;
 
@@ -893,7 +893,7 @@ OMR::Z::MemoryReference::MemoryReference(int32_t           disp,
   TR::Compilation *comp = cg->comp();
      {
      _offset = disp;
-     _symbolReference = new (cg->trHeapMemory()) TR::SymbolReference(comp->getSymRefTab());
+     _symbolReference = new (comp->trHeapMemory()) TR::SymbolReference(comp->getSymRefTab());
      _originalSymbolReference = _symbolReference;
      _listingSymbolReference = TR::MemoryReference::shouldLabelForRAS(_symbolReference, cg)? _symbolReference : NULL;
      self()->setupCausesImplicitNullPointerException(cg);
@@ -915,7 +915,7 @@ OMR::Z::MemoryReference::MemoryReference(TR::CodeGenerator *cg) :
   _name(NULL),
   _incrementedNodesList(cg->comp()->trMemory())
   {
-  _symbolReference = new (cg->trHeapMemory()) TR::SymbolReference(cg->comp()->getSymRefTab());
+  _symbolReference = new (cg->comp()->trHeapMemory()) TR::SymbolReference(cg->comp()->getSymRefTab());
   _originalSymbolReference = _symbolReference;
   _listingSymbolReference = TR::MemoryReference::shouldLabelForRAS(_symbolReference, cg)? _symbolReference : NULL;
   _offset = _symbolReference->getOffset();
@@ -940,7 +940,7 @@ OMR::Z::MemoryReference::MemoryReference(TR::Register      *br,
   _name(name),
   _incrementedNodesList(cg->comp()->trMemory())
   {
-  _symbolReference = new (cg->trHeapMemory()) TR::SymbolReference(cg->comp()->getSymRefTab());
+  _symbolReference = new (cg->comp()->trHeapMemory()) TR::SymbolReference(cg->comp()->getSymRefTab());
   _originalSymbolReference = _symbolReference;
   _listingSymbolReference = TR::MemoryReference::shouldLabelForRAS(_symbolReference, cg)? _symbolReference : NULL;
   self()->setupCausesImplicitNullPointerException(cg);
@@ -990,7 +990,7 @@ OMR::Z::MemoryReference::MemoryReference(TR::Register      *br,
   _name(NULL),
   _incrementedNodesList(cg->comp()->trMemory())
   {
-  _symbolReference = new (cg->trHeapMemory()) TR::SymbolReference(cg->comp()->getSymRefTab());
+  _symbolReference = new (cg->comp()->trHeapMemory()) TR::SymbolReference(cg->comp()->getSymRefTab());
   _originalSymbolReference = _symbolReference;
   _listingSymbolReference = TR::MemoryReference::shouldLabelForRAS(_symbolReference, cg)? _symbolReference : NULL;
   self()->setupCausesImplicitNullPointerException(cg);
@@ -1720,7 +1720,7 @@ OMR::Z::MemoryReference::populateThroughEvaluation(TR::Node * rootLoadOrStore, T
    _fixedSizeForAlignment = 0;
    _leftMostByte = 0;
    self()->setBaseRegister(cg->evaluate(rootLoadOrStore), cg);
-   _symbolReference = new (cg->trHeapMemory()) TR::SymbolReference(cg->comp()->getSymRefTab());
+   _symbolReference = new (cg->comp()->trHeapMemory()) TR::SymbolReference(cg->comp()->getSymRefTab());
    _originalSymbolReference = _symbolReference;
 
    _listingSymbolReference = TR::MemoryReference::shouldLabelForRAS(_symbolReference, cg)? _symbolReference : NULL;
@@ -2762,7 +2762,7 @@ OMR::Z::MemoryReference::calcDisplacement(uint8_t * cursor, TR::Instruction * in
          //
          if(cursor != NULL)
             {
-            cg->addRelocation(new (cg->trHeapMemory()) TR::LabelRelative12BitRelocation(cursor, snippet->getSnippetLabel()));
+            cg->addRelocation(new (cg->comp()->trHeapMemory()) TR::LabelRelative12BitRelocation(cursor, snippet->getSnippetLabel()));
             }
          }
       }
@@ -3307,7 +3307,7 @@ OMR::Z::MemoryReference::doEvaluate(TR::Node * subTree, TR::CodeGenerator * cg)
 TR::MemoryReference *
 generateS390MemoryReference(TR::CodeGenerator * cg)
    {
-   return new (cg->trHeapMemory()) TR::MemoryReference(cg);
+   return new (cg->comp()->trHeapMemory()) TR::MemoryReference(cg);
    }
 
 TR::MemoryReference *
@@ -3352,19 +3352,19 @@ generateS390MemoryReference(double dValue, TR::DataType type, TR::CodeGenerator 
 TR::MemoryReference *
 generateS390MemoryReference(int32_t disp, TR::CodeGenerator * cg)
    {
-   return new (cg->trHeapMemory()) TR::MemoryReference(disp, cg);
+   return new (cg->comp()->trHeapMemory()) TR::MemoryReference(disp, cg);
    }
 
 TR::MemoryReference *
 generateS390ConstantDataSnippetMemRef(int32_t disp, TR::CodeGenerator * cg)
    {
-   return new (cg->trHeapMemory()) TR::MemoryReference(disp, cg, true);
+   return new (cg->comp()->trHeapMemory()) TR::MemoryReference(disp, cg, true);
    }
 
 TR::MemoryReference *
 generateS390MemoryReference(TR::Register * br, int32_t disp, TR::CodeGenerator * cg, const char *name)
    {
-   return new (cg->trHeapMemory()) TR::MemoryReference(br, disp, cg, name);
+   return new (cg->comp()->trHeapMemory()) TR::MemoryReference(br, disp, cg, name);
    }
 
 TR::MemoryReference *
@@ -3376,7 +3376,7 @@ generateS390MemoryReference(TR::Node * node, TR::CodeGenerator * cg, bool canUse
    // If the node has no sym ref, this memory reference's gets a NULL symbol reference, which can lead to crashes in displacement
    // calculations.
    TR_ASSERT_FATAL(node->getOpCode().hasSymbolReference(), "Memory reference generation API needs a node with symbol reference\n");
-   return new (cg->trHeapMemory()) TR::MemoryReference(node, cg, canUseRX);
+   return new (cg->comp()->trHeapMemory()) TR::MemoryReference(node, cg, canUseRX);
    }
 
 static TR::SymbolReference * findBestSymRefForArrayCopy(TR::CodeGenerator *cg, TR::Node *arrayCopyNode, TR::Node *srcNode)
@@ -3444,7 +3444,7 @@ TR::MemoryReference *
 generateS390ConstantAreaMemoryReference(TR::Register *br, int32_t disp, TR::Node *node, TR::CodeGenerator *cg, bool forSS)
    {
    TR::Compilation *comp = cg->comp();
-   TR::MemoryReference * mr = new (cg->trHeapMemory()) TR::MemoryReference(br, disp, comp->getSymRefTab()->findOrCreateConstantAreaSymbolReference(), cg);
+   TR::MemoryReference * mr = new (comp->trHeapMemory()) TR::MemoryReference(br, disp, comp->getSymRefTab()->findOrCreateConstantAreaSymbolReference(), cg);
    if (forSS)
       mr->enforceSSFormatLimits(node, cg, NULL);
    return mr;
@@ -3463,13 +3463,13 @@ generateS390ConstantAreaMemoryReference(TR::CodeGenerator *cg, TR::Node *addrNod
 TR::MemoryReference *
 generateS390MemoryReference(TR::Register * br, TR::Register * ir, int32_t disp, TR::CodeGenerator * cg)
    {
-   return new (cg->trHeapMemory()) TR::MemoryReference(br, ir, disp, cg);
+   return new (cg->comp()->trHeapMemory()) TR::MemoryReference(br, ir, disp, cg);
    }
 
 TR::MemoryReference *
 generateS390MemoryReference(TR::MemoryReference & mr, int32_t n, TR::CodeGenerator * cg)
    {
-      return new (cg->trHeapMemory()) TR::MemoryReference(mr, n, cg);
+      return new (cg->comp()->trHeapMemory()) TR::MemoryReference(mr, n, cg);
    }
 
 TR::MemoryReference *
@@ -3479,10 +3479,10 @@ reuseS390MemoryReference(TR::MemoryReference *baseMR, int32_t offset, TR::Node *
    //and return New MR. This will prevent original Memory reference being modified even if it hasn't been used before.
    TR_ASSERT(baseMR,"baseMR must be non-NULL for node %p\n",node);
    if (baseMR->getMemRefUsedBefore())
-      baseMR = new (cg->trHeapMemory()) TR::MemoryReference(*baseMR, offset, cg);
+      baseMR = new (cg->comp()->trHeapMemory()) TR::MemoryReference(*baseMR, offset, cg);
    else
       if (offset != 0)
-         baseMR = new (cg->trHeapMemory()) TR::MemoryReference(*baseMR, offset, cg);
+         baseMR = new (cg->comp()->trHeapMemory()) TR::MemoryReference(*baseMR, offset, cg);
    if (enforceSSLimits)
       baseMR->enforceSSFormatLimits(node, cg, NULL);
    return baseMR;
@@ -3491,19 +3491,19 @@ reuseS390MemoryReference(TR::MemoryReference *baseMR, int32_t offset, TR::Node *
 TR::MemoryReference *
 generateS390MemoryReference(TR::Node * node, TR::SymbolReference * sr, TR::CodeGenerator * cg)
    {
-   return new (cg->trHeapMemory()) TR::MemoryReference(node, sr, cg);
+   return new (cg->comp()->trHeapMemory()) TR::MemoryReference(node, sr, cg);
    }
 
 TR::MemoryReference *
 generateS390MemoryReference(TR::Snippet * tas, TR::CodeGenerator * cg, TR::Register * base, TR::Node * node)
    {
-   return new (cg->trHeapMemory()) TR::MemoryReference(tas, cg, base, node);
+   return new (cg->comp()->trHeapMemory()) TR::MemoryReference(tas, cg, base, node);
    }
 
 TR::MemoryReference *
 generateS390MemoryReference(TR::Snippet * tas, TR::Register * indx, int32_t disp, TR::CodeGenerator * cg)
    {
-   return new (cg->trHeapMemory()) TR::MemoryReference(tas, indx, disp, cg);
+   return new (cg->comp()->trHeapMemory()) TR::MemoryReference(tas, indx, disp, cg);
    }
 
 static TR::MemoryReference *
