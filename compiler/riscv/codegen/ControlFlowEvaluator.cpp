@@ -35,7 +35,7 @@ genericReturnEvaluator(TR::Node *node, TR::RealRegister::RegNum rnum, TR_Registe
    TR::Node *firstChild = node->getFirstChild();
    TR::Register *returnRegister = cg->evaluate(firstChild);
 
-   TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(1, 0, cg->trMemory());
+   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(1, 0, cg->trMemory());
    deps->addPreCondition(returnRegister, rnum);
    generateADMIN(cg, TR::InstOpCode::retn, node, deps);
 
@@ -522,7 +522,7 @@ OMR::RV::TreeEvaluator::iselectEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    startLabel->setStartInternalControlFlow();
    joinLabel->setEndInternalControlFlow();
 
-   TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 3,cg->trMemory());
+   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 3,cg->trMemory());
    deps->addPostCondition(condReg, TR::RealRegister::NoReg);
    deps->addPostCondition(trueReg, TR::RealRegister::NoReg);
    deps->addPostCondition(falseReg, TR::RealRegister::NoReg);
@@ -627,7 +627,7 @@ commonMinMaxEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, TR::CodeGener
    startLabel->setStartInternalControlFlow();
    joinLabel->setEndInternalControlFlow();
 
-   TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg->trMemory());
+   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg->trMemory());
    deps->addPostCondition(src1Reg, TR::RealRegister::NoReg);
    deps->addPostCondition(src2Reg, TR::RealRegister::NoReg);
 

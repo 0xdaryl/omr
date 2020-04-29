@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -181,7 +181,7 @@ void TR_RVRegisterDependencyGroup::assignRegisters(
                traceMsg (comp,"\nOOL: Found register spilled in main line and re-assigned inside OOL");
                TR::Node *currentNode = currentInstruction->getNode();
                TR::RealRegister *assignedReg = toRealRegister(virtReg->getAssignedRegister());
-               TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(currentNode, (TR::SymbolReference*)virtReg->getBackingStorage()->getSymbolReference(), sizeof(uintptr_t), cg);
+               TR::MemoryReference *tempMR = new (comp->trHeapMemory()) TR::MemoryReference(currentNode, (TR::SymbolReference*)virtReg->getBackingStorage()->getSymbolReference(), sizeof(uintptr_t), cg);
                TR_RegisterKinds rk = virtReg->getKind();
                TR::InstOpCode::Mnemonic opCode;
                switch (rk)

@@ -402,7 +402,7 @@ uint8_t *TR::BtypeInstruction::generateBinaryEncoding()
            int32_t delta = label->getCodeLocation() - cursor;
            *iPtr |= ENCODE_SBTYPE_IMM(delta);
    } else {
-           cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative16BitRelocation(cursor, label));
+           cg()->addRelocation(new (cg()->comp()->trHeapMemory()) TR::LabelRelative16BitRelocation(cursor, label));
    }
 
    cursor += RISCV_INSTRUCTION_LENGTH;
@@ -539,7 +539,7 @@ uint8_t *TR::JtypeInstruction::generateBinaryEncoding() {
          }
       else
          {
-         cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative32BitRelocation(cursor, getLabelSymbol()));
+         cg()->addRelocation(new (cg()->comp()->trHeapMemory()) TR::LabelRelative32BitRelocation(cursor, getLabelSymbol()));
          }
       }
 

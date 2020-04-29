@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -69,7 +69,7 @@ class RegisterDependencyConditions : public OMR::RegisterDependencyConditionsCon
 inline TR::RegisterDependencyConditions *
 generateRegisterDependencyConditions(TR::CodeGenerator *cg, TR::Node *node, uint32_t extranum, TR::Instruction **cursorPtr=NULL)
    {
-   return new (cg->trHeapMemory()) TR::RegisterDependencyConditions(cg, node, extranum, cursorPtr);
+   return new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(cg, node, extranum, cursorPtr);
    }
 
 #endif

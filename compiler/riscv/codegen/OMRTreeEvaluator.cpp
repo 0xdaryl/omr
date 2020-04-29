@@ -140,7 +140,7 @@ TR::Register *commonLoadEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, i
       tempReg = cg->allocateRegister();
       }
    node->setRegister(tempReg);
-   TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, memSize, cg);
+   TR::MemoryReference *tempMR = new (cg->comp()->trHeapMemory()) TR::MemoryReference(node, memSize, cg);
    generateLOAD(op, node, tempReg, tempMR, cg);
 
    /*
@@ -185,7 +185,7 @@ OMR::RV::TreeEvaluator::aloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 
    node->setRegister(tempReg);
 
-   TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, 8, cg);
+   TR::MemoryReference *tempMR = new (comp->trHeapMemory()) TR::MemoryReference(node, 8, cg);
    generateLOAD(TR::InstOpCode::_ld, node, tempReg, tempMR, cg);
 
    /*
@@ -238,7 +238,7 @@ OMR::RV::TreeEvaluator::awrtbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 
 TR::Register *commonStoreEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, int32_t memSize, TR::CodeGenerator *cg)
    {
-   TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, memSize, cg);
+   TR::MemoryReference *tempMR = new (cg->comp()->trHeapMemory()) TR::MemoryReference(node, memSize, cg);
    bool needSync = (node->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP());
    TR::Node *valueChild;
 

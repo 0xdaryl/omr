@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -185,7 +185,7 @@ TR::RealRegister *OMR::RV::Machine::freeBestRegister(TR::Instruction *currentIns
 
    candidates[0]->setBackingStorage(location);
 
-   tmemref = new (self()->cg()->trHeapMemory()) TR::MemoryReference(currentNode, location->getSymbolReference(), 8, self()->cg());
+   tmemref = new (self()->cg()->comp()->trHeapMemory()) TR::MemoryReference(currentNode, location->getSymbolReference(), 8, self()->cg());
 
    if (!comp->getOption(TR_DisableOOL))
       {
@@ -303,7 +303,7 @@ TR::RealRegister *OMR::RV::Machine::reverseSpillState(TR::Instruction *currentIn
                   targetRegister->getRegisterName(comp));
       }
 
-   tmemref = new (self()->cg()->trHeapMemory()) TR::MemoryReference(currentNode, location->getSymbolReference(), 8, self()->cg());
+   tmemref = new (self()->cg()->comp()->trHeapMemory()) TR::MemoryReference(currentNode, location->getSymbolReference(), 8, self()->cg());
 
    if (comp->getOption(TR_DisableOOL))
       {
@@ -693,7 +693,7 @@ void OMR::RV::Machine::initializeRegisterFile()
 
 #define DECLARE_REG(regname, type)                                             \
    _registerFile[TR::RealRegister:: regname] =                                 \
-         new (self()->cg()->trHeapMemory()) TR::RealRegister(type,             \
+         new (self()->cg()->comp()->trHeapMemory()) TR::RealRegister(type,             \
                                                  0,                            \
                                                  TR::RealRegister::Free,       \
                                                  TR::RealRegister:: regname,   \

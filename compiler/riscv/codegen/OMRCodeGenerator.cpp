@@ -114,8 +114,8 @@ OMR::RV::CodeGenerator::CodeGenerator() :
 
    if (self()->comp()->getOption(TR_TraceRA))
       {
-      self()->setGPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstGPR, TR::RealRegister::LastGPR));
-      self()->setFPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstFPR, TR::RealRegister::LastFPR));
+      self()->setGPRegisterIterator(new (self()->comp()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstGPR, TR::RealRegister::LastGPR));
+      self()->setFPRegisterIterator(new (self()->comp()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstFPR, TR::RealRegister::LastFPR));
       }
    }
 
@@ -128,14 +128,14 @@ OMR::RV::CodeGenerator::beginInstructionSelection()
       {
       TR_UNIMPLEMENTED();
 
-      //_returnTypeInfoInstruction = new (self()->trHeapMemory()) TR::RVImmInstruction(TR::InstOpCode::dd, startNode, 0, self());
+      //_returnTypeInfoInstruction = new (self()->comp()->trHeapMemory()) TR::RVImmInstruction(TR::InstOpCode::dd, startNode, 0, self());
       }
    else
       {
       _returnTypeInfoInstruction = NULL;
       }
 
-   new (self()->trHeapMemory()) TR::AdminInstruction(TR::InstOpCode::proc, startNode, NULL, _returnTypeInfoInstruction, self());
+   new (comp->trHeapMemory()) TR::AdminInstruction(TR::InstOpCode::proc, startNode, NULL, _returnTypeInfoInstruction, self());
    }
 
 void
@@ -160,7 +160,7 @@ OMR::RV::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
 
    if (!comp->getOption(TR_DisableOOL))
       {
-      TR::list<TR::Register*> *spilledRegisterList = new (self()->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::Register*>(comp->allocator()));
+      TR::list<TR::Register*> *spilledRegisterList = new (comp->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::Register*>(comp->allocator()));
       self()->setSpilledRegisterList(spilledRegisterList);
       }
 
@@ -288,11 +288,11 @@ TR::Linkage *OMR::RV::CodeGenerator::createLinkage(TR_LinkageConventions lc)
    switch (lc)
       {
       case TR_System:
-         linkage = new (self()->trHeapMemory()) TR::RVSystemLinkage(self());
+         linkage = new (self()->comp()->trHeapMemory()) TR::RVSystemLinkage(self());
          break;
       default:
          TR_ASSERT(false, "using system linkage for unrecognized convention %d\n", lc);
-         linkage = new (self()->trHeapMemory()) TR::RVSystemLinkage(self());
+         linkage = new (self()->comp()->trHeapMemory()) TR::RVSystemLinkage(self());
       }
    self()->setLinkage(lc, linkage);
    return linkage;
@@ -431,7 +431,7 @@ void OMR::RV::CodeGenerator::apply16BitLabelRelativeRelocation(int32_t *cursor, 
    *cursor |= ENCODE_SBTYPE_IMM(distance);
    }
 
-void OMR::RV::CodeGenerator::apply16BitLabelRelativeRelocation(int32_t *cursor, TR::LabelSymbol *label, int8_t d, bool isInstrOffset) 
+void OMR::RV::CodeGenerator::apply16BitLabelRelativeRelocation(int32_t *cursor, TR::LabelSymbol *label, int8_t d, bool isInstrOffset)
    {
    apply16BitLabelRelativeRelocation(cursor, label);
    }
@@ -453,13 +453,13 @@ void OMR::RV::CodeGenerator::apply32BitLabelRelativeRelocation(int32_t *cursor, 
    }
 
 int64_t OMR::RV::CodeGenerator::getLargestNegConstThatMustBeMaterialized()
-   { 
-   TR_ASSERT(0, "Not Implemented on AArch64"); 
-   return 0; 
+   {
+   TR_ASSERT(0, "Not Implemented on AArch64");
+   return 0;
    }
 
 int64_t OMR::RV::CodeGenerator::getSmallestPosConstThatMustBeMaterialized()
-   { 
-   TR_ASSERT(0, "Not Implemented on AArch64"); 
-   return 0; 
+   {
+   TR_ASSERT(0, "Not Implemented on AArch64");
+   return 0;
    }

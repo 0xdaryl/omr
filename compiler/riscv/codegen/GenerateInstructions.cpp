@@ -38,8 +38,8 @@ namespace TR { class SymbolReference; }
 TR::Instruction *generateInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node, TR::Instruction *preced)
    {
    if (preced)
-      return new (cg->trHeapMemory()) TR::Instruction(op, node, preced, cg);
-   return new (cg->trHeapMemory()) TR::Instruction(op, node, cg);
+      return new (cg->comp()->trHeapMemory()) TR::Instruction(op, node, preced, cg);
+   return new (cg->comp()->trHeapMemory()) TR::Instruction(op, node, cg);
    }
 
 
@@ -47,32 +47,32 @@ TR::Instruction *generateLABEL(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic o
    TR::LabelSymbol *sym, TR::Instruction *preced)
    {
    if (preced)
-      return new (cg->trHeapMemory()) TR::LabelInstruction(op, node, sym, preced, cg);
-   return new (cg->trHeapMemory()) TR::LabelInstruction(op, node, sym, cg);
+      return new (cg->comp()->trHeapMemory()) TR::LabelInstruction(op, node, sym, preced, cg);
+   return new (cg->comp()->trHeapMemory()) TR::LabelInstruction(op, node, sym, cg);
    }
 
 TR::Instruction *generateLABEL(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
    TR::LabelSymbol *sym, TR::RegisterDependencyConditions *cond, TR::Instruction *preced)
    {
    if (preced)
-      return new (cg->trHeapMemory()) TR::LabelInstruction(op, node, sym, cond, preced, cg);
-   return new (cg->trHeapMemory()) TR::LabelInstruction(op, node, sym, cond, cg);
+      return new (cg->comp()->trHeapMemory()) TR::LabelInstruction(op, node, sym, cond, preced, cg);
+   return new (cg->comp()->trHeapMemory()) TR::LabelInstruction(op, node, sym, cond, cg);
    }
 
 TR::Instruction *generateADMIN(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
    TR::Node *fenceNode, TR::Instruction *preced)
    {
    if (preced)
-      return new (cg->trHeapMemory()) TR::AdminInstruction(op, node, fenceNode, preced, cg);
-   return new (cg->trHeapMemory()) TR::AdminInstruction(op, node, fenceNode, cg);
+      return new (cg->comp()->trHeapMemory()) TR::AdminInstruction(op, node, fenceNode, preced, cg);
+   return new (cg->comp()->trHeapMemory()) TR::AdminInstruction(op, node, fenceNode, cg);
    }
 
 TR::Instruction *generateADMIN(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
    TR::RegisterDependencyConditions *cond, TR::Node *fenceNode, TR::Instruction *preced)
    {
    if (preced)
-      return new (cg->trHeapMemory()) TR::AdminInstruction(op, cond, node, fenceNode, preced, cg);
-   return new (cg->trHeapMemory()) TR::AdminInstruction(op, cond, node, fenceNode, cg);
+      return new (cg->comp()->trHeapMemory()) TR::AdminInstruction(op, cond, node, fenceNode, preced, cg);
+   return new (cg->comp()->trHeapMemory()) TR::AdminInstruction(op, cond, node, fenceNode, cg);
    }
 
 TR::Instruction *generateRTYPE( TR::InstOpCode::Mnemonic op,
@@ -84,8 +84,8 @@ TR::Instruction *generateRTYPE( TR::InstOpCode::Mnemonic op,
                                 TR::Instruction   *previous)
    {
    if (previous)
-      return new (cg->trHeapMemory()) TR::RtypeInstruction(op, n, treg, s1reg, s2reg, previous, cg);
-   return new (cg->trHeapMemory()) TR::RtypeInstruction(op, n, treg, s1reg, s2reg, cg);
+      return new (cg->comp()->trHeapMemory()) TR::RtypeInstruction(op, n, treg, s1reg, s2reg, previous, cg);
+   return new (cg->comp()->trHeapMemory()) TR::RtypeInstruction(op, n, treg, s1reg, s2reg, cg);
    }
 
 
@@ -98,8 +98,8 @@ TR::Instruction *generateITYPE( TR::InstOpCode::Mnemonic op,
                                 TR::Instruction   *previous)
    {
    if (previous)
-      return new (cg->trHeapMemory()) TR::ItypeInstruction(op, n, treg, sreg, imm, previous, cg);
-   return new (cg->trHeapMemory()) TR::ItypeInstruction(op, n, treg, sreg, imm, cg);
+      return new (cg->comp()->trHeapMemory()) TR::ItypeInstruction(op, n, treg, sreg, imm, previous, cg);
+   return new (cg->comp()->trHeapMemory()) TR::ItypeInstruction(op, n, treg, sreg, imm, cg);
    }
 
 TR::Instruction *generateITYPE( TR::InstOpCode::Mnemonic op,
@@ -125,8 +125,8 @@ TR::Instruction *generateLOAD(  TR::InstOpCode::Mnemonic op,
                                 TR::Instruction   *previous)
    {
    if (previous)
-      return new (cg->trHeapMemory()) TR::LoadInstruction(op, n, trgReg, memRef, previous, cg);
-   return new (cg->trHeapMemory()) TR::LoadInstruction(op, n, trgReg, memRef, cg);
+      return new (cg->comp()->trHeapMemory()) TR::LoadInstruction(op, n, trgReg, memRef, previous, cg);
+   return new (cg->comp()->trHeapMemory()) TR::LoadInstruction(op, n, trgReg, memRef, cg);
    }
 
 TR::Instruction *generateSTYPE( TR::InstOpCode::Mnemonic op,
@@ -138,8 +138,8 @@ TR::Instruction *generateSTYPE( TR::InstOpCode::Mnemonic op,
                                 TR::Instruction   *previous)
    {
    if (previous)
-      return new (cg->trHeapMemory()) TR::StypeInstruction(op, n, s1reg, s2reg, imm, previous, cg);
-   return new (cg->trHeapMemory()) TR::StypeInstruction(op, n, s1reg, s2reg, imm, cg);
+      return new (cg->comp()->trHeapMemory()) TR::StypeInstruction(op, n, s1reg, s2reg, imm, previous, cg);
+   return new (cg->comp()->trHeapMemory()) TR::StypeInstruction(op, n, s1reg, s2reg, imm, cg);
    }
 
 TR::Instruction *generateSTORE( TR::InstOpCode::Mnemonic op,
@@ -150,8 +150,8 @@ TR::Instruction *generateSTORE( TR::InstOpCode::Mnemonic op,
                                 TR::Instruction   *previous)
    {
    if (previous)
-      return new (cg->trHeapMemory()) TR::StoreInstruction(op, n, memRef, srcReg, previous, cg);
-   return new (cg->trHeapMemory()) TR::StoreInstruction(op, n, memRef, srcReg, cg);
+      return new (cg->comp()->trHeapMemory()) TR::StoreInstruction(op, n, memRef, srcReg, previous, cg);
+   return new (cg->comp()->trHeapMemory()) TR::StoreInstruction(op, n, memRef, srcReg, cg);
    }
 
 TR::Instruction *generateBTYPE( TR::InstOpCode::Mnemonic op,
@@ -163,8 +163,8 @@ TR::Instruction *generateBTYPE( TR::InstOpCode::Mnemonic op,
                                 TR::Instruction   *previous)
    {
    if (previous)
-      return new (cg->trHeapMemory()) TR::BtypeInstruction(op, n, sym, src1, src2, previous, cg);
-   return new (cg->trHeapMemory()) TR::BtypeInstruction(op, n, sym, src1, src2, cg);
+      return new (cg->comp()->trHeapMemory()) TR::BtypeInstruction(op, n, sym, src1, src2, previous, cg);
+   return new (cg->comp()->trHeapMemory()) TR::BtypeInstruction(op, n, sym, src1, src2, cg);
    }
 
 TR::Instruction *generateUTYPE( TR::InstOpCode::Mnemonic op,
@@ -175,8 +175,8 @@ TR::Instruction *generateUTYPE( TR::InstOpCode::Mnemonic op,
                                 TR::Instruction   *previous)
    {
    if (previous)
-      return new (cg->trHeapMemory()) TR::UtypeInstruction(op, n, imm, reg, previous, cg);
-   return new (cg->trHeapMemory()) TR::UtypeInstruction(op, n, imm, reg, cg);
+      return new (cg->comp()->trHeapMemory()) TR::UtypeInstruction(op, n, imm, reg, previous, cg);
+   return new (cg->comp()->trHeapMemory()) TR::UtypeInstruction(op, n, imm, reg, cg);
    }
 
 TR::Instruction *generateJTYPE( TR::InstOpCode::Mnemonic op,
@@ -190,8 +190,8 @@ TR::Instruction *generateJTYPE( TR::InstOpCode::Mnemonic op,
                                 TR::Instruction   *previous)
    {
    if (previous)
-      return new (cg->trHeapMemory()) TR::JtypeInstruction(op, n, trgReg, imm, cond, sr, s, previous, cg);
-   return new (cg->trHeapMemory()) TR::JtypeInstruction(op, n, trgReg, imm, cond, sr, s, cg);
+      return new (cg->comp()->trHeapMemory()) TR::JtypeInstruction(op, n, trgReg, imm, cond, sr, s, previous, cg);
+   return new (cg->comp()->trHeapMemory()) TR::JtypeInstruction(op, n, trgReg, imm, cond, sr, s, cg);
    }
 
 TR::Instruction *generateJTYPE( TR::InstOpCode::Mnemonic op,
@@ -202,8 +202,8 @@ TR::Instruction *generateJTYPE( TR::InstOpCode::Mnemonic op,
                                 TR::Instruction   *previous)
    {
    if (previous)
-      return new (cg->trHeapMemory()) TR::JtypeInstruction(op, n, trgReg, label, previous, cg);
-   return new (cg->trHeapMemory()) TR::JtypeInstruction(op, n, trgReg, label, cg);
+      return new (cg->comp()->trHeapMemory()) TR::JtypeInstruction(op, n, trgReg, label, previous, cg);
+   return new (cg->comp()->trHeapMemory()) TR::JtypeInstruction(op, n, trgReg, label, cg);
    }
 
 TR::Instruction *generateJTYPE( TR::InstOpCode::Mnemonic op,
@@ -215,6 +215,6 @@ TR::Instruction *generateJTYPE( TR::InstOpCode::Mnemonic op,
                                 TR::Instruction   *previous)
    {
    if (previous)
-      return new (cg->trHeapMemory()) TR::JtypeInstruction(op, n, trgReg, label, cond, previous, cg);
-   return new (cg->trHeapMemory()) TR::JtypeInstruction(op, n, trgReg, label, cond, cg);
+      return new (cg->comp()->trHeapMemory()) TR::JtypeInstruction(op, n, trgReg, label, cond, previous, cg);
+   return new (cg->comp()->trHeapMemory()) TR::JtypeInstruction(op, n, trgReg, label, cond, cg);
    }

@@ -40,7 +40,7 @@ OMR::RV::MemoryReference::MemoryReference(
    _length(0),
    _scale(0)
    {
-   _symbolReference = new (cg->trHeapMemory()) TR::SymbolReference(cg->comp()->getSymRefTab());
+   _symbolReference = new (cg->comp()->trHeapMemory()) TR::SymbolReference(cg->comp()->getSymRefTab());
    _offset = _symbolReference->getOffset();
    }
 
@@ -55,7 +55,7 @@ OMR::RV::MemoryReference::MemoryReference(
    _length(0),
    _scale(0)
    {
-   _symbolReference = new (cg->trHeapMemory()) TR::SymbolReference(cg->comp()->getSymRefTab());
+   _symbolReference = new (cg->comp()->trHeapMemory()) TR::SymbolReference(cg->comp()->getSymRefTab());
    _offset = _symbolReference->getOffset();
    }
 
@@ -72,7 +72,7 @@ OMR::RV::MemoryReference::MemoryReference(
    _scale(0),
    _offset(disp)
    {
-   _symbolReference = new (cg->trHeapMemory()) TR::SymbolReference(cg->comp()->getSymRefTab());
+   _symbolReference = new (cg->comp()->trHeapMemory()) TR::SymbolReference(cg->comp()->getSymRefTab());
    }
 
 
