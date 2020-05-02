@@ -82,14 +82,14 @@ OMR::X86::RegisterDependencyConditions::RegisterDependencyConditions(
    :_numPreConditions(-1),_numPostConditions(-1),
     _addCursorForPre(0),_addCursorForPost(0)
    {
+   TR::Compilation *comp = cg->comp();
    TR::Register      *copyReg = NULL;
    TR::Register      *highCopyReg = NULL;
-   List<TR::Register> registers(cg->trMemory());
+   List<TR::Register> registers(comp->trMemory());
    TR_X86RegisterDependencyIndex          numFPGlobalRegs = 0,
                      totalNumFPGlobalRegs = 0;
    int32_t           i;
    TR::Machine *machine = cg->machine();
-   TR::Compilation *comp = cg->comp();
 
    int32_t numLongs = 0;
 
@@ -111,8 +111,8 @@ OMR::X86::RegisterDependencyConditions::RegisterDependencyConditions(
          }
       }
 
-   _preConditions = TR_X86RegisterDependencyGroup::create(node->getNumChildren() + additionalRegDeps + numLongs, cg->trMemory());
-   _postConditions = TR_X86RegisterDependencyGroup::create(node->getNumChildren() + additionalRegDeps + numLongs, cg->trMemory());
+   _preConditions = TR_X86RegisterDependencyGroup::create(node->getNumChildren() + additionalRegDeps + numLongs, comp->trMemory());
+   _postConditions = TR_X86RegisterDependencyGroup::create(node->getNumChildren() + additionalRegDeps + numLongs, comp->trMemory());
    _numPreConditions = node->getNumChildren() + additionalRegDeps + numLongs;
    _numPostConditions = node->getNumChildren() + additionalRegDeps + numLongs;
 
@@ -533,7 +533,7 @@ TR::RegisterDependencyConditions  *OMR::X86::RegisterDependencyConditions::clone
    {
    TR::RegisterDependencyConditions  *other =
       new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(_numPreConditions  + additionalRegDeps,
-                                              _numPostConditions + additionalRegDeps, cg->trMemory());
+                                              _numPostConditions + additionalRegDeps, cg->comp()->trMemory());
    int32_t i;
 
    for (i = _numPreConditions-1; i >= 0; --i)
@@ -702,7 +702,7 @@ void TR_X86RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentIn
    // NoReg associations.
    //
    TR::RegisterDependency  **dependencies =
-      (TR::RegisterDependency  **)cg->trMemory()->allocateStackMemory(numberOfRegisters * sizeof(TR::RegisterDependency  *));
+      (TR::RegisterDependency  **)comp->trMemory()->allocateStackMemory(numberOfRegisters * sizeof(TR::RegisterDependency  *));
 
    bool    hasByteDeps = false;
    bool    hasNoRegDeps = false;
@@ -1222,7 +1222,7 @@ void TR_X86RegisterDependencyGroup::assignFPRegisters(TR::Instruction   *prevIns
       // this routine tries to order them in as few exchanges as possible. This
       // routine could be improved slightly in the future.
       //
-      List<TR::Register> popRegisters(cg->trMemory());
+      List<TR::Register> popRegisters(cg->comp()->trMemory());
       orderGlobalRegsOnFPStack(cursor, kindsToBeAssigned, numberOfRegisters, &popRegisters, cg);
 
       for (i = 0; i < numberOfRegisters; i++)
@@ -1550,7 +1550,7 @@ generateRegisterDependencyConditions(TR_X86RegisterDependencyIndex numPreConds,
                                      TR_X86RegisterDependencyIndex numPostConds,
                                      TR::CodeGenerator * cg)
    {
-   return new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(numPreConds, numPostConds, cg->trMemory());
+   return new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(numPreConds, numPostConds, cg->comp()->trMemory());
    }
 
 TR::RegisterDependencyConditions  *

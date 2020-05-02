@@ -1503,7 +1503,7 @@ TR::X86RegImmInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
 
       if (staticMethodPIC)
          {
-         void *classPointer = (void *) cg()->fe()->createResolvedMethod(cg()->trMemory(), (TR_OpaqueMethodBlock *)(uintptr_t) getSourceImmediateAsAddress(), comp->getCurrentMethod())->classOfMethod();
+         void *classPointer = (void *) cg()->fe()->createResolvedMethod(comp->trMemory(), (TR_OpaqueMethodBlock *)(uintptr_t) getSourceImmediateAsAddress(), comp->getCurrentMethod())->classOfMethod();
          cg()->jitAdd32BitPicToPatchOnClassUnload(classPointer, (void *) cursor);
          }
 
@@ -1967,7 +1967,7 @@ TR::X86MemImmInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
          }
       if (staticMethodPIC)
          {
-         void *classPointer = (void *) cg()->fe()->createResolvedMethod(cg()->trMemory(), (TR_OpaqueMethodBlock *)(uintptr_t) getSourceImmediateAsAddress(), comp->getCurrentMethod())->classOfMethod();
+         void *classPointer = (void *) cg()->fe()->createResolvedMethod(comp->trMemory(), (TR_OpaqueMethodBlock *)(uintptr_t) getSourceImmediateAsAddress(), comp->getCurrentMethod())->classOfMethod();
          cg()->jitAdd32BitPicToPatchOnClassUnload(classPointer, (void *) cursor);
          }
 
@@ -2746,7 +2746,7 @@ TR::AMD64RegImm64Instruction::addMetaDataForCodeAddress(uint8_t *cursor)
 
    if (staticMethodPIC)
       {
-      void *classPointer = (void *) cg()->fe()->createResolvedMethod(cg()->trMemory(), (TR_OpaqueMethodBlock *) getSourceImmediate(), comp->getCurrentMethod())->classOfMethod();
+      void *classPointer = (void *) cg()->fe()->createResolvedMethod(comp->trMemory(), (TR_OpaqueMethodBlock *) getSourceImmediate(), comp->getCurrentMethod())->classOfMethod();
 
       cg()->jitAddPicToPatchOnClassUnload(classPointer, (void *) cursor);
       }
@@ -2844,7 +2844,7 @@ TR::AMD64RegImm64SymInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
             if (comp->getOption(TR_EmitRelocatableELFFile))
                {
                TR_ResolvedMethod *target = getSymbolReference()->getSymbol()->castToResolvedMethodSymbol()->getResolvedMethod();
-               cg()->addStaticRelocation(TR::StaticRelocation(cursor, target->externalName(cg()->trMemory()), TR::StaticRelocationSize::word64, TR::StaticRelocationType::Absolute));
+               cg()->addStaticRelocation(TR::StaticRelocation(cursor, target->externalName(comp->trMemory()), TR::StaticRelocationSize::word64, TR::StaticRelocationType::Absolute));
                }
             break;
             }

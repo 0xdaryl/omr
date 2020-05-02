@@ -1705,8 +1705,9 @@ OMR::X86::Machine::getGlobalRegisterTable(const struct TR::X86LinkageProperties&
 TR::RealRegister **
 OMR::X86::Machine::cloneRegisterFile(TR::RealRegister **registerFile, TR_AllocationKind allocKind)
    {
+   TR::Compilation *comp = self()->cg()->comp();
    int32_t arraySize = sizeof(TR::RealRegister *) * TR::RealRegister::NumRegisters;
-   TR::RealRegister  **registerFileClone = (TR::RealRegister **)self()->cg()->trMemory()->allocateMemory(arraySize, allocKind);
+   TR::RealRegister  **registerFileClone = (TR::RealRegister **)comp->trMemory()->allocateMemory(arraySize, allocKind);
    int32_t i = 0;
    int32_t endReg = TR::RealRegister::LastAssignableGPR;
 
@@ -1718,7 +1719,7 @@ OMR::X86::Machine::cloneRegisterFile(TR::RealRegister **registerFile, TR_Allocat
 
    for (i = TR::RealRegister::FirstGPR; i <= endReg; i = ((i==TR::RealRegister::LastAssignableGPR) ? TR::RealRegister::FirstXMMR : i+1))
       {
-      registerFileClone[i] = (TR::RealRegister *)self()->cg()->trMemory()->allocateMemory(sizeof(TR::RealRegister), allocKind);
+      registerFileClone[i] = (TR::RealRegister *)comp->trMemory()->allocateMemory(sizeof(TR::RealRegister), allocKind);
       *registerFileClone[i] = *registerFile[i];
       }
 
@@ -1858,21 +1859,22 @@ TR::RegisterDependencyConditions * OMR::X86::Machine::createCondForLiveAndSpille
 //
 TR::RealRegister **OMR::X86::Machine::captureRegisterFile()
    {
+   TR::Compilation *comp = self()->cg()->comp();
    int32_t arraySize = sizeof(TR::RealRegister *) * TR::RealRegister::NumRegisters;
 
    TR::RealRegister **registerFileClone =
-      (TR::RealRegister **)self()->cg()->trMemory()->allocateMemory(arraySize, heapAlloc);
+      (TR::RealRegister **)comp->trMemory()->allocateMemory(arraySize, heapAlloc);
 
    int32_t endReg = TR::RealRegister::LastXMMR;
    for (int32_t i = TR::RealRegister::FirstGPR; i <= endReg; i = ((i==TR::RealRegister::LastAssignableGPR) ? TR::RealRegister::FirstXMMR : i+1))
       {
       registerFileClone[i] =
-         (TR::RealRegister *)self()->cg()->trMemory()->allocateMemory(sizeof(TR::RealRegister), heapAlloc);
+         (TR::RealRegister *)comp->trMemory()->allocateMemory(sizeof(TR::RealRegister), heapAlloc);
       *registerFileClone[i] = *_registerFile[i];
       }
 
    registerFileClone[TR::RealRegister::vfp] =
-      (TR::RealRegister *)self()->cg()->trMemory()->allocateMemory(sizeof(TR::RealRegister), heapAlloc);
+      (TR::RealRegister *)comp->trMemory()->allocateMemory(sizeof(TR::RealRegister), heapAlloc);
    *registerFileClone[TR::RealRegister::vfp] = *_registerFile[TR::RealRegister::vfp];
 
    return registerFileClone;
@@ -1933,10 +1935,11 @@ void OMR::X86::Machine::installRegisterFile(TR::RealRegister **registerFileCopy)
 
 TR::Register **OMR::X86::Machine::captureRegisterAssociations()
    {
+   TR::Compilation *comp = self()->cg()->comp();
    int32_t arraySize = sizeof(TR::Register *) * TR::RealRegister::NumRegisters;
 
    TR::Register **registerAssociationsClone =
-      (TR::Register **)self()->cg()->trMemory()->allocateMemory(arraySize, heapAlloc);
+      (TR::Register **)comp->trMemory()->allocateMemory(arraySize, heapAlloc);
 
    int32_t endReg = TR::RealRegister::LastXMMR;
    for (int32_t i = TR::RealRegister::FirstGPR; i <= endReg; i = ((i==TR::RealRegister::LastAssignableGPR) ? TR::RealRegister::FirstXMMR : i+1))
@@ -1944,7 +1947,7 @@ TR::Register **OMR::X86::Machine::captureRegisterAssociations()
       if (_registerAssociations[i] != NULL)
          {
          registerAssociationsClone[i] =
-            (TR::Register *)self()->cg()->trMemory()->allocateMemory(sizeof(TR::Register), heapAlloc);
+            (TR::Register *)comp->trMemory()->allocateMemory(sizeof(TR::Register), heapAlloc);
          *registerAssociationsClone[i] = *_registerAssociations[i];
          }
       else
@@ -1956,7 +1959,7 @@ TR::Register **OMR::X86::Machine::captureRegisterAssociations()
    if (_registerAssociations[TR::RealRegister::vfp] != NULL)
       {
       registerAssociationsClone[TR::RealRegister::vfp] =
-         (TR::Register *)self()->cg()->trMemory()->allocateMemory(sizeof(TR::Register), heapAlloc);
+         (TR::Register *)comp->trMemory()->allocateMemory(sizeof(TR::Register), heapAlloc);
       *registerAssociationsClone[TR::RealRegister::vfp] = *_registerAssociations[TR::RealRegister::vfp];
       }
    else

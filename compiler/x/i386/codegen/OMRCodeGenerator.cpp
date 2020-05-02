@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -195,7 +195,7 @@ OMR::X86::I386::CodeGenerator::pickRegister(
 
 
    if (!_assignedGlobalRegisters)
-      _assignedGlobalRegisters = new (self()->trStackMemory()) TR_BitVector(self()->comp()->getSymRefCount(), self()->trMemory(), stackAlloc, growable);
+      _assignedGlobalRegisters = new (self()->trStackMemory()) TR_BitVector(self()->comp()->getSymRefCount(), self()->comp()->trMemory(), stackAlloc, growable);
 
    if (availableRegisters.get(5))
       return 5; // esi

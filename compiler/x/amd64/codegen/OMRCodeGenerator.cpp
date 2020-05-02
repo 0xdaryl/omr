@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -48,8 +48,9 @@
 OMR::X86::AMD64::CodeGenerator::CodeGenerator() :
    OMR::X86::CodeGenerator()
    {
+   TR::Compilation *comp = self()->comp();
 
-   if (self()->comp()->getOption(TR_DisableTraps))
+   if (comp->getOption(TR_DisableTraps))
       {
       _numberBytesReadInaccessible  = 0;
       _numberBytesWriteInaccessible = 0;
@@ -66,7 +67,7 @@ OMR::X86::AMD64::CodeGenerator::CodeGenerator() :
 
    static char *c = feGetEnv("TR_disableAMD64ValueProfiling");
    if (c)
-      self()->comp()->setOption(TR_DisableValueProfiling);
+      comp->setOption(TR_DisableValueProfiling);
 
    static char *accessStaticsIndirectly = feGetEnv("TR_AccessStaticsIndirectly");
    if (accessStaticsIndirectly)
@@ -80,12 +81,12 @@ OMR::X86::AMD64::CodeGenerator::CodeGenerator() :
 
    // Interpreter frame shape requires all autos to occupy an 8-byte slot on 64-bit.
    //
-   if (self()->comp()->getOption(TR_MimicInterpreterFrameShape))
+   if (comp->getOption(TR_MimicInterpreterFrameShape))
       self()->setMapAutosTo8ByteSlots();
 
    // Common X86 initialization
    //
-   self()->initialize(self()->comp());
+   self()->initialize(comp);
 
    self()->initLinkageToGlobalRegisterMap();
 
@@ -94,8 +95,8 @@ OMR::X86::AMD64::CodeGenerator::CodeGenerator() :
    // GRA-related initialization is done after calling initialize() so we can
    // use such things as getNumberOfGlobal[FG]PRs().
 
-   _globalGPRsPreservedAcrossCalls.init(self()->getNumberOfGlobalRegisters(), self()->trMemory());
-   _globalFPRsPreservedAcrossCalls.init(self()->getNumberOfGlobalRegisters(), self()->trMemory());
+   _globalGPRsPreservedAcrossCalls.init(self()->getNumberOfGlobalRegisters(), comp->trMemory());
+   _globalFPRsPreservedAcrossCalls.init(self()->getNumberOfGlobalRegisters(), comp->trMemory());
 
    int16_t i;
    TR_GlobalRegisterNumber grn;

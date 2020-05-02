@@ -214,7 +214,7 @@ void OMR::X86::I386::TreeEvaluator::compareLongsForOrder(
       TR::LabelSymbol *startLabel       = TR::LabelSymbol::create(comp->trHeapMemory(),cg);
       TR::LabelSymbol *doneLabel        = TR::LabelSymbol::create(comp->trHeapMemory(),cg);
       TR::LabelSymbol *destinationLabel = node->getBranchDestination()->getNode()->getLabel();
-      List<TR::Register> popRegisters(cg->trMemory());
+      List<TR::Register> popRegisters(comp->trMemory());
 
       startLabel->setStartInternalControlFlow();
       doneLabel->setEndInternalControlFlow();
@@ -348,7 +348,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR:
       TR_OpaqueMethodBlock *caller = node->getOwningMethod();
       if (isVolatile && caller)
          {
-         TR_ResolvedMethod *m = comp->fe()->createResolvedMethod(cg->trMemory(), caller, node->getSymbolReference()->getOwningMethod(comp));
+         TR_ResolvedMethod *m = comp->fe()->createResolvedMethod(comp->trMemory(), caller, node->getSymbolReference()->getOwningMethod(comp));
          if (m->getRecognizedMethod() == TR::java_util_concurrent_atomic_AtomicLong_lazySet)
             {
             isVolatile = false;
@@ -559,7 +559,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR:
       if ((lowMR || highMR) && caller)
          {
 #ifdef J9_PROJECT_SPECIFIC
-         TR_ResolvedMethod *m = comp->fe()->createResolvedMethod(cg->trMemory(), caller, node->getSymbolReference()->getOwningMethod(comp));
+         TR_ResolvedMethod *m = comp->fe()->createResolvedMethod(comp->trMemory(), caller, node->getSymbolReference()->getOwningMethod(comp));
          if (m->getRecognizedMethod() == TR::java_util_concurrent_atomic_AtomicLong_lazySet)
             {
             if (lowMR)
@@ -3379,8 +3379,8 @@ TR::Register *OMR::X86::I386::TreeEvaluator::iflcmpeqEvaluator(TR::Node *node, T
          }
       else
          {
-         List<TR::Register>  popRegisters(cg->trMemory());
          TR::Compilation *comp = cg->comp();
+         List<TR::Register>  popRegisters(comp->trMemory());
          TR::LabelSymbol     *startLabel = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
          TR::LabelSymbol     *doneLabel  = TR::LabelSymbol::create(comp->trHeapMemory(), cg);
 
@@ -3453,7 +3453,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::iflcmpneEvaluator(TR::Node *node, T
    if (secondChild->getOpCodeValue() == TR::lconst &&
        secondChild->getRegister() == NULL)
       {
-      List<TR::Register>                    popRegisters(cg->trMemory());
+      List<TR::Register>                    popRegisters(comp->trMemory());
       int32_t                              lowValue    = secondChild->getLongIntLow();
       int32_t                              highValue   = secondChild->getLongIntHigh();
       TR::Node                             *firstChild  = node->getFirstChild();

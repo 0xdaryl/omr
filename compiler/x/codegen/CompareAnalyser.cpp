@@ -450,7 +450,7 @@ void TR_X86CompareAnalyser::longOrderedCompareAndBranchAnalyser(TR::Node       *
    TR::MemoryReference               *highMR           = NULL;
    TR::RegisterDependencyConditions  *deps             = NULL;
    uint32_t                           numAdditionalRegDeps = 5;
-   List<TR::Register>                 popRegisters(cg()->trMemory());
+   List<TR::Register>                 popRegisters(comp->trMemory());
 
    if (getCmpReg1Mem2())
       {
@@ -804,7 +804,7 @@ void TR_X86CompareAnalyser::longEqualityCompareAndBranchAnalyser(TR::Node       
    TR::MemoryReference               *highMR               = NULL;
    bool                               createdFirstLabel    = (firstBranchLabel == NULL ? true : false);
    uint32_t                           numAdditionalRegDeps = 5;
-   List<TR::Register>                 popRegisters(cg()->trMemory());
+   List<TR::Register>                 popRegisters(comp->trMemory());
 
    if (getCmpReg1Mem2())
       {

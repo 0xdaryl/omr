@@ -275,7 +275,7 @@ void OMR::X86::Instruction::clobberRegsForRematerialisation()
             {
             if (!clob)
                {
-               clob = new (comp->trHeapMemory()) TR::ClobberingInstruction(self(), cg->trMemory());
+               clob = new (comp->trHeapMemory()) TR::ClobberingInstruction(self(), comp->trMemory());
                cg->addClobberingInstruction(clob);
                }
             clob->addClobberedRegister(reg);

@@ -952,7 +952,7 @@ void OMR::X86::TreeEvaluator::compareIntegersForEquality(TR::Node *node, TR::Cod
                if (cg->profiledPointersRequireRelocation())
                   TR::TreeEvaluator::setupProfiledGuardRelocation((TR::X86RegImmInstruction *)cmpInstruction, node, TR_MethodPointer);
 
-               if (cg->fe()->isUnloadAssumptionRequired(cg->fe()->createResolvedMethod(cg->trMemory(), (TR_OpaqueMethodBlock *) secondChild->getAddress(), comp->getCurrentMethod())->classOfMethod(), comp->getCurrentMethod()) || cg->profiledPointersRequireRelocation())
+               if (cg->fe()->isUnloadAssumptionRequired(cg->fe()->createResolvedMethod(comp->trMemory(), (TR_OpaqueMethodBlock *) secondChild->getAddress(), comp->getCurrentMethod())->classOfMethod(), comp->getCurrentMethod()) || cg->profiledPointersRequireRelocation())
                   comp->getStaticMethodPICSites()->push_front(cmpInstruction);
                }
             }
@@ -1167,7 +1167,7 @@ TR::Register *OMR::X86::TreeEvaluator::igotoEvaluator(TR::Node* node, TR::CodeGe
       TR::Node* secondChild = node->getSecondChild();
       TR_ASSERT(secondChild->getOpCodeValue() == TR::GlRegDeps, "second child of a igoto should be a TR::GlRegDeps");
       cg->evaluate(secondChild);
-      List<TR::Register> popRegisters(cg->trMemory());
+      List<TR::Register> popRegisters(cg->comp()->trMemory());
 
       secondChildDeps = generateRegisterDependencyConditions(secondChild, cg, 0, &popRegisters);
       cg->decReferenceCount(secondChild);
@@ -2313,7 +2313,7 @@ static bool virtualGuardHelper(TR::Node *node, TR::CodeGenerator *cg)
       site = comp->addSideEffectNOPSite();
       }
 
-   List<TR::Register> popRegisters(cg->trMemory());
+   List<TR::Register> popRegisters(comp->trMemory());
    TR::RegisterDependencyConditions  *deps = 0;
    if (node->getNumChildren() == 3)
       {

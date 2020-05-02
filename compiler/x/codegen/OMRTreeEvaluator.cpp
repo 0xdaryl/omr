@@ -296,7 +296,7 @@ TR::Instruction *OMR::X86::TreeEvaluator::insertLoadConstant(TR::Node           
       if (target && node &&
           node->getOpCodeValue() == TR::aconst &&
           node->isMethodPointerConstant() &&
-          (cg->fe()->isUnloadAssumptionRequired(cg->fe()->createResolvedMethod(cg->trMemory(), (TR_OpaqueMethodBlock *) node->getAddress(), comp->getCurrentMethod())->classOfMethod(), comp->getCurrentMethod()) ||
+          (cg->fe()->isUnloadAssumptionRequired(cg->fe()->createResolvedMethod(comp->trMemory(), (TR_OpaqueMethodBlock *) node->getAddress(), comp->getCurrentMethod())->classOfMethod(), comp->getCurrentMethod()) ||
            cg->profiledPointersRequireRelocation()))
          {
          traceMsg(comp, "Adding instr %p to MethodPICSites for node %p\n", movInstruction, node);
@@ -371,7 +371,7 @@ TR::Instruction *OMR::X86::TreeEvaluator::insertLoadConstant(TR::Node           
         if (target && node &&
             node->getOpCodeValue() == TR::aconst &&
             node->isMethodPointerConstant() &&
-            (cg->fe()->isUnloadAssumptionRequired(cg->fe()->createResolvedMethod(cg->trMemory(), (TR_OpaqueMethodBlock *) node->getAddress(), comp->getCurrentMethod())->classOfMethod(), comp->getCurrentMethod()) ||
+            (cg->fe()->isUnloadAssumptionRequired(cg->fe()->createResolvedMethod(comp->trMemory(), (TR_OpaqueMethodBlock *) node->getAddress(), comp->getCurrentMethod())->classOfMethod(), comp->getCurrentMethod()) ||
              cg->profiledPointersRequireRelocation()))
             {
             traceMsg(comp, "Adding instr %p to MethodPICSites for node %p\n", movInstruction, node);
@@ -1076,7 +1076,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerStoreEvaluator(TR::Node *node, TR:
       TR_OpaqueMethodBlock *caller = node->getOwningMethod();
       if (tempMR && caller)
          {
-         TR_ResolvedMethod *m = comp->fe()->createResolvedMethod(cg->trMemory(), caller, node->getSymbolReference()->getOwningMethod(comp));
+         TR_ResolvedMethod *m = comp->fe()->createResolvedMethod(comp->trMemory(), caller, node->getSymbolReference()->getOwningMethod(comp));
          if ((m->getRecognizedMethod() == TR::java_util_concurrent_atomic_AtomicInteger_lazySet) ||
              (m->getRecognizedMethod() == TR::java_util_concurrent_atomic_AtomicReference_lazySet) ||
              (m->getRecognizedMethod() == TR::java_util_concurrent_atomic_AtomicLong_lazySet))
@@ -3429,8 +3429,8 @@ TR::Register *OMR::X86::TreeEvaluator::passThroughEvaluator(TR::Node *node, TR::
 TR::Register *OMR::X86::TreeEvaluator::BBStartEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Block *block = node->getBlock();
-   List<TR::Register> popRegisters(cg->trMemory());
    TR::Compilation *comp = cg->comp();
+   List<TR::Register> popRegisters(comp->trMemory());
 
    cg->setCurrentBlock(block);
    if (!block->isExtensionOfPreviousBlock())
@@ -3573,7 +3573,7 @@ TR::Register *OMR::X86::TreeEvaluator::BBEndEvaluator(TR::Node *node, TR::CodeGe
             TR::Register* regCursor = *iterator;
             if (!clob)
             {
-               clob = new (comp->trHeapMemory()) TR::ClobberingInstruction(instr, cg->trMemory());
+               clob = new (comp->trHeapMemory()) TR::ClobberingInstruction(instr, comp->trMemory());
                cg->addClobberingInstruction(clob);
             }
             clob->addClobberedRegister(regCursor);
@@ -4018,7 +4018,7 @@ OMR::X86::TreeEvaluator::tstartEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       {
       GRANode = fallThroughNode->getFirstChild();
       cg->evaluate(GRANode);
-      List<TR::Register> popRegisters(cg->trMemory());
+      List<TR::Register> popRegisters(comp->trMemory());
       fallThroughConditions = generateRegisterDependencyConditions(GRANode, cg, 0, &popRegisters);
       cg->decReferenceCount(GRANode);
       }
@@ -4027,7 +4027,7 @@ OMR::X86::TreeEvaluator::tstartEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       {
       GRANode = persistentFailureNode->getFirstChild();
       cg->evaluate(GRANode);
-      List<TR::Register> popRegisters(cg->trMemory());
+      List<TR::Register> popRegisters(comp->trMemory());
       persistentConditions = generateRegisterDependencyConditions(GRANode, cg, 0, &popRegisters);
       cg->decReferenceCount(GRANode);
       }
@@ -4036,7 +4036,7 @@ OMR::X86::TreeEvaluator::tstartEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       {
       GRANode = transientFailureNode->getFirstChild();
       cg->evaluate(GRANode);
-      List<TR::Register> popRegisters(cg->trMemory());
+      List<TR::Register> popRegisters(comp->trMemory());
       transientConditions = generateRegisterDependencyConditions(GRANode, cg, 0, &popRegisters);
       cg->decReferenceCount(GRANode);
       }

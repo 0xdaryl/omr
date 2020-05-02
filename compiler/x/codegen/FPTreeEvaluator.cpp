@@ -1996,7 +1996,8 @@ TR::Register *OMR::X86::TreeEvaluator::generateBranchOrSetOnFPCompare(TR::Node  
                                                                   bool         generateBranch,
                                                                   TR::CodeGenerator *cg)
    {
-   List<TR::Register> popRegisters(cg->trMemory());
+   TR::Compilation *comp = cg->comp();
+   List<TR::Register> popRegisters(comp->trMemory());
    TR::Register *targetRegister = NULL;
    TR::RegisterDependencyConditions *deps = NULL;
 
@@ -2045,8 +2046,8 @@ TR::Register *OMR::X86::TreeEvaluator::generateBranchOrSetOnFPCompare(TR::Node  
          if (deps && deps->getPreConditions() && deps->getPreConditions()->getMayNeedToPopFPRegisters())
             {
             deps1 = deps->clone(cg);
-            deps1->setNumPostConditions(0, cg->trMemory());
-            deps->setNumPreConditions(0, cg->trMemory());
+            deps1->setNumPostConditions(0, comp->trMemory());
+            deps->setNumPreConditions(0, comp->trMemory());
             }
          generateLabelInstruction(JPE4, node, node->getBranchDestination()->getNode()->getLabel(), deps1, cg);
          generateLabelInstruction(JNE4, node, node->getBranchDestination()->getNode()->getLabel(), deps, cg);
@@ -2080,8 +2081,8 @@ TR::Register *OMR::X86::TreeEvaluator::generateBranchOrSetOnFPCompare(TR::Node  
          if (deps && deps->getPreConditions() && deps->getPreConditions()->getMayNeedToPopFPRegisters())
             {
             deps1 = deps->clone(cg);
-            deps1->setNumPostConditions(0, cg->trMemory());
-            deps->setNumPreConditions(0, cg->trMemory());
+            deps1->setNumPostConditions(0, comp->trMemory());
+            deps->setNumPreConditions(0, comp->trMemory());
             }
          generateLabelInstruction(LABEL, node, startLabel, cg);
          generateLabelInstruction(JPE4, node, fallThroughLabel, deps1, cg);

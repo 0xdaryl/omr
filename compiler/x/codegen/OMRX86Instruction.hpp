@@ -732,7 +732,7 @@ class X86RegInstruction : public TR::Instruction
           reg->isDiscardable() &&
           getOpCode().modifiesTarget())
          {
-         TR::ClobberingInstruction *clob = new (comp->trHeapMemory()) TR::ClobberingInstruction(this, cg->trMemory());
+         TR::ClobberingInstruction *clob = new (comp->trHeapMemory()) TR::ClobberingInstruction(this, comp->trMemory());
          clob->addClobberedRegister(reg);
          cg->addClobberingInstruction(clob);
          cg->removeLiveDiscardableRegister(reg);
@@ -774,7 +774,7 @@ class X86RegInstruction : public TR::Instruction
           reg->isDiscardable() &&
           getOpCode().modifiesTarget())
          {
-         TR::ClobberingInstruction *clob = new (comp->trHeapMemory()) TR::ClobberingInstruction(this, cg->trMemory());
+         TR::ClobberingInstruction *clob = new (comp->trHeapMemory()) TR::ClobberingInstruction(this, comp->trMemory());
          clob->addClobberedRegister(reg);
          cg->addClobberingInstruction(clob);
          cg->removeLiveDiscardableRegister(reg);
@@ -1510,13 +1510,13 @@ class X86MemTableInstruction : public TR::X86MemInstruction
    X86MemTableInstruction(TR_X86OpCodes op, TR::Node *node, TR::MemoryReference *mr, ncount_t numEntries, TR::CodeGenerator *cg):
       TR::X86MemInstruction(op, node, mr, cg),_numRelocations(0),_capacity(numEntries)
       {
-      _relocations = (TR::LabelRelocation**)cg->trMemory()->allocateHeapMemory(numEntries * sizeof(_relocations[0]));
+      _relocations = (TR::LabelRelocation**)cg->comp()->trMemory()->allocateHeapMemory(numEntries * sizeof(_relocations[0]));
       }
 
    X86MemTableInstruction(TR_X86OpCodes op, TR::Node *node, TR::MemoryReference *mr, ncount_t numEntries, TR::RegisterDependencyConditions *deps, TR::CodeGenerator *cg):
       TR::X86MemInstruction(op, node, mr, deps, cg),_numRelocations(0),_capacity(numEntries)
       {
-      _relocations = (TR::LabelRelocation**)cg->trMemory()->allocateHeapMemory(numEntries * sizeof(_relocations[0]));
+      _relocations = (TR::LabelRelocation**)cg->comp()->trMemory()->allocateHeapMemory(numEntries * sizeof(_relocations[0]));
       }
 
    virtual char *description() { return "X86MemTable"; }

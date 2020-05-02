@@ -577,7 +577,7 @@ TR::X86RegInstruction::X86RegInstruction(TR_X86OpCodes op,
        reg->isDiscardable() &&
        getOpCode().modifiesTarget())
       {
-      TR::ClobberingInstruction *clob = new (cg->comp()->trHeapMemory()) TR::ClobberingInstruction(this, cg->trMemory());
+      TR::ClobberingInstruction *clob = new (cg->comp()->trHeapMemory()) TR::ClobberingInstruction(this, cg->comp()->trMemory());
       clob->addClobberedRegister(reg);
       cg->addClobberingInstruction(clob);
       cg->removeLiveDiscardableRegister(reg);
@@ -618,7 +618,7 @@ TR::X86RegInstruction::X86RegInstruction(TR_X86OpCodes                       op,
        reg->isDiscardable() &&
        getOpCode().modifiesTarget())
       {
-      TR::ClobberingInstruction *clob = new (cg->comp()->trHeapMemory()) TR::ClobberingInstruction(this, cg->trMemory());
+      TR::ClobberingInstruction *clob = new (cg->comp()->trHeapMemory()) TR::ClobberingInstruction(this, cg->comp()->trMemory());
       clob->addClobberedRegister(reg);
       cg->addClobberingInstruction(clob);
       cg->removeLiveDiscardableRegister(reg);
@@ -4245,7 +4245,7 @@ generateConditionalJumpInstruction(
 
    if (ifNode->getNumChildren() == 3)
       {
-      List<TR::Register> popRegisters(cg->trMemory());
+      List<TR::Register> popRegisters(comp->trMemory());
       TR::Node* glRegDep = ifNode->getChild(2);
       inst = generateLabelInstruction(opCode, ifNode, destinationLabel, glRegDep, &popRegisters, cg);
 

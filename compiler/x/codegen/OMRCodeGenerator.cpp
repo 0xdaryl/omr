@@ -334,7 +334,7 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
 
    _linkageProperties = &self()->getLinkage()->getProperties();
 
-   _unlatchedRegisterList = (TR::RealRegister**)self()->trMemory()->allocateHeapMemory(sizeof(TR::RealRegister*)*(TR::RealRegister::NumRegisters + 1));
+   _unlatchedRegisterList = (TR::RealRegister**)comp->trMemory()->allocateHeapMemory(sizeof(TR::RealRegister*)*(TR::RealRegister::NumRegisters + 1));
    _unlatchedRegisterList[0] = 0; // mark that list is empty
 
    self()->setGlobalRegisterTable(self()->machine()->getGlobalRegisterTable(*_linkageProperties));
@@ -787,7 +787,7 @@ void OMR::X86::CodeGenerator::clobberLiveDiscardableRegisters(
                {
                if (!clob)
                   {
-                  clob = new (comp->trHeapMemory()) TR::ClobberingInstruction(instr, self()->trMemory());
+                  clob = new (comp->trHeapMemory()) TR::ClobberingInstruction(instr, comp->trMemory());
                   self()->addClobberingInstruction(clob);
                   }
 
@@ -814,7 +814,7 @@ void OMR::X86::CodeGenerator::clobberLiveDiscardableRegisters(
                   {
                   if (!clob)
                      {
-                     clob = new (comp->trHeapMemory()) TR::ClobberingInstruction(instr, self()->trMemory());
+                     clob = new (comp->trHeapMemory()) TR::ClobberingInstruction(instr, comp->trMemory());
                      self()->addClobberingInstruction(clob);
                      }
 
@@ -862,7 +862,7 @@ void OMR::X86::CodeGenerator::clobberLiveDiscardableRegisters(
 void OMR::X86::CodeGenerator::clobberLiveDependentDiscardableRegisters(TR::ClobberingInstruction * clob,
                                                                     TR::Register              * baseReg)
    {
-   TR_Stack<TR::Register *> worklist(self()->trMemory());
+   TR_Stack<TR::Register *> worklist(self()->comp()->trMemory());
    worklist.push(baseReg);
 
    while (!worklist.isEmpty())
@@ -902,7 +902,7 @@ void OMR::X86::CodeGenerator::clobberLiveDependentDiscardableRegisters(TR::Clobb
 //
 void OMR::X86::CodeGenerator::reactivateDependentDiscardableRegisters(TR::Register * baseReg)
    {
-   TR_Stack<TR::Register *> worklist(self()->trMemory());
+   TR_Stack<TR::Register *> worklist(self()->comp()->trMemory());
    worklist.push(baseReg);
 
    if (debug("dumpRemat"))
@@ -942,7 +942,7 @@ void OMR::X86::CodeGenerator::reactivateDependentDiscardableRegisters(TR::Regist
 //
 void OMR::X86::CodeGenerator::deactivateDependentDiscardableRegisters(TR::Register * baseReg)
    {
-   TR_Stack<TR::Register *> worklist(self()->trMemory());
+   TR_Stack<TR::Register *> worklist(self()->comp()->trMemory());
    worklist.push(baseReg);
 
    if (debug("dumpRemat"))
@@ -1655,7 +1655,8 @@ struct DescendingSortX86DataSnippetByDataSize
    };
 void OMR::X86::CodeGenerator::doBinaryEncoding()
    {
-   LexicalTimer pt1("code generation", self()->comp()->phaseTimer());
+   TR::Compilation *comp = self()->comp();
+   LexicalTimer pt1("code generation", comp->phaseTimer());
 
    // Generate fixup code for the interpreter entry point right before PROCENTRY
    //
@@ -1666,18 +1667,18 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
       }
 
    TR::Instruction * interpreterEntryInstruction;
-   if (self()->comp()->target().is64Bit())
+   if (comp->target().is64Bit())
       {
-      if (self()->comp()->getMethodSymbol()->getLinkageConvention() != TR_System)
+      if (comp->getMethodSymbol()->getLinkageConvention() != TR_System)
          interpreterEntryInstruction = self()->getLinkage()->copyStackParametersToLinkageRegisters(procEntryInstruction);
       else
          interpreterEntryInstruction = procEntryInstruction;
 
       // Patching can occur at the jit entry point, so insert padding if necessary.
       //
-      if (self()->comp()->target().isSMP())
+      if (comp->target().isSMP())
          {
-         TR::Recompilation * recompilation = self()->comp()->getRecompilationInfo();
+         TR::Recompilation * recompilation = comp->getRecompilationInfo();
          const TR_AtomicRegion *atomicRegions;
 #ifdef J9_PROJECT_SPECIFIC
          if (recompilation && !recompilation->useSampling())
@@ -1715,9 +1716,9 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
    // Pass 1: Binary length estimation and prologue creation
    //
 
-   if (self()->comp()->getOption(TR_TraceCG))
+   if (comp->getOption(TR_TraceCG))
       {
-      traceMsg(self()->comp(), "<proepilogue>\n");
+      traceMsg(comp, "<proepilogue>\n");
       }
 
    TR::Instruction * estimateCursor = self()->getFirstInstruction();
@@ -1732,7 +1733,7 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
       }
 
    /* Set offset for jitted method entry alignment */
-   if (self()->comp()->getRecompilationInfo())
+   if (comp->getRecompilationInfo())
       {
       TR_ASSERT(estimate >= 3, "Estimate should not be less than 3");
       self()->setPreJitMethodEntrySize(estimate - 3);
@@ -1746,7 +1747,7 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
 
    // The recompilation prologue
    //
-   TR::Recompilation * recompilation = self()->comp()->getRecompilationInfo();
+   TR::Recompilation * recompilation = comp->getRecompilationInfo();
    if (recompilation)
       prologueCursor = recompilation->generatePrologue(prologueCursor);
 
@@ -1760,7 +1761,7 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
    for (TR::Instruction *gcMapCursor = prologueCursor; gcMapCursor != _vfpResetInstruction; gcMapCursor = gcMapCursor->getNext())
       {
       if (gcMapCursor->needsGCMap())
-         gcMapCursor->setGCMap(self()->getStackAtlas()->getParameterMap()->clone(self()->trMemory()));
+         gcMapCursor->setGCMap(self()->getStackAtlas()->getParameterMap()->clone(comp->trMemory()));
       }
 
    if (self()->supportsJitMethodEntryAlignment())
@@ -1768,8 +1769,8 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
       estimate += (self()->getJitMethodEntryAlignmentBoundary() - 1);
       }
 
-   if (self()->comp()->getOption(TR_TraceCG))
-      traceMsg(self()->comp(), "\n<instructions\n"
+   if (comp->getOption(TR_TraceCG))
+      traceMsg(comp, "\n<instructions\n"
                                 "\ttitle=\"VFP Substitution\">");
 
    // Estimate instruction length of prologue and remainder of method,
@@ -1859,7 +1860,7 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
       TR_VFPState prevState = _vfpState;
       estimateCursor->adjustVFPState(&_vfpState, self());
 
-      if (self()->comp()->getOption(TR_TraceCG))
+      if (comp->getOption(TR_TraceCG))
          self()->getDebug()->dumpInstructionWithVFPState(estimateCursor, &prevState);
 
       if (estimateCursor == _vfpResetInstruction)
@@ -1868,8 +1869,8 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
       estimateCursor = estimateCursor->getNext();
       }
 
-   if (self()->comp()->getOption(TR_TraceCG))
-      traceMsg(self()->comp(), "\n</instructions>\n");
+   if (comp->getOption(TR_TraceCG))
+      traceMsg(comp, "\n</instructions>\n");
 
    estimate = self()->setEstimatedLocationsForSnippetLabels(estimate);
    // When using copyBinaryToBuffer() to copy the encoding of an instruction we
@@ -1882,9 +1883,9 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
    #define OVER_ESTIMATION 4
    self()->setEstimatedCodeLength(estimate+OVER_ESTIMATION);
 
-   if (self()->comp()->getOption(TR_TraceCG))
+   if (comp->getOption(TR_TraceCG))
       {
-      traceMsg(self()->comp(), "</proepilogue>\n");
+      traceMsg(comp, "</proepilogue>\n");
       }
 
    /////////////////////////////////////////////////////////////////
@@ -1892,16 +1893,16 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
    // Pass 2: Binary encoding
    //
 
-   if (self()->comp()->getOption(TR_TraceCG))
+   if (comp->getOption(TR_TraceCG))
       {
-      traceMsg(self()->comp(), "<encode>\n");
+      traceMsg(comp, "<encode>\n");
       }
 
    uint8_t * coldCode = NULL;
    uint8_t * temp = self()->allocateCodeMemory(self()->getEstimatedCodeLength(), 0, &coldCode);
    TR_ASSERT(temp, "Failed to allocate primary code area.");
 
-   if (self()->comp()->target().is64Bit() && self()->hasCodeCacheSwitched() && self()->getPicSlotCount() != 0)
+   if (comp->target().is64Bit() && self()->hasCodeCacheSwitched() && self()->getPicSlotCount() != 0)
       {
       int32_t numTrampolinesToReserve = self()->getPicSlotCount() - self()->getNumReservedIPICTrampolines();
       TR_ASSERT(numTrampolinesToReserve >= 0, "Discrepancy with number of IPIC trampolines to reserve getPicSlotCount()=%d getNumReservedIPICTrampolines()=%d",
@@ -1927,7 +1928,7 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
    //
    self()->setPrePrologueSize(self()->getBinaryBufferLength());
 
-   self()->comp()->getSymRefTab()->findOrCreateStartPCSymbolRef()->getSymbol()->getStaticSymbol()->setStaticAddress(self()->getBinaryBufferCursor());
+   comp->getSymRefTab()->findOrCreateStartPCSymbolRef()->getSymbol()->getStaticSymbol()->setStaticAddress(self()->getBinaryBufferCursor());
 
    // Generate binary for the rest of the instructions
    //
@@ -1942,15 +1943,15 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
               cursorInstruction->getEstimatedBinaryLength(),
               self()->getBinaryBufferCursor() - instructionStart);
 
-      if (self()->comp()->target().is64Bit() &&
+      if (comp->target().is64Bit() &&
           (cursorInstruction->getOpCodeValue() == PROCENTRY))
          {
          // A hack to set the linkage info word
          //
          TR_ASSERT(_returnTypeInfoInstruction->getOpCodeValue() == DDImm4, "assertion failure");
-         uint32_t magicWord = ((self()->getBinaryBufferCursor()-self()->getCodeStart())<<16) | static_cast<uint32_t>(self()->comp()->getReturnInfo());
+         uint32_t magicWord = ((self()->getBinaryBufferCursor()-self()->getCodeStart())<<16) | static_cast<uint32_t>(comp->getReturnInfo());
          uint32_t recompFlag = 0;
-         TR::Recompilation * recomp = self()->comp()->getRecompilationInfo();
+         TR::Recompilation * recomp = comp->getRecompilationInfo();
 
 #ifdef J9_PROJECT_SPECIFIC
          if (recomp !=NULL && recomp->couldBeCompiledAgain())
@@ -1984,24 +1985,24 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
    // Place an assumption that gcrPatchPointSymbol reference has been updated
    // with the address of the byte to be patched. Otherwise, fail this compilation
    // and retry without GCR.
-   if (self()->comp()->getOption(TR_EnableGCRPatching) &&
-       self()->comp()->getRecompilationInfo() &&
-       self()->comp()->getRecompilationInfo()->getJittedBodyInfo()->getUsesGCR())
+   if (comp->getOption(TR_EnableGCRPatching) &&
+       comp->getRecompilationInfo() &&
+       comp->getRecompilationInfo()->getJittedBodyInfo()->getUsesGCR())
       {
-      void * addrToPatch = self()->comp()->getSymRefTab()->findOrCreateGCRPatchPointSymbolRef()->getSymbol()->getStaticSymbol()->getStaticAddress();
+      void * addrToPatch = comp->getSymRefTab()->findOrCreateGCRPatchPointSymbolRef()->getSymbol()->getStaticSymbol()->getStaticAddress();
       if (!addrToPatch)
          {
          TR_ASSERT(false, "Must have updated gcrPatchPointSymbol with the correct address by now\n");
-         self()->comp()->failCompilation<TR::GCRPatchFailure>("Must have updated gcrPatchPointSymbol with the correct address by now");
+         comp->failCompilation<TR::GCRPatchFailure>("Must have updated gcrPatchPointSymbol with the correct address by now");
          }
       }
 #endif
 
    self()->getLinkage()->performPostBinaryEncoding();
 
-   if (self()->comp()->getOption(TR_TraceCG))
+   if (comp->getOption(TR_TraceCG))
       {
-      traceMsg(self()->comp(), "</encode>\n");
+      traceMsg(comp, "</encode>\n");
       }
 
    }
@@ -2263,7 +2264,7 @@ void OMR::X86::CodeGenerator::buildRegisterMapForInstruction(TR_GCStackMap * map
             if (virtReg->containsInternalPointer())
                {
                if (!internalPtrMap)
-                  internalPtrMap = new (comp->trHeapMemory()) TR_InternalPointerMap(self()->trMemory());
+                  internalPtrMap = new (comp->trHeapMemory()) TR_InternalPointerMap(comp->trMemory());
                internalPtrMap->addInternalPointerPair(virtReg->getPinningArrayPointer(), i);
                atlas->addPinningArrayPtrForInternalPtrReg(virtReg->getPinningArrayPointer());
                }
@@ -2569,7 +2570,7 @@ void OMR::X86::CodeGenerator::simulateNodeEvaluation(TR::Node * node, TR_Registe
    if (toFold != -1) // toFold child can be folded into a memory operand
       {
       int32_t i;
-      TR_SimulatedMemoryReference memref(self()->trMemory());
+      TR_SimulatedMemoryReference memref(self()->comp()->trMemory());
 
       // Evaluate children besides toFold
       for (i=0; i < node->getNumChildren(); i++)
