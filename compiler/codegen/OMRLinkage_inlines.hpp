@@ -64,7 +64,7 @@ OMR::Linkage::fe()
 TR_Memory *
 OMR::Linkage::trMemory()
    {
-   return _cg->trMemory();
+   return _cg->comp()->trMemory();
    }
 
 TR_HeapMemory

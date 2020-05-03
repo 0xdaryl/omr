@@ -266,7 +266,7 @@ OMR::CodeGenerator::CodeGenerator() :
 TR_StackMemory
 OMR::CodeGenerator::trStackMemory()
    {
-   return self()->trMemory();
+   return self()->comp()->trMemory();
    }
 
 TR_FrontEnd *
@@ -618,10 +618,10 @@ OMR::CodeGenerator::doInstructionSelection()
    self()->beginInstructionSelection();
 
    {
-   TR::StackMemoryRegion stackMemoryRegion(*self()->trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp->trMemory());
 
    TR_BitVector *liveLocals = self()->getLiveLocals();
-   TR_BitVector nodeChecklistBeforeDump(comp->getNodeCount(), self()->trMemory(), stackAlloc, growable);
+   TR_BitVector nodeChecklistBeforeDump(comp->getNodeCount(), comp->trMemory(), stackAlloc, growable);
 
    for (TR::TreeTop *tt = comp->getStartTree(); tt; tt = self()->getCurrentEvaluationTreeTop()->getNextTreeTop())
       {
@@ -829,7 +829,7 @@ OMR::CodeGenerator::use64BitRegsOn32Bit()
 TR_PersistentMemory *
 OMR::CodeGenerator::trPersistentMemory()
    {
-   return self()->trMemory()->trPersistentMemory();
+   return self()->comp()->trMemory()->trPersistentMemory();
    }
 
 void
@@ -2385,16 +2385,17 @@ OMR::CodeGenerator::treeContainsCall(TR::TreeTop * treeTop)
 void
 OMR::CodeGenerator::computeBlocksWithCalls()
    {
-   uint32_t         bcount = self()->comp()->getFlowGraph()->getNextNodeNumber();
+   TR::Compilation *comp = self()->comp();
+   uint32_t         bcount = comp->getFlowGraph()->getNextNodeNumber();
    TR_BitVector     bvec;
    TR::TreeTop      *pTree, *exitTree;
    TR::Block        *block;
    uint32_t         bnum, btemp;
 
-   _blocksWithCalls = new (self()->comp()->trHeapMemory()) TR_BitVector(bcount, self()->trMemory());
-   bvec.init(bcount, self()->trMemory());
+   _blocksWithCalls = new (comp->trHeapMemory()) TR_BitVector(bcount, comp->trMemory());
+   bvec.init(bcount, comp->trMemory());
 
-   for (pTree=self()->comp()->getStartTree(); pTree!=NULL; pTree=exitTree->getNextTreeTop())
+   for (pTree=comp->getStartTree(); pTree!=NULL; pTree=exitTree->getNextTreeTop())
       {
       block = pTree->getNode()->getBlock();
       exitTree = block->getExit();
@@ -2416,7 +2417,7 @@ OMR::CodeGenerator::computeBlocksWithCalls()
          }
       }
 
-   for (pTree=self()->comp()->getStartTree(); pTree!=NULL; pTree=exitTree->getNextTreeTop())
+   for (pTree=comp->getStartTree(); pTree!=NULL; pTree=exitTree->getNextTreeTop())
       {
       block = pTree->getNode()->getBlock();
       exitTree = block->getExit();

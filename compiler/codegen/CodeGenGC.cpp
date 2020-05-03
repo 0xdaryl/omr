@@ -132,7 +132,7 @@ OMR::CodeGenerator::createStackAtlas()
 
    // Now create the stack atlas
    //
-   TR::GCStackAtlas * atlas = new (comp->trHeapMemory()) TR::GCStackAtlas(numberOfParmSlots, numberOfSlots, self()->trMemory());
+   TR::GCStackAtlas * atlas = new (comp->trHeapMemory()) TR::GCStackAtlas(numberOfParmSlots, numberOfSlots, comp->trMemory());
 
    atlas->setParmBaseOffset(firstMappedParmOffset);
    atlas->setParameterMap(parameterMap);
@@ -213,7 +213,7 @@ OMR::CodeGenerator::buildGCMapForInstruction(TR::Instruction *instr)
 
    if (liveMonitors)
       {
-      map->allocateLiveMonitorBits(self()->trMemory());
+      map->allocateLiveMonitorBits(comp->trMemory());
       }
 
    if (liveLocals || liveMonitors)
@@ -349,7 +349,7 @@ OMR::CodeGenerator::remapGCIndicesInInternalPtrFormat()
 
          if (!internalPtrMap)
             {
-            internalPtrMap = new (comp->trHeapMemory()) TR_InternalPointerMap(self()->trMemory());
+            internalPtrMap = new (comp->trHeapMemory()) TR_InternalPointerMap(comp->trMemory());
             stackAtlas->setInternalPointerMap(internalPtrMap);
             }
          stackAtlas->addPinningArrayPtrForInternalPtrReg(localCursor);
@@ -372,7 +372,7 @@ OMR::CodeGenerator::remapGCIndicesInInternalPtrFormat()
 
          if (!internalPtrMap)
             {
-            internalPtrMap = new (comp->trHeapMemory()) TR_InternalPointerMap(self()->trMemory());
+            internalPtrMap = new (comp->trHeapMemory()) TR_InternalPointerMap(comp->trMemory());
             stackAtlas->setInternalPointerMap(internalPtrMap);
             }
 
@@ -440,7 +440,7 @@ OMR::CodeGenerator::addToAtlas(TR::Instruction * instr)
          TR_GCStackMap * prevMap = prev->getGCMap();
          if (prevMap)
             {
-            map = prevMap->clone(self()->trMemory());
+            map = prevMap->clone(comp->trMemory());
             map->setByteCodeInfo(instr->getNode()->getByteCodeInfo());
             break;
             }
