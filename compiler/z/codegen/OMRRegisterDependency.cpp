@@ -70,7 +70,7 @@ OMR::Z::RegisterDependencyConditions::RegisterDependencyConditions(TR::CodeGener
    {
    TR::Compilation *comp = cg->comp();
    _cg = cg;
-   List<TR::Register> regList(cg->trMemory());
+   List<TR::Register> regList(comp->trMemory());
    TR::Instruction * iCursor = (cursorPtr == NULL) ? NULL : *cursorPtr;
    int32_t totalNum = node->getNumChildren() + extranum;
    int32_t i;
@@ -97,8 +97,8 @@ OMR::Z::RegisterDependencyConditions::RegisterDependencyConditions(TR::CodeGener
 
    totalNum = totalNum + numLongs + numLongDoubles;
 
-   _preConditions = new (totalNum, cg->trMemory()) TR_S390RegisterDependencyGroup;
-   _postConditions = new (totalNum, cg->trMemory()) TR_S390RegisterDependencyGroup;
+   _preConditions = new (totalNum, comp->trMemory()) TR_S390RegisterDependencyGroup;
+   _postConditions = new (totalNum, comp->trMemory()) TR_S390RegisterDependencyGroup;
    _numPreConditions = totalNum;
    _addCursorForPre = 0;
    _numPostConditions = totalNum;
@@ -163,8 +163,8 @@ OMR::Z::RegisterDependencyConditions::RegisterDependencyConditions(TR::CodeGener
    }
 
 OMR::Z::RegisterDependencyConditions::RegisterDependencyConditions(TR::RegisterDependencyConditions* iConds, uint16_t numNewPreConds, uint16_t numNewPostConds, TR::CodeGenerator * cg)
-   : _preConditions(TR_S390RegisterDependencyGroup::create((iConds?iConds->getNumPreConditions():0)+numNewPreConds, cg->trMemory())),
-     _postConditions(TR_S390RegisterDependencyGroup::create((iConds?iConds->getNumPostConditions():0)+numNewPostConds, cg->trMemory())),
+   : _preConditions(TR_S390RegisterDependencyGroup::create((iConds?iConds->getNumPreConditions():0)+numNewPreConds, cg->comp()->trMemory())),
+     _postConditions(TR_S390RegisterDependencyGroup::create((iConds?iConds->getNumPostConditions():0)+numNewPostConds, cg->comp()->trMemory())),
      _numPreConditions((iConds?iConds->getNumPreConditions():0)+numNewPreConds),
      _addCursorForPre(0),
      _numPostConditions((iConds?iConds->getNumPostConditions():0)+numNewPostConds),
@@ -222,8 +222,8 @@ OMR::Z::RegisterDependencyConditions::RegisterDependencyConditions(TR::RegisterD
 OMR::Z::RegisterDependencyConditions::RegisterDependencyConditions(TR::RegisterDependencyConditions * conds_1,
                                      TR::RegisterDependencyConditions * conds_2,
                                      TR::CodeGenerator * cg)
-   : _preConditions(TR_S390RegisterDependencyGroup::create(conds_1->getNumPreConditions()+conds_2->getNumPreConditions(), cg->trMemory())),
-     _postConditions(TR_S390RegisterDependencyGroup::create(conds_1->getNumPostConditions()+conds_2->getNumPostConditions(), cg->trMemory())),
+   : _preConditions(TR_S390RegisterDependencyGroup::create(conds_1->getNumPreConditions()+conds_2->getNumPreConditions(), cg->comp()->trMemory())),
+     _postConditions(TR_S390RegisterDependencyGroup::create(conds_1->getNumPostConditions()+conds_2->getNumPostConditions(), cg->comp()->trMemory())),
      _numPreConditions(conds_1->getNumPreConditions()+conds_2->getNumPreConditions()),
      _addCursorForPre(0),
      _numPostConditions(conds_1->getNumPostConditions()+conds_2->getNumPostConditions()),

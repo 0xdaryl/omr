@@ -267,7 +267,7 @@ TR::S390ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
 
       if (std::find(comp->getMethodSnippetsToBePatchedOnClassUnload()->begin(), comp->getMethodSnippetsToBePatchedOnClassUnload()->end(), this) != comp->getMethodSnippetsToBePatchedOnClassUnload()->end())
          {
-         void *classPointer = (void *) cg()->fe()->createResolvedMethod(cg()->trMemory(), (TR_OpaqueMethodBlock *) (*(uintptr_t *) cursor), comp->getCurrentMethod())->classOfMethod();
+         void *classPointer = (void *) cg()->fe()->createResolvedMethod(comp->trMemory(), (TR_OpaqueMethodBlock *) (*(uintptr_t *) cursor), comp->getCurrentMethod())->classOfMethod();
          cg()->jitAddPicToPatchOnClassUnload(classPointer, (void *) (uintptr_t *) cursor);
          }
       }
@@ -280,7 +280,7 @@ TR::S390ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
 
       if (std::find(comp->getMethodSnippetsToBePatchedOnClassUnload()->begin(), comp->getMethodSnippetsToBePatchedOnClassUnload()->end(), this) != comp->getMethodSnippetsToBePatchedOnClassUnload()->end())
          {
-         void *classPointer = (void *) cg()->fe()->createResolvedMethod(cg()->trMemory(), (TR_OpaqueMethodBlock *) (*(uintptr_t *) cursor), comp->getCurrentMethod())->classOfMethod();
+         void *classPointer = (void *) cg()->fe()->createResolvedMethod(comp->trMemory(), (TR_OpaqueMethodBlock *) (*(uintptr_t *) cursor), comp->getCurrentMethod())->classOfMethod();
          cg()->jitAddPicToPatchOnClassUnload(classPointer, (void *) (uintptr_t *) cursor);
          }
       }

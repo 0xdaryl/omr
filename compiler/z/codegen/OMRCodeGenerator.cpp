@@ -403,7 +403,7 @@ OMR::Z::CodeGenerator::CodeGenerator()
      _constantHashCur(_constantHash),
      _constantList(getTypedAllocator<TR::S390ConstantDataSnippet*>(self()->comp()->allocator())),
      _writableList(getTypedAllocator<TR::S390WritableDataSnippet*>(self()->comp()->allocator())),
-     _transientLongRegisters(self()->trMemory()),
+     _transientLongRegisters(self()->comp()->trMemory()),
      _snippetDataList(getTypedAllocator<TR::S390ConstantDataSnippet*>(self()->comp()->allocator())),
      _outOfLineCodeSectionList(getTypedAllocator<TR_S390OutOfLineCodeSection*>(self()->comp()->allocator())),
      _returnTypeInfoInstruction(NULL),
@@ -424,7 +424,7 @@ OMR::Z::CodeGenerator::CodeGenerator()
    // Initialize Linkage for Code Generator
    self()->initializeLinkage();
 
-   _unlatchedRegisterList = (TR::RealRegister**)self()->trMemory()->allocateHeapMemory(sizeof(TR::RealRegister*)*(TR::RealRegister::NumRegisters));
+   _unlatchedRegisterList = (TR::RealRegister**)comp->trMemory()->allocateHeapMemory(sizeof(TR::RealRegister*)*(TR::RealRegister::NumRegisters));
    _unlatchedRegisterList[0] = 0; // mark that list is empty
 
    bool enableBranchPreload = comp->getOption(TR_EnableBranchPreload);
@@ -680,8 +680,8 @@ bool OMR::Z::CodeGenerator::prepareForGRA()
       // Initialize _globalGPRsPreservedAcrossCalls and _globalFPRsPreservedAcrossCalls
       // We call init here because getNumberOfGlobal[FG]PRs() is initialized during the call to initialize() above.
       //
-      _globalGPRsPreservedAcrossCalls.init(NUM_S390_GPR + NUM_S390_FPR, self()->trMemory());
-      _globalFPRsPreservedAcrossCalls.init(NUM_S390_GPR + NUM_S390_FPR, self()->trMemory());
+      _globalGPRsPreservedAcrossCalls.init(NUM_S390_GPR + NUM_S390_FPR, self()->comp()->trMemory());
+      _globalFPRsPreservedAcrossCalls.init(NUM_S390_GPR + NUM_S390_FPR, self()->comp()->trMemory());
 
       TR_GlobalRegisterNumber grn;
       for (grn = self()->getFirstGlobalGPR(); grn <= self()->getLastGlobalGPR(); grn++)
@@ -705,7 +705,7 @@ bool OMR::Z::CodeGenerator::prepareForGRA()
       if (!self()->comp()->getOption(TR_DisableRegisterPressureSimulation))
          {
          for (int32_t i = 0; i < TR_numSpillKinds; i++)
-            _globalRegisterBitVectors[i].init(self()->getNumberOfGlobalRegisters(), self()->trMemory());
+            _globalRegisterBitVectors[i].init(self()->getNumberOfGlobalRegisters(), self()->comp()->trMemory());
 
          for (grn=0; grn < self()->getNumberOfGlobalRegisters(); grn++)
             {
@@ -2229,24 +2229,26 @@ OMR::Z::CodeGenerator::generateScratchRegisterManager(int32_t capacity)
 void
 OMR::Z::CodeGenerator::doBinaryEncoding()
    {
+   TR::Compilation *comp = self()->comp();
+
    // Generate the first label by using the placement new operator such that we are guaranteed to call the correct
    // overload of the constructor which can accept a NULL preceding instruction. If cursor is NULL the generated
    // label instruction will be prepended to the start of the instruction stream.
-   _methodBegin = new (self()->comp()->trHeapMemory()) TR::S390LabelInstruction(TR::InstOpCode::LABEL, self()->comp()->getStartTree()->getNode(), generateLabelSymbol(self()), static_cast<TR::Instruction*>(NULL), self());
+   _methodBegin = new (comp->trHeapMemory()) TR::S390LabelInstruction(TR::InstOpCode::LABEL, comp->getStartTree()->getNode(), generateLabelSymbol(self()), static_cast<TR::Instruction*>(NULL), self());
 
-   _methodEnd = generateS390LabelInstruction(self(), TR::InstOpCode::LABEL, self()->comp()->findLastTree()->getNode(), generateLabelSymbol(self()));
+   _methodEnd = generateS390LabelInstruction(self(), TR::InstOpCode::LABEL, comp->findLastTree()->getNode(), generateLabelSymbol(self()));
 
    TR_S390BinaryEncodingData data;
    data.cursorInstruction = self()->getFirstInstruction();
    data.estimate = 0;
    data.loadArgSize = 0;
-   TR::Recompilation* recomp = self()->comp()->getRecompilationInfo();
+   TR::Recompilation* recomp = comp->getRecompilationInfo();
 
    //  setup cursor for JIT to JIT transfer
    //
-   if (self()->comp()->getJittedMethodSymbol()->isJNI() && !self()->comp()->getOption(TR_FullSpeedDebug))
+   if (comp->getJittedMethodSymbol()->isJNI() && !comp->getOption(TR_FullSpeedDebug))
       {
-      data.preProcInstruction = self()->comp()->target().is64Bit() ?
+      data.preProcInstruction = comp->target().is64Bit() ?
          data.cursorInstruction->getNext()->getNext()->getNext() :
          data.cursorInstruction->getNext()->getNext();
       }
@@ -2289,7 +2291,7 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
       recomp->generatePrePrologue();
       }
 #ifdef J9_PROJECT_SPECIFIC
-   else if (self()->comp()->getOption(TR_FullSpeedDebug) || self()->comp()->getOption(TR_SupportSwitchToInterpreter))
+   else if (comp->getOption(TR_FullSpeedDebug) || comp->getOption(TR_SupportSwitchToInterpreter))
       {
       self()->generateVMCallHelperPrePrologue(self()->getFirstInstruction());
       }
@@ -2299,7 +2301,7 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
 
    // Padding for JIT Entry Point
    //
-   if (!self()->comp()->compileRelocatableCode())
+   if (!comp->compileRelocatableCode())
       {
       data.estimate += 256;
       }
@@ -2312,9 +2314,9 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
       cursor = cursor->getNext();
       }
 
-   if (self()->comp()->getOption(TR_EntryBreakPoints))
+   if (comp->getOption(TR_EntryBreakPoints))
       {
-      TR::Node *node = self()->comp()->getStartTree()->getNode();
+      TR::Node *node = comp->getStartTree()->getNode();
       cursor = generateS390EInstruction(self(), TR::InstOpCode::BREAK, node, cursor);
       }
 
@@ -2325,7 +2327,7 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
 
    self()->getLinkage()->createPrologue(cursor);
 
-   bool isPrivateLinkage = (self()->comp()->getJittedMethodSymbol()->getLinkageConvention() == TR_Private);
+   bool isPrivateLinkage = (comp->getJittedMethodSymbol()->getLinkageConvention() == TR_Private);
 
    TR::Instruction *instr = self()->getFirstInstruction();
 
@@ -2381,15 +2383,15 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
 
             self()->getLinkage()->createEpilogue(temp);
 
-            if (self()->comp()->getOption(TR_EnableLabelTargetNOPs))
+            if (comp->getOption(TR_EnableLabelTargetNOPs))
                {
                for (TR::Instruction *inst = temp->getNext(); inst != originalNextInstruction; inst = inst->getNext())
                   {
                   TR::Instruction *s390Inst = inst;
                   if (s390Inst->getKind() == TR::Instruction::IsLabel)
                      {
-                     if (self()->comp()->getOption(TR_TraceLabelTargetNOPs))
-                        traceMsg(self()->comp(),"\t\tepilogue inst %p (%s) setSkipForLabelTargetNOPs\n",s390Inst,s390Inst->getOpCode().getMnemonicName());
+                     if (comp->getOption(TR_TraceLabelTargetNOPs))
+                        traceMsg(comp,"\t\tepilogue inst %p (%s) setSkipForLabelTargetNOPs\n",s390Inst,s390Inst->getOpCode().getMnemonicName());
                      TR::S390LabelInstruction *labelInst = (TR::S390LabelInstruction*)s390Inst;
                      labelInst->setSkipForLabelTargetNOPs();
                      }
@@ -2413,13 +2415,13 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
       data.cursorInstruction = data.cursorInstruction->getNext();
       }
 
-   if (self()->comp()->getOption(TR_TraceCG))
-      self()->comp()->getDebug()->dumpMethodInstrs(self()->comp()->getOutFile(), "Post Prologue/epilogue Instructions", false);
+   if (comp->getOption(TR_TraceCG))
+      comp->getDebug()->dumpMethodInstrs(comp->getOutFile(), "Post Prologue/epilogue Instructions", false);
 
    data.estimate = self()->setEstimatedLocationsForSnippetLabels(data.estimate);
    // need to reset constant data snippets offset for inlineEXTarget peephole optimization
    static char * disableEXRLDispatch = feGetEnv("TR_DisableEXRLDispatch");
-   if (!(bool)disableEXRLDispatch && self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10))
+   if (!(bool)disableEXRLDispatch && comp->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10))
       {
       _extentOfLitPool = self()->setEstimatedOffsetForConstantDataSnippets();
       }
@@ -2453,7 +2455,7 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
       if (data.cursorInstruction == data.preProcInstruction)
          {
          self()->setPrePrologueSize(self()->getBinaryBufferLength());
-         self()->comp()->getSymRefTab()->findOrCreateStartPCSymbolRef()->getSymbol()->getStaticSymbol()->setStaticAddress(self()->getBinaryBufferCursor());
+         comp->getSymRefTab()->findOrCreateStartPCSymbolRef()->getSymbol()->getStaticSymbol()->setStaticAddress(self()->getBinaryBufferCursor());
          }
 
       data.cursorInstruction = data.cursorInstruction->getNext();
@@ -2462,7 +2464,7 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
       if (isPrivateLinkage && data.cursorInstruction == data.jitTojitStart)
          {
          uint32_t argSize = self()->getBinaryBufferCursor() - self()->getCodeStart();
-         uint32_t magicWord = (argSize << 16) | static_cast<uint32_t>(self()->comp()->getReturnInfo());
+         uint32_t magicWord = (argSize << 16) | static_cast<uint32_t>(comp->getReturnInfo());
          uint32_t recompFlag = 0;
 
 #ifdef J9_PROJECT_SPECIFIC
@@ -2491,7 +2493,7 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
 
    // Create exception table entries for outlined instructions.
    //
-   if (!self()->comp()->getOption(TR_DisableOOL))
+   if (!comp->getOption(TR_DisableOOL))
       {
       auto oiIterator = self()->getS390OutOfLineCodeSectionList().begin();
       while (oiIterator != self()->getS390OutOfLineCodeSectionList().end())
@@ -4174,7 +4176,7 @@ OMR::Z::CodeGenerator::buildRegisterMapForInstruction(TR_GCStackMap * map)
                {
                if (!internalPtrMap)
                   {
-                  internalPtrMap = new (comp->trHeapMemory()) TR_InternalPointerMap(self()->trMemory());
+                  internalPtrMap = new (comp->trHeapMemory()) TR_InternalPointerMap(comp->trMemory());
                   }
                internalPtrMap->addInternalPointerPair(virtReg->getPinningArrayPointer(), i);
                atlas->addPinningArrayPtrForInternalPtrReg(virtReg->getPinningArrayPointer());

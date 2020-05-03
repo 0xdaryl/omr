@@ -5018,7 +5018,7 @@ aloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempM
       TR_OpaqueClassBlock* unloadableClass = NULL;
       if (constNode->isMethodPointerConstant())
          {
-         unloadableClass = (TR_OpaqueClassBlock *) cg->fe()->createResolvedMethod(cg->trMemory(), (TR_OpaqueMethodBlock *) value,
+         unloadableClass = (TR_OpaqueClassBlock *) cg->fe()->createResolvedMethod(comp->trMemory(), (TR_OpaqueMethodBlock *) value,
             comp->getCurrentMethod())->classOfMethod();
          if (cg->fe()->isUnloadAssumptionRequired(unloadableClass, comp->getCurrentMethod())
                  || cg->profiledPointersRequireRelocation())

@@ -87,7 +87,7 @@ TR::S390RSInstruction::generateAdditionalSourceRegisters(TR::Register * fReg, TR
       {
       TR::Machine *machine = cg()->machine();
       int8_t numRegsToAdd = lastRegNum - firstRegNum - 1;
-      // _additionalRegisters = new (cg()->comp()->trHeapMemory(),TR_MemoryBase::Array) TR_Array<TR::Register *>(cg()->trMemory(), numRegsToAdd, false);
+      // _additionalRegisters = new (cg()->comp()->trHeapMemory(),TR_MemoryBase::Array) TR_Array<TR::Register *>(cg()->comp()->trMemory(), numRegsToAdd, false);
       int8_t curReg = firstRegNum+1;
       for (int8_t i=0; i < numRegsToAdd; i++)
          {
@@ -2212,7 +2212,7 @@ TR::S390RILInstruction::generateBinaryEncoding()
          }
       else if (std::find(comp->getStaticMethodPICSites()->begin(), comp->getStaticMethodPICSites()->end(), this) != comp->getStaticMethodPICSites()->end())
          {
-         unloadableClass = (TR_OpaqueClassBlock *) cg()->fe()->createResolvedMethod(cg()->trMemory(),
+         unloadableClass = (TR_OpaqueClassBlock *) cg()->fe()->createResolvedMethod(comp->trMemory(),
                (TR_OpaqueMethodBlock *) getTargetPtr(), comp->getCurrentMethod())->classOfMethod();
          doRegisterPIC = true;
          }

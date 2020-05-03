@@ -2352,7 +2352,7 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
          bool isMethod = node->getOpCodeValue() == TR::loadaddr ? false : node->isMethodPointerConstant();
        if (isMethod)
             {
-            unloadableClass = (TR_OpaqueClassBlock *) cg->fe()->createResolvedMethod(cg->trMemory(), (TR_OpaqueMethodBlock *)(intptr_t)imm,
+            unloadableClass = (TR_OpaqueClassBlock *) cg->fe()->createResolvedMethod(comp->trMemory(), (TR_OpaqueMethodBlock *)(intptr_t)imm,
                comp->getCurrentMethod())->classOfMethod();
             if (!TR::Compiler->cls.sameClassLoaders(comp, unloadableClass, comp->getCurrentMethod()->classOfMethod()))
                comp->getMethodSnippetsToBePatchedOnClassUnload()->push_front(targetsnippet);
@@ -2511,7 +2511,7 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
             bool isMethod = node->getOpCodeValue() == TR::loadaddr ? false : node->isMethodPointerConstant();
             if (isMethod)
                {
-               unloadableClass = (TR_OpaqueClassBlock *) cg->fe()->createResolvedMethod(cg->trMemory(), (TR_OpaqueMethodBlock *) imm,
+               unloadableClass = (TR_OpaqueClassBlock *) cg->fe()->createResolvedMethod(comp->trMemory(), (TR_OpaqueMethodBlock *) imm,
                   comp->getCurrentMethod())->classOfMethod();
                if (!TR::Compiler->cls.sameClassLoaders(comp, unloadableClass, comp->getCurrentMethod()->classOfMethod()))
                   comp->getMethodSnippetsToBePatchedOnClassUnload()->push_front(constDataSnip);
@@ -2567,7 +2567,7 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
          bool isMethod = node->getOpCodeValue() == TR::loadaddr ? false : node->isMethodPointerConstant();
          if (isMethod)
             {
-            unloadableClass = (TR_OpaqueClassBlock *) cg->fe()->createResolvedMethod(cg->trMemory(), (TR_OpaqueMethodBlock *) imm,
+            unloadableClass = (TR_OpaqueClassBlock *) cg->fe()->createResolvedMethod(comp->trMemory(), (TR_OpaqueMethodBlock *) imm,
                comp->getCurrentMethod())->classOfMethod();
             if (!TR::Compiler->cls.sameClassLoaders(comp, unloadableClass, comp->getCurrentMethod()->classOfMethod()))
                comp->getMethodSnippetsToBePatchedOnClassUnload()->push_front(targetsnippet);

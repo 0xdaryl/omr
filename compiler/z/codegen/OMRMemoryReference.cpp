@@ -1290,11 +1290,11 @@ void ArtificiallyInflateReferenceCountWhenNecessary(TR::MemoryReference * mr, co
 void
 OMR::Z::MemoryReference::populateAddTree(TR::Node * subTree, TR::CodeGenerator * cg)
    {
-   TR::StackMemoryRegion stackMemoryRegion(*cg->trMemory());
+   TR::Compilation *comp = cg->comp();
+   TR::StackMemoryRegion stackMemoryRegion(*comp->trMemory());
 
    bool memRefPopulated = false;
-   TR_Array< TR::Node * > nodesBefore(cg->trMemory(), 8, true, stackAlloc);
-   TR::Compilation *comp = cg->comp();
+   TR_Array< TR::Node * > nodesBefore(comp->trMemory(), 8, true, stackAlloc);
 
    noteAllNodesWithRefCountNotOne(nodesBefore, subTree, comp);
 
@@ -1612,11 +1612,12 @@ bool OMR::Z::MemoryReference::tryBaseIndexDispl(TR::CodeGenerator* cg, TR::Node*
    TR::Register* breg = NULL;
    TR::Register* ireg= NULL;
 
-   // From here, down, stack memory allocations will expire / die when the function returns
-   TR::StackMemoryRegion stackMemoryRegion(*cg->trMemory());
-
-   TR_Array< TR::Node * > nodesBefore(cg->trMemory(), 8, true, stackAlloc);
    TR::Compilation *comp = cg->comp();
+
+   // From here, down, stack memory allocations will expire / die when the function returns
+   TR::StackMemoryRegion stackMemoryRegion(*comp->trMemory());
+
+   TR_Array< TR::Node * > nodesBefore(comp->trMemory(), 8, true, stackAlloc);
 
    if (debug)
       traceMsg(comp, "&&& TBID load=%llx addr1=%llx addr2=%llx\n",
@@ -1781,11 +1782,11 @@ bool OMR::Z::MemoryReference::ZeroBasePtr_EvaluateSubtree(TR::Node * subTree, TR
 void
 OMR::Z::MemoryReference::populateMemoryReference(TR::Node * subTree, TR::CodeGenerator * cg)
    {
-   TR::StackMemoryRegion stackMemoryRegion(*cg->trMemory());
-
    TR::Compilation *comp = cg->comp();
+   TR::StackMemoryRegion stackMemoryRegion(*comp->trMemory());
+
    TR::Node *noopNode = NULL;
-   TR_Array< TR::Node * > nodesBefore(cg->trMemory(), 8, true, stackAlloc);
+   TR_Array< TR::Node * > nodesBefore(comp->trMemory(), 8, true, stackAlloc);
 
    noteAllNodesWithRefCountNotOne(nodesBefore, subTree, comp);
 
