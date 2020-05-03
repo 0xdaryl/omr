@@ -249,7 +249,6 @@ class OMR_EXTENSIBLE CodeGenerator
    private:
 
    TR::Compilation *_compilation;
-   TR_Memory *_trMemory;
 
    TR::Machine *_machine;
 
@@ -274,9 +273,6 @@ class OMR_EXTENSIBLE CodeGenerator
 
    inline TR::CodeGenerator *self();
 
-   TR_StackMemory trStackMemory();
-   TR_Memory *trMemory() { return _trMemory; }
-   TR_HeapMemory trHeapMemory() { return _trMemory; }
    TR::Machine *machine() { return _machine; }
    TR::Compilation *comp() { return _compilation; }
    TR_FrontEnd *fe();
@@ -394,8 +390,6 @@ class OMR_EXTENSIBLE CodeGenerator
    // --------------------------------------------------------------------------
    // Infrastructure
    //
-   TR_PersistentMemory * trPersistentMemory();
-
    TR::SymbolReferenceTable * getSymRefTab() { return _symRefTab; }
    TR::SymbolReference * getSymRef(TR_RuntimeHelper h);
 

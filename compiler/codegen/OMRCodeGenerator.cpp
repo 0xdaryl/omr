@@ -150,7 +150,6 @@ OMR::CodeGenerator::generateNop(TR::Node * node, TR::Instruction *instruction, T
 
 OMR::CodeGenerator::CodeGenerator() :
       _compilation(TR::comp()),
-      _trMemory(_compilation->trMemory()),
       _liveLocals(0),
       _currentEvaluationTreeTop(0),
       _currentEvaluationBlock(0),
@@ -261,12 +260,6 @@ OMR::CodeGenerator::CodeGenerator() :
       comp->getDebug()->resetDebugData();
 
    self()->setIsLeafMethod();
-   }
-
-TR_StackMemory
-OMR::CodeGenerator::trStackMemory()
-   {
-   return self()->comp()->trMemory();
    }
 
 TR_FrontEnd *
@@ -824,12 +817,6 @@ OMR::CodeGenerator::use64BitRegsOn32Bit()
 #else
    return false;
 #endif // TR_TARGET_S390
-   }
-
-TR_PersistentMemory *
-OMR::CodeGenerator::trPersistentMemory()
-   {
-   return self()->comp()->trPersistentMemory();
    }
 
 void

@@ -84,21 +84,6 @@ class OMR_EXTENSIBLE Linkage
     */
    inline TR_FrontEnd *fe();
 
-   /**
-    * @return TR_Memory object from cached CodeGenerator
-    */
-   inline TR_Memory *trMemory();
-
-   /**
-    * @return TR_HeapMemory object
-    */
-   inline TR_HeapMemory trHeapMemory();
-
-   /**
-    * @return TR_StackMemory object
-    */
-   inline TR_StackMemory trStackMemory();
-
    TR_ALLOC(TR_Memory::Linkage)
 
    Linkage(TR::CodeGenerator *cg) : _cg(cg) { }

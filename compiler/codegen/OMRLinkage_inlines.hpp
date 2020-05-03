@@ -61,24 +61,6 @@ OMR::Linkage::fe()
    return _cg->fe();
    }
 
-TR_Memory *
-OMR::Linkage::trMemory()
-   {
-   return _cg->comp()->trMemory();
-   }
-
-TR_HeapMemory
-OMR::Linkage::trHeapMemory()
-   {
-   return self()->trMemory();
-   }
-
-TR_StackMemory
-OMR::Linkage::trStackMemory()
-   {
-   return self()->trMemory();
-   }
-
 int32_t
 OMR::Linkage::getOffsetToFirstParm() const
    { 

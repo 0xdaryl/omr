@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -53,12 +53,6 @@ TR_Debug *
 OMR::AheadOfTimeCompile::getDebug()
    {
    return self()->comp()->getDebug();
-   }
-
-TR_Memory *
-OMR::AheadOfTimeCompile::trMemory()
-   {
-   return self()->comp()->trMemory();
    }
 
 void OMR::AheadOfTimeCompile::traceRelocationOffsets(uint8_t *&cursor, int32_t offsetSize, const uint8_t *endOfCurrentRecord, bool isOrderedPair)
