@@ -48,7 +48,7 @@ template <class T> class ARMConstant
 
    TR_ALLOC(TR_Memory::ARMConstant)
 
-   ARMConstant(TR::CodeGenerator * cg, T v, TR::Node *n=NULL, bool ps=false) : _instructionPairs(cg->trMemory()), _value(v), _node(n), _isUnloadablePicSite(ps) {};
+   ARMConstant(TR::CodeGenerator * cg, T v, TR::Node *n=NULL, bool ps=false) : _instructionPairs(cg->comp()->trMemory()), _value(v), _node(n), _isUnloadablePicSite(ps) {};
 
    T getConstantValue() {return _value;}
    bool isUnloadablePicSite() {return _isUnloadablePicSite;}
@@ -89,8 +89,8 @@ class ARMConstantDataSnippet
 
    TR_ALLOC(TR_Memory::ARMConstantDataSnippet)
 
-   ARMConstantDataSnippet(TR::CodeGenerator *cg) : _cg(cg), _addressConstants(cg->trMemory())
-      /* , _doubleConstants(cg->trMemory()), _floatConstants(cg->trMemory()) */
+   ARMConstantDataSnippet(TR::CodeGenerator *cg) : _cg(cg), _addressConstants(cg->comp()->trMemory())
+      /* , _doubleConstants(cg->comp()->trMemory()), _floatConstants(cg->comp()->trMemory()) */
       {
       };
 

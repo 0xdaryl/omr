@@ -484,7 +484,7 @@ TR::Register *OMR::ARM::TreeEvaluator::lloadEvaluator(TR::Node *node, TR::CodeGe
       TR::SymbolReference *vrlRef = comp->getSymRefTab()->findOrCreateVolatileReadLongSymbolRef(comp->getMethodSymbol());
 
       generateTrg1MemInstruction(cg, ARMOp_add, node, bigEndian ? highReg: lowReg, tempMR);
-      TR::RegisterDependencyConditions *deps = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->trMemory());
+      TR::RegisterDependencyConditions *deps = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, comp->trMemory());
       TR::addDependency(deps, lowReg, bigEndian ? TR::RealRegister::gr1 : TR::RealRegister::gr0, TR_GPR, cg);
       TR::addDependency(deps, highReg, bigEndian ? TR::RealRegister::gr0 : TR::RealRegister::gr1, TR_GPR, cg);
 
@@ -663,7 +663,7 @@ TR::Register *OMR::ARM::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR::CodeG
       TR::SymbolReference *vwlRef = comp->getSymRefTab()->findOrCreateVolatileWriteLongSymbolRef(comp->getMethodSymbol());
 
       generateTrg1MemInstruction(cg, ARMOp_add, node, addrReg, tempMR);
-      TR::RegisterDependencyConditions *deps = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(3, 3, cg->trMemory());
+      TR::RegisterDependencyConditions *deps = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(3, 3, comp->trMemory());
       TR::addDependency(deps, addrReg, TR::RealRegister::gr0, TR_GPR, cg);
       TR::addDependency(deps, valueReg->getLowOrder(), TR::RealRegister::gr1, TR_GPR, cg);
       TR::addDependency(deps, valueReg->getHighOrder(), TR::RealRegister::gr2, TR_GPR, cg);
@@ -842,7 +842,7 @@ static void constLengthArrayCopyEvaluator(TR::Node *node, int32_t byteLen, TR::R
    int32_t ri_x = 0, ri;
    TR::Register                        *regs[4] = {NULL, NULL, NULL, NULL};
 
-   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(7,7, cg->trMemory());
+   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(7,7, cg->comp()->trMemory());
 
    TR::addDependency(deps, src, TR::RealRegister::NoReg, TR_GPR, cg);
    deps->getPreConditions()->getRegisterDependency(0)->setExcludeGPR0();
@@ -964,7 +964,7 @@ TR::Register *OMR::ARM::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::Co
       stopUsingCopyReg5 = true;
       }
 
-   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(3,3, cg->trMemory());
+   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(3,3, cg->comp()->trMemory());
    // Build up the dependency conditions
    // r0 is length in bytes, r1 is srcAddr, r2 is dstAddr
    TR::addDependency(deps, lengthReg, TR::RealRegister::gr0, TR_GPR, cg);

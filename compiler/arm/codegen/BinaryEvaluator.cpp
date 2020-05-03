@@ -391,7 +391,7 @@ TR::Register *OMR::ARM::TreeEvaluator::lmulEvaluator(TR::Node *node, TR::CodeGen
    TR::Register *dd_lowReg, *dr_lowReg;
    TR::Register *dd_highReg, *dr_highReg;
    TR::Register *trgReg, *highReg, *lowReg;
-   TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(4, 4, cg->trMemory());
+   TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(4, 4, cg->comp()->trMemory());
 
    if (firstChild->getReferenceCount() > 1)
       {
@@ -642,7 +642,7 @@ static TR::Register *idivAndIRemHelper(TR::Node *node, bool isDivide, TR::CodeGe
    // can't be done cheaply, call helper
    TR::Register *dd_reg, *dr_reg;
    TR::Register *divisor = cg->evaluate(secondChild);
-   TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->trMemory());
+   TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->comp()->trMemory());
 
    if (firstChild->getReferenceCount() > 1)
       {
@@ -693,7 +693,7 @@ static TR::Register *ldivAndLRemHelper(TR::Node *node, bool isDivide, TR::CodeGe
    TR::Register *dd_lowReg, *dr_lowReg;
    TR::Register *dd_highReg, *dr_highReg;
    TR::Register *trgReg, *highReg, *lowReg;
-   TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(4, 4, cg->trMemory());
+   TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(4, 4, cg->comp()->trMemory());
 
    if (firstChild->getReferenceCount() > 1)
       {
@@ -997,7 +997,7 @@ static TR::Register *longRightShiftEvaluator(TR::Node *node, bool isLogical, TR:
       else
          {
          // do an out of line call for full shift by register.
-         TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(3, 3, cg->trMemory());
+         TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(3, 3, cg->comp()->trMemory());
 
          generateTrg1Src1Instruction(cg, ARMOp_mov, node, trgReg->getLowOrder(), srcLowReg);
          generateTrg1Src1Instruction(cg, ARMOp_mov, node, trgReg->getHighOrder(), srcHighReg);

@@ -77,7 +77,7 @@ OMR::ARM::CodeGenerator::CodeGenerator()
    : OMR::CodeGenerator(),
      _frameRegister(NULL),
      _constantData(NULL),
-     _outOfLineCodeSectionList(self()->trMemory()),
+     _outOfLineCodeSectionList(self()->comp()->trMemory()),
      _internalControlFlowNestingDepth(0),
      _internalControlFlowSafeNestingDepth(0)
    {
@@ -85,7 +85,7 @@ OMR::ARM::CodeGenerator::CodeGenerator()
    self()->initializeLinkage();
 
    _unlatchedRegisterList =
-      (TR::RealRegister**)self()->trMemory()->allocateHeapMemory(sizeof(TR::RealRegister*)*(TR::RealRegister::NumRegisters + 1));
+      (TR::RealRegister**)self()->comp()->trMemory()->allocateHeapMemory(sizeof(TR::RealRegister*)*(TR::RealRegister::NumRegisters + 1));
 
    _unlatchedRegisterList[0] = 0; // mark that list is empty
 
@@ -177,7 +177,7 @@ OMR::ARM::CodeGenerator::CodeGenerator()
    if (!self()->comp()->getOption(TR_DisableRegisterPressureSimulation))
       {
       for (int32_t i = 0; i < TR_numSpillKinds; i++)
-         _globalRegisterBitVectors[i].init(self()->getNumberOfGlobalRegisters(), self()->trMemory());
+         _globalRegisterBitVectors[i].init(self()->getNumberOfGlobalRegisters(), self()->comp()->trMemory());
 
       for (TR_GlobalRegisterNumber grn=0; grn < self()->getNumberOfGlobalRegisters(); grn++)
          {
@@ -293,7 +293,7 @@ TR::Instruction *OMR::ARM::CodeGenerator::generateSwitchToInterpreterPrePrologue
    // gr4 must contain the saved LR; see Recompilation.s
    cursor = new (comp->trHeapMemory()) TR::ARMTrg1Src1Instruction(cursor, ARMOp_mov, node, gr4, lr, self());
    cursor = self()->getLinkage()->flushArguments(cursor);
-   cursor = generateImmSymInstruction(self(), ARMOp_bl, node, (uintptr_t)revertToInterpreterSymRef->getMethodAddress(), new (comp->trHeapMemory()) TR::RegisterDependencyConditions((uint8_t)0,0, self()->trMemory()), revertToInterpreterSymRef, NULL, cursor);
+   cursor = generateImmSymInstruction(self(), ARMOp_bl, node, (uintptr_t)revertToInterpreterSymRef->getMethodAddress(), new (comp->trHeapMemory()) TR::RegisterDependencyConditions((uint8_t)0,0, comp->trMemory()), revertToInterpreterSymRef, NULL, cursor);
    cursor = generateImmInstruction(self(), ARMOp_dd, node, (int32_t)ramMethod, TR_RamMethod, cursor);
 
    if (comp->getOption(TR_EnableHCR))
@@ -575,7 +575,7 @@ TR::Register *OMR::ARM::CodeGenerator::gprClobberEvaluate(TR::Node *node)
 
 static int32_t identifyFarConditionalBranches(int32_t estimate, TR::CodeGenerator *cg)
    {
-   TR_Array<TR::ARMConditionalBranchInstruction *> candidateBranches(cg->trMemory(), 256);
+   TR_Array<TR::ARMConditionalBranchInstruction *> candidateBranches(cg->comp()->trMemory(), 256);
    TR::Instruction *cursorInstruction = cg->getFirstInstruction();
 
    while (cursorInstruction)

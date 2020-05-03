@@ -386,7 +386,7 @@ uint8_t *TR::ARMTrg1Src2Instruction::generateBinaryEncoding()
    uint8_t *cursor           = instructionStart;
    cursor = getOpCode().copyBinaryToBuffer(instructionStart);
    generateConditionBinaryEncoding(instructionStart);
-   insertTargetRegister(toARMCursor(cursor), cg()->trMemory());
+   insertTargetRegister(toARMCursor(cursor), comp->trMemory());
    insertSource1Register(toARMCursor(cursor));
    insertSource2Operand(toARMCursor(cursor));
 
@@ -398,7 +398,7 @@ uint8_t *TR::ARMTrg1Src2Instruction::generateBinaryEncoding()
    if (std::find(comp->getStaticMethodPICSites()->begin(), comp->getStaticMethodPICSites()->end(), this) != comp->getStaticMethodPICSites()->end())
       {
       TR::Node *node = getNode();
-      cg()->jitAddPicToPatchOnClassUnload((void *) (cg()->fe()->createResolvedMethod(cg()->trMemory(), (TR_OpaqueMethodBlock *) (cg()->comp()->target().is64Bit()?node->getLongInt():node->getInt()), comp->getCurrentMethod())->classOfMethod()), (void *)cursor);
+      cg()->jitAddPicToPatchOnClassUnload((void *) (cg()->fe()->createResolvedMethod(comp->trMemory(), (TR_OpaqueMethodBlock *) (cg()->comp()->target().is64Bit()?node->getLongInt():node->getInt()), comp->getCurrentMethod())->classOfMethod()), (void *)cursor);
       }
 
    cursor += ARM_INSTRUCTION_LENGTH;
@@ -578,7 +578,7 @@ uint8_t *TR::ARMMultipleMoveInstruction::generateBinaryEncoding()
    uint8_t *cursor           = instructionStart;
    cursor = getOpCode().copyBinaryToBuffer(instructionStart);
    generateConditionBinaryEncoding(instructionStart);
-   insertMemoryBaseRegister(toARMCursor(cursor), cg()->trMemory());
+   insertMemoryBaseRegister(toARMCursor(cursor), cg()->comp()->trMemory());
    insertRegisterList(toARMCursor(cursor));
    if(isWriteBack())
       *(int32_t*)cursor |= 1 << 21;

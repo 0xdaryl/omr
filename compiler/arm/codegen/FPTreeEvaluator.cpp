@@ -215,7 +215,7 @@ static TR::Register *callLong2DoubleHelper(TR::Node *node, TR::CodeGenerator *cg
    {
    TR::Node *child = node->getFirstChild();
    TR::Register *srcReg = cg->evaluate(child);
-   TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(10, 10, cg->trMemory());
+   TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(10, 10, cg->comp()->trMemory());
    int i;
 
    TR::Register *highReg = cg->allocateRegister();
@@ -303,7 +303,7 @@ static TR::Register *callLong2FloatHelper(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node *child = node->getFirstChild();
    TR::Register *srcReg = cg->evaluate(child);
-   TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(10, 10, cg->trMemory());
+   TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(10, 10, cg->comp()->trMemory());
    int i;
 
 #if defined(__ARM_PCS_VFP)
@@ -391,7 +391,7 @@ static TR::Register *callDouble2LongHelper(TR::Node *node, TR::CodeGenerator *cg
    TR::Node *child = node->getFirstChild();
    TR::Register *doubleSrcReg = cg->evaluate(child);
    TR::Register *srcReg = NULL;
-   TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(11, 11, cg->trMemory());
+   TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(11, 11, cg->comp()->trMemory());
    int i;
    TR::Register *highReg = cg->allocateRegister();
    TR::Register *lowReg = cg->allocateRegister();
@@ -484,7 +484,7 @@ static TR::Register *callFloat2LongHelper(TR::Node *node, TR::CodeGenerator *cg)
    TR::Node *child = node->getFirstChild();
    TR::Register *floatSrcReg = cg->evaluate(child);
    TR::Register *srcReg = NULL;
-   TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(11, 11, cg->trMemory());
+   TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(11, 11, cg->comp()->trMemory());
    int i;
    TR::Register *highReg = cg->allocateRegister();
    TR::Register *lowReg = cg->allocateRegister();
@@ -572,7 +572,7 @@ static TR::Register *callDoubleRemainderHelper(TR::Node *node, TR::CodeGenerator
    TR::Node *secondChild = node->getSecondChild();
    TR::Register *src1Reg = cg->evaluate(firstChild);
    TR::Register *src2Reg = cg->evaluate(secondChild);
-   TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(10, 10, cg->trMemory());
+   TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(10, 10, cg->comp()->trMemory());
    int i;
    TR::Register *highReg = cg->allocateRegister();
    TR::Register *lowReg = cg->allocateRegister();
@@ -713,7 +713,7 @@ static TR::Register *callFloatRemainderHelper(TR::Node *node, TR::CodeGenerator 
    TR::Node *secondChild = node->getSecondChild();
    TR::Register *src1Reg = cg->evaluate(firstChild);
    TR::Register *src2Reg = cg->evaluate(secondChild);
-   TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(11, 11, cg->trMemory());
+   TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(11, 11, cg->comp()->trMemory());
    int i;
 #if defined(__ARM_PCS_VFP)
    TR::Register *trgReg = cg->allocateSinglePrecisionRegister();
@@ -1027,7 +1027,7 @@ TR::Register *OMR::ARM::TreeEvaluator::fconstEvaluator(TR::Node *node, TR::CodeG
    uint32_t i32 = *(int32_t *)(&value);
    TR::Compilation *comp = cg->comp();
    TR::RealRegister *machineIPReg = cg->machine()->getRealRegister(TR::RealRegister::gr15);
-   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->trMemory());
+   TR::RegisterDependencyConditions *deps = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, comp->trMemory());
 
    traceMsg(comp, "In fconstEvaluator %x\n", i32);
    TR::addDependency(deps, tempReg, TR::RealRegister::NoReg, TR_GPR, cg);
@@ -1087,7 +1087,7 @@ TR::Register *OMR::ARM::TreeEvaluator::dconstEvaluator(TR::Node *node, TR::CodeG
    uint64_t i64 = (*(int64_t *)&value);
    TR::Compilation *comp = cg->comp();
    TR::RealRegister *machineIPReg = cg->machine()->getRealRegister(TR::RealRegister::gr15);
-   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->trMemory());
+   TR::RegisterDependencyConditions *deps = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, comp->trMemory());
 
    traceMsg(comp, "In dconstEvaluator %x\n", i64);
    TR::addDependency(deps, tempReg, TR::RealRegister::NoReg, TR_GPR, cg);
@@ -1514,7 +1514,7 @@ TR::Register *OMR::ARM::TreeEvaluator::freturnEvaluator(TR::Node *node, TR::Code
    // SOFT-ABI uses general registers to return floats
    TR::Register *returnRegister = cg->evaluate(node->getFirstChild());
 
-   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
+   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->comp()->trMemory());
    if (returnRegister->getKind() == TR_GPR)
       {
       TR::addDependency(deps, returnRegister, cg->getProperties().getIntegerReturnRegister(), TR_GPR, cg);
@@ -1534,7 +1534,7 @@ TR::Register *OMR::ARM::TreeEvaluator::freturnEvaluator(TR::Node *node, TR::Code
 TR::Register *OMR::ARM::TreeEvaluator::dreturnEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Register *returnRegister = cg->evaluate(node->getFirstChild());
-   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->trMemory());
+   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->comp()->trMemory());
 
    if (returnRegister->getKind() == TR_GPR)
       {
@@ -2561,7 +2561,7 @@ static TR::Register *generateFloatMaxMin(TR::Node *node, TR::CodeGenerator *cg, 
          }
       }
 
-   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 1, cg->trMemory());
+   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 1, cg->comp()->trMemory());
    deps->addPostCondition(trgFloatReg, TR::RealRegister::NoReg);
 
    // Check for NaN by comparing itself and leave

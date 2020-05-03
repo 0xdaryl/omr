@@ -38,7 +38,7 @@ OMR::ARM::RegisterDependencyConditions::RegisterDependencyConditions( TR::Node  
                                                                        TR::CodeGenerator  *cg)
    {
 
-   List<TR::Register>  regList(cg->trMemory());
+   List<TR::Register>  regList(cg->comp()->trMemory());
    TR::Instruction    *cursor = (cursorPtr == NULL ? NULL : *cursorPtr);
    int32_t totalNum = node->getNumChildren() + extranum;
    int32_t i;
@@ -64,8 +64,8 @@ OMR::ARM::RegisterDependencyConditions::RegisterDependencyConditions( TR::Node  
 
    totalNum = totalNum + numLongs;
 
-   _preConditions = TR_ARMRegisterDependencyGroup::create(totalNum, cg->trMemory());
-   _postConditions = TR_ARMRegisterDependencyGroup::create(totalNum, cg->trMemory());
+   _preConditions = TR_ARMRegisterDependencyGroup::create(totalNum, cg->comp()->trMemory());
+   _postConditions = TR_ARMRegisterDependencyGroup::create(totalNum, cg->comp()->trMemory());
    _numPreConditions = totalNum;
    _addCursorForPre = 0;
    _numPostConditions = totalNum;
@@ -545,7 +545,7 @@ TR::RegisterDependencyConditions *OMR::ARM::RegisterDependencyConditions::clone(
    preNum = this->getAddCursorForPre();
    postNum = this->getAddCursorForPost();
    result = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(preNum+addPre,
-      postNum+addPost, cg->trMemory());
+      postNum+addPost, cg->comp()->trMemory());
 
    for (idx=0; idx<postNum; idx++)
       {
@@ -614,7 +614,7 @@ TR::RegisterDependencyConditions *OMR::ARM::RegisterDependencyConditions::cloneA
       }
    preNum = this->getAddCursorForPre();
    postNum = this->getAddCursorForPost();
-   result = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(preNum + addPre, postNum + addPost, cg->trMemory());
+   result = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(preNum + addPre, postNum + addPost, cg->comp()->trMemory());
 
    for (idx=0; idx<postNum; idx++)
       {

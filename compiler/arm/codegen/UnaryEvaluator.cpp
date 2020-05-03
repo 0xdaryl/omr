@@ -75,7 +75,7 @@ TR::Register *OMR::ARM::TreeEvaluator::aconstEvaluator(TR::Node *node, TR::CodeG
 
    bool isPicSite = node->isClassPointerConstant() && cg->fe()->isUnloadAssumptionRequired((TR_OpaqueClassBlock *) node->getAddress(), method);
    if (!isPicSite)
-      isPicSite = node->isMethodPointerConstant() && cg->fe()->isUnloadAssumptionRequired(cg->fe()->createResolvedMethod(cg->trMemory(), (TR_OpaqueMethodBlock *) node->getAddress(), method)->classOfMethod(), method);
+      isPicSite = node->isMethodPointerConstant() && cg->fe()->isUnloadAssumptionRequired(cg->fe()->createResolvedMethod(comp->trMemory(), (TR_OpaqueMethodBlock *) node->getAddress(), method)->classOfMethod(), method);
 
    bool isProfiledPointerConstant = node->isClassPointerConstant() || node->isMethodPointerConstant();
 

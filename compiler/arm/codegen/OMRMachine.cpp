@@ -624,7 +624,7 @@ void OMR::ARM::Machine::initializeRegisterFile()
    TR::Compilation *comp = self()->cg()->comp();
 
    self()->cg()->_unlatchedRegisterList =
-   (TR::RealRegister**)self()->cg()->trMemory()->allocateHeapMemory(sizeof(TR::RealRegister*)*(TR::RealRegister::NumRegisters + 1));
+   (TR::RealRegister**)comp->trMemory()->allocateHeapMemory(sizeof(TR::RealRegister*)*(TR::RealRegister::NumRegisters + 1));
    self()->cg()->_unlatchedRegisterList[0] = 0; // mark that list is empty
 
    _registerFile[TR::RealRegister::NoReg] = NULL;
@@ -981,7 +981,7 @@ OMR::ARM::Machine::createCondForLiveAndSpilledGPRs(bool cleanRegState, TR::list<
 
    if (c)
       {
-      deps = new (self()->cg()->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, c, self()->cg()->trMemory());
+      deps = new (self()->cg()->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, c, self()->cg()->comp()->trMemory());
       for (int32_t j = TR::RealRegister::FirstGPR; j <= endReg; j++)
          {
          TR::RealRegister *realReg = self()->getRealRegister((TR::RealRegister::RegNum)j);

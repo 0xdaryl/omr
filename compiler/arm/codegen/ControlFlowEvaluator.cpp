@@ -79,7 +79,7 @@ TR::Register *OMR::ARM::TreeEvaluator::ireturnEvaluator(TR::Node *node, TR::Code
    {
    TR::Register *returnRegister = cg->evaluate(node->getFirstChild());
 
-   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
+   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->comp()->trMemory());
    TR::addDependency(deps, returnRegister, cg->getProperties().getIntegerReturnRegister(), TR_GPR, cg);
 
    generateAdminInstruction(cg, ARMOp_ret, node, deps);
@@ -93,7 +93,7 @@ TR::Register *OMR::ARM::TreeEvaluator::lreturnEvaluator(TR::Node *node, TR::Code
    TR::Register *lowReg                              = returnRegister->getLowOrder();
    TR::Register *highReg                             = returnRegister->getHighOrder();
 
-   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->trMemory());
+   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->comp()->trMemory());
    TR::addDependency(deps, lowReg, cg->getProperties().getLongLowReturnRegister(), TR_GPR, cg);
    TR::addDependency(deps, highReg, cg->getProperties().getLongHighReturnRegister(), TR_GPR, cg);
 
@@ -363,7 +363,7 @@ static bool virtualGuardHelper(TR::Node *node, TR::CodeGenerator *cg)
       deps = generateRegisterDependencyConditions(cg, third, 0);
       }
    else
-      deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 0, cg->trMemory());
+      deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 0, cg->comp()->trMemory());
 
    if(virtualGuard->shouldGenerateChildrenCode())
       cg->evaluateChildrenWithMultipleRefCount(node);
@@ -577,7 +577,7 @@ static TR::Register *compareLongsForOrder(TR_ARMConditionCode branchOp, TR::Node
 
       // Start OOL
       // The compare result has to be live until the end of the last instruction in the mainline, so put it as a dependency
-      TR::RegisterDependencyConditions *tempDeps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
+      TR::RegisterDependencyConditions *tempDeps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->comp()->trMemory());
       TR::addDependency(tempDeps, tempReg, TR::RealRegister::NoReg, TR_GPR, cg);
       //tempDeps->addPreCondition(tempReg, TR::RealRegister::NoReg);
       if (deps)
@@ -587,7 +587,7 @@ static TR::Register *compareLongsForOrder(TR_ARMConditionCode branchOp, TR::Node
 
       // Need the two sources for compare to survive until the returnLabel.  Use a dependency to hold that, and hold
       // until the compare for them are done.
-      TR::RegisterDependencyConditions *newDeps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->trMemory());
+      TR::RegisterDependencyConditions *newDeps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->comp()->trMemory());
       TR::addDependency(newDeps, src1Reg->getLowOrder(), TR::RealRegister::NoReg, TR_GPR, cg);
       TR::addDependency(newDeps, src2Reg->getLowOrder(), TR::RealRegister::NoReg, TR_GPR, cg);
 
@@ -994,8 +994,8 @@ static bool isGlDepsUnBalanced(TR::CodeGenerator *cg, TR::Node *node)
    // if they do not; otherwise return false.
    TR_BitVector defDepMap, caseDepMap;
 
-   defDepMap.init(cg->getNumberOfGlobalRegisters(), cg->trMemory());
-   caseDepMap.init(cg->getNumberOfGlobalRegisters(), cg->trMemory());
+   defDepMap.init(cg->getNumberOfGlobalRegisters(), cg->comp()->trMemory());
+   caseDepMap.init(cg->getNumberOfGlobalRegisters(), cg->comp()->trMemory());
    mapGlRegDeps(defaultDeps, &defDepMap);
 
    for (i = 2; i < numChildren; i++)
@@ -1089,7 +1089,7 @@ static void lookupScheme1(TR::CodeGenerator *cg, TR::Node *node, bool unbalanced
    TR::Node     *defaultNode = node->getSecondChild();
    TR::Node     *defDepsNode = defaultNode->getNumChildren() > 0 ? defaultNode->getFirstChild() : NULL;
 
-   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
+   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->comp()->trMemory());
    TR::addDependency(deps, selectorReg, TR::RealRegister::NoReg, TR_GPR, cg);
 
    TR::RegisterDependencyConditions *defaultDeps = deps;
@@ -1149,7 +1149,7 @@ static void lookupScheme2(TR::CodeGenerator *cg, TR::Node *node, bool unbalanced
    TR::Node     *defaultNode  = node->getSecondChild();
    TR::Node     *defDepsNode  = defaultNode->getNumChildren() > 0 ? defaultNode->getFirstChild() : NULL;
 
-   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->trMemory());
+   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->comp()->trMemory());
    TR::addDependency(deps, selectorReg, TR::RealRegister::NoReg, TR_GPR, cg);
    TR::addDependency(deps, caseConstReg, TR::RealRegister::NoReg, TR_GPR, cg);
 
@@ -1217,7 +1217,7 @@ static void lookupScheme3(TR::CodeGenerator *cg, TR::Node *node, bool unbalanced
    TR::Register *selector = cg->evaluate(node->getFirstChild());
    TR::Register *addrRegister = cg->allocateRegister();
    TR::Register *dataRegister = cg->allocateRegister();
-   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(3, 3, cg->trMemory());
+   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(3, 3, cg->comp()->trMemory());
    TR::Node     *defaultNode = node->getSecondChild();
    TR::Node     *defDepsNode = defaultNode->getNumChildren() > 0 ? defaultNode->getFirstChild() : 0;
 
@@ -1377,13 +1377,13 @@ TR::Register *OMR::ARM::TreeEvaluator::tableEvaluator(TR::Node *node, TR::CodeGe
       {
       // Note: When implementation is changed with regards to number of used registers (or dependency),
       // the matching GlDepRegs free checks in OMRCodeGenerator.cpp#getMaximumNumberOfGPRsAllowedAcrossEdge(..) must be updated to synch.
-      conditions  = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->trMemory());
+      conditions  = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->comp()->trMemory());
       t1Register = cg->allocateRegister();
       TR::addDependency(conditions, t1Register, TR::RealRegister::NoReg, TR_GPR, cg);
       }
    else
       {
-      conditions = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
+      conditions = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->comp()->trMemory());
       }
 
    TR::addDependency(conditions, selectorReg, TR::RealRegister::NoReg, TR_GPR, cg);
@@ -1615,7 +1615,7 @@ static void VMoutlinedHelperArrayStoreCHKEvaluator(TR::Node *node, TR::Register 
    TR::Compilation * comp = cg->comp();
    TR::SymbolReference *arrayStoreChkHelper = node->getSymbolReference();
 
-   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->trMemory());
+   TR::RegisterDependencyConditions *deps = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, comp->trMemory());
 
    TR::addDependency(deps, dstReg, TR::RealRegister::gr0, TR_GPR, cg);
    TR::addDependency(deps, srcReg, TR::RealRegister::gr1, TR_GPR, cg);
@@ -1720,7 +1720,7 @@ static TR::Register *generateMaxMin(TR::Node *node, TR::CodeGenerator *cg, bool 
       TR::Register *reg = cg->evaluate(child);
       if (two_reg)
          {
-         TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 4, cg->trMemory());
+         TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 4, cg->comp()->trMemory());
          deps->addPostCondition(trgReg->getLowOrder(), TR::RealRegister::NoReg);
          deps->addPostCondition(trgReg->getHighOrder(), TR::RealRegister::NoReg);
          deps->addPostCondition(reg->getLowOrder(), TR::RealRegister::NoReg);
