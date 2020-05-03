@@ -710,7 +710,7 @@ commonFpMinMaxEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic cmpOp, bool rev
    startLabel->setStartInternalControlFlow();
    joinLabel->setEndInternalControlFlow();
 
-   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 4, cg->trMemory());
+   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 4, cg->comp()->trMemory());
    deps->addPostCondition(cmpReg, TR::RealRegister::NoReg);
    deps->addPostCondition(trgReg, TR::RealRegister::NoReg);
    deps->addPostCondition(src1Reg, TR::RealRegister::NoReg);
@@ -914,7 +914,7 @@ commonFpSelectEvaluator(TR::Node *node, bool isDouble, TR::CodeGenerator *cg)
    startLabel->setStartInternalControlFlow();
    joinLabel->setEndInternalControlFlow();
 
-   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 3, cg->trMemory());
+   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 3, cg->comp()->trMemory());
    deps->addPostCondition(condReg, TR::RealRegister::NoReg);
    deps->addPostCondition(trueReg, TR::RealRegister::NoReg);
    deps->addPostCondition(falseReg, TR::RealRegister::NoReg);

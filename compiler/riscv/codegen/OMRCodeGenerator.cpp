@@ -43,7 +43,7 @@ OMR::RV::CodeGenerator::CodeGenerator() :
    self()->initializeLinkage();
 
    _unlatchedRegisterList =
-      (TR::RealRegister**)self()->trMemory()->allocateHeapMemory(sizeof(TR::RealRegister*)*(TR::RealRegister::NumRegisters + 1));
+      (TR::RealRegister**)self()->comp()->trMemory()->allocateHeapMemory(sizeof(TR::RealRegister*)*(TR::RealRegister::NumRegisters + 1));
 
    _unlatchedRegisterList[0] = 0; // mark that list is empty
 
@@ -71,7 +71,7 @@ OMR::RV::CodeGenerator::CodeGenerator() :
    if (!self()->comp()->getOption(TR_DisableRegisterPressureSimulation))
       {
       for (int32_t i = 0; i < TR_numSpillKinds; i++)
-         _globalRegisterBitVectors[i].init(self()->getNumberOfGlobalRegisters(), self()->trMemory());
+         _globalRegisterBitVectors[i].init(self()->getNumberOfGlobalRegisters(), self()->comp()->trMemory());
 
       for (TR_GlobalRegisterNumber grn=0; grn < self()->getNumberOfGlobalRegisters(); grn++)
          {
