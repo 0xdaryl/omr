@@ -40,7 +40,7 @@ genericReturnEvaluator(TR::Node *node, TR::RealRegister::RegNum rnum, TR_Registe
    TR::Node *firstChild = node->getFirstChild();
    TR::Register *returnRegister = cg->evaluate(firstChild);
 
-   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(1, 0, cg->trMemory());
+   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(1, 0, cg->comp()->trMemory());
    deps->addPreCondition(returnRegister, rnum);
    generateAdminInstruction(cg, TR::InstOpCode::retn, node, deps);
 
@@ -537,13 +537,13 @@ OMR::ARM64::TreeEvaluator::lookupEvaluator(TR::Node *node, TR::CodeGenerator *cg
    if (!constantIsUnsignedImm12(node->getChild(2)->getCaseConstant())
        || !constantIsUnsignedImm12(node->getChild(numChildren-1)->getCaseConstant()))
       {
-      conditions = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->trMemory());
+      conditions = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->comp()->trMemory());
       tmpRegister = cg->allocateRegister();
       TR::addDependency(conditions, tmpRegister, TR::RealRegister::NoReg, TR_GPR, cg);
       }
    else
       {
-      conditions = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
+      conditions = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->comp()->trMemory());
       }
    TR::addDependency(conditions, selectorReg, TR::RealRegister::NoReg, TR_GPR, cg);
 
@@ -602,13 +602,13 @@ OMR::ARM64::TreeEvaluator::tableEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 
    if (5 <= numBranchTableEntries)
       {
-      conditions = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->trMemory());
+      conditions = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->comp()->trMemory());
       tmpRegister = cg->allocateRegister();
       TR::addDependency(conditions, tmpRegister, TR::RealRegister::NoReg, TR_GPR, cg);
       }
    else
       {
-      conditions = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
+      conditions = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->comp()->trMemory());
       }
 
    TR::addDependency(conditions, selectorReg, TR::RealRegister::NoReg, TR_GPR, cg);
@@ -839,7 +839,7 @@ static bool virtualGuardHelper(TR::Node *node, TR::CodeGenerator *cg)
       deps = generateRegisterDependencyConditions(cg, third, 0);
       }
    else
-      deps = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(0, 0, cg->trMemory());
+      deps = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(0, 0, comp->trMemory());
 
    if(virtualGuard->shouldGenerateChildrenCode())
       cg->evaluateChildrenWithMultipleRefCount(node);

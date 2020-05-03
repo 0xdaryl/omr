@@ -105,7 +105,7 @@ TR::ARM64ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
 
       if (std::find(comp->getMethodSnippetsToBePatchedOnClassUnload()->begin(), comp->getMethodSnippetsToBePatchedOnClassUnload()->end(), this) != comp->getMethodSnippetsToBePatchedOnClassUnload()->end())
          {
-         auto classPointer = cg()->fe()->createResolvedMethod(cg()->trMemory(), getData<TR_OpaqueMethodBlock *>(), comp->getCurrentMethod())->classOfMethod();
+         auto classPointer = cg()->fe()->createResolvedMethod(comp->trMemory(), getData<TR_OpaqueMethodBlock *>(), comp->getCurrentMethod())->classOfMethod();
          cg()->jitAddPicToPatchOnClassUnload(static_cast<void *>(classPointer), static_cast<void *>(cursor));
          }
       }

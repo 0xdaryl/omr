@@ -50,7 +50,7 @@ OMR::ARM64::CodeGenerator::CodeGenerator() :
    self()->initializeLinkage();
 
    _unlatchedRegisterList =
-      (TR::RealRegister**)self()->trMemory()->allocateHeapMemory(sizeof(TR::RealRegister*)*(TR::RealRegister::NumRegisters + 1));
+      (TR::RealRegister**)comp->trMemory()->allocateHeapMemory(sizeof(TR::RealRegister*)*(TR::RealRegister::NumRegisters + 1));
 
    _unlatchedRegisterList[0] = 0; // mark that list is empty
 
@@ -84,7 +84,7 @@ OMR::ARM64::CodeGenerator::CodeGenerator() :
    if (!comp->getOption(TR_DisableRegisterPressureSimulation))
       {
       for (int32_t i = 0; i < TR_numSpillKinds; i++)
-         _globalRegisterBitVectors[i].init(self()->getNumberOfGlobalRegisters(), self()->trMemory());
+         _globalRegisterBitVectors[i].init(self()->getNumberOfGlobalRegisters(), comp->trMemory());
 
       for (TR_GlobalRegisterNumber grn=0; grn < self()->getNumberOfGlobalRegisters(); grn++)
          {
@@ -446,7 +446,7 @@ void OMR::ARM64::CodeGenerator::buildRegisterMapForInstruction(TR_GCStackMap *ma
             if (virtReg->containsInternalPointer())
                {
                if (!internalPtrMap)
-                  internalPtrMap = new (comp->trHeapMemory()) TR_InternalPointerMap(self()->trMemory());
+                  internalPtrMap = new (comp->trHeapMemory()) TR_InternalPointerMap(comp->trMemory());
                internalPtrMap->addInternalPointerPair(virtReg->getPinningArrayPointer(), i);
                atlas->addPinningArrayPtrForInternalPtrReg(virtReg->getPinningArrayPointer());
                }

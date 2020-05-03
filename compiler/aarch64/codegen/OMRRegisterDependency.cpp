@@ -40,15 +40,15 @@ OMR::ARM64::RegisterDependencyConditions::RegisterDependencyConditions(
                                        uint32_t          extranum,
                                        TR::Instruction  **cursorPtr)
    {
-   List<TR::Register>  regList(cg->trMemory());
+   List<TR::Register>  regList(cg->comp()->trMemory());
    TR::Instruction    *iCursor = (cursorPtr==NULL)?NULL:*cursorPtr;
    int32_t totalNum = node->getNumChildren() + extranum;
    int32_t i;
 
    cg->comp()->incVisitCount();
 
-   _preConditions = new (totalNum, cg->trMemory()) TR_ARM64RegisterDependencyGroup;
-   _postConditions = new (totalNum, cg->trMemory()) TR_ARM64RegisterDependencyGroup;
+   _preConditions = new (totalNum, cg->comp()->trMemory()) TR_ARM64RegisterDependencyGroup;
+   _postConditions = new (totalNum, cg->comp()->trMemory()) TR_ARM64RegisterDependencyGroup;
    _numPreConditions = totalNum;
    _addCursorForPre = 0;
    _numPostConditions = totalNum;
@@ -249,7 +249,7 @@ OMR::ARM64::RegisterDependencyConditions::clone(
       addPostNum = omitPost ? 0 : added->getAddCursorForPost();
       }
 
-   TR::RegisterDependencyConditions *result =  new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(preNum + addPreNum, postNum + addPostNum, cg->trMemory());
+   TR::RegisterDependencyConditions *result =  new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(preNum + addPreNum, postNum + addPostNum, cg->comp()->trMemory());
    for (int i = 0; i < preNum; i++)
       {
       auto singlePair = getPreConditions()->getRegisterDependency(i);
