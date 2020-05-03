@@ -58,7 +58,7 @@ template <class T> class PPCConstant
 
    TR_ALLOC(TR_Memory::PPCConstant)
 
-   PPCConstant(TR::CodeGenerator * cg, T v, TR::Node *n=NULL, bool ps=false) : _instructionPairs(cg->trMemory()), _value(v), _node(n), _isUnloadablePicSite(ps) {};
+   PPCConstant(TR::CodeGenerator * cg, T v, TR::Node *n=NULL, bool ps=false) : _instructionPairs(cg->comp()->trMemory()), _value(v), _node(n), _isUnloadablePicSite(ps) {};
 
    T getConstantValue() {return _value;}
    bool isUnloadablePicSite() {return _isUnloadablePicSite;}
@@ -102,8 +102,8 @@ class ConstantDataSnippet
 
    TR_ALLOC(TR_Memory::PPCConstantDataSnippet)
 
-   ConstantDataSnippet(TR::CodeGenerator *cg) : _cg(cg), _doubleConstants(cg->trMemory()),
-        _floatConstants(cg->trMemory()), _addressConstants(cg->trMemory())
+   ConstantDataSnippet(TR::CodeGenerator *cg) : _cg(cg), _doubleConstants(cg->comp()->trMemory()),
+        _floatConstants(cg->comp()->trMemory()), _addressConstants(cg->comp()->trMemory())
       {
       };
 

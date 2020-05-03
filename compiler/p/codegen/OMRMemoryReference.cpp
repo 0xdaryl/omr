@@ -436,7 +436,7 @@ void OMR::Power::MemoryReference::forceIndexedForm(TR::Node * node, TR::CodeGene
 void OMR::Power::MemoryReference::adjustForResolution(TR::CodeGenerator *cg)
    {
    _modBase = cg->allocateRegister();
-   _conditions = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
+   _conditions = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->comp()->trMemory());
    TR::addDependency(_conditions, _modBase, TR::RealRegister::gr11, TR_GPR, cg);
    }
 
@@ -1259,7 +1259,7 @@ TR::Instruction *OMR::Power::MemoryReference::expandInstruction(TR::Instruction 
             {
             prevInstruction = generateLabelInstruction(cg, TR::InstOpCode::label, node, generateLabelSymbol(cg), prevInstruction);
 
-            TR_RelocationRecordInformation *recordInfo = (TR_RelocationRecordInformation*)cg->trMemory()->allocateHeapMemory(sizeof(TR_RelocationRecordInformation));
+            TR_RelocationRecordInformation *recordInfo = (TR_RelocationRecordInformation*)cg->comp()->trMemory()->allocateHeapMemory(sizeof(TR_RelocationRecordInformation));
 
             if (comp->getOption(TR_UseSymbolValidationManager))
                {

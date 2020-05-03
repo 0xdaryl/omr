@@ -548,14 +548,14 @@ int32_t TR_PPCTableOfConstants::lookUp(TR::SymbolReference *symRef, TR::CodeGene
 
          if (nlen >= 1024)
             {
-            name = (int8_t *)cg->trMemory()->allocateHeapMemory(nlen+1);
+            name = (int8_t *)comp->trMemory()->allocateHeapMemory(nlen+1);
             }
          strncpy((char *)name, (char *)className, nlen);
          name[nlen] = 0;
          }
       else
          {
-         name = (int8_t *)comp->getOwningMethodSymbol(symRef->getOwningMethodIndex())->getResolvedMethod()->staticName(symRef->getCPIndex(), cg->trMemory());
+         name = (int8_t *)comp->getOwningMethodSymbol(symRef->getOwningMethodIndex())->getResolvedMethod()->staticName(symRef->getCPIndex(), comp->trMemory());
          TR_ASSERT(name!=NULL, "Variable name is expected");
          nlen = strlen((char *)name);
          }

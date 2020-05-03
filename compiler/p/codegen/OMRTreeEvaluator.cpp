@@ -706,7 +706,7 @@ TR::Register *OMR::Power::TreeEvaluator::lloadEvaluator(TR::Node *node, TR::Code
             else
                generateTrg1MemInstruction (cg, TR::InstOpCode::addi2, node, highReg, tempMR);
 
-            TR::RegisterDependencyConditions *dependencies = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(6, 6, cg->trMemory());
+            TR::RegisterDependencyConditions *dependencies = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(6, 6, comp->trMemory());
             TR::addDependency(dependencies, lowReg, TR::RealRegister::gr4, TR_GPR, cg);
             TR::addDependency(dependencies, highReg, TR::RealRegister::gr3, TR_GPR, cg);
             TR::addDependency(dependencies, NULL, TR::RealRegister::gr11, TR_GPR, cg);
@@ -963,7 +963,7 @@ TR::Register *OMR::Power::TreeEvaluator::istoreEvaluator(TR::Node *node, TR::Cod
 #ifdef J9_PROJECT_SPECIFIC
    if (needSync && caller && !comp->compileRelocatableCode())
       {
-      TR_ResolvedMethod *m = comp->fe()->createResolvedMethod(cg->trMemory(), caller, node->getSymbolReference()->getOwningMethod(comp));
+      TR_ResolvedMethod *m = comp->fe()->createResolvedMethod(comp->trMemory(), caller, node->getSymbolReference()->getOwningMethod(comp));
       if (m->getRecognizedMethod() == TR::java_util_concurrent_atomic_AtomicInteger_lazySet)
          {
          lazyVolatile = true;
@@ -1035,7 +1035,7 @@ TR::Register *OMR::Power::TreeEvaluator::astoreEvaluator(TR::Node *node, TR::Cod
 #ifdef J9_PROJECT_SPECIFIC
    if (needSync && caller && !comp->compileRelocatableCode())
       {
-      TR_ResolvedMethod *m = comp->fe()->createResolvedMethod(cg->trMemory(), caller, node->getSymbolReference()->getOwningMethod(comp));
+      TR_ResolvedMethod *m = comp->fe()->createResolvedMethod(comp->trMemory(), caller, node->getSymbolReference()->getOwningMethod(comp));
       if (m->getRecognizedMethod() == TR::java_util_concurrent_atomic_AtomicReference_lazySet)
          {
          lazyVolatile = true;
@@ -1150,7 +1150,7 @@ TR::Register *OMR::Power::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR::Cod
 #ifdef J9_PROJECT_SPECIFIC
       if (needSync && caller && !comp->compileRelocatableCode())
          {
-         TR_ResolvedMethod *m = comp->fe()->createResolvedMethod(cg->trMemory(), caller, node->getSymbolReference()->getOwningMethod(comp));
+         TR_ResolvedMethod *m = comp->fe()->createResolvedMethod(comp->trMemory(), caller, node->getSymbolReference()->getOwningMethod(comp));
          if (m->getRecognizedMethod() == TR::java_util_concurrent_atomic_AtomicLong_lazySet)
             {
             lazyVolatile = true;
@@ -1200,7 +1200,7 @@ TR::Register *OMR::Power::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR::Cod
 #ifdef J9_PROJECT_SPECIFIC
       if (needSync && caller && !comp->compileRelocatableCode())
          {
-         TR_ResolvedMethod *m = comp->fe()->createResolvedMethod(cg->trMemory(), caller, node->getSymbolReference()->getOwningMethod(comp));
+         TR_ResolvedMethod *m = comp->fe()->createResolvedMethod(comp->trMemory(), caller, node->getSymbolReference()->getOwningMethod(comp));
          if (m->getRecognizedMethod() == TR::java_util_concurrent_atomic_AtomicLong_lazySet)
             {
             lazyVolatile = true;
@@ -1287,7 +1287,7 @@ TR::Register *OMR::Power::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR::Cod
             else
                 generateTrg1MemInstruction (cg, TR::InstOpCode::addi2, node, addrReg, tempMR);
 
-            TR::RegisterDependencyConditions *dependencies = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(7, 7, cg->trMemory());
+            TR::RegisterDependencyConditions *dependencies = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(7, 7, cg->comp()->trMemory());
             TR::addDependency(dependencies, valueReg->getHighOrder(), TR::RealRegister::gr4, TR_GPR, cg);
             TR::addDependency(dependencies, valueReg->getLowOrder(), TR::RealRegister::gr5, TR_GPR, cg);
             TR::addDependency(dependencies, addrReg, TR::RealRegister::gr3, TR_GPR, cg);
@@ -2026,7 +2026,7 @@ TR::Register *OMR::Power::TreeEvaluator::getvelemDirectMoveHelper(TR::Node *node
       TR::LabelSymbol *jumpLabel3 = generateLabelSymbol(cg);
       TR::LabelSymbol *jumpLabelDone = generateLabelSymbol(cg);
 
-      TR::RegisterDependencyConditions *deps = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(0, 4, cg->trMemory());
+      TR::RegisterDependencyConditions *deps = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(0, 4, comp->trMemory());
       deps->addPostCondition(srcVectorReg, TR::RealRegister::NoReg);
       deps->addPostCondition(intermediateResReg, TR::RealRegister::NoReg);
       deps->addPostCondition(indexReg, TR::RealRegister::NoReg);
@@ -2868,7 +2868,7 @@ OMR::Power::TreeEvaluator::inlineVectorCompareBranch(TR::Node * node, TR::CodeGe
    TR::Node *firstChild = vecCmpNode->getFirstChild();
    TR::Node *secondChild = vecCmpNode->getSecondChild();
 
-   TR::RegisterDependencyConditions *conditions = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(3, 3, cg->trMemory());
+   TR::RegisterDependencyConditions *conditions = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(3, 3, cg->comp()->trMemory());
    TR::Register *cndReg = cg->allocateRegister(TR_CCR);
    TR::Register *vecTmpReg = cg->allocateRegister(TR_VRF);
    TR::addDependency(conditions, cndReg, TR::RealRegister::cr6, TR_CCR, cg);
@@ -2909,7 +2909,7 @@ TR::Register *OMR::Power::TreeEvaluator::inlineVectorCompareAllOrAnyOp(TR::Node 
    TR::Node *firstChild = node->getFirstChild();
    TR::Node *secondChild = node->getSecondChild();
 
-   TR::RegisterDependencyConditions *conditions = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg->trMemory());
+   TR::RegisterDependencyConditions *conditions = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg->comp()->trMemory());
    TR::Register *resReg = cg->allocateRegister(TR_GPR);
    TR::Register *cndReg = cg->allocateRegister(TR_CCR);
    TR::Register *vecTmpReg = cg->allocateRegister(TR_VRF);
@@ -3079,7 +3079,7 @@ static void inlineArrayCopy(TR::Node *node, int64_t byteLen, TR::Register *src, 
    else
       numDeps = 7;
 
-   TR::RegisterDependencyConditions *conditions = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(numDeps, numDeps, cg->trMemory());
+   TR::RegisterDependencyConditions *conditions = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(numDeps, numDeps, comp->trMemory());
 
    TR::addDependency(conditions, src, srcDep, TR_GPR, cg);
    conditions->getPreConditions()->getRegisterDependency(0)->setExcludeGPR0();
@@ -3771,7 +3771,7 @@ TR::Register *OMR::Power::TreeEvaluator::arraytranslateEvaluator(TR::Node *node,
 
    int noOfDependecies = 14 + (sourceByte ?  4 + (arraytranslateOT ?  3 : 0 ) : 5);
 
-   TR::RegisterDependencyConditions *deps = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(1, noOfDependecies, cg->trMemory());
+   TR::RegisterDependencyConditions *deps = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(1, noOfDependecies, comp->trMemory());
 
    deps->addPreCondition(inputReg, TR::RealRegister::gr3);
 
@@ -4267,7 +4267,7 @@ static TR::Register *inlineArrayCmp(TR::Node *node, TR::CodeGenerator *cg)
 
    int32_t numRegs = 10;
 
-   TR::RegisterDependencyConditions *dependencies = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(0, numRegs, cg->trMemory());
+   TR::RegisterDependencyConditions *dependencies = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(0, numRegs, comp->trMemory());
    dependencies->addPostCondition(src1Reg, TR::RealRegister::NoReg);
    dependencies->addPostCondition(src2Reg, TR::RealRegister::NoReg);
    dependencies->addPostCondition(src1AddrReg, TR::RealRegister::NoReg);
@@ -4401,7 +4401,7 @@ TR::Register *OMR::Power::TreeEvaluator::setmemoryEvaluator(TR::Node *node, TR::
 
    TR::RegisterDependencyConditions *conditions;
    int32_t numDeps = 5;
-   conditions = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(numDeps, numDeps, cg->trMemory());
+   conditions = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(numDeps, numDeps, comp->trMemory());
    TR::Register *cndReg = cg->allocateRegister(TR_CCR);
    TR::addDependency(conditions, cndReg, TR::RealRegister::cr0, TR_CCR, cg);
    TR::addDependency(conditions, dstAddrReg, TR::RealRegister::NoReg, TR_GPR, cg);
@@ -4584,12 +4584,12 @@ TR::Register *OMR::Power::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::
       }
 
    static bool disableVSXArrayCopy  = (feGetEnv("TR_disableVSXArrayCopy") != NULL);
-   bool  supportsVSX = (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8)) && !disableVSXArrayCopy && cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_PPC_HAS_VSX);
+   bool  supportsVSX = (comp->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8)) && !disableVSXArrayCopy && comp->target().cpu.supportsFeature(OMR_FEATURE_PPC_HAS_VSX);
 
    static bool disableLEArrayCopyHelper  = (feGetEnv("TR_disableLEArrayCopyHelper") != NULL);
    static bool disableVSXArrayCopyInlining = (feGetEnv("TR_enableVSXArrayCopyInlining") == NULL); // Disabling due to a performance regression
 
-   bool  supportsLEArrayCopy = !disableLEArrayCopyHelper && cg->comp()->target().cpu.isLittleEndian() && cg->comp()->target().cpu.hasFPU();
+   bool  supportsLEArrayCopy = !disableLEArrayCopyHelper && comp->target().cpu.isLittleEndian() && comp->target().cpu.hasFPU();
 
 #if defined(DEBUG) || defined(PROD_WITH_ASSUMES)
    static bool verboseArrayCopy = (feGetEnv("TR_verboseArrayCopy") != NULL);       //Check which helper is getting used.
@@ -4607,9 +4607,9 @@ TR::Register *OMR::Power::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::
 
    TR::RegisterDependencyConditions *conditions;
    int32_t numDeps = 0;
-   if(cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8) && supportsVSX)
+   if(comp->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8) && supportsVSX)
       {
-      numDeps = cg->comp()->target().is64Bit() ? 10 : 13;
+      numDeps = comp->target().is64Bit() ? 10 : 13;
       if (supportsLEArrayCopy)
          {
          numDeps += 2;
@@ -4618,20 +4618,20 @@ TR::Register *OMR::Power::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::
          }
       }
    else
-   if (cg->comp()->target().is64Bit())
+   if (comp->target().is64Bit())
       {
-      if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P6))
+      if (comp->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P6))
          numDeps = 12;
       else
          numDeps = 8;
       }
-   else if (cg->comp()->target().cpu.hasFPU())
+   else if (comp->target().cpu.hasFPU())
       numDeps = 15;
    else
       numDeps = 11;
 
    TR_ASSERT(numDeps != 0, "numDeps not set correctly\n");
-   conditions = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(numDeps, numDeps, cg->trMemory());
+   conditions = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(numDeps, numDeps, comp->trMemory());
    TR::Register *cndRegister = cg->allocateRegister(TR_CCR);
    TR::Register *tmp1Reg = cg->allocateRegister(TR_GPR);
    TR::Register *tmp2Reg = cg->allocateRegister(TR_GPR);
@@ -4661,7 +4661,7 @@ TR::Register *OMR::Power::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::
       vec1Reg = cg->allocateRegister(TR_VRF);
       TR::addDependency(conditions, vec0Reg, TR::RealRegister::vr0, TR_VRF, cg);
       TR::addDependency(conditions, vec1Reg, TR::RealRegister::vr1, TR_VRF, cg);
-      if (cg->comp()->target().is32Bit())
+      if (comp->target().is32Bit())
          {
          TR::addDependency(conditions, NULL, TR::RealRegister::gr3, TR_GPR, cg);
          TR::addDependency(conditions, NULL, TR::RealRegister::gr4, TR_GPR, cg);
@@ -4680,12 +4680,12 @@ TR::Register *OMR::Power::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::
             }
          }
       }
-   else if (cg->comp()->target().is32Bit())
+   else if (comp->target().is32Bit())
       {
       TR::addDependency(conditions, NULL, TR::RealRegister::gr3, TR_GPR, cg);
       TR::addDependency(conditions, NULL, TR::RealRegister::gr4, TR_GPR, cg);
       TR::addDependency(conditions, NULL, TR::RealRegister::gr10, TR_GPR, cg);
-      if (cg->comp()->target().cpu.hasFPU())
+      if (comp->target().cpu.hasFPU())
          {
          TR::addDependency(conditions, NULL, TR::RealRegister::fp8, TR_FPR, cg);
          TR::addDependency(conditions, NULL, TR::RealRegister::fp9, TR_FPR, cg);
@@ -5262,7 +5262,7 @@ static TR::Register *inlineSimpleAtomicUpdate(TR::Node *node, bool isAddOp, bool
    TR::RegisterDependencyConditions *conditions;
 
    //Set the conditions and dependencies
-   conditions = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(0, (uint16_t) numDeps, cg->trMemory());
+   conditions = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(0, (uint16_t) numDeps, comp->trMemory());
 
    conditions->addPostCondition(valueAddrReg, TR::RealRegister::NoReg);
    conditions->addPostCondition(oldValueReg, TR::RealRegister::NoReg);
@@ -5758,7 +5758,7 @@ TR::Register *OMR::Power::TreeEvaluator::BBEndEvaluator(TR::Node *node, TR::Code
       int numAssoc=0;
       TR::RegisterDependencyConditions *assoc;
       TR::Machine *machine = cg->machine();
-      assoc = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(0, TR::RealRegister::NumRegisters, cg->trMemory());
+      assoc = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(0, TR::RealRegister::NumRegisters, comp->trMemory());
       for( TR::RealRegister::RegNum regNum=TR::RealRegister::FirstGPR ; regNum < TR::RealRegister::NumRegisters ; regNum=(TR::RealRegister::RegNum)(regNum+TR::RealRegister::FirstGPR) )
          {
          if( machine->getVirtualAssociatedWithReal(regNum) != 0 )
@@ -5772,7 +5772,7 @@ TR::Register *OMR::Power::TreeEvaluator::BBEndEvaluator(TR::Node *node, TR::Code
       // Emit an AssocRegs instruction to track the previous association
       if( numAssoc > 0 )
          {
-         assoc->setNumPostConditions(numAssoc, cg->trMemory());
+         assoc->setNumPostConditions(numAssoc, comp->trMemory());
          lastInst = generateDepInstruction( cg, TR::InstOpCode::assocreg, node, assoc );
          }
       }
@@ -5832,7 +5832,7 @@ void OMR::Power::TreeEvaluator::postSyncConditions(
 
    if (symRef->isUnresolved() && memRef->getUnresolvedSnippet() != NULL)
       {
-      TR::RegisterDependencyConditions *conditions = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(4, 4, cg->trMemory());
+      TR::RegisterDependencyConditions *conditions = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(4, 4, comp->trMemory());
       TR::Register *tempReg = cg->allocateRegister();
 
       if (baseReg != NULL)
@@ -5891,7 +5891,7 @@ TR::Register *OMR::Power::TreeEvaluator::cmpsetEvaluator(
    startLabel->setStartInternalControlFlow();
    endLabel->setEndInternalControlFlow();
    TR::RegisterDependencyConditions *deps
-      = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 7, cg->trMemory());
+      = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 7, cg->comp()->trMemory());
    deps->addPostCondition(result, TR::RealRegister::NoReg);
    deps->addPostCondition(repReg, TR::RealRegister::NoReg);
    deps->addPostCondition(tmpReg, TR::RealRegister::NoReg);

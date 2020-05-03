@@ -438,6 +438,7 @@ static TR::Register *laddEvaluatorWithAnalyser(TR::Node *node, TR::CodeGenerator
 // Also handles TR::aladd for 64 bit target
 TR::Register *OMR::Power::TreeEvaluator::laddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+   TR::Compilation *comp = cg->comp();
    TR::Node *firstChild = node->getFirstChild();
    TR::Node     *secondChild = node->getSecondChild();
    TR::Register *src1Reg = NULL;
@@ -446,7 +447,7 @@ TR::Register *OMR::Power::TreeEvaluator::laddEvaluator(TR::Node *node, TR::CodeG
    bool setsOrReadsCC = NEED_CC(node) || (node->getOpCodeValue() == TR::luaddc);
    TR::InstOpCode::Mnemonic regToRegOpCode = TR::InstOpCode::addc;
 
-   if (cg->comp()->target().is32Bit())
+   if (comp->target().is32Bit())
       {
       if (!setsOrReadsCC && secondOp == TR::lconst &&
           secondChild->getRegister() == NULL)
@@ -508,7 +509,7 @@ TR::Register *OMR::Power::TreeEvaluator::laddEvaluator(TR::Node *node, TR::CodeG
          return trgReg;
          }
 
-      if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9) &&
+      if (comp->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9) &&
           !setsOrReadsCC &&
           (node->getOpCodeValue() == TR::ladd || node->getOpCodeValue() == TR::aladd) &&
           firstChild->getOpCodeValue() == TR::lmul &&
@@ -577,7 +578,7 @@ TR::Register *OMR::Power::TreeEvaluator::laddEvaluator(TR::Node *node, TR::CodeG
       if (hasCompressedPointers && doneSkipAdd)
          {
          int32_t numDeps = src2Reg ? 2 : 1;
-         TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, numDeps, cg->trMemory());
+         TR::RegisterDependencyConditions *deps = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(0, numDeps, comp->trMemory());
          deps->addPostCondition(trgReg, TR::RealRegister::NoReg);
          if (src2Reg)
             deps->addPostCondition(src2Reg, TR::RealRegister::NoReg);
@@ -750,7 +751,7 @@ TR::Register *lsub64Evaluator(TR::Node *node, TR::CodeGenerator *cg)
       if (doneSkipSub)
          {
          int32_t numDeps = src2Reg ? 2 : 1;
-         TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, numDeps, cg->trMemory());
+         TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, numDeps, cg->comp()->trMemory());
          deps->addPostCondition(trgReg, TR::RealRegister::NoReg);
          if (src2Reg)
             deps->addPostCondition(src2Reg, TR::RealRegister::NoReg);
@@ -2106,7 +2107,7 @@ strengthReducingLongDivideOrRemainder32BitMode(TR::Node *node,      TR::CodeGene
 
    TR::SymbolReference *helperSym = cg->symRefTab()->findOrCreateRuntimeHelper(helper, false, false, false);
    uintptr_t addr = (uintptr_t)helperSym->getMethodAddress();
-   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 0, cg->trMemory());
+   TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 0, cg->comp()->trMemory());
 
    generateDepImmSymInstruction(cg, TR::InstOpCode::bl, node, addr, deps, helperSym);
    generateDepLabelInstruction(cg, TR::InstOpCode::label, node, doneLabel, dependencies);
@@ -2121,7 +2122,7 @@ TR::Register *OMR::Power::TreeEvaluator::ldivEvaluator(TR::Node *node, TR::CodeG
 
    TR::Register *dd_lowReg, *dr_lowReg;
    TR::Register *dd_highReg, *dr_highReg;
-   TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(14, 14, cg->trMemory());
+   TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(14, 14, cg->comp()->trMemory());
    bool signed_div = (node->getOpCodeValue() == TR::ldiv);
 
    strengthReducingLongDivideOrRemainder32BitMode(node, cg, dependencies, &dd_highReg, &dd_lowReg, &dr_highReg, &dr_lowReg, signed_div, false);
@@ -2333,7 +2334,7 @@ TR::Register *OMR::Power::TreeEvaluator::lremEvaluator(TR::Node *node, TR::CodeG
 
    TR::Register *dd_lowReg, *dr_lowReg;
    TR::Register *dd_highReg, *dr_highReg;
-   TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(14, 14, cg->trMemory());
+   TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(14, 14, cg->comp()->trMemory());
    bool signed_rem = (node->getOpCodeValue() == TR::lrem);
 
    strengthReducingLongDivideOrRemainder32BitMode(node, cg, dependencies, &dd_highReg, &dd_lowReg, &dr_highReg, &dr_lowReg, signed_rem, true);

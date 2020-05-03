@@ -239,7 +239,7 @@ TR::Register *OMR::Power::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
       TR::LabelSymbol *label10 = generateLabelSymbol(cg);
       TR::LabelSymbol *donelabel = generateLabelSymbol(cg);
 
-      TR::RegisterDependencyConditions *deps = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(6, 6, cg->trMemory());
+      TR::RegisterDependencyConditions *deps = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(6, 6, comp->trMemory());
       TR::addDependency(deps, addrReg, TR::RealRegister::NoReg, TR_GPR, cg);
       deps->getPostConditions()->getRegisterDependency(0)->setExcludeGPR0();
       deps->getPreConditions()->getRegisterDependency(0)->setExcludeGPR0();
@@ -367,7 +367,7 @@ TR::Register *OMR::Power::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
       TR::LabelSymbol *label10 = generateLabelSymbol(cg);
       TR::LabelSymbol *donelabel = generateLabelSymbol(cg);
 
-      TR::RegisterDependencyConditions *deps = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(5, 5, cg->trMemory());
+      TR::RegisterDependencyConditions *deps = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(5, 5, comp->trMemory());
       TR::addDependency(deps, addrReg, TR::RealRegister::NoReg, TR_GPR, cg);
       deps->getPostConditions()->getRegisterDependency(0)->setExcludeGPR0();
       deps->getPreConditions()->getRegisterDependency(0)->setExcludeGPR0();

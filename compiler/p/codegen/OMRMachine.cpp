@@ -1744,7 +1744,7 @@ OMR::Power::Machine::cloneRegisterFileByType(TR::RealRegister **registerFileClon
       {
       for (int32_t i = start; i <= end; i++)
          {
-         registerFileClone[i] = (TR::RealRegister *)self()->cg()->trMemory()->allocateMemory(sizeof(TR::RealRegister), allocKind);
+         registerFileClone[i] = (TR::RealRegister *)self()->cg()->comp()->trMemory()->allocateMemory(sizeof(TR::RealRegister), allocKind);
          memcpy(registerFileClone[i], registerFile[i], sizeof(TR::RealRegister));
          }
       }
@@ -1760,7 +1760,7 @@ TR::RealRegister **
 OMR::Power::Machine::cloneRegisterFile(TR::RealRegister **registerFile, TR_AllocationKind allocKind)
    {
    int32_t arraySize = sizeof(TR::RealRegister *)*TR::RealRegister::NumRegisters;
-   TR::RealRegister  **registerFileClone = (TR::RealRegister **)self()->cg()->trMemory()->allocateMemory(arraySize, allocKind);
+   TR::RealRegister  **registerFileClone = (TR::RealRegister **)self()->cg()->comp()->trMemory()->allocateMemory(arraySize, allocKind);
    registerFileClone = self()->cloneRegisterFileByType(registerFileClone, registerFile, TR::RealRegister::FirstGPR, TR::RealRegister::LastGPR, TR_GPR, allocKind);
    registerFileClone = self()->cloneRegisterFileByType(registerFileClone, registerFile, TR::RealRegister::FirstFPR, TR::RealRegister::LastFPR, TR_FPR, allocKind);
    registerFileClone = self()->cloneRegisterFileByType(registerFileClone, registerFile, TR::RealRegister::FirstCCR, TR::RealRegister::LastCCR, TR_CCR, allocKind);
@@ -1881,7 +1881,7 @@ OMR::Power::Machine::createCondForLiveAndSpilledGPRs(bool cleanRegState, TR::lis
 
    if (c)
       {
-      deps = new (self()->cg()->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, c, self()->cg()->trMemory());
+      deps = new (self()->cg()->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, c, self()->cg()->comp()->trMemory());
       for (int32_t j = TR::RealRegister::FirstGPR; j <= endReg; j++)
          {
          TR::RealRegister *realReg = self()->getRealRegister((TR::RealRegister::RegNum)j);

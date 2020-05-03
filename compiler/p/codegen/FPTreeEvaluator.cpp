@@ -98,6 +98,7 @@ TR::Register *OMR::Power::TreeEvaluator::ibits2fEvaluator(TR::Node *node, TR::Co
 
 TR::Register *OMR::Power::TreeEvaluator::fbits2iEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+   TR::Compilation *comp = cg->comp();
    TR::Node                *child  = node->getFirstChild();
    TR::Register            *target = cg->allocateRegister();
    TR::Register            *floatReg;
@@ -109,15 +110,15 @@ TR::Register *OMR::Power::TreeEvaluator::fbits2iEvaluator(TR::Node *node, TR::Co
       {
       childEval = false;
       floatReg = cg->allocateSinglePrecisionRegister();
-      TR::MemoryReference *tempMR = new (cg->comp()->trHeapMemory()) TR::MemoryReference(child, 4, cg);
-      generateTrg1MemInstruction(cg, TR::InstOpCode::lfs, node, floatReg, new (cg->comp()->trHeapMemory()) TR::MemoryReference(node, *tempMR, 0, 4, cg));
+      TR::MemoryReference *tempMR = new (comp->trHeapMemory()) TR::MemoryReference(child, 4, cg);
+      generateTrg1MemInstruction(cg, TR::InstOpCode::lfs, node, floatReg, new (comp->trHeapMemory()) TR::MemoryReference(node, *tempMR, 0, 4, cg));
       generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, target, tempMR);
       tempMR->decNodeReferenceCounts(cg);
       }
    else
       {
-      floatReg = cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8) ? cg->gprClobberEvaluate(child) : cg->evaluate(child);
-      generateMvFprGprInstructions(cg, node, fpr2gprSp, cg->comp()->target().is64Bit(),target, floatReg);
+      floatReg = comp->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8) ? cg->gprClobberEvaluate(child) : cg->evaluate(child);
+      generateMvFprGprInstructions(cg, node, fpr2gprSp, comp->target().is64Bit(),target, floatReg);
       childEval = floatReg == child->getRegister();
       cg->decReferenceCount(child);
       }
@@ -135,7 +136,7 @@ TR::Register *OMR::Power::TreeEvaluator::fbits2iEvaluator(TR::Node *node, TR::Co
       nanNormalizeStartLabel->setStartInternalControlFlow();
       nanNormalizeEndLabel->setEndInternalControlFlow();
 
-      TR::RegisterDependencyConditions *deps = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg->trMemory());
+      TR::RegisterDependencyConditions *deps = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, comp->trMemory());
       deps->addPostCondition(condReg, TR::RealRegister::NoReg);
       deps->addPostCondition(target, TR::RealRegister::NoReg);
 
@@ -298,7 +299,7 @@ TR::Register *OMR::Power::TreeEvaluator::dbits2lEvaluator(TR::Node *node, TR::Co
       TR::LabelSymbol *nanNormalizeEndLabel = generateLabelSymbol(cg);
 
       uint16_t numDeps = comp->target().is64Bit() ? 2 : 3;
-      TR::RegisterDependencyConditions *deps = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(numDeps, numDeps, cg->trMemory());
+      TR::RegisterDependencyConditions *deps = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(numDeps, numDeps, comp->trMemory());
       TR::addDependency(deps, condReg, TR::RealRegister::NoReg, TR_CCR, cg);
       if (comp->target().is64Bit())
          {
@@ -529,7 +530,7 @@ TR::Register *OMR::Power::TreeEvaluator::dloadHelper(TR::Node *node, TR::CodeGen
          else
             generateTrg1MemInstruction (cg, TR::InstOpCode::addi2, node, addrReg, tempMR);
          }
-      TR::RegisterDependencyConditions *dependencies = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(5, 5, cg->trMemory());
+      TR::RegisterDependencyConditions *dependencies = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(5, 5, comp->trMemory());
       TR::addDependency(dependencies, tempReg, TR::RealRegister::fp0, TR_FPR, cg);
       TR::addDependency(dependencies, addrReg, TR::RealRegister::gr3, TR_GPR, cg);
       TR::addDependency(dependencies, NULL, TR::RealRegister::gr11, TR_GPR, cg);
@@ -812,7 +813,7 @@ TR::Register *OMR::Power::TreeEvaluator::vdgetelemEvaluator(TR::Node *node, TR::
    generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, jumpLabel, condReg);
    generateTrg1Src2ImmInstruction(cg, TR::InstOpCode::xxsldwi, node, resReg, vectorReg, vectorReg, 0x2);
 
-   TR::RegisterDependencyConditions *dep = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 4, cg->trMemory());
+   TR::RegisterDependencyConditions *dep = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 4, cg->comp()->trMemory());
    dep->addPostCondition(vectorReg, TR::RealRegister::NoReg);
    dep->addPostCondition(idxReg, TR::RealRegister::NoReg);
    dep->addPostCondition(resReg, TR::RealRegister::NoReg);
@@ -890,7 +891,7 @@ TR::Register *OMR::Power::TreeEvaluator::vdsetelemEvaluator(TR::Node *node, TR::
    generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, doneLabel, condReg);
    generateTrg1Src2ImmInstruction(cg, TR::InstOpCode::xxpermdi, node, resReg, vectorReg, valueReg, 0x0);
 
-   TR::RegisterDependencyConditions *dep = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 5, cg->trMemory());
+   TR::RegisterDependencyConditions *dep = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 5, cg->comp()->trMemory());
    dep->addPostCondition(vectorReg, TR::RealRegister::NoReg);
    dep->addPostCondition(idxReg, TR::RealRegister::NoReg);
    dep->addPostCondition(valueReg, TR::RealRegister::NoReg);
@@ -986,7 +987,7 @@ TR::Register* OMR::Power::TreeEvaluator::dstoreEvaluator(TR::Node *node, TR::Cod
       {
       TR::Register *addrReg = cg->allocateRegister();
       TR::SymbolReference    *vrlRef = comp->getSymRefTab()->findOrCreateVolatileWriteDoubleSymbolRef(comp->getMethodSymbol());
-      TR::RegisterDependencyConditions *dependencies = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(5, 5, cg->trMemory());
+      TR::RegisterDependencyConditions *dependencies = new (comp->trHeapMemory()) TR::RegisterDependencyConditions(5, 5, comp->trMemory());
       if (isUnresolved)
          {
 #ifdef J9_PROJECT_SPECIFIC
@@ -1055,7 +1056,7 @@ TR::Register *OMR::Power::TreeEvaluator::freturnEvaluator(TR::Node *node, TR::Co
    const TR::PPCLinkageProperties &linkageProperties = cg->getProperties();
    TR::RealRegister::RegNum machineReturnRegister =
                 linkageProperties.getFloatReturnRegister();
-   TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(1, 0, cg->trMemory());
+   TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(1, 0, cg->comp()->trMemory());
    dependencies->addPreCondition(returnRegister, machineReturnRegister);
    generateAdminInstruction(cg, TR::InstOpCode::ret, node);
    generateDepInstruction(cg, TR::InstOpCode::blr, node, dependencies);
@@ -1211,7 +1212,7 @@ TR::Register *OMR::Power::TreeEvaluator::fremEvaluator(TR::Node *node, TR::CodeG
    TR::Register *source1Reg  = cg->evaluate(child1);
    TR::Register *source2Reg  = cg->evaluate(child2);
    TR::Register *copyReg;
-   TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(16, 16, cg->trMemory());
+   TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(16, 16, cg->comp()->trMemory());
 
    if (!cg->canClobberNodesRegister(child1))
       {
@@ -1263,7 +1264,7 @@ TR::Register *OMR::Power::TreeEvaluator::dremEvaluator(TR::Node *node, TR::CodeG
    TR::Register *source1Reg  = cg->evaluate(child1);
    TR::Register *source2Reg  = cg->evaluate(child2);
    TR::Register *copyReg;
-   TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(16, 16, cg->trMemory());
+   TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(16, 16, cg->comp()->trMemory());
 
    if (!cg->canClobberNodesRegister(child1))
       {
@@ -1433,7 +1434,7 @@ TR::Register *OMR::Power::TreeEvaluator::int2dbl(TR::Node * node, TR::Register *
       }
    else
       {
-      TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(6, 6, cg->trMemory());
+      TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(6, 6, cg->comp()->trMemory());
       if (!canClobber)
          {
          tempReg = cg->allocateRegister();
@@ -1572,7 +1573,7 @@ TR::Register *OMR::Power::TreeEvaluator::long2dbl(TR::Node *node, TR::CodeGenera
    else
       {
       TR::Register *srcLow, *srcHigh;
-      TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(8, 8, cg->trMemory());
+      TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(8, 8, cg->comp()->trMemory());
 
       if (!cg->canClobberNodesRegister(child))
          {
@@ -1633,7 +1634,7 @@ TR::Register *OMR::Power::TreeEvaluator::long2float(TR::Node *node, TR::CodeGene
    else if (cg->comp()->target().is64Bit())
       {
       TR::Register *src;
-      TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(8, 8, cg->trMemory());
+      TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(8, 8, cg->comp()->trMemory());
 
       if (!cg->canClobberNodesRegister(child))
          {
@@ -1660,7 +1661,7 @@ TR::Register *OMR::Power::TreeEvaluator::long2float(TR::Node *node, TR::CodeGene
    else
       {
       TR::Register *srcLow, *srcHigh;
-      TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(10, 10, cg->trMemory());
+      TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(10, 10, cg->comp()->trMemory());
 
       if (!cg->canClobberNodesRegister(child))
          {
@@ -1899,7 +1900,7 @@ TR::Register *OMR::Power::TreeEvaluator::d2lEvaluator(TR::Node *node, TR::CodeGe
          sourceReg = copyReg;
          }
 
-      dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(17, 17, cg->trMemory());
+      dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(17, 17, cg->comp()->trMemory());
       TR::addDependency(dependencies, sourceReg, TR::RealRegister::fp0, TR_FPR, cg);
       TR::addDependency(dependencies, trgReg->getHighOrder(), TR::RealRegister::gr3, TR_GPR, cg);
       TR::addDependency(dependencies, trgReg->getLowOrder(), TR::RealRegister::gr4, TR_GPR, cg);
@@ -2411,7 +2412,7 @@ TR::Register *OMR::Power::TreeEvaluator::dxfrsEvaluator(TR::Node *node, TR::Code
    cg->stopUsingRegister(condReg);
    generateTrg1Src1Instruction(cg, TR::InstOpCode::fnabs, node, trgReg, reg1);
 
-   TR::RegisterDependencyConditions *dep = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg->trMemory());
+   TR::RegisterDependencyConditions *dep = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg->comp()->trMemory());
    dep->addPostCondition(trgReg, TR::RealRegister::NoReg);
    dep->addPostCondition(reg1, TR::RealRegister::NoReg);
 
@@ -2515,7 +2516,7 @@ TR::Register *OMR::Power::TreeEvaluator::dnintEvaluator(TR::Node *node, TR::Code
       generateTrg1Src1Instruction(cg, TR::InstOpCode::fmr, node, trgReg, srcReg);
       }
 
-   TR::RegisterDependencyConditions *dep = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 5, cg->trMemory());
+   TR::RegisterDependencyConditions *dep = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 5, cg->comp()->trMemory());
    dep->addPostCondition(trgReg, TR::RealRegister::NoReg);
    dep->addPostCondition(srcReg, TR::RealRegister::NoReg);
    dep->addPostCondition(tmp1Reg, TR::RealRegister::NoReg);

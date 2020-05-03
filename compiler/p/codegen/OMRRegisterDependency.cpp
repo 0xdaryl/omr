@@ -79,7 +79,7 @@ TR::RegisterDependencyConditions* TR_PPCScratchRegisterDependencyConditions::cre
 
    TR::RegisterDependencyConditions *dependencies = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(preCount,
                                                                                                                   postCount,
-                                                                                                                  cg->trMemory());
+                                                                                                                  cg->comp()->trMemory());
    for (int i = 0; i < (pre ? pre->_numGPRDeps : 0); ++i)
       {
       dependencies->addPreCondition(pre->_gprDeps[i].getRegister(), pre->_gprDeps[i].getRealRegister(), pre->_gprDeps[i].getFlags());
@@ -142,13 +142,14 @@ OMR::Power::RegisterDependencyConditions::RegisterDependencyConditions(
                                        uint32_t          extranum,
                                        TR::Instruction  **cursorPtr)
    {
-   List<TR::Register>  regList(cg->trMemory());
+   TR::Compilation *comp = cg->comp();
+   List<TR::Register>  regList(comp->trMemory());
    TR::Instruction    *iCursor = (cursorPtr==NULL)?NULL:*cursorPtr;
    int32_t totalNum = node->getNumChildren() + extranum;
    int32_t i;
 
 
-   cg->comp()->incVisitCount();
+   comp->incVisitCount();
 
    int32_t numLongs = 0;
    //
@@ -168,8 +169,8 @@ OMR::Power::RegisterDependencyConditions::RegisterDependencyConditions(
 
    totalNum = totalNum + numLongs;
 
-   _preConditions = new (totalNum, cg->trMemory()) TR_PPCRegisterDependencyGroup;
-   _postConditions = new (totalNum, cg->trMemory()) TR_PPCRegisterDependencyGroup;
+   _preConditions = new (totalNum, comp->trMemory()) TR_PPCRegisterDependencyGroup;
+   _postConditions = new (totalNum, comp->trMemory()) TR_PPCRegisterDependencyGroup;
    _numPreConditions = totalNum;
    _addCursorForPre = 0;
    _numPostConditions = totalNum;
@@ -450,7 +451,7 @@ void OMR::Power::RegisterDependencyConditions::bookKeepingRegisterUses(TR::Instr
    bool isOOL = cg->getIsInOOLSection();
 
    TR::Machine *machine = cg->machine();
-   assoc = !isOOL ? new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0,_addCursorForPre, cg->trMemory()) : 0;
+   assoc = !isOOL ? new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0,_addCursorForPre, cg->comp()->trMemory()) : 0;
 
    for (int i = 0; i < _addCursorForPre; i++)
       {
@@ -483,7 +484,7 @@ void OMR::Power::RegisterDependencyConditions::bookKeepingRegisterUses(TR::Instr
    if (numAssoc > 0)
       {
       // Emit an AssocRegs instruction to track the previous association
-      assoc->setNumPostConditions(numAssoc, cg->trMemory());
+      assoc->setNumPostConditions(numAssoc, cg->comp()->trMemory());
       generateDepInstruction(cg, TR::InstOpCode::assocreg, instr->getNode(), assoc, instr->getPrev());
       }
 
@@ -523,7 +524,7 @@ OMR::Power::RegisterDependencyConditions::clone(
    preNum = this->getAddCursorForPre();
    postNum = this->getAddCursorForPost();
    result = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(getNumPreConditions()+addPre,
-                   getNumPostConditions()+addPost, cg->trMemory());
+                   getNumPostConditions()+addPost, cg->comp()->trMemory());
 
    for (idx=0; idx<postNum; idx++)
       {
@@ -592,7 +593,7 @@ TR::RegisterDependencyConditions *OMR::Power::RegisterDependencyConditions::clon
       addPost = added->getAddCursorForPost();
       }
    postNum = this->getAddCursorForPost();
-   result = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, postNum+addPost, cg->trMemory());
+   result = new (cg->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, postNum+addPost, cg->comp()->trMemory());
 
    for (idx=0; idx<postNum; idx++)
       {

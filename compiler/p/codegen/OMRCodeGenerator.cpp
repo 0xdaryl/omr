@@ -112,7 +112,7 @@ OMR::Power::CodeGenerator::CodeGenerator() :
      _stackPtrRegister(NULL),
      _constantData(NULL),
      _blockCallInfo(NULL),
-     _transientLongRegisters(self()->trMemory()),
+     _transientLongRegisters(self()->comp()->trMemory()),
      conversionBuffer(NULL),
      _outOfLineCodeSectionList(getTypedAllocator<TR_PPCOutOfLineCodeSection*>(self()->comp()->allocator()))
    {
@@ -122,7 +122,7 @@ OMR::Power::CodeGenerator::CodeGenerator() :
    self()->initializeLinkage();
 
    _unlatchedRegisterList =
-      (TR::RealRegister**)self()->trMemory()->allocateHeapMemory(sizeof(TR::RealRegister*)*(TR::RealRegister::NumRegisters + 1));
+      (TR::RealRegister**)comp->trMemory()->allocateHeapMemory(sizeof(TR::RealRegister*)*(TR::RealRegister::NumRegisters + 1));
 
    _unlatchedRegisterList[0] = 0; // mark that list is empty
 
@@ -131,8 +131,8 @@ OMR::Power::CodeGenerator::CodeGenerator() :
    // Set up to collect items for later TOC mapping
    if (comp->target().is64Bit())
       {
-      self()->setTrackStatics(new (comp->trHeapMemory()) TR_Array<TR::SymbolReference *>(self()->trMemory()));
-      self()->setTrackItems(new (comp->trHeapMemory()) TR_Array<TR_PPCLoadLabelItem *>(self()->trMemory()));
+      self()->setTrackStatics(new (comp->trHeapMemory()) TR_Array<TR::SymbolReference *>(comp->trMemory()));
+      self()->setTrackItems(new (comp->trHeapMemory()) TR_Array<TR_PPCLoadLabelItem *>(comp->trMemory()));
       }
    else
       {
@@ -293,7 +293,7 @@ OMR::Power::CodeGenerator::CodeGenerator() :
    if (!comp->getOption(TR_DisableRegisterPressureSimulation))
       {
       for (int32_t i = 0; i < TR_numSpillKinds; i++)
-         _globalRegisterBitVectors[i].init(self()->getNumberOfGlobalRegisters(), self()->trMemory());
+         _globalRegisterBitVectors[i].init(self()->getNumberOfGlobalRegisters(), comp->trMemory());
 
       for (TR_GlobalRegisterNumber grn=0; grn < self()->getNumberOfGlobalRegisters(); grn++)
          {
@@ -406,7 +406,7 @@ OMR::Power::CodeGenerator::generateSwitchToInterpreterPrePrologue(
    // gr0 must contain the saved LR; see Recompilation.s
    cursor = new (self()->comp()->trHeapMemory()) TR::PPCTrg1Instruction(TR::InstOpCode::mflr, node, gr0, cursor, self());
    cursor = self()->getLinkage()->flushArguments(cursor);
-   cursor = generateDepImmSymInstruction(self(), TR::InstOpCode::bl, node, (uintptr_t)revertToInterpreterSymRef->getMethodAddress(), new (self()->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0,0, self()->trMemory()), revertToInterpreterSymRef, NULL, cursor);
+   cursor = generateDepImmSymInstruction(self(), TR::InstOpCode::bl, node, (uintptr_t)revertToInterpreterSymRef->getMethodAddress(), new (self()->comp()->trHeapMemory()) TR::RegisterDependencyConditions(0,0, self()->comp()->trMemory()), revertToInterpreterSymRef, NULL, cursor);
 
    if (self()->comp()->target().is64Bit())
       {
@@ -1906,7 +1906,7 @@ void OMR::Power::CodeGenerator::buildRegisterMapForInstruction(TR_GCStackMap *ma
             if (virtReg->containsInternalPointer())
                {
                if (!internalPtrMap)
-                  internalPtrMap = new (comp->trHeapMemory()) TR_InternalPointerMap(self()->trMemory());
+                  internalPtrMap = new (comp->trHeapMemory()) TR_InternalPointerMap(comp->trMemory());
                internalPtrMap->addInternalPointerPair(virtReg->getPinningArrayPointer(), 31 - (i-1));
                atlas->addPinningArrayPtrForInternalPtrReg(virtReg->getPinningArrayPointer());
                }
@@ -2007,12 +2007,12 @@ inline static bool callInTree(TR::TreeTop *treeTop)
 TR_BitVector *OMR::Power::CodeGenerator::computeCallInfoBitVector()
    {
    uint32_t         bcount = self()->comp()->getFlowGraph()->getNextNodeNumber();
-   TR_BitVector     bvec, *ebvec = new (self()->comp()->trHeapMemory()) TR_BitVector(bcount, self()->trMemory());
+   TR_BitVector     bvec, *ebvec = new (self()->comp()->trHeapMemory()) TR_BitVector(bcount, self()->comp()->trMemory());
    TR::TreeTop      *pTree, *exitTree;
    TR::Block        *block;
    uint32_t         bnum, btemp;
 
-   bvec.init(bcount, self()->trMemory());
+   bvec.init(bcount, self()->comp()->trMemory());
 
    for (pTree=self()->comp()->getStartTree(); pTree!=NULL; pTree=exitTree->getNextTreeTop())
       {
@@ -2180,7 +2180,7 @@ TR_GlobalRegisterNumber OMR::Power::CodeGenerator::pickRegister(TR_RegisterCandi
          }
 
       if (!_assignedGlobalRegisters)
-         _assignedGlobalRegisters = new (self()->trStackMemory()) TR_BitVector(self()->comp()->getSymRefCount(), self()->trMemory(), stackAlloc, growable);
+         _assignedGlobalRegisters = new (self()->trStackMemory()) TR_BitVector(self()->comp()->getSymRefCount(), self()->comp()->trMemory(), stackAlloc, growable);
 
       bool vmThreadUsed = false;
       bool assigningEDX = false;
@@ -2540,7 +2540,7 @@ TR_BackingStore * OMR::Power::CodeGenerator::allocateStackSlot()
    ListElement<TR_BackingStore> * tempElement;
    if (conversionBuffer == NULL)
      {
-     conversionBuffer = new (self()->comp()->trHeapMemory()) List<TR_BackingStore>(self()->trMemory());
+     conversionBuffer = new (self()->comp()->trHeapMemory()) List<TR_BackingStore>(self()->comp()->trMemory());
      static const char *TR_ConversionSlots = feGetEnv("TR_ConversionSlots");
      int numSlots = (TR_ConversionSlots == NULL ? 2 : atoi(TR_ConversionSlots));
      for(int i = 0; i < numSlots; i++)
