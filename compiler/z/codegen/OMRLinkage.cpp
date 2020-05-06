@@ -440,13 +440,13 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
    //
    if (enableVectorLinkage)
       {
-      freeScratchable.init(TR::RealRegister::LastVRF + 1, self()->trMemory());
-      globalAllocatedRegisters.init(TR::RealRegister::LastVRF + 1, self()->trMemory());
+      freeScratchable.init(TR::RealRegister::LastVRF + 1, comp()->trMemory());
+      globalAllocatedRegisters.init(TR::RealRegister::LastVRF + 1, comp()->trMemory());
       }
    else
       {
-      freeScratchable.init(TR::RealRegister::LastFPR + 1, self()->trMemory());
-      globalAllocatedRegisters.init(TR::RealRegister::LastFPR + 1, self()->trMemory());
+      freeScratchable.init(TR::RealRegister::LastFPR + 1, comp()->trMemory());
+      globalAllocatedRegisters.init(TR::RealRegister::LastFPR + 1, comp()->trMemory());
       }
 
    for (i1 = TR::RealRegister::FirstGPR; i1 <= lastReg; i1++)
@@ -1805,7 +1805,7 @@ OMR::Z::Linkage::pushJNIReferenceArg(TR::Node * callNode, TR::Node * child, int3
        generateS390BranchInstruction(self()->cg(), TR::InstOpCode::BRC, TR::InstOpCode::COND_BNE, child, nonNullLabel);
        generateRRInstruction(self()->cg(), TR::InstOpCode::getXORRegOpCode(), child, pushRegister, pushRegister);
 
-       TR::RegisterDependencyConditions * conditions = new (self()->trHeapMemory()) TR::RegisterDependencyConditions(0, 3, self()->cg());
+       TR::RegisterDependencyConditions * conditions = new (comp()->trHeapMemory()) TR::RegisterDependencyConditions(0, 3, self()->cg());
        conditions->addPostCondition(addrReg, TR::RealRegister::AssignAny);
        conditions->addPostCondition(whatReg, TR::RealRegister::AssignAny);
 
@@ -2326,7 +2326,7 @@ OMR::Z::Linkage::replaceCallWithJumpInstruction(TR::Instruction *callInstruction
 
    TR::Instruction *replacementInst =0 ;
 
-   replacementInst = new (self()->trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::BRCL, node, (uint32_t)0xf, callSymbol, callSymRef, self()->cg());
+   replacementInst = new (comp()->trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::BRCL, node, (uint32_t)0xf, callSymbol, callSymRef, self()->cg());
 
    if(self()->comp()->getOption(TR_TraceCG))
       traceMsg(self()->comp(), "Replacing instruction %p to a jump %p !\n",callInstruction, replacementInst);
@@ -2439,7 +2439,7 @@ void OMR::Z::Linkage::generateDispatchReturnLable(TR::Node * callNode, TR::CodeG
       TR::Register * javaReturnRegister, bool hasGlRegDeps, TR::Node *GlobalRegDeps)
    {
    TR::LabelSymbol * endOfDirectToJNILabel = generateLabelSymbol(self()->cg());
-   TR::RegisterDependencyConditions * postDeps = new (self()->trHeapMemory())
+   TR::RegisterDependencyConditions * postDeps = new (comp()->trHeapMemory())
                TR::RegisterDependencyConditions(NULL, deps->getPostConditions(), 0, deps->getAddCursorForPost(), self()->cg());
 
    generateS390LabelInstruction(codeGen, TR::InstOpCode::LABEL, callNode, endOfDirectToJNILabel, postDeps);

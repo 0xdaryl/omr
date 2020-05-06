@@ -368,7 +368,7 @@ TR::Register *TR::IA32SystemLinkage::buildDirectDispatch(TR::Node *callNode, boo
    TR::ILOpCodes        callOpCodeValue = callNode->getOpCodeValue();
 
    if (!methodSymbol->isHelper())
-      diagnostic("Building call site for %s\n", methodSymbol->getMethod()->signature(trMemory()));
+      diagnostic("Building call site for %s\n", methodSymbol->getMethod()->signature(comp()->trMemory()));
 
    TR::RegisterDependencyConditions  *deps;
    deps = generateRegisterDependencyConditions((uint8_t)0, (uint8_t)6, cg());

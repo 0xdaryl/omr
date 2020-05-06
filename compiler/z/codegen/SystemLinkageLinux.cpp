@@ -292,7 +292,7 @@ void TR::S390zLinuxSystemLinkage::createPrologue(TR::Instruction* cursor)
    // Literal Pool for Test compiler
    TR::Snippet* firstSnippet = cg()->getFirstSnippet();
    if ( cg()->isLiteralPoolOnDemandOn() != true && firstSnippet != NULL )
-      cursor = new (trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::LARL, node, getLitPoolRealRegister(), firstSnippet, cursor, cg());
+      cursor = new (comp()->trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::LARL, node, getLitPoolRealRegister(), firstSnippet, cursor, cg());
 #endif
 
    TR::RealRegister* spReg = getNormalStackPointerRealRegister();
@@ -363,7 +363,7 @@ TR::S390zLinuxSystemLinkage::setParameterLinkageRegisterIndex(TR::ResolvedMethod
                {
                lri = numFPRArgs;
                }
-            
+
             numFPRArgs++;
             break;
             }
@@ -405,7 +405,7 @@ TR::S390zLinuxSystemLinkage::generateInstructionsForCall(TR::Node* callNode, TR:
    {
    TR::CodeGenerator * codeGen = cg();
 
-   TR::RegisterDependencyConditions * postDeps = new (trHeapMemory())
+   TR::RegisterDependencyConditions * postDeps = new (comp()->trHeapMemory())
       TR::RegisterDependencyConditions(NULL, deps->getPostConditions(), 0, deps->getAddCursorForPost(), cg());
 
    TR::Register * systemReturnAddressRegister =
@@ -428,7 +428,7 @@ TR::S390zLinuxSystemLinkage::generateInstructionsForCall(TR::Node* callNode, TR:
          TR::SymbolReference *callSymRef = callNode->getSymbolReference();
          TR::Symbol *callSymbol = callSymRef->getSymbol();
          TR::Register * fpReg = systemReturnAddressRegister;
-         TR::Instruction * callInstr = new (trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::BRASL, callNode, fpReg, callSymbol, callSymRef, codeGen);
+         TR::Instruction * callInstr = new (comp()->trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::BRASL, callNode, fpReg, callSymbol, callSymRef, codeGen);
          callInstr->setDependencyConditions(deps);
          }
       }

@@ -102,13 +102,13 @@ void OMR::X86::Linkage::mapCompactedStack(TR::ResolvedMethodSymbol *method)
 #endif
 
    {
-   TR::StackMemoryRegion stackMemoryRegion(*self()->trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*self()->comp()->trMemory());
 
    int32_t *colourToOffsetMap =
-      (int32_t *) self()->trMemory()->allocateStackMemory(self()->cg()->getLocalsIG()->getNumberOfColoursUsedToColour() * sizeof(int32_t));
+      (int32_t *) self()->comp()->trMemory()->allocateStackMemory(self()->cg()->getLocalsIG()->getNumberOfColoursUsedToColour() * sizeof(int32_t));
 
    uint32_t *colourToSizeMap =
-      (uint32_t *) self()->trMemory()->allocateStackMemory(self()->cg()->getLocalsIG()->getNumberOfColoursUsedToColour() * sizeof(uint32_t));
+      (uint32_t *) self()->comp()->trMemory()->allocateStackMemory(self()->cg()->getLocalsIG()->getNumberOfColoursUsedToColour() * sizeof(uint32_t));
 
    for (i=0; i<self()->cg()->getLocalsIG()->getNumberOfColoursUsedToColour(); i++)
       {

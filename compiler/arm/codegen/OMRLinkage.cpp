@@ -123,7 +123,7 @@ TR::Instruction *OMR::ARM::Linkage::saveArguments(TR::Instruction *cursor)
                if (hasToBeOnStack)
                   {
                   argRegister = machine->getRealRegister(properties.getIntegerArgumentRegister(numIntArgs));
-                  cursor = generateMemSrc1Instruction(codeGen, ARMOp_str, firstNode, new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, codeGen), argRegister, cursor);
+                  cursor = generateMemSrc1Instruction(codeGen, ARMOp_str, firstNode, new (comp()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, codeGen), argRegister, cursor);
                   }
                numIntArgs++;
                break;
@@ -133,11 +133,11 @@ TR::Instruction *OMR::ARM::Linkage::saveArguments(TR::Instruction *cursor)
             	if (hasToBeOnStack)
                   {
                   argRegister = machine->getRealRegister(properties.getIntegerArgumentRegister(numIntArgs));
-                  cursor = generateMemSrc1Instruction(codeGen, ARMOp_str, firstNode, new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, codeGen), argRegister, cursor);
+                  cursor = generateMemSrc1Instruction(codeGen, ARMOp_str, firstNode, new (comp()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, codeGen), argRegister, cursor);
                   if (numIntArgs < properties.getNumIntArgRegs()-1)
                      {
                      argRegister = machine->getRealRegister(properties.getIntegerArgumentRegister(numIntArgs+1));
-                     cursor = generateMemSrc1Instruction(codeGen, ARMOp_str, firstNode, new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset+4, codeGen), argRegister, cursor);
+                     cursor = generateMemSrc1Instruction(codeGen, ARMOp_str, firstNode, new (comp()->trHeapMemory()) TR::MemoryReference(stackPtr, offset+4, codeGen), argRegister, cursor);
                      }
                   }
                numIntArgs += 2;
@@ -177,7 +177,7 @@ TR::Instruction *OMR::ARM::Linkage::loadUpArguments(TR::Instruction *cursor)
                 numIntArgs<properties.getNumIntArgRegs())
                {
                argRegister = machine->getRealRegister(properties.getIntegerArgumentRegister(numIntArgs));
-               cursor = generateTrg1MemInstruction(codeGen, ARMOp_ldr, firstNode, argRegister, new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, codeGen), cursor);
+               cursor = generateTrg1MemInstruction(codeGen, ARMOp_ldr, firstNode, argRegister, new (comp()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, codeGen), cursor);
                }
             numIntArgs++;
             break;
@@ -185,7 +185,7 @@ TR::Instruction *OMR::ARM::Linkage::loadUpArguments(TR::Instruction *cursor)
              if (numIntArgs<properties.getNumIntArgRegs())
                 {
                 argRegister = machine->getRealRegister(properties.getIntegerArgumentRegister(numIntArgs));
-                cursor = generateTrg1MemInstruction(codeGen, ARMOp_ldr, firstNode, argRegister, new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, codeGen), cursor);
+                cursor = generateTrg1MemInstruction(codeGen, ARMOp_ldr, firstNode, argRegister, new (comp()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, codeGen), cursor);
                 }
              numIntArgs++;
             break;
@@ -196,11 +196,11 @@ TR::Instruction *OMR::ARM::Linkage::loadUpArguments(TR::Instruction *cursor)
                 numIntArgs<properties.getNumIntArgRegs())
                {
                argRegister = machine->getRealRegister(properties.getIntegerArgumentRegister(numIntArgs));
-               cursor = generateTrg1MemInstruction(codeGen, ARMOp_ldr, firstNode, argRegister, new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, codeGen), cursor);
+               cursor = generateTrg1MemInstruction(codeGen, ARMOp_ldr, firstNode, argRegister, new (comp()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, codeGen), cursor);
                if (numIntArgs < properties.getNumIntArgRegs()-1)
                   {
                   argRegister = machine->getRealRegister(properties.getIntegerArgumentRegister(numIntArgs+1));
-                  cursor = generateTrg1MemInstruction(codeGen, ARMOp_ldr, firstNode, argRegister, new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset + 4, codeGen), cursor);
+                  cursor = generateTrg1MemInstruction(codeGen, ARMOp_ldr, firstNode, argRegister, new (comp()->trHeapMemory()) TR::MemoryReference(stackPtr, offset + 4, codeGen), cursor);
                   }
                }
             numIntArgs += 2;
@@ -240,7 +240,7 @@ TR::Instruction *OMR::ARM::Linkage::flushArguments(TR::Instruction *cursor)
                 numIntArgs<properties.getNumIntArgRegs())
                {
                argRegister = machine->getRealRegister(properties.getIntegerArgumentRegister(numIntArgs));
-               cursor = generateMemSrc1Instruction(codeGen, ARMOp_str, firstNode, new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, codeGen), argRegister, cursor);
+               cursor = generateMemSrc1Instruction(codeGen, ARMOp_str, firstNode, new (comp()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, codeGen), argRegister, cursor);
                }
             numIntArgs++;
             break;
@@ -248,7 +248,7 @@ TR::Instruction *OMR::ARM::Linkage::flushArguments(TR::Instruction *cursor)
              if (numIntArgs<properties.getNumIntArgRegs())
                 {
                 argRegister = machine->getRealRegister(properties.getIntegerArgumentRegister(numIntArgs));
-                cursor = generateMemSrc1Instruction(codeGen, ARMOp_str, firstNode, new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, codeGen), argRegister, cursor);
+                cursor = generateMemSrc1Instruction(codeGen, ARMOp_str, firstNode, new (comp()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, codeGen), argRegister, cursor);
                 }
              numIntArgs++;
             break;
@@ -259,11 +259,11 @@ TR::Instruction *OMR::ARM::Linkage::flushArguments(TR::Instruction *cursor)
                 numIntArgs<properties.getNumIntArgRegs())
                {
                argRegister = machine->getRealRegister(properties.getIntegerArgumentRegister(numIntArgs));
-               cursor = generateMemSrc1Instruction(codeGen, ARMOp_str, firstNode, new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, codeGen), argRegister, cursor);
+               cursor = generateMemSrc1Instruction(codeGen, ARMOp_str, firstNode, new (comp()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, codeGen), argRegister, cursor);
                if (numIntArgs < properties.getNumIntArgRegs()-1)
                   {
                   argRegister = machine->getRealRegister(properties.getIntegerArgumentRegister(numIntArgs+1));
-                  cursor = generateMemSrc1Instruction(codeGen, ARMOp_str, firstNode, new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset + 4, codeGen), argRegister, cursor);
+                  cursor = generateMemSrc1Instruction(codeGen, ARMOp_str, firstNode, new (comp()->trHeapMemory()) TR::MemoryReference(stackPtr, offset + 4, codeGen), argRegister, cursor);
                   }
                }
             numIntArgs += 2;
@@ -292,7 +292,7 @@ TR::Register *OMR::ARM::Linkage::pushJNIReferenceArg(TR::Node *child)
          else
             {
             TR::Register           *addrReg = self()->cg()->evaluate(child);
-            TR::MemoryReference *tempMR  = new (self()->trHeapMemory()) TR::MemoryReference(addrReg, 0, self()->cg());
+            TR::MemoryReference *tempMR  = new (comp()->trHeapMemory()) TR::MemoryReference(addrReg, 0, self()->cg());
 
             // statics are non-collectable
             pushReg = self()->cg()->allocateRegister();
@@ -332,7 +332,7 @@ TR::Register *OMR::ARM::Linkage::pushJNIReferenceArg(TR::Node *child)
             doneLabel->setEndInternalControlFlow();
             generateLabelInstruction(self()->cg(), ARMOp_label, child, startLabel);
 
-            TR::MemoryReference *tempMR = new (self()->trHeapMemory()) TR::MemoryReference(addrReg, 0, self()->cg());
+            TR::MemoryReference *tempMR = new (comp()->trHeapMemory()) TR::MemoryReference(addrReg, 0, self()->cg());
             generateTrg1MemInstruction(self()->cg(), ARMOp_ldr, child, objReg, tempMR);
 
             if (child->getReferenceCount() > 1)
@@ -352,7 +352,7 @@ TR::Register *OMR::ARM::Linkage::pushJNIReferenceArg(TR::Node *child)
             generateConditionalBranchInstruction(self()->cg(), child, ARMConditionCodeNE, doneLabel);
             generateTrg1ImmInstruction(self()->cg(), ARMOp_mov, child, pushReg, 0, 0);
 
-            TR::RegisterDependencyConditions *deps = new (self()->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, self()->trMemory());
+            TR::RegisterDependencyConditions *deps = new (comp()->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, comp()->trMemory());
             TR::addDependency(deps, pushReg, TR::RealRegister::NoReg, TR_GPR, self()->cg());
             TR::addDependency(deps, objReg,  TR::RealRegister::NoReg, TR_GPR, self()->cg());
 
@@ -632,7 +632,7 @@ printf("%s: numIntegerArgs %d numMemArgs %d\n", sig,  numIntegerArgs, numMemArgs
 
 
    // From here, down, all stack memory allocations will expire / die when the function returns.
-   TR::StackMemoryRegion stackMemoryRegion(*self()->trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp->trMemory());
    if (numMemArgs > 0)
       {
       pushToMemory = new(comp->trStackMemory()) TR::ARMMemoryArgument[numMemArgs];
@@ -1013,8 +1013,8 @@ TR::Register *OMR::ARM::Linkage::buildARMLinkageDirectDispatch(TR::Node *callNod
 
    const TR::ARMLinkageProperties &pp = self()->getProperties();
    TR::RegisterDependencyConditions *dependencies =
-      new (self()->trHeapMemory()) TR::RegisterDependencyConditions(pp.getNumberOfDependencyGPRegisters() + 8 /*pp.getNumFloatArgRegs()*/,
-                                             pp.getNumberOfDependencyGPRegisters() + 8 /*pp.getNumFloatArgRegs()*/, self()->trMemory());
+      new (comp()->trHeapMemory()) TR::RegisterDependencyConditions(pp.getNumberOfDependencyGPRegisters() + 8 /*pp.getNumFloatArgRegs()*/,
+                                             pp.getNumberOfDependencyGPRegisters() + 8 /*pp.getNumFloatArgRegs()*/, comp()->trMemory());
 
    TR::Register *vftReg = NULL;
    int32_t argSize = self()->buildArgs(callNode, dependencies, vftReg, false);
@@ -1049,11 +1049,11 @@ TR::Register *OMR::ARM::Linkage::buildARMLinkageDirectDispatch(TR::Node *callNod
 
       if (callSymRef->isUnresolved() || self()->comp()->compileRelocatableCode())
          {
-         snippet = new (self()->trHeapMemory()) TR::ARMUnresolvedCallSnippet(codeGen, callNode, label, argSize);
+         snippet = new (comp()->trHeapMemory()) TR::ARMUnresolvedCallSnippet(codeGen, callNode, label, argSize);
          }
       else
          {
-         snippet = new (self()->trHeapMemory()) TR::ARMCallSnippet(codeGen, callNode, label, argSize);
+         snippet = new (comp()->trHeapMemory()) TR::ARMCallSnippet(codeGen, callNode, label, argSize);
          }
 
       codeGen->addSnippet(snippet);
@@ -1062,7 +1062,7 @@ TR::Register *OMR::ARM::Linkage::buildARMLinkageDirectDispatch(TR::Node *callNod
                                           callNode,
                                           0,
                                           dependencies,
-                                          new (self()->trHeapMemory()) TR::SymbolReference(self()->comp()->getSymRefTab(), label),
+                                          new (comp()->trHeapMemory()) TR::SymbolReference(self()->comp()->getSymRefTab(), label),
                                           snippet);
 #else
       TR_ASSERT(false, "Attempting to handle Java in non-Java project");

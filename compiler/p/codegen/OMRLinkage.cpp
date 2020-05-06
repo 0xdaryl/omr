@@ -82,7 +82,7 @@ TR::MemoryReference *OMR::Power::Linkage::getOutgoingArgumentMemRef(int32_t argS
    TR::Machine *machine = self()->machine();
    const TR::PPCLinkageProperties& properties = self()->getProperties();
 
-   TR::MemoryReference *result = new (self()->trHeapMemory()) TR::MemoryReference(machine->getRealRegister(properties.getNormalStackPointerRegister()),
+   TR::MemoryReference *result = new (self()->comp()->trHeapMemory()) TR::MemoryReference(machine->getRealRegister(properties.getNormalStackPointerRegister()),
                                                                               argSize+self()->getOffsetToFirstParm(), length, self()->cg());
    memArg.argRegister = argReg;
    memArg.argMemory = result;
@@ -119,7 +119,7 @@ TR::Instruction *OMR::Power::Linkage::saveArguments(TR::Instruction *cursor, boo
    // no additional conditions were added with the intention of keeping the code easier to read
    // and not full of if conditions
 
-   freeScratchable.init(TR::RealRegister::LastFPR + 1, self()->trMemory());
+   freeScratchable.init(TR::RealRegister::LastFPR + 1, self()->comp()->trMemory());
 
    // first, consider all argument registers free
    for (i1=TR::RealRegister::FirstGPR; i1<=TR::RealRegister::LastFPR; i1++)
@@ -220,14 +220,14 @@ TR::Instruction *OMR::Power::Linkage::saveArguments(TR::Instruction *cursor, boo
                }
 
             cursor = generateMemSrc1Instruction(self()->cg(), op, firstNode,
-                        new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, length, self()->cg()),
+                        new (self()->comp()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, length, self()->cg()),
                         REAL_REGISTER(regNum),
                         cursor);
 
             if (twoRegs)
                {
                cursor = generateMemSrc1Instruction(self()->cg(), TR::InstOpCode::stw, firstNode,
-                           new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset+4, 4, self()->cg()),
+                           new (self()->comp()->trHeapMemory()) TR::MemoryReference(stackPtr, offset+4, 4, self()->cg()),
                            REAL_REGISTER(REGNUM(regNum+1)),
                            cursor);
                if (ai<0)
@@ -273,7 +273,7 @@ TR::Instruction *OMR::Power::Linkage::saveArguments(TR::Instruction *cursor, boo
                   if (freeScratchable.isSet(aiLow))
                      {
                      cursor = generateTrg1MemInstruction(self()->cg(), TR::InstOpCode::lwz, firstNode, REAL_REGISTER(REGNUM(aiLow)),
-                                 new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, 4, self()->cg()), cursor);
+                                 new (self()->comp()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, 4, self()->cg()), cursor);
                      freeScratchable.reset(aiLow);
                      }
                   else
@@ -317,7 +317,7 @@ TR::Instruction *OMR::Power::Linkage::saveArguments(TR::Instruction *cursor, boo
                if (freeScratchable.isSet(ai))
                   {
                   cursor = generateTrg1MemInstruction(self()->cg(), TR::InstOpCode::lwz, firstNode, REAL_REGISTER(REGNUM(ai)),
-                           new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, 4, self()->cg()), cursor);
+                           new (self()->comp()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, 4, self()->cg()), cursor);
                   freeScratchable.reset(ai);
                   }
                else
@@ -332,7 +332,7 @@ TR::Instruction *OMR::Power::Linkage::saveArguments(TR::Instruction *cursor, boo
                if (freeScratchable.isSet(ai))
                   {
                   cursor = generateTrg1MemInstruction(self()->cg(),TR::InstOpCode::Op_load, firstNode, REAL_REGISTER(REGNUM(ai)),
-                           new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, TR::Compiler->om.sizeofReferenceAddress(), self()->cg()), cursor);
+                           new (self()->comp()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, TR::Compiler->om.sizeofReferenceAddress(), self()->cg()), cursor);
                   freeScratchable.reset(ai);
                   }
                else
@@ -352,7 +352,7 @@ TR::Instruction *OMR::Power::Linkage::saveArguments(TR::Instruction *cursor, boo
                   if (freeScratchable.isSet(ai))
                      {
                      cursor = generateTrg1MemInstruction(self()->cg(), TR::InstOpCode::ld, firstNode, REAL_REGISTER(REGNUM(ai)),
-                              new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, 8, self()->cg()), cursor);
+                              new (self()->comp()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, 8, self()->cg()), cursor);
                      freeScratchable.reset(ai);
                      }
                   else
@@ -368,7 +368,7 @@ TR::Instruction *OMR::Power::Linkage::saveArguments(TR::Instruction *cursor, boo
                   if (freeScratchable.isSet(ai))
                      {
                      cursor = generateTrg1MemInstruction(self()->cg(), TR::InstOpCode::lwz, firstNode, REAL_REGISTER(REGNUM(ai)),
-                              new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, 4, self()->cg()), cursor);
+                              new (self()->comp()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, 4, self()->cg()), cursor);
                      freeScratchable.reset(ai);
                      }
                   else
@@ -383,7 +383,7 @@ TR::Instruction *OMR::Power::Linkage::saveArguments(TR::Instruction *cursor, boo
                   if (freeScratchable.isSet(ai))
                      {
                      cursor = generateTrg1MemInstruction(self()->cg(), TR::InstOpCode::lwz, firstNode, REAL_REGISTER(REGNUM(ai)),
-                              new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset+4, 4, self()->cg()), cursor);
+                              new (self()->comp()->trHeapMemory()) TR::MemoryReference(stackPtr, offset+4, 4, self()->cg()), cursor);
                      freeScratchable.reset(ai);
                      }
                   else
@@ -399,7 +399,7 @@ TR::Instruction *OMR::Power::Linkage::saveArguments(TR::Instruction *cursor, boo
                if (freeScratchable.isSet(ai))
                   {
                   cursor = generateTrg1MemInstruction(self()->cg(), TR::InstOpCode::lfs, firstNode, REAL_REGISTER(REGNUM(ai)),
-                           new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, 4, self()->cg()), cursor);
+                           new (self()->comp()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, 4, self()->cg()), cursor);
                   freeScratchable.reset(ai);
                   }
                else
@@ -414,7 +414,7 @@ TR::Instruction *OMR::Power::Linkage::saveArguments(TR::Instruction *cursor, boo
                if (freeScratchable.isSet(ai))
                   {
                   cursor = generateTrg1MemInstruction(self()->cg(), TR::InstOpCode::lfd, firstNode, REAL_REGISTER(REGNUM(ai)),
-                           new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, 8, self()->cg()), cursor);
+                           new (self()->comp()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, 8, self()->cg()), cursor);
                   freeScratchable.reset(ai);
                   }
                else
@@ -477,7 +477,7 @@ TR::Instruction *OMR::Power::Linkage::saveArguments(TR::Instruction *cursor, boo
                   {
                   cursor = generateTrg1MemInstruction(self()->cg(), op, firstNode,
                               REAL_REGISTER(REGNUM(target)),
-                              new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, source, length, self()->cg()),
+                              new (self()->comp()->trHeapMemory()) TR::MemoryReference(stackPtr, source, length, self()->cg()),
                               cursor);
                   }
 
@@ -529,7 +529,7 @@ TR::Instruction *OMR::Power::Linkage::loadUpArguments(TR::Instruction *cursor)
                {
                argRegister = machine->getRealRegister(properties.getIntegerArgumentRegister(numIntArgs));
                cursor = generateTrg1MemInstruction(self()->cg(), TR::InstOpCode::lwz, firstNode, argRegister,
-                     new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, 4, self()->cg()), cursor);
+                     new (self()->comp()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, 4, self()->cg()), cursor);
                }
             numIntArgs++;
             break;
@@ -538,7 +538,7 @@ TR::Instruction *OMR::Power::Linkage::loadUpArguments(TR::Instruction *cursor)
                {
                argRegister = machine->getRealRegister(properties.getIntegerArgumentRegister(numIntArgs));
                cursor = generateTrg1MemInstruction(self()->cg(),TR::InstOpCode::Op_load, firstNode, argRegister,
-                     new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, TR::Compiler->om.sizeofReferenceAddress(), self()->cg()), cursor);
+                     new (self()->comp()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, TR::Compiler->om.sizeofReferenceAddress(), self()->cg()), cursor);
                }
             numIntArgs++;
             break;
@@ -549,16 +549,16 @@ TR::Instruction *OMR::Power::Linkage::loadUpArguments(TR::Instruction *cursor)
                argRegister = machine->getRealRegister(properties.getIntegerArgumentRegister(numIntArgs));
                if (self()->comp()->target().is64Bit())
                   cursor = generateTrg1MemInstruction(self()->cg(), TR::InstOpCode::ld, firstNode, argRegister,
-                        new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, 8, self()->cg()), cursor);
+                        new (self()->comp()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, 8, self()->cg()), cursor);
                else
                   {
                   cursor = generateTrg1MemInstruction(self()->cg(), TR::InstOpCode::lwz, firstNode, argRegister,
-                        new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, 4, self()->cg()), cursor);
+                        new (self()->comp()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, 4, self()->cg()), cursor);
                   if (numIntArgs < properties.getNumIntArgRegs()-1)
                      {
                      argRegister = machine->getRealRegister(properties.getIntegerArgumentRegister(numIntArgs+1));
                      cursor = generateTrg1MemInstruction(self()->cg(), TR::InstOpCode::lwz, firstNode, argRegister,
-                           new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset+4, 4, self()->cg()), cursor);
+                           new (self()->comp()->trHeapMemory()) TR::MemoryReference(stackPtr, offset+4, 4, self()->cg()), cursor);
                      }
                   }
                }
@@ -588,7 +588,7 @@ TR::Instruction *OMR::Power::Linkage::loadUpArguments(TR::Instruction *cursor)
                   }
 
                cursor = generateTrg1MemInstruction(self()->cg(), op, firstNode, argRegister,
-                     new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, length, self()->cg()), cursor);
+                     new (self()->comp()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, length, self()->cg()), cursor);
                }
             numFloatArgs++;
             break;
@@ -629,7 +629,7 @@ TR::Instruction *OMR::Power::Linkage::flushArguments(TR::Instruction *cursor)
                {
                argRegister = machine->getRealRegister(properties.getIntegerArgumentRegister(numIntArgs));
                cursor = generateMemSrc1Instruction(self()->cg(), TR::InstOpCode::stw, firstNode,
-                     new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, 4, self()->cg()),
+                     new (self()->comp()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, 4, self()->cg()),
                      argRegister, cursor);
                }
             numIntArgs++;
@@ -639,7 +639,7 @@ TR::Instruction *OMR::Power::Linkage::flushArguments(TR::Instruction *cursor)
                {
                argRegister = machine->getRealRegister(properties.getIntegerArgumentRegister(numIntArgs));
                cursor = generateMemSrc1Instruction(self()->cg(),TR::InstOpCode::Op_st, firstNode,
-                     new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, TR::Compiler->om.sizeofReferenceAddress(), self()->cg()),
+                     new (self()->comp()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, TR::Compiler->om.sizeofReferenceAddress(), self()->cg()),
                      argRegister, cursor);
                }
             numIntArgs++;
@@ -651,18 +651,18 @@ TR::Instruction *OMR::Power::Linkage::flushArguments(TR::Instruction *cursor)
                argRegister = machine->getRealRegister(properties.getIntegerArgumentRegister(numIntArgs));
                if (self()->comp()->target().is64Bit())
                   cursor = generateMemSrc1Instruction(self()->cg(),TR::InstOpCode::Op_st, firstNode,
-                        new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, 8, self()->cg()),
+                        new (self()->comp()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, 8, self()->cg()),
                         argRegister, cursor);
                else
                   {
                   cursor = generateMemSrc1Instruction(self()->cg(), TR::InstOpCode::stw, firstNode,
-                        new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, 4, self()->cg()),
+                        new (self()->comp()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, 4, self()->cg()),
                         argRegister, cursor);
                   if (numIntArgs < properties.getNumIntArgRegs()-1)
                      {
                      argRegister = machine->getRealRegister(properties.getIntegerArgumentRegister(numIntArgs+1));
                      cursor = generateMemSrc1Instruction(self()->cg(), TR::InstOpCode::stw, firstNode,
-                           new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset+4, 4, self()->cg()),
+                           new (self()->comp()->trHeapMemory()) TR::MemoryReference(stackPtr, offset+4, 4, self()->cg()),
                            argRegister, cursor);
                      }
                   }
@@ -693,7 +693,7 @@ TR::Instruction *OMR::Power::Linkage::flushArguments(TR::Instruction *cursor)
                   }
 
                cursor = generateMemSrc1Instruction(self()->cg(), op, firstNode,
-                     new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, length, self()->cg()),
+                     new (self()->comp()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, length, self()->cg()),
                      argRegister, cursor);
                }
             numFloatArgs++;

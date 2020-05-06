@@ -518,7 +518,7 @@ TR::ARM64SystemLinkage::createPrologue(TR::Instruction *cursor, List<TR::Paramet
    // save link register (x30)
    if (machine->getLinkRegisterKilled())
       {
-      TR::MemoryReference *stackSlot = new (trHeapMemory()) TR::MemoryReference(sp, 0, codeGen);
+      TR::MemoryReference *stackSlot = new (comp()->trHeapMemory()) TR::MemoryReference(sp, 0, codeGen);
       cursor = generateMemSrc1Instruction(cg(), TR::InstOpCode::strimmx, firstNode, stackSlot, machine->getRealRegister(TR::RealRegister::x30), cursor);
       }
 
@@ -529,7 +529,7 @@ TR::ARM64SystemLinkage::createPrologue(TR::Instruction *cursor, List<TR::Paramet
       TR::RealRegister *rr = machine->getRealRegister((TR::RealRegister::RegNum)r);
       if (rr->getHasBeenAssignedInMethod())
          {
-         TR::MemoryReference *stackSlot = new (trHeapMemory()) TR::MemoryReference(sp, offset, codeGen);
+         TR::MemoryReference *stackSlot = new (comp()->trHeapMemory()) TR::MemoryReference(sp, offset, codeGen);
          cursor = generateMemSrc1Instruction(cg(), TR::InstOpCode::strimmx, firstNode, stackSlot, rr, cursor);
          offset += 8;
          }
@@ -539,7 +539,7 @@ TR::ARM64SystemLinkage::createPrologue(TR::Instruction *cursor, List<TR::Paramet
       TR::RealRegister *rr = machine->getRealRegister((TR::RealRegister::RegNum)r);
       if (rr->getHasBeenAssignedInMethod())
          {
-         TR::MemoryReference *stackSlot = new (trHeapMemory()) TR::MemoryReference(sp, offset, codeGen);
+         TR::MemoryReference *stackSlot = new (comp()->trHeapMemory()) TR::MemoryReference(sp, offset, codeGen);
          cursor = generateMemSrc1Instruction(cg(), TR::InstOpCode::vstrimmd, firstNode, stackSlot, rr, cursor);
          offset += 8;
          }
@@ -565,7 +565,7 @@ TR::ARM64SystemLinkage::createEpilogue(TR::Instruction *cursor)
       TR::RealRegister *rr = machine->getRealRegister((TR::RealRegister::RegNum)r);
       if (rr->getHasBeenAssignedInMethod())
          {
-         TR::MemoryReference *stackSlot = new (trHeapMemory()) TR::MemoryReference(sp, offset, codeGen);
+         TR::MemoryReference *stackSlot = new (comp()->trHeapMemory()) TR::MemoryReference(sp, offset, codeGen);
          cursor = generateTrg1MemInstruction(cg(), TR::InstOpCode::ldrimmx, lastNode, rr, stackSlot, cursor);
          offset += 8;
          }
@@ -575,7 +575,7 @@ TR::ARM64SystemLinkage::createEpilogue(TR::Instruction *cursor)
       TR::RealRegister *rr = machine->getRealRegister((TR::RealRegister::RegNum)r);
       if (rr->getHasBeenAssignedInMethod())
          {
-         TR::MemoryReference *stackSlot = new (trHeapMemory()) TR::MemoryReference(sp, offset, codeGen);
+         TR::MemoryReference *stackSlot = new (comp()->trHeapMemory()) TR::MemoryReference(sp, offset, codeGen);
          cursor = generateTrg1MemInstruction(cg(), TR::InstOpCode::vldrimmd, lastNode, rr, stackSlot, cursor);
          offset += 8;
          }
@@ -585,7 +585,7 @@ TR::ARM64SystemLinkage::createEpilogue(TR::Instruction *cursor)
    TR::RealRegister *lr = machine->getRealRegister(TR::RealRegister::lr);
    if (machine->getLinkRegisterKilled())
       {
-      TR::MemoryReference *stackSlot = new (trHeapMemory()) TR::MemoryReference(sp, 0, codeGen);
+      TR::MemoryReference *stackSlot = new (comp()->trHeapMemory()) TR::MemoryReference(sp, 0, codeGen);
       cursor = generateTrg1MemInstruction(cg(), TR::InstOpCode::ldrimmx, lastNode, lr, stackSlot, cursor);
       }
 
@@ -658,7 +658,7 @@ int32_t TR::ARM64SystemLinkage::buildArgs(TR::Node *callNode,
       }
 
    // From here, down, any new stack allocations will expire / die when the function returns
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
    /* End result of Step 1 - determined number of memory arguments! */
    if (numMemArgs > 0)
       {
@@ -845,9 +845,9 @@ TR::Register *TR::ARM64SystemLinkage::buildDirectDispatch(TR::Node *callNode)
    TR::RealRegister *sp = cg()->machine()->getRealRegister(pp.getStackPointerRegister());
 
    TR::RegisterDependencyConditions *dependencies =
-      new (trHeapMemory()) TR::RegisterDependencyConditions(
+      new (comp()->trHeapMemory()) TR::RegisterDependencyConditions(
          pp.getNumberOfDependencyGPRegisters(),
-         pp.getNumberOfDependencyGPRegisters(), trMemory());
+         pp.getNumberOfDependencyGPRegisters(), comp()->trMemory());
 
    int32_t totalSize = buildArgs(callNode, dependencies);
    if (totalSize > 0)

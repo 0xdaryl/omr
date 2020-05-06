@@ -56,7 +56,7 @@ TR::MemoryReference *OMR::ARM64::Linkage::getOutgoingArgumentMemRef(TR::Register
    {
    const TR::ARM64LinkageProperties& properties = self()->getProperties();
 
-   TR::MemoryReference *result = new (self()->trHeapMemory()) TR::MemoryReference(argMemReg, 8, cg()); // post-increment
+   TR::MemoryReference *result = new (self()->comp()->trHeapMemory()) TR::MemoryReference(argMemReg, 8, cg()); // post-increment
    memArg.argRegister = argReg;
    memArg.argMemory = result;
    memArg.opCode = opCode; // opCode must be post-index form

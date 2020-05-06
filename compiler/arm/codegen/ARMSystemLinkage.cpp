@@ -467,7 +467,7 @@ void TR::ARMSystemLinkage::createPrologue(TR::Instruction *cursor)
    //
    if (comp()->getOption(TR_EntryBreakPoints))
       {
-      cursor = new (trHeapMemory()) TR::Instruction(cursor, ARMOp_bad, firstNode, cg());
+      cursor = new (comp()->trHeapMemory()) TR::Instruction(cursor, ARMOp_bad, firstNode, cg());
       }
 
    // allocate stack space
@@ -482,7 +482,7 @@ void TR::ARMSystemLinkage::createPrologue(TR::Instruction *cursor)
         parameter!=NULL && (nextIntArgReg < getProperties().getNumIntArgRegs() || nextFltArgReg < getProperties().getNumFloatArgRegs());
         parameter=parameterIterator.getNext())
       {
-      auto *stackSlot = new (trHeapMemory()) TR::MemoryReference(stackPtr, parameter->getParameterOffset(), codeGen);
+      auto *stackSlot = new (comp()->trHeapMemory()) TR::MemoryReference(stackPtr, parameter->getParameterOffset(), codeGen);
       switch (parameter->getDataType())
          {
          case TR::Int8:
@@ -504,7 +504,7 @@ void TR::ARMSystemLinkage::createPrologue(TR::Instruction *cursor)
             if (nextIntArgReg + 1 < getProperties().getNumIntArgRegs())
                {
                cursor = generateMemSrc1Instruction(cg(), ARMOp_str, firstNode, stackSlot, machine->getRealRegister((TR::RealRegister::RegNum)(TR::RealRegister::gr0 + nextIntArgReg)), cursor);
-               stackSlot = new (trHeapMemory()) TR::MemoryReference(stackPtr, parameter->getParameterOffset() + 4, codeGen);
+               stackSlot = new (comp()->trHeapMemory()) TR::MemoryReference(stackPtr, parameter->getParameterOffset() + 4, codeGen);
                cursor = generateMemSrc1Instruction(cg(), ARMOp_str, firstNode, stackSlot, machine->getRealRegister((TR::RealRegister::RegNum)(TR::RealRegister::gr0 + nextIntArgReg + 1)), cursor);
                nextIntArgReg += 2;
                }
@@ -535,12 +535,12 @@ void TR::ARMSystemLinkage::createPrologue(TR::Instruction *cursor)
    // save all preserved registers
    for (int r = TR::RealRegister::gr4; r <= TR::RealRegister::gr11; ++r)
       {
-      auto *stackSlot = new (trHeapMemory()) TR::MemoryReference(stackPtr, (TR::RealRegister::gr11 - r + 1)*4 + bodySymbol->getLocalMappingCursor(), codeGen);
+      auto *stackSlot = new (comp()->trHeapMemory()) TR::MemoryReference(stackPtr, (TR::RealRegister::gr11 - r + 1)*4 + bodySymbol->getLocalMappingCursor(), codeGen);
       cursor = generateMemSrc1Instruction(cg(), ARMOp_str, firstNode, stackSlot, machine->getRealRegister((TR::RealRegister::RegNum)r), cursor);
       }
 
    // save link register (r14)
-   auto *stackSlot = new (trHeapMemory()) TR::MemoryReference(stackPtr, bodySymbol->getLocalMappingCursor(), codeGen);
+   auto *stackSlot = new (comp()->trHeapMemory()) TR::MemoryReference(stackPtr, bodySymbol->getLocalMappingCursor(), codeGen);
    cursor = generateMemSrc1Instruction(cg(), ARMOp_str, firstNode, stackSlot, machine->getRealRegister(TR::RealRegister::gr14), cursor);
    }
 
@@ -554,13 +554,13 @@ void TR::ARMSystemLinkage::createEpilogue(TR::Instruction *cursor)
    TR::RealRegister *stackPtr = machine->getRealRegister(properties.getStackPointerRegister());
 
    // restore link register (r14)
-   auto *stackSlot = new (trHeapMemory()) TR::MemoryReference(stackPtr, bodySymbol->getLocalMappingCursor(), codeGen);
+   auto *stackSlot = new (comp()->trHeapMemory()) TR::MemoryReference(stackPtr, bodySymbol->getLocalMappingCursor(), codeGen);
    cursor = generateMemSrc1Instruction(cg(), ARMOp_ldr, lastNode, stackSlot, machine->getRealRegister(TR::RealRegister::gr14), cursor);
 
    // restore all preserved registers
    for (int r = TR::RealRegister::gr4; r <= TR::RealRegister::gr11; ++r)
       {
-      auto *stackSlot = new (trHeapMemory()) TR::MemoryReference(stackPtr, (TR::RealRegister::gr11 - r + 1)*4 + bodySymbol->getLocalMappingCursor(), codeGen);
+      auto *stackSlot = new (comp()->trHeapMemory()) TR::MemoryReference(stackPtr, (TR::RealRegister::gr11 - r + 1)*4 + bodySymbol->getLocalMappingCursor(), codeGen);
       cursor = generateMemSrc1Instruction(cg(), ARMOp_ldr, lastNode, stackSlot, machine->getRealRegister((TR::RealRegister::RegNum)r), cursor);
       }
 
@@ -582,7 +582,7 @@ TR::MemoryReference *TR::ARMSystemLinkage::getOutgoingArgumentMemRef(int32_t    
    {
    int32_t                spOffset = offset - (getProperties().getNumIntArgRegs() * TR::Compiler->om.sizeofReferenceAddress());
    TR::RealRegister    *sp       = cg()->machine()->getRealRegister(properties.getStackPointerRegister());
-   TR::MemoryReference *result   = new (trHeapMemory()) TR::MemoryReference(sp, spOffset, cg());
+   TR::MemoryReference *result   = new (comp()->trHeapMemory()) TR::MemoryReference(sp, spOffset, cg());
 
    memArg.argRegister = argReg;
    memArg.argMemory   = result;

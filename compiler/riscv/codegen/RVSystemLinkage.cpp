@@ -446,7 +446,7 @@ TR::RVSystemLinkage::createPrologue(TR::Instruction *cursor, List<TR::ParameterS
    // save link register (ra)
    if (machine->getLinkRegisterKilled())
       {
-      TR::MemoryReference *stackSlot = new (trHeapMemory()) TR::MemoryReference(sp, 0, codeGen);
+      TR::MemoryReference *stackSlot = new (comp()->trHeapMemory()) TR::MemoryReference(sp, 0, codeGen);
       cursor = generateSTORE(TR::InstOpCode::_sd, firstNode, stackSlot, ra, codeGen, cursor);
       }
 
@@ -458,7 +458,7 @@ TR::RVSystemLinkage::createPrologue(TR::Instruction *cursor, List<TR::ParameterS
         parameter != NULL && (nextIntArgReg < getProperties().getNumIntArgRegs() || nextFltArgReg < getProperties().getNumFloatArgRegs());
         parameter = parameterIterator.getNext())
       {
-      TR::MemoryReference *stackSlot = new (trHeapMemory()) TR::MemoryReference(sp, parameter->getParameterOffset(), codeGen);
+      TR::MemoryReference *stackSlot = new (comp()->trHeapMemory()) TR::MemoryReference(sp, parameter->getParameterOffset(), codeGen);
       TR::InstOpCode::Mnemonic op;
 
       switch (parameter->getDataType())
@@ -503,7 +503,7 @@ TR::RVSystemLinkage::createPrologue(TR::Instruction *cursor, List<TR::ParameterS
    // save callee-saved registers
    uint32_t offset = bodySymbol->getLocalMappingCursor();
    FOR_EACH_ASSIGNED_CALLEE_SAVED_REGISTER(machine,
-      TR::MemoryReference *stackSlot = new (trHeapMemory()) TR::MemoryReference(sp, offset, codeGen);
+      TR::MemoryReference *stackSlot = new (comp()->trHeapMemory()) TR::MemoryReference(sp, offset, codeGen);
       cursor = generateSTORE(TR::InstOpCode::_sd, firstNode, stackSlot, reg, cg(), cursor);
       offset += 8;)
    }
@@ -523,7 +523,7 @@ TR::RVSystemLinkage::createEpilogue(TR::Instruction *cursor)
    // restore callee-saved registers
    uint32_t offset = bodySymbol->getLocalMappingCursor();
    FOR_EACH_ASSIGNED_CALLEE_SAVED_REGISTER(machine,
-      TR::MemoryReference *stackSlot = new (trHeapMemory()) TR::MemoryReference(sp, offset, codeGen);
+      TR::MemoryReference *stackSlot = new (comp()->trHeapMemory()) TR::MemoryReference(sp, offset, codeGen);
       cursor = generateLOAD(TR::InstOpCode::_ld, lastNode, reg, stackSlot, cg(), cursor);
       offset += 8;)
 
@@ -531,7 +531,7 @@ TR::RVSystemLinkage::createEpilogue(TR::Instruction *cursor)
    TR::RealRegister *ra = machine->getRealRegister(TR::RealRegister::ra);
    if (machine->getLinkRegisterKilled())
       {
-      TR::MemoryReference *stackSlot = new (trHeapMemory()) TR::MemoryReference(sp, 0, codeGen);
+      TR::MemoryReference *stackSlot = new (comp()->trHeapMemory()) TR::MemoryReference(sp, 0, codeGen);
       cursor = generateLOAD(TR::InstOpCode::_ld, lastNode, ra, stackSlot, cg(), cursor);
       }
 
@@ -604,7 +604,7 @@ int32_t TR::RVSystemLinkage::buildArgs(TR::Node *callNode,
       }
 
    // From here, down, any new stack allocations will expire / die when the function returns
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
    /* End result of Step 1 - determined number of memory arguments! */
    if (numMemArgs > 0)
       {
@@ -798,9 +798,9 @@ TR::Register *TR::RVSystemLinkage::buildDispatch(TR::Node *callNode)
       }
 
    TR::RegisterDependencyConditions *dependencies =
-      new (trHeapMemory()) TR::RegisterDependencyConditions(
+      new (comp()->trHeapMemory()) TR::RegisterDependencyConditions(
          pp.getNumberOfDependencyGPRegisters(),
-         pp.getNumberOfDependencyGPRegisters(), trMemory());
+         pp.getNumberOfDependencyGPRegisters(), comp()->trMemory());
 
    int32_t totalSize = buildArgs(callNode, dependencies);
    if (totalSize > 0)

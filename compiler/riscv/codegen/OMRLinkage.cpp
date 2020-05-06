@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -59,7 +59,7 @@ TR::MemoryReference *OMR::RV::Linkage::getOutgoingArgumentMemRef(TR::Register *a
    TR::Machine *machine = cg()->machine();
    const TR::RVLinkageProperties& properties = self()->getProperties();
 
-   TR::MemoryReference *result = new (self()->trHeapMemory()) TR::MemoryReference(argMemReg, 8, cg()); // post-increment
+   TR::MemoryReference *result = new (comp()->trHeapMemory()) TR::MemoryReference(argMemReg, 8, cg()); // post-increment
    memArg.argRegister = argReg;
    memArg.argMemory = result;
    memArg.opCode = opCode; // opCode must be post-index form

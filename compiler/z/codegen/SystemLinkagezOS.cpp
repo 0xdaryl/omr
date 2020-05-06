@@ -244,9 +244,9 @@ void TR::S390zOSSystemLinkage::createPrologue(TR::Instruction* cursor)
 
    TR::CodeGenerator* cg = self()->cg();
 
-   _xplinkFunctionDescriptorSnippet = new (trHeapMemory()) XPLINKFunctionDescriptorSnippet(cg);
-   _ppa1Snippet = new (trHeapMemory()) TR::PPA1Snippet(cg, this);
-   _ppa2Snippet = new (trHeapMemory()) TR::PPA2Snippet(cg, this);
+   _xplinkFunctionDescriptorSnippet = new (comp()->trHeapMemory()) XPLINKFunctionDescriptorSnippet(cg);
+   _ppa1Snippet = new (self()->trHeapMemory()) TR::PPA1Snippet(cg, this);
+   _ppa2Snippet = new (self()->trHeapMemory()) TR::PPA2Snippet(cg, this);
 
    cg->addSnippet(_xplinkFunctionDescriptorSnippet);
    cg->addSnippet(_ppa1Snippet);
@@ -555,8 +555,8 @@ TR::S390zOSSystemLinkage::generateInstructionsForCall(TR::Node * callNode, TR::R
     TR::Register* epReg = deps->searchPostConditionRegister(getEntryPointRegister());
     TR::Register* raReg = deps->searchPostConditionRegister(getReturnAddressRegister());
 
-    TR::RegisterDependencyConditions* preDeps = new (trHeapMemory()) TR::RegisterDependencyConditions(deps->getPreConditions(), NULL, deps->getAddCursorForPre(), 0, cg());
-    TR::RegisterDependencyConditions* postDeps = new (trHeapMemory()) TR::RegisterDependencyConditions(NULL, deps->getPostConditions(), 0, deps->getAddCursorForPost(), cg());
+    TR::RegisterDependencyConditions* preDeps = new (comp()->trHeapMemory()) TR::RegisterDependencyConditions(deps->getPreConditions(), NULL, deps->getAddCursorForPre(), 0, cg());
+    TR::RegisterDependencyConditions* postDeps = new (comp()->trHeapMemory()) TR::RegisterDependencyConditions(NULL, deps->getPostConditions(), 0, deps->getAddCursorForPost(), cg());
 
     if (callNode->getOpCode().isIndirect())
        {
