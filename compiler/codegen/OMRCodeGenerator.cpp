@@ -829,7 +829,7 @@ OMR::CodeGenerator::use64BitRegsOn32Bit()
 TR_PersistentMemory *
 OMR::CodeGenerator::trPersistentMemory()
    {
-   return self()->comp()->trMemory()->trPersistentMemory();
+   return self()->comp()->trPersistentMemory();
    }
 
 void
