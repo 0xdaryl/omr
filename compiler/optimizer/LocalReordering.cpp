@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -87,11 +87,11 @@ void TR_LocalReordering::prePerformOnBlocks()
    comp()->incOrResetVisitCount();
 
    int32_t symRefCount = comp()->getSymRefCount();
-   _treeTopsAsArray = (TR::TreeTop**)trMemory()->allocateStackMemory(symRefCount*sizeof(TR::TreeTop*));
+   _treeTopsAsArray = (TR::TreeTop**)comp()->trMemory()->allocateStackMemory(symRefCount*sizeof(TR::TreeTop*));
    memset(_treeTopsAsArray, 0, symRefCount*sizeof(TR::TreeTop*));
-   _seenSymbols = new (trStackMemory()) TR_BitVector(symRefCount, trMemory(), stackAlloc);
-   _stopNodes = new (trStackMemory()) TR_BitVector(comp()->getNodeCount(), trMemory(), stackAlloc, growable);
-   _temp = new (trStackMemory()) TR_BitVector(symRefCount, trMemory(), stackAlloc);
+   _seenSymbols = new (comp()->trStackMemory()) TR_BitVector(symRefCount, comp()->trMemory(), stackAlloc);
+   _stopNodes = new (comp()->trStackMemory()) TR_BitVector(comp()->getNodeCount(), comp()->trMemory(), stackAlloc, growable);
+   _temp = new (comp()->trStackMemory()) TR_BitVector(symRefCount, comp()->trMemory(), stackAlloc);
    _seenUnpinnedInternalPointer = false;
 
    _counter = 0;
@@ -153,7 +153,7 @@ bool TR_LocalReordering::transformBlock(TR::Block *block)
       currentTree = currentTree->getNextTreeTop();
       }
 
-   _storeTreesAsArray = (TR::TreeTop**)trMemory()->allocateStackMemory(_numStoreTreeTops*sizeof(TR::TreeTop*));
+   _storeTreesAsArray = (TR::TreeTop**)comp()->trMemory()->allocateStackMemory(_numStoreTreeTops*sizeof(TR::TreeTop*));
    memset(_storeTreesAsArray, 0, _numStoreTreeTops*sizeof(TR::TreeTop*));
 
    currentTree = block->getEntry();

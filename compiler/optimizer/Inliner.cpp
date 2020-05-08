@@ -447,7 +447,7 @@ TR_InlinerBase::linkOSRCodeBlocks()
 void
 TR_InlinerBase::performInlining(TR::ResolvedMethodSymbol * callerSymbol)
    {
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    TR_InnerPreexistenceInfo *innerPrexInfo = getUtil()->createInnerPrexInfo(comp(), callerSymbol, 0, 0, 0, TR_NoGuard);
 
@@ -689,7 +689,7 @@ TR_InlinerBase::createParmMap(TR::ResolvedMethodSymbol *calleeSymbol, TR_LinkHea
       TR_ParameterMapping* currPM = map.getFirst(), * prevPM = 0;
       for (; currPM && offset > currPM->_parmSymbol->getParameterOffset(); prevPM = currPM, currPM = currPM->getNext())
          ;
-      map.insertAfter(prevPM, new (trStackMemory()) TR_ParameterMapping(p));
+      map.insertAfter(prevPM, new (comp()->trStackMemory()) TR_ParameterMapping(p));
       }
    }
 
@@ -1029,7 +1029,7 @@ TR_CallStack::initializeControlFlowInfo(TR::ResolvedMethodSymbol * callerSymbol)
    cfg->findLoopingBlocks(loopingBlocks);
 
    int32_t numberOfBlocks = cfg->getNextNodeNumber();
-   _blockInfo = new (trStackMemory()) BlockInfo[numberOfBlocks];
+   _blockInfo = new (comp()->trStackMemory()) BlockInfo[numberOfBlocks];
 
    for (int32_t i = 0; i < numberOfBlocks; ++i)
       {
@@ -1120,7 +1120,7 @@ TR_InlineCall::inlineCall(TR::TreeTop * callNodeTreeTop, TR_OpaqueClassBlock * t
 
    TR_CallSite *callsite = TR_CallSite::create(callNodeTreeTop, parent, callNode,
                                                thisClass, symRef, (TR_ResolvedMethod*) 0,
-                                               comp(), trMemory() , stackAlloc);
+                                               comp(), comp()->trMemory() , stackAlloc);
 
    getSymbolAndFindInlineTargets(&callStack,callsite);
 
@@ -1139,14 +1139,14 @@ TR_InlineCall::inlineCall(TR::TreeTop * callNodeTreeTop, TR_OpaqueClassBlock * t
          }
 
       {
-      TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+      TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
       int16_t currentInlineDepth = comp()->adjustInlineDepth(callNode->getByteCodeInfo());
 
       if (comp()->trace(OMR::inlining))
          traceMsg(comp(), "inliner: Setting current inline depth=%d\n", currentInlineDepth);
 
-      calltarget->_prexArgInfo = new (trHeapMemory()) TR_PrexArgInfo(calltarget->_myCallSite->_callNode->getNumArguments(), trMemory());
+      calltarget->_prexArgInfo = new (comp()->trHeapMemory()) TR_PrexArgInfo(calltarget->_myCallSite->_callNode->getNumArguments(), comp()->trMemory());
 
       // this is called on a case-by-case basis, and can get repeatedly called for recursive
       // methods triggering a loop.  Unfortunately the callStack is not pervasive
@@ -1309,7 +1309,7 @@ TR_DumbInliner::analyzeCallSite(
 
    TR_CallSite *callsite = TR_CallSite::create(callNodeTreeTop, parent, callNode,
                                                (TR_OpaqueClassBlock*) 0, symRef, (TR_ResolvedMethod*) 0,
-                                               comp(), trMemory() , stackAlloc);
+                                               comp(), comp()->trMemory() , stackAlloc);
 
    getSymbolAndFindInlineTargets(callStack,callsite);
 
@@ -1495,7 +1495,7 @@ TR_InlinerBase::createVirtualGuard(
       TR::DebugCounter::debugCounterName(comp(), "virtualGuards.byKind/%s/(%s)/bcinfo=%d.%d", tracer()->getGuardKindString(guard), comp()->signature(), bcInfo.getCallerIndex(), bcInfo.getByteCodeIndex()),
       debugCounterInsertionPoint, 1, fidelity);
    TR::DebugCounter::prependDebugCounter(comp(),
-      TR::DebugCounter::debugCounterName(comp(), "virtualGuards.byJittedBody/%s/(%s)/(%s)/%s/bcinfo=%d.%d", comp()->getHotnessName(comp()->getMethodHotness()), comp()->signature(), calleeSymbol->signature(trMemory()), tracer()->getGuardKindString(guard), bcInfo.getCallerIndex(), bcInfo.getByteCodeIndex()),
+      TR::DebugCounter::debugCounterName(comp(), "virtualGuards.byJittedBody/%s/(%s)/(%s)/%s/bcinfo=%d.%d", comp()->getHotnessName(comp()->getMethodHotness()), comp()->signature(), calleeSymbol->signature(comp()->trMemory()), tracer()->getGuardKindString(guard), bcInfo.getCallerIndex(), bcInfo.getByteCodeIndex()),
       debugCounterInsertionPoint, 1, fidelity);
 
    if (guard->_kind == TR_DummyGuard)
@@ -1715,7 +1715,7 @@ TR_InlinerBase::addAdditionalGuard(TR::Node *callNode, TR::ResolvedMethodSymbol 
       callerCFG->copyExceptionSuccessors(prevBlock, guardBlock);
       callerCFG->removeEdge(prevBlock, inlinedBody);
 
-      TR_VirtualGuardSelection *guard = new (trStackMemory()) TR_VirtualGuardSelection(kind, type);
+      TR_VirtualGuardSelection *guard = new (comp()->trStackMemory()) TR_VirtualGuardSelection(kind, type);
       TR::TreeTop *tt = guardBlock->append(TR::TreeTop::create(comp(),
                                     createVirtualGuard(callNode, calleeSymbol, slowPath->getEntry(),
                                        calleeSymbol->getFirstTreeTop()->getNode()->getInlinedSiteIndex(),
@@ -1851,7 +1851,7 @@ TR_InlinerBase::addGuardForVirtual(
          callerCFG->addEdge(hcrBlock, block4);
          callerCFG->copyExceptionSuccessors(block1, hcrBlock);
          callerCFG->removeEdge(block1, block2);
-         hcrGuard = new (trStackMemory()) TR_VirtualGuardSelection(TR_HCRGuard, TR_NonoverriddenTest);
+         hcrGuard = new (comp()->trStackMemory()) TR_VirtualGuardSelection(TR_HCRGuard, TR_NonoverriddenTest);
          hcrTreeTop = hcrBlock->append(TR::TreeTop::create(comp(),
                                        createVirtualGuard(callNode, calleeSymbol, block4->getEntry(),
                                           calleeSymbol->getFirstTreeTop()->getNode()->getInlinedSiteIndex(),
@@ -3955,8 +3955,8 @@ void TR_InlinerBase::getSymbolAndFindInlineTargets(TR_CallStack *callStack, TR_C
 
       if (comp()->fe()->isInlineableNativeMethod(comp(), callsite->_initialCalleeSymbol))
          {
-         TR_VirtualGuardSelection *guard = new (trStackMemory()) TR_VirtualGuardSelection(TR_NoGuard);
-         callsite->addTarget(trMemory(),this ,guard ,callsite->_initialCalleeSymbol->getResolvedMethod(),callsite->_receiverClass);
+         TR_VirtualGuardSelection *guard = new (comp()->trStackMemory()) TR_VirtualGuardSelection(TR_NoGuard);
+         callsite->addTarget(comp()->trMemory(),this ,guard ,callsite->_initialCalleeSymbol->getResolvedMethod(),callsite->_receiverClass);
          }
       }
    else if ((isInlineable = static_cast<TR_InlinerFailureReason> (checkInlineableWithoutInitialCalleeSymbol (callsite, comp()))) != InlineableTarget)
@@ -4042,7 +4042,7 @@ void TR_InlinerBase::getSymbolAndFindInlineTargets(TR_CallStack *callStack, TR_C
 
    if (callsite->numTargets()>0 && callsite->getTarget(0) && !callsite->getTarget(0)->_calleeMethod && comp()->trace(OMR::inlining))
       {
-      traceMsg(comp(), "inliner: method is unresolved: %s into %s\n", callsite->_interfaceMethod->signature(trMemory()), tracer()->traceSignature(callStack->_methodSymbol));
+      traceMsg(comp(), "inliner: method is unresolved: %s into %s\n", callsite->_interfaceMethod->signature(comp()->trMemory()), tracer()->traceSignature(callStack->_methodSymbol));
       callsite->_failureReason=Unresolved_Callee;
       }
 
@@ -4188,7 +4188,7 @@ void TR_InlinerBase::applyPolicyToTargets(TR_CallStack *callStack, TR_CallSite *
       if (!forceInline(calltarget))
          getUtil()->estimateAndRefineBytecodeSize(callsite, calltarget, callStack, bytecodeSize);
 
-      if (calltarget->_calleeSymbol && strstr(calltarget->_calleeSymbol->signature(trMemory()), "FloatingDecimal"))
+      if (calltarget->_calleeSymbol && strstr(calltarget->_calleeSymbol->signature(comp()->trMemory()), "FloatingDecimal"))
          {
          bytecodeSize >>= 1;
 
@@ -4605,7 +4605,7 @@ void TR_InlinerBase::inlineFromGraph(TR_CallStack *prevCallStack, TR_CallTarget 
             TR::MethodSymbol * calleeSymbol = symRef->getSymbol()->castToMethodSymbol();
             if (calleeSymbol->getMethod())
                heuristicTrace(tracer(), "Block containing call node %p (callee name: %s) but either caller block or function is cold. Skipping call.",node,
-                  calleeSymbol->getMethod()->signature(trMemory(), stackAlloc));
+                  calleeSymbol->getMethod()->signature(comp()->trMemory(), stackAlloc));
             tracer()->insertCounter(Cold_Block,tt);
             }
 
@@ -4700,8 +4700,8 @@ bool TR_InlinerBase::inlineCallTarget2(TR_CallStack * callStack, TR_CallTarget *
    debugTrace(tracer(),"Starting Physical Inlining for call target %p at callsite %p with visit count %d and numtargets = %d \n Available temps: ",calltarget,calltarget->_myCallSite,calltarget->_myCallSite->_visitCount, calltarget->_myCallSite->numTargets());
 
    static char *teststring = feGetEnv("TR_WHOSINLININGME");
-   if (teststring && strncmp(calleeSymbol->signature(trMemory()), teststring, strlen(teststring))==0 )
-      printf(" Inlining %s INTO %s\n",calleeSymbol->signature(trMemory()),comp()->getMethodSymbol()->signature(trMemory()));
+   if (teststring && strncmp(calleeSymbol->signature(comp()->trMemory()), teststring, strlen(teststring))==0 )
+      printf(" Inlining %s INTO %s\n",calleeSymbol->signature(comp()->trMemory()),comp()->getMethodSymbol()->signature(comp()->trMemory()));
 
    if (tryToInlineTrivialMethod(callStack, calltarget))
       return true;
@@ -4807,7 +4807,7 @@ bool TR_InlinerBase::inlineCallTarget2(TR_CallStack * callStack, TR_CallTarget *
 
    if (debug("inliningTrees"))
       {
-      dumpOptDetails(comp(), "Inliner: trees for %s\n", calleeSymbol->signature(trMemory()));
+      dumpOptDetails(comp(), "Inliner: trees for %s\n", calleeSymbol->signature(comp()->trMemory()));
       comp()->dumpMethodTrees("after ilGen while inlining", calleeSymbol);
       }
 
@@ -4827,7 +4827,7 @@ bool TR_InlinerBase::inlineCallTarget2(TR_CallStack * callStack, TR_CallTarget *
 
       if (comp()->trace(OMR::inlining))
          {
-         dumpOptDetails(comp(), "Inliner: trees for %s\n", calleeSymbol->signature(trMemory()));
+         dumpOptDetails(comp(), "Inliner: trees for %s\n", calleeSymbol->signature(comp()->trMemory()));
          comp()->dumpMethodTrees("after inlining while inlining", calleeSymbol);
          }
       }
@@ -4861,7 +4861,7 @@ bool TR_InlinerBase::inlineCallTarget2(TR_CallStack * callStack, TR_CallTarget *
       if (comp()->trace(OMR::inlining))
          {
          traceMsg(comp(), "%sIPREX virtualize the non-virtual call %s because of inner preexistence for inner calls\n",
-            OPT_DETAILS, calleeSymbol->signature(trMemory()));
+            OPT_DETAILS, calleeSymbol->signature(comp()->trMemory()));
          }
       // FIXME
       //printf("---$XX$--- inner prex virtualized call in %s\n", comp()->signature());
@@ -4896,8 +4896,8 @@ bool TR_InlinerBase::inlineCallTarget2(TR_CallStack * callStack, TR_CallTarget *
 
 
    if (!performTransformation(comp(), "%sInlining qwerty %s into %s with a virtual guard kind=%s type=%s partialInline=%d\n",
-                              OPT_DETAILS, calleeSymbol->signature(trMemory()),
-                              callerSymbol->signature(trMemory()), tracer()->getGuardKindString(guard),
+                              OPT_DETAILS, calleeSymbol->signature(comp()->trMemory()),
+                              callerSymbol->signature(comp()->trMemory()), tracer()->getGuardKindString(guard),
                               tracer()->getGuardTypeString(guard),
                               !comp()->getOption(TR_DisablePartialInlining) && calltarget->_partialInline
                               ))
@@ -4925,7 +4925,7 @@ bool TR_InlinerBase::inlineCallTarget2(TR_CallStack * callStack, TR_CallTarget *
          debugTrace(tracer(), "\t%d",a->getReferenceNumber());
       }
 
-   TR_ScratchList<TR::SymbolReference> tempList(trMemory());
+   TR_ScratchList<TR::SymbolReference> tempList(comp()->trMemory());
    TR_ParameterToArgumentMapper pam(callerSymbol, calleeSymbol, callNode, calltarget->_prexArgInfo, tempList, _availableTemps, _availableBasicBlockTemps, this);
    pam.initialize(callStack);
 
@@ -5196,7 +5196,7 @@ bool TR_InlinerBase::inlineCallTarget2(TR_CallStack * callStack, TR_CallTarget *
    // and inlining introduced a basic block then the references after the call
    // point have to be replaced with unique nodes
    //
-   TR_ScratchList<TR::SymbolReference> injectedBasicBlockTemps(trMemory());
+   TR_ScratchList<TR::SymbolReference> injectedBasicBlockTemps(comp()->trMemory());
    if (tif->crossedBasicBlock())
       {
       debugTrace(tracer(),"Inlining caused a basic block to be crossed.  Need to fix broken commoning");
@@ -5457,7 +5457,7 @@ bool TR_InlinerBase::inlineCallTarget2(TR_CallStack * callStack, TR_CallTarget *
 
    if (debug("inliningTrees"))
       {
-      dumpOptDetails(comp(), "Inliner: trees for %s\n", callerSymbol->signature(trMemory()));
+      dumpOptDetails(comp(), "Inliner: trees for %s\n", callerSymbol->signature(comp()->trMemory()));
       //comp()->dumpMethodTrees("after inlining a call site", callerSymbol);
       }
    // printf("*****INLINERCALLSITE2: END*****\n");
@@ -5882,7 +5882,7 @@ TR_InlinerTracer::dumpCallGraphs(TR_LinkHead<TR_CallTarget> *targets)
          char nameBuffer[SIGNATURE_SIZE];
 
          traceMsg(comp(),"\t%d\t%d\t%p\t%d\t%s",currentTarget->_myCallSite->getDepth(),currentTarget->_isPartialInliningCandidate,currentTarget,currentTarget->_isPartialInliningCandidate ? currentTarget->_partialSize : currentTarget->_fullSize,getFailureReasonString(currentTarget->_failureReason));
-         traceMsg(comp(),"\t\t%d\t\t%s\n",currentTarget->_myCallSite->_byteCodeIndex,  comp()->fe()->sampleSignature(currentTarget->_calleeMethod->getPersistentIdentifier(),nameBuffer,SIGNATURE_SIZE,trMemory()));
+         traceMsg(comp(),"\t\t%d\t\t%s\n",currentTarget->_myCallSite->_byteCodeIndex,  comp()->fe()->sampleSignature(currentTarget->_calleeMethod->getPersistentIdentifier(),nameBuffer,SIGNATURE_SIZE,comp()->trMemory()));
 
          if(currentTarget->_partialInline)
             {
@@ -5956,7 +5956,7 @@ TR_InlinerTracer::dumpDeadCalls(TR_LinkHead<TR_CallSite> *sites)
          {
          calltarget = callsite->getRemovedTarget(i);
          traceMsg(comp(),"\t%d\t%d\t%p\t%d\t%s",calltarget->_myCallSite->getDepth(),calltarget->_isPartialInliningCandidate,calltarget,calltarget->_isPartialInliningCandidate ? calltarget->_partialSize : calltarget->_fullSize,getFailureReasonString(calltarget->_failureReason));
-         traceMsg(comp(),"\t\t%d\t\t%s\n",calltarget->_myCallSite->_byteCodeIndex,comp()->fe()->sampleSignature(calltarget->_calleeMethod->getPersistentIdentifier(),name,SIGNATURE_SIZE,trMemory()));
+         traceMsg(comp(),"\t\t%d\t\t%s\n",calltarget->_myCallSite->_byteCodeIndex,comp()->fe()->sampleSignature(calltarget->_calleeMethod->getPersistentIdentifier(),name,SIGNATURE_SIZE,comp()->trMemory()));
          }
       if(callsite->numRemovedTargets())
          traceMsg(comp(),"Call Targets\n\tDepth\tP.I.\tcalltarget\tsize\tfailure reason\t\t\tbc index\t\tSignature\n");
@@ -5964,7 +5964,7 @@ TR_InlinerTracer::dumpDeadCalls(TR_LinkHead<TR_CallSite> *sites)
          {
          calltarget = callsite->getRemovedTarget(i);
          traceMsg(comp(),"\t%d\t%d\t%p\t%d\t%s",calltarget->_myCallSite->getDepth(),calltarget->_isPartialInliningCandidate,calltarget,calltarget->_isPartialInliningCandidate ? calltarget->_partialSize : calltarget->_fullSize,getFailureReasonString(calltarget->_failureReason));
-         traceMsg(comp(),"\t\t%d\t\t%s\n",calltarget->_myCallSite->_byteCodeIndex, comp()->fe()->sampleSignature(calltarget->_calleeMethod->getPersistentIdentifier(),name,SIGNATURE_SIZE,trMemory()));
+         traceMsg(comp(),"\t\t%d\t\t%s\n",calltarget->_myCallSite->_byteCodeIndex, comp()->fe()->sampleSignature(calltarget->_calleeMethod->getPersistentIdentifier(),name,SIGNATURE_SIZE,comp()->trMemory()));
          }
       }
    }
@@ -6014,18 +6014,18 @@ TR_InlinerTracer::dumpCallSite(TR_CallSite *callsite, const char *fmt, ...)
 
       if(callsite->_receiverClass)
          {
-         char *sig = TR::Compiler->cls.classSignature(comp(), callsite->_receiverClass,trMemory());
+         char *sig = TR::Compiler->cls.classSignature(comp(), callsite->_receiverClass,comp()->trMemory());
          traceMsg(comp(),"\t Call SITE Class Signature = %s\n",sig);
          }
 
       if(callsite->_callerResolvedMethod)
          {
          char callerName[1024];
-         traceMsg(comp(), "\t CALLER signature from method = %s\n", fe()->sampleSignature(callsite->_callerResolvedMethod->getPersistentIdentifier(), callerName, 1024, trMemory()));
+         traceMsg(comp(), "\t CALLER signature from method = %s\n", fe()->sampleSignature(callsite->_callerResolvedMethod->getPersistentIdentifier(), callerName, 1024, comp()->trMemory()));
          }
 
       if(callsite->_initialCalleeSymbol)
-         traceMsg(comp(), "\t initial CALLEE signature from initial symbol = %s\n",callsite->_initialCalleeSymbol->signature(trMemory()));
+         traceMsg(comp(), "\t initial CALLEE signature from initial symbol = %s\n",callsite->_initialCalleeSymbol->signature(comp()->trMemory()));
 
       for(int32_t i=0; i<callsite->numTargets(); i++)
          dumpCallTarget(callsite->getTarget(i), "Call Target %d",i);
@@ -6056,26 +6056,26 @@ TR_InlinerTracer::dumpCallTarget(TR_CallTarget *calltarget, const char *fmt, ...
    traceMsg(comp(), "guard->_thisClass = %p _receiverclass = %p   (enum in compilation.hpp)\n",calltarget->_guard->_thisClass, calltarget->_receiverClass);
 
    if(calltarget->_calleeSymbol)
-      traceMsg(comp(), "\t\t signature from symbol = %s\n",calltarget->_calleeSymbol->signature(trMemory()));
+      traceMsg(comp(), "\t\t signature from symbol = %s\n",calltarget->_calleeSymbol->signature(comp()->trMemory()));
    else
       traceMsg(comp(), "\t\t No callee Symbol yet.\n");
 
    if(calltarget->_calleeMethod)
       {
       char calleeName[1024];
-      traceMsg(comp(), "\t\t signature from method = %s\n",fe()->sampleSignature(calltarget->_calleeMethod->getPersistentIdentifier(), calleeName, 1024, trMemory()));
+      traceMsg(comp(), "\t\t signature from method = %s\n",fe()->sampleSignature(calltarget->_calleeMethod->getPersistentIdentifier(), calleeName, 1024, comp()->trMemory()));
       }
    else
       traceMsg(comp(), "\t\tNo callee Method yet.\n");
 
    if(calltarget->_receiverClass != NULL)
       {
-      char *sig = TR::Compiler->cls.classSignature(comp(), calltarget->_receiverClass,trMemory());
+      char *sig = TR::Compiler->cls.classSignature(comp(), calltarget->_receiverClass,comp()->trMemory());
       traceMsg(comp(),"\t Call TARGET Class Signature = %s\n",sig);
       }
    if(calltarget->_guard->_thisClass && calltarget->_guard->_thisClass != calltarget->_receiverClass)
       {
-      char *sig = TR::Compiler->cls.classSignature(comp(), calltarget->_guard->_thisClass, trMemory());
+      char *sig = TR::Compiler->cls.classSignature(comp(), calltarget->_guard->_thisClass, comp()->trMemory());
       traceMsg(comp(),"\t Call TARGET GUARD Class Signature = %s\n", sig);
       }
 
@@ -6102,7 +6102,7 @@ TR_InlinerTracer::dumpCallStack(TR_CallStack *callStack, const char *fmt, ...)
    for (TR_CallStack *cs = callStack; cs; cs = cs->getNext())
       {
       if (cs->_method)
-         traceMsg(comp(), "\t0x%p\t%s\n", cs, cs->_method->signature(trMemory()));
+         traceMsg(comp(), "\t0x%p\t%s\n", cs, cs->_method->signature(comp()->trMemory()));
       else
          traceMsg(comp(), "\t0x%p\t%s\n", cs, "No _method");
       }
@@ -6162,17 +6162,17 @@ TR_InlinerTracer::dumpInline(TR_LinkHead<TR_CallTarget> *targets, const char *fm
              currentTarget->_failureReason == TryToInlineTarget)
             {
             traceMsg(comp(),"\t%s","+");
-            traceMsg(comp(),"\t\t\t%s\n",comp()->fe()->sampleSignature(currentTarget->_calleeMethod->getPersistentIdentifier(),nameBuffer,SIGNATURE_SIZE,trMemory()));
+            traceMsg(comp(),"\t\t\t%s\n",comp()->fe()->sampleSignature(currentTarget->_calleeMethod->getPersistentIdentifier(),nameBuffer,SIGNATURE_SIZE,comp()->trMemory()));
             }
          else if (currentTarget->_failureReason == DontInline_Callee)
             {
             traceMsg(comp(),"\t%s","-");
-            traceMsg(comp(),"\t\t\t%s\n",comp()->fe()->sampleSignature(currentTarget->_calleeMethod->getPersistentIdentifier(),nameBuffer,SIGNATURE_SIZE,trMemory()));
+            traceMsg(comp(),"\t\t\t%s\n",comp()->fe()->sampleSignature(currentTarget->_calleeMethod->getPersistentIdentifier(),nameBuffer,SIGNATURE_SIZE,comp()->trMemory()));
             }
          else
             {
             //traceMsg(comp(),"\t%s","?");
-            //traceMsg(comp(),"\t\t\t%s\n",comp()->fe()->sampleSignature(currentTarget->_calleeMethod->getPersistentIdentifier(),nameBuffer,SIGNATURE_SIZE,trMemory()));
+            //traceMsg(comp(),"\t\t\t%s\n",comp()->fe()->sampleSignature(currentTarget->_calleeMethod->getPersistentIdentifier(),nameBuffer,SIGNATURE_SIZE,comp()->trMemory()));
             }
 
          traceMsg(comp(),"\t%s\n","[");

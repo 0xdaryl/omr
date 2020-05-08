@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1818,13 +1818,13 @@ TR_RegisterCandidates::reprioritizeCandidates(
    LexicalTimer t("reprioritizeCandidates", comp->phaseTimer());
    if (!successorBits)
       {
-      successorBits = new (trStackMemory()) TR_BitVector(numberOfBlocks, trMemory(), stackAlloc, growable);
-      //TR_BitVector successorBits(numberOfBlocks, trMemory(), stackAlloc, growable);
+      successorBits = new (comp->trStackMemory()) TR_BitVector(numberOfBlocks, comp->trMemory(), stackAlloc, growable);
+      //TR_BitVector successorBits(numberOfBlocks, comp->trMemory(), stackAlloc, growable);
 
       TR_ExtendedBlockSuccessorIterator ebsi(fullBlock, comp->getFlowGraph());
-      //TR_Array<int32_t> blockGPRCount(trMemory(), numberOfBlocks,true,stackAlloc);
-      //TR_Array<int32_t> blockFPRCount(trMemory(), numberOfBlocks,true,stackAlloc);
-      //TR_Array<int32_t> blockVRFCount(trMemory(), numberOfBlocks,true,stackAlloc);
+      //TR_Array<int32_t> blockGPRCount(comp->trMemory(), numberOfBlocks,true,stackAlloc);
+      //TR_Array<int32_t> blockFPRCount(comp->trMemory(), numberOfBlocks,true,stackAlloc);
+      //TR_Array<int32_t> blockVRFCount(comp->trMemory(), numberOfBlocks,true,stackAlloc);
       for (TR::Block * b = ebsi.getFirst(); b; b = ebsi.getNext())
          {
          successorBits->set(b->getNumber());
@@ -2138,18 +2138,18 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
 
    bool enableVectorGRA = comp()->cg()->getSupportsVectorRegisters() && !comp()->getOption(TR_DisableVectorRegGRA);
 
-   TR_BitVector catchBlocks(comp()->getFlowGraph()->getNextNodeNumber(), trMemory(), stackAlloc, growable);
-   TR_BitVector callBlocks(comp()->getFlowGraph()->getNextNodeNumber(), trMemory(), stackAlloc, growable);
-   TR_BitVector switchBlocks(comp()->getFlowGraph()->getNextNodeNumber(), trMemory(), stackAlloc, growable);
-   TR_BitVector temp(comp()->getFlowGraph()->getNextNodeNumber(), trMemory(), stackAlloc, growable);
-   TR_BitVector highWordZeroLongs(comp()->getSymRefCount(), trMemory(), stackAlloc, growable);
+   TR_BitVector catchBlocks(comp()->getFlowGraph()->getNextNodeNumber(), comp()->trMemory(), stackAlloc, growable);
+   TR_BitVector callBlocks(comp()->getFlowGraph()->getNextNodeNumber(), comp()->trMemory(), stackAlloc, growable);
+   TR_BitVector switchBlocks(comp()->getFlowGraph()->getNextNodeNumber(), comp()->trMemory(), stackAlloc, growable);
+   TR_BitVector temp(comp()->getFlowGraph()->getNextNodeNumber(), comp()->trMemory(), stackAlloc, growable);
+   TR_BitVector highWordZeroLongs(comp()->getSymRefCount(), comp()->trMemory(), stackAlloc, growable);
 
-   TR_BitVector catchBlockLiveLocals(comp()->getSymRefCount(), trMemory(), stackAlloc, growable);
-   TR_BitVector nonOSRCatchBlockLiveLocals(comp()->getSymRefCount(), trMemory(), stackAlloc, growable);
+   TR_BitVector catchBlockLiveLocals(comp()->getSymRefCount(), comp()->trMemory(), stackAlloc, growable);
+   TR_BitVector nonOSRCatchBlockLiveLocals(comp()->getSymRefCount(), comp()->trMemory(), stackAlloc, growable);
 
-   TR_BitVector referencedBlocks(comp()->getFlowGraph()->getNextNodeNumber(), trMemory(), stackAlloc, growable);
+   TR_BitVector referencedBlocks(comp()->getFlowGraph()->getNextNodeNumber(), comp()->trMemory(), stackAlloc, growable);
    highWordZeroLongs.setAll(comp()->getSymRefCount());
-   int32_t *blockStructureWeight = (int32_t *)trMemory()->allocateStackMemory(comp()->getFlowGraph()->getNextNodeNumber()*sizeof(int32_t));
+   int32_t *blockStructureWeight = (int32_t *)comp()->trMemory()->allocateStackMemory(comp()->getFlowGraph()->getNextNodeNumber()*sizeof(int32_t));
    memset(blockStructureWeight, 0, comp()->getFlowGraph()->getNextNodeNumber()*sizeof(int32_t));
    bool trace = comp()->getOptions()->trace(OMR::tacticalGlobalRegisterAllocator);
 
@@ -2264,12 +2264,12 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
    TR::CodeGenerator * cg = comp()->cg();
    TR::Block * * blocks = cfgBlocks;
 
-   TR_Array<int32_t> numberOfGPRsLiveOnExit(trMemory(), numberOfBlocks, true, stackAlloc);
-   TR_Array<int32_t> numberOfFPRsLiveOnExit(trMemory(), numberOfBlocks, true, stackAlloc);
-   TR_Array<int32_t> numberOfVRFsLiveOnExit(trMemory(), numberOfBlocks, true, stackAlloc);
-   TR_Array<int32_t> maxGPRsLiveOnExit(trMemory(), numberOfBlocks, true, stackAlloc);
-   TR_Array<int32_t> maxFPRsLiveOnExit(trMemory(), numberOfBlocks, true, stackAlloc);
-   TR_Array<int32_t> maxVRFsLiveOnExit(trMemory(), numberOfBlocks, true, stackAlloc);
+   TR_Array<int32_t> numberOfGPRsLiveOnExit(comp()->trMemory(), numberOfBlocks, true, stackAlloc);
+   TR_Array<int32_t> numberOfFPRsLiveOnExit(comp()->trMemory(), numberOfBlocks, true, stackAlloc);
+   TR_Array<int32_t> numberOfVRFsLiveOnExit(comp()->trMemory(), numberOfBlocks, true, stackAlloc);
+   TR_Array<int32_t> maxGPRsLiveOnExit(comp()->trMemory(), numberOfBlocks, true, stackAlloc);
+   TR_Array<int32_t> maxFPRsLiveOnExit(comp()->trMemory(), numberOfBlocks, true, stackAlloc);
+   TR_Array<int32_t> maxVRFsLiveOnExit(comp()->trMemory(), numberOfBlocks, true, stackAlloc);
 
    TR::Block * b = comp()->getStartBlock();
 
@@ -2283,12 +2283,12 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
       } while ((b = b->getNextBlock()));
 
    int32_t numCandidates = 0;
-   TR_Array<int32_t> totalGPRCount(trMemory(), numberOfBlocks,true,stackAlloc);
-   TR_Array<int32_t> totalFPRCount(trMemory(), numberOfBlocks,true,stackAlloc);
-   TR_Array<int32_t> totalVRFCount(trMemory(), numberOfBlocks,true,stackAlloc);
-   TR_Array<int32_t> totalGPRCountOnEntry(trMemory(), numberOfBlocks,true,stackAlloc);
-   TR_Array<int32_t> totalFPRCountOnEntry(trMemory(), numberOfBlocks,true,stackAlloc);
-   TR_Array<int32_t> totalVRFCountOnEntry(trMemory(), numberOfBlocks,true,stackAlloc);
+   TR_Array<int32_t> totalGPRCount(comp()->trMemory(), numberOfBlocks,true,stackAlloc);
+   TR_Array<int32_t> totalFPRCount(comp()->trMemory(), numberOfBlocks,true,stackAlloc);
+   TR_Array<int32_t> totalVRFCount(comp()->trMemory(), numberOfBlocks,true,stackAlloc);
+   TR_Array<int32_t> totalGPRCountOnEntry(comp()->trMemory(), numberOfBlocks,true,stackAlloc);
+   TR_Array<int32_t> totalFPRCountOnEntry(comp()->trMemory(), numberOfBlocks,true,stackAlloc);
+   TR_Array<int32_t> totalVRFCountOnEntry(comp()->trMemory(), numberOfBlocks,true,stackAlloc);
 
    int32_t i;
    for (i = 0; i < numberOfBlocks; ++i)
@@ -2331,7 +2331,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
 
       if (rc->rcNeeds2Regs(comp())) needs2Regs = true;
 
-      TR_BitVector seenBlocks(numberOfBlocks, trMemory(), stackAlloc, growable);
+      TR_BitVector seenBlocks(numberOfBlocks, comp()->trMemory(), stackAlloc, growable);
       TR_BitVectorIterator bvi(rc->getBlocksLiveOnExit());
       while (bvi.hasMoreElements())
          {
@@ -2444,35 +2444,35 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
    // initialize the registerUsage bit vectors
    //
    int32_t numberOfGlobalRegisters = cg->getNumberOfGlobalRegisters();
-   _liveOnEntryUsage.init(trMemory(), numberOfGlobalRegisters, true, stackAlloc);
-   _liveOnExitUsage.init(trMemory(), numberOfGlobalRegisters, true, stackAlloc);
+   _liveOnEntryUsage.init(comp()->trMemory(), numberOfGlobalRegisters, true, stackAlloc);
+   _liveOnExitUsage.init(comp()->trMemory(), numberOfGlobalRegisters, true, stackAlloc);
 
    for (i = _liveOnEntryUsage.internalSize() - 1; i >= 0; --i)
       {
-      _liveOnEntryUsage[i].init(numberOfBlocks, trMemory(), stackAlloc, growable);
-      _liveOnExitUsage[i].init(numberOfBlocks, trMemory(), stackAlloc, growable);
+      _liveOnEntryUsage[i].init(numberOfBlocks, comp()->trMemory(), stackAlloc, growable);
+      _liveOnExitUsage[i].init(numberOfBlocks, comp()->trMemory(), stackAlloc, growable);
       }
    cg->setUnavailableRegistersUsage(_liveOnEntryUsage, _liveOnExitUsage);
 
-   _liveOnEntryConflicts.init(trMemory(), numberOfGlobalRegisters, true, stackAlloc);
-   _liveOnExitConflicts.init(trMemory(), numberOfGlobalRegisters, true, stackAlloc);
-   _entryExitConflicts.init(trMemory(), numberOfGlobalRegisters, true, stackAlloc);
-   _exitEntryConflicts.init(trMemory(), numberOfGlobalRegisters, true, stackAlloc);
+   _liveOnEntryConflicts.init(comp()->trMemory(), numberOfGlobalRegisters, true, stackAlloc);
+   _liveOnExitConflicts.init(comp()->trMemory(), numberOfGlobalRegisters, true, stackAlloc);
+   _entryExitConflicts.init(comp()->trMemory(), numberOfGlobalRegisters, true, stackAlloc);
+   _exitEntryConflicts.init(comp()->trMemory(), numberOfGlobalRegisters, true, stackAlloc);
 #ifdef TRIM_ASSIGNED_CANDIDATES
-   _availableBlocks.init(trMemory(), numberOfGlobalRegisters, true, stackAlloc);
+   _availableBlocks.init(comp()->trMemory(), numberOfGlobalRegisters, true, stackAlloc);
 #endif
    for (i = 0; i < numberOfGlobalRegisters; i++)
       {
-      _liveOnEntryConflicts[i].init(numberOfBlocks, trMemory(), stackAlloc, growable);
-      _liveOnExitConflicts[i].init(numberOfBlocks, trMemory(), stackAlloc, growable);
-      _entryExitConflicts[i].init(numberOfBlocks, trMemory(), stackAlloc, growable);
-      _exitEntryConflicts[i].init(numberOfBlocks, trMemory(), stackAlloc, growable);
+      _liveOnEntryConflicts[i].init(numberOfBlocks, comp()->trMemory(), stackAlloc, growable);
+      _liveOnExitConflicts[i].init(numberOfBlocks, comp()->trMemory(), stackAlloc, growable);
+      _entryExitConflicts[i].init(numberOfBlocks, comp()->trMemory(), stackAlloc, growable);
+      _exitEntryConflicts[i].init(numberOfBlocks, comp()->trMemory(), stackAlloc, growable);
 #ifdef TRIM_ASSIGNED_CANDIDATES
-      _availableBlocks[i].init(numberOfBlocks, trMemory(), stackAlloc, growable);
+      _availableBlocks[i].init(numberOfBlocks, comp()->trMemory(), stackAlloc, growable);
 #endif
       }
 
-   TR_BitVector intersection(numberOfBlocks, trMemory(), stackAlloc, growable);
+   TR_BitVector intersection(numberOfBlocks, comp()->trMemory(), stackAlloc, growable);
 
 #ifdef TRIM_ASSIGNED_CANDIDATES
    // Count number of loads and stores in each loop
@@ -2482,7 +2482,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
    _candidateForSymRefs->clear();
    for (rc = first; rc; rc = rc->getNext())
       {
-      rc->countNumberOfLoadsAndStoresInLoops(trMemory());
+      rc->countNumberOfLoadsAndStoresInLoops(comp()->trMemory());
       if (trace)
          rc->printLoopInfo(comp());
       }
@@ -2841,7 +2841,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
       //
       // Compute available registers
       //
-      TR_BitVector availableRegisters(lastRegister+1, trMemory(), stackAlloc);
+      TR_BitVector availableRegisters(lastRegister+1, comp()->trMemory(), stackAlloc);
       computeAvailableRegisters(rc, firstRegister, lastRegister, blocks, &availableRegisters);
       if (trace)
          {
@@ -2958,8 +2958,8 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
            int32_t maxClearStructures = -1; // largest number of clear structures of the unavailable registers
 
            intersection.empty();
-           List<TR_Structure> regStructureUses(trMemory());   // list of deepest loops where a register is currently live
-           List<TR_Structure> candStructureUses(trMemory());  // list of loops where this candidate is currently live
+           List<TR_Structure> regStructureUses(comp()->trMemory());   // list of deepest loops where a register is currently live
+           List<TR_Structure> candStructureUses(comp()->trMemory());  // list of loops where this candidate is currently live
 
            // loop over the blocks where this candidate is live, and add the loops that contain those blocks to candStructureUses
            TR_BitVectorIterator bvi(rc->getBlocksLiveOnEntry());
@@ -2985,8 +2985,8 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
               {
               // Add blocks the register pressure simulator found to be problematic.
               //
-              TR_BitVector spilledRegs(cg->getNumberOfGlobalRegisters(), trMemory(), stackAlloc);
-              TR_BitVector liveOnEntryOrExit(numberOfBlocks, trMemory(), stackAlloc);
+              TR_BitVector spilledRegs(cg->getNumberOfGlobalRegisters(), comp()->trMemory(), stackAlloc);
+              TR_BitVector liveOnEntryOrExit(numberOfBlocks, comp()->trMemory(), stackAlloc);
               liveOnEntryOrExit = rc->getBlocksLiveOnEntry();
               liveOnEntryOrExit |= rc->getBlocksLiveOnExit();
               scanPressureSimulatorCacheForConflicts(rc, liveOnEntryOrExit, _liveOnEntryConflicts, _liveOnExitConflicts, _entryExitConflicts, firstRegister, lastRegister, &spilledRegs, comp(), blocks);
@@ -3210,7 +3210,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
                  }
 
 #ifdef TRIM_ASSIGNED_CANDIDATES
-              TR_BitVector blocksToBeFreed(comp()->getFlowGraph()->getNextNodeNumber(), trMemory(), stackAlloc, growable);
+              TR_BitVector blocksToBeFreed(comp()->getFlowGraph()->getNextNodeNumber(), comp()->trMemory(), stackAlloc, growable);
               blocksToBeFreed  = _availableBlocks[conflictingRegister];
               blocksToBeFreed &= intersection;
               intersection -= blocksToBeFreed;
@@ -3283,7 +3283,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
             continue;
         }
 
-   TR_BitVector seenBlocks(numberOfBlocks, trMemory(), stackAlloc, growable);
+   TR_BitVector seenBlocks(numberOfBlocks, comp()->trMemory(), stackAlloc, growable);
    TR_BitVectorIterator exitBlocksIt(rc->getBlocksLiveOnExit());
    while (exitBlocksIt.hasMoreElements())
       {
@@ -3449,7 +3449,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
               {
               //static TR_BitVector *successorBits;
               if (!comp()->getOptimizer()->getSuccessorBitsGRA())
-                 comp()->getOptimizer()->setSuccessorBitsGRA(new (trHeapMemory()) TR_BitVector(numberOfBlocks, trMemory(), heapAlloc, growable));
+                 comp()->getOptimizer()->setSuccessorBitsGRA(new (comp()->trHeapMemory()) TR_BitVector(numberOfBlocks, comp()->trMemory(), heapAlloc, growable));
               else
                  comp()->getOptimizer()->getSuccessorBitsGRA()->empty();
 
@@ -3470,7 +3470,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
            if (++numberOfVRFsLiveOnExit[blockNumber] == maxVRFsLiveOnExit[blockNumber])
               {
               if (!comp()->getOptimizer()->getSuccessorBitsGRA())
-                 comp()->getOptimizer()->setSuccessorBitsGRA(new (trHeapMemory()) TR_BitVector(numberOfBlocks, trMemory(), heapAlloc, growable));
+                 comp()->getOptimizer()->setSuccessorBitsGRA(new (comp()->trHeapMemory()) TR_BitVector(numberOfBlocks, comp()->trMemory(), heapAlloc, growable));
               else
                  comp()->getOptimizer()->getSuccessorBitsGRA()->empty();
 
@@ -3492,7 +3492,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
               {
               //static TR_BitVector *successorBits;
               if (!comp()->getOptimizer()->getSuccessorBitsGRA())
-                 comp()->getOptimizer()->setSuccessorBitsGRA(new (trHeapMemory()) TR_BitVector(numberOfBlocks, trMemory(), heapAlloc, growable));
+                 comp()->getOptimizer()->setSuccessorBitsGRA(new (comp()->trHeapMemory()) TR_BitVector(numberOfBlocks, comp()->trMemory(), heapAlloc, growable));
               else
                  comp()->getOptimizer()->getSuccessorBitsGRA()->empty();
 
@@ -3511,7 +3511,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
               {
               //static TR_BitVector *successorBits;
               if (!comp()->getOptimizer()->getSuccessorBitsGRA())
-                 comp()->getOptimizer()->setSuccessorBitsGRA(new (trHeapMemory()) TR_BitVector(numberOfBlocks, trMemory(), heapAlloc, growable));
+                 comp()->getOptimizer()->setSuccessorBitsGRA(new (comp()->trHeapMemory()) TR_BitVector(numberOfBlocks, comp()->trMemory(), heapAlloc, growable));
               else
                  comp()->getOptimizer()->getSuccessorBitsGRA()->empty();
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -110,8 +110,8 @@ TR_LiveOnNotAllPaths::TR_LiveOnNotAllPaths(TR::Compilation * c, TR_Liveness * li
    TR::CFG *cfg = comp()->getFlowGraph();
    _numNodes = cfg->getNextNodeNumber();
    int32_t arraySize = _numNodes * sizeof(TR_BitVector *);
-   _inSetInfo =  (TR_BitVector **)trMemory()->allocateStackMemory(arraySize);
-   _outSetInfo = (TR_BitVector **)trMemory()->allocateStackMemory(arraySize);
+   _inSetInfo =  (TR_BitVector **)c->trMemory()->allocateStackMemory(arraySize);
+   _outSetInfo = (TR_BitVector **)c->trMemory()->allocateStackMemory(arraySize);
    memset(_inSetInfo, 0, arraySize);
    memset(_outSetInfo, 0, arraySize);
 
@@ -120,7 +120,7 @@ TR_LiveOnNotAllPaths::TR_LiveOnNotAllPaths(TR::Compilation * c, TR_Liveness * li
    for (TR::CFGNode *block = comp()->getFlowGraph()->getFirstNode(); block != NULL; block = block->getNext() )
       {
       int32_t b=block->getNumber();
-      _inSetInfo[b] = new (trStackMemory()) TR_BitVector(_numLocals, trMemory(), stackAlloc);
+      _inSetInfo[b] = new (c->trStackMemory()) TR_BitVector(_numLocals, c->trMemory(), stackAlloc);
       if (liveOnSomePaths->_blockAnalysisInfo[b])
          {
          *(_inSetInfo[b]) = *(liveOnSomePaths->_blockAnalysisInfo[b]);
@@ -128,9 +128,9 @@ TR_LiveOnNotAllPaths::TR_LiveOnNotAllPaths(TR::Compilation * c, TR_Liveness * li
             *(_inSetInfo[b]) -= *(liveOnAllPaths->_blockAnalysisInfo[b]);
          }
 
-      TR_BitVector liveOnSomePathsOut(_numLocals, trMemory());
-      TR_BitVector liveOnAllPathsOut(_numLocals, trMemory());
-      TR_BitVector forcedLiveOnAllPathsSymbols(_numLocals, trMemory());
+      TR_BitVector liveOnSomePathsOut(_numLocals, c->trMemory());
+      TR_BitVector liveOnAllPathsOut(_numLocals, c->trMemory());
+      TR_BitVector forcedLiveOnAllPathsSymbols(_numLocals, c->trMemory());
       liveOnAllPathsOut.setAll(_numLocals);
 
       // compute liveOnAllPaths at end of block
@@ -167,7 +167,7 @@ TR_LiveOnNotAllPaths::TR_LiveOnNotAllPaths(TR::Compilation * c, TR_Liveness * li
       (*_inSetInfo[b]) -= forcedLiveOnAllPathsSymbols;
 
       // finally, compute LiveOnNotAllPaths at end of block
-      _outSetInfo[b] = new (trStackMemory()) TR_BitVector(_numLocals, trMemory(), stackAlloc);
+      _outSetInfo[b] = new (c->trStackMemory()) TR_BitVector(_numLocals, c->trMemory(), stackAlloc);
       *(_outSetInfo[b]) = liveOnSomePathsOut;
       *(_outSetInfo[b]) -= liveOnAllPathsOut;
 
@@ -175,7 +175,7 @@ TR_LiveOnNotAllPaths::TR_LiveOnNotAllPaths(TR::Compilation * c, TR_Liveness * li
       // for non-exception edges: recompute LOAP_in
       // for a local if LOAP_out (without exception edges) is true and LOSP_in
       // is true, then LONAP_in should be false and thus LOAP_in should be forced to true
-      TR_BitVector LiveOnAllPathsNonExcIn(_numLocals, trMemory());
+      TR_BitVector LiveOnAllPathsNonExcIn(_numLocals, c->trMemory());
       LiveOnAllPathsNonExcIn = liveOnAllPathsOut;
       LiveOnAllPathsNonExcIn &= *(liveOnSomePaths->_blockAnalysisInfo[b]);
       *(_inSetInfo[b]) -= LiveOnAllPathsNonExcIn;
@@ -288,13 +288,13 @@ TR_MovableStore::TR_MovableStore(TR_SinkStores *s, TR_UseOrKillInfo *useOrKillIn
 
 TR_SinkStores::TR_SinkStores(TR::OptimizationManager *manager)
    : TR::Optimization(manager),
-   _allEdgePlacements(trMemory()),
-   _allBlockPlacements(trMemory()),
+   _allEdgePlacements(comp()->trMemory()),
+   _allBlockPlacements(comp()->trMemory()),
    _indirectLoadAnchors(NULL),
    _indirectLoadAnchorMap(NULL),
    _firstUseOfLoadMap(NULL)
    {
-   _tempSymMap = new (trHeapMemory()) TR_HashTab(comp()->trMemory(), stackAlloc, 4);
+   _tempSymMap = new (comp()->trHeapMemory()) TR_HashTab(comp()->trMemory(), stackAlloc, 4);
 
    // tuning parameters
    _sinkAllStores = false;
@@ -399,19 +399,19 @@ void TR_SinkStores::recordPlacementForDefAlongEdge(TR_EdgeStorePlacement *edgePl
          {
          if (trace())
             traceMsg(comp(), "                from block_%d is a goto block\n", from->getNumber());
-         TR_BlockStorePlacement *newBlockPlacement = new (trStackMemory()) TR_BlockStorePlacement(storeInfo, from, trMemory());
+         TR_BlockStorePlacement *newBlockPlacement = new (comp()->trStackMemory()) TR_BlockStorePlacement(storeInfo, from, comp()->trMemory());
          recordPlacementForDefInBlock(newBlockPlacement);
          }
       else
          {
-         edgeInfo->_symbolsUsedOrKilled = new (trStackMemory()) TR_BitVector(_liveVarInfo->numLocals(), trMemory());
+         edgeInfo->_symbolsUsedOrKilled = new (comp()->trStackMemory()) TR_BitVector(_liveVarInfo->numLocals(), comp()->trMemory());
          (*edgeInfo->_symbolsUsedOrKilled) |= (*_usedSymbolsToMove);
          (*edgeInfo->_symbolsUsedOrKilled) |= (*_killedSymbolsToMove);
          _allEdgePlacements.add(edgePlacement);
 	 optimizer()->setRequestOptimization(OMR::basicBlockOrdering, true);
 
          if (_placementsForEdgesToBlock[toBlockNumber] == NULL)
-            _placementsForEdgesToBlock[toBlockNumber] = new (trStackMemory()) TR_EdgeStorePlacementList(trMemory());
+            _placementsForEdgesToBlock[toBlockNumber] = new (comp()->trStackMemory()) TR_EdgeStorePlacementList(comp()->trMemory());
          _placementsForEdgesToBlock[toBlockNumber]->add(edgePlacement);
          }
       }
@@ -449,7 +449,7 @@ void TR_SinkStores::recordPlacementForDefInBlock(TR_BlockStorePlacement *blockPl
       }
    else
       {
-      _placementsForBlock[blockNumber] = new (trStackMemory()) TR_BlockStorePlacementList(trMemory());
+      _placementsForBlock[blockNumber] = new (comp()->trStackMemory()) TR_BlockStorePlacementList(comp()->trMemory());
       }
 
    if (ptr == NULL)
@@ -475,7 +475,7 @@ void TR_SinkStores::recordPlacementForDefInBlock(TR_BlockStorePlacement *blockPl
    // NOTE: we should already have visited these blocks, so we should only have to add these symbols to kills and uses
    //       so that later stores will not be pushed through this block
    TR_ASSERT(_symbolsKilledInBlock[blockNumber] != NULL, "_symbolsKilledInBlock[%d] should have been initialized!", blockNumber);
-   //_symbolsKilledInBlock[blockNumber] = new (trStackMemory()) TR_BitVector(_liveVarInfo->numLocals(), trMemory());
+   //_symbolsKilledInBlock[blockNumber] = new (comp()->trStackMemory()) TR_BitVector(_liveVarInfo->numLocals(), comp()->trMemory());
    if (trace())
       {
       traceMsg(comp(),"updating symbolsKilled in recordPlacementForDefInBlock\n");
@@ -492,7 +492,7 @@ void TR_SinkStores::recordPlacementForDefInBlock(TR_BlockStorePlacement *blockPl
       traceMsg(comp(), "\n\n");
       }
    TR_ASSERT(_symbolsUsedInBlock[blockNumber] != NULL, "_symbolsUsedInBlock[%d] should have been initialized!", blockNumber);
-   //_symbolsUsedInBlock[blockNumber] = new (trStackMemory()) TR_BitVector(_liveVarInfo->numLocals(), trMemory());
+   //_symbolsUsedInBlock[blockNumber] = new (comp()->trStackMemory()) TR_BitVector(_liveVarInfo->numLocals(), comp()->trMemory());
    if (trace())
       {
       traceMsg(comp(),"updating symbolsUsed in recordPlacementForDefInBlock\n");
@@ -541,7 +541,7 @@ int32_t TR_SinkStores::performStoreSinking()
    int32_t numBlocks = cfg->getNextNodeNumber();
 
    {
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    // create forward and backward RPO traversal ordering to control block visitations and detect back edges
    cfg->createTraversalOrder(true, stackAlloc);
@@ -562,7 +562,7 @@ int32_t TR_SinkStores::performStoreSinking()
 
    // Perform liveness analysis
    //
-   _liveVarInfo = new (trStackMemory()) TR_LiveVariableInformation(comp(),
+   _liveVarInfo = new (comp()->trStackMemory()) TR_LiveVariableInformation(comp(),
                                                                    optimizer(),
                                                                    rootStructure,
                                                                    false, /* !splitLongs */
@@ -584,7 +584,7 @@ int32_t TR_SinkStores::performStoreSinking()
       _liveOnNotAllPaths   = new (comp()->allocator()) TR_LiveOnNotAllPaths(comp(), _liveOnSomePaths, _liveOnAllPaths);
 
       bool thereIsACandidate = false;
-      _candidateBlocks = new (trStackMemory()) TR_BitVector(numBlocks, trMemory());
+      _candidateBlocks = new (comp()->trStackMemory()) TR_BitVector(numBlocks, comp()->trMemory());
       for (int32_t b=0; b < numBlocks;b++)
          {
          if (_liveOnNotAllPaths->_outSetInfo[b] != NULL && !_liveOnNotAllPaths->_outSetInfo[b]->isEmpty())
@@ -602,21 +602,21 @@ int32_t TR_SinkStores::performStoreSinking()
 
    // these arrays of bit vectors describe the symbols used and killed in each block in the method
    int32_t arraySize = numBlocks * sizeof(void *);
-   _symbolsUsedInBlock = (TR_BitVector **) trMemory()->allocateStackMemory(arraySize);
+   _symbolsUsedInBlock = (TR_BitVector **) comp()->trMemory()->allocateStackMemory(arraySize);
    memset(_symbolsUsedInBlock, 0, arraySize);
-   _symbolsKilledInBlock = (TR_BitVector **) trMemory()->allocateStackMemory(arraySize);
+   _symbolsKilledInBlock = (TR_BitVector **) comp()->trMemory()->allocateStackMemory(arraySize);
    memset(_symbolsKilledInBlock, 0, arraySize);
-//   _symbolsExceptionUsedInBlock = (TR_BitVector **) trMemory()->allocateStackMemory(arraySize);
+//   _symbolsExceptionUsedInBlock = (TR_BitVector **) comp()->trMemory()->allocateStackMemory(arraySize);
 //   memset(_symbolsExceptionUsedInBlock, 0, arraySize);
-//   _symbolsExceptionKilledInBlock = (TR_BitVector **) trMemory()->allocateStackMemory(arraySize);
+//   _symbolsExceptionKilledInBlock = (TR_BitVector **) comp()->trMemory()->allocateStackMemory(arraySize);
 //   memset(_symbolsExceptionKilledInBlock, 0, arraySize);
 
    // these arrays are used to maintain the stores placed in each block or in edges directed at each particular block
    arraySize = numBlocks * sizeof(TR_BlockStorePlacementList *);
-   _placementsForBlock = (TR_BlockStorePlacementList **) trMemory()->allocateStackMemory(arraySize);
+   _placementsForBlock = (TR_BlockStorePlacementList **) comp()->trMemory()->allocateStackMemory(arraySize);
    memset(_placementsForBlock, 0, arraySize);
    arraySize = numBlocks * sizeof(TR_EdgeStorePlacementList *);
-   _placementsForEdgesToBlock = (TR_EdgeStorePlacementList **) trMemory()->allocateStackMemory(arraySize);
+   _placementsForEdgesToBlock = (TR_EdgeStorePlacementList **) comp()->trMemory()->allocateStackMemory(arraySize);
    memset(_placementsForEdgesToBlock, 0, arraySize);
 
    // some extra meta data is needed if stores with indirect loads are going to be sunk
@@ -625,11 +625,11 @@ int32_t TR_SinkStores::performStoreSinking()
       // estimate that half the blocks will have a sinkable store with an indirect child
       if (trace())
          traceMsg(comp(),"creating _indirectLoadAnchorMap with initSize = %d\n",comp()->getFlowGraph()->getNextNodeNumber()/2);
-      _indirectLoadAnchorMap = new (trStackMemory()) TR_HashTab(comp()->trMemory(), stackAlloc, comp()->getFlowGraph()->getNextNodeNumber()/2);
+      _indirectLoadAnchorMap = new (comp()->trStackMemory()) TR_HashTab(comp()->trMemory(), stackAlloc, comp()->getFlowGraph()->getNextNodeNumber()/2);
       if (trace())
          traceMsg(comp(),"creating _firstUseOfLoadMap with initSize = %d\n",comp()->getFlowGraph()->getNextNodeNumber()/4);
-      _firstUseOfLoadMap = new (trStackMemory()) TR_HashTab(comp()->trMemory(), stackAlloc, comp()->getFlowGraph()->getNextNodeNumber()/4);
-      _indirectLoadAnchors = new (trStackMemory()) ListHeadAndTail<TR_IndirectLoadAnchor>(trMemory());
+      _firstUseOfLoadMap = new (comp()->trStackMemory()) TR_HashTab(comp()->trMemory(), stackAlloc, comp()->getFlowGraph()->getNextNodeNumber()/4);
+      _indirectLoadAnchors = new (comp()->trStackMemory()) ListHeadAndTail<TR_IndirectLoadAnchor>(comp()->trMemory());
       }
 
    // grab what symbols are used/killed/exception killed from the live variable info
@@ -725,16 +725,16 @@ void TR_SinkStores::lookForSinkableStores()
    if (trace())
       traceMsg(comp(), "Starting to look for stores to sink\n");
 
-   List<TR_UseOrKillInfo> useOrKillInfoList(trMemory());
+   List<TR_UseOrKillInfo> useOrKillInfoList(comp()->trMemory());
    ListElement<TR_UseOrKillInfo> *useOrKillInfoListPtr=NULL;
 
-   List<TR_MovableStore> potentiallyMovableStores(trMemory());
+   List<TR_MovableStore> potentiallyMovableStores(comp()->trMemory());
    ListElement<TR_MovableStore> *storeListPtr=NULL;
 
    // for keeping track of dataflow for each tree
-   TR_BitVector *savedLiveCommonedLoads = new (trStackMemory()) TR_BitVector(numLocals, trMemory());
-   TR_BitVector *satisfiedLiveCommonedLoads = new (trStackMemory()) TR_BitVector(numLocals, trMemory());
-   TR_BitVector *killedLiveCommonedLoads = new (trStackMemory()) TR_BitVector(numLocals, trMemory());
+   TR_BitVector *savedLiveCommonedLoads = new (comp()->trStackMemory()) TR_BitVector(numLocals, comp()->trMemory());
+   TR_BitVector *satisfiedLiveCommonedLoads = new (comp()->trStackMemory()) TR_BitVector(numLocals, comp()->trMemory());
+   TR_BitVector *killedLiveCommonedLoads = new (comp()->trStackMemory()) TR_BitVector(numLocals, comp()->trMemory());
 
    // treeVisitCount will be incremented for each tree in an EBB
    // when starting a new EBB, treeVisitCount will be reset fo startVisitCount
@@ -745,9 +745,9 @@ void TR_SinkStores::lookForSinkableStores()
 
    // this bit vector is used to collect commoned loads for every traversal
    // it will be copied into a new bit vector for a store identified as potentially movable
-   TR_BitVector *treeCommonedLoads = new (trStackMemory()) TR_BitVector(numLocals, trMemory());
+   TR_BitVector *treeCommonedLoads = new (comp()->trStackMemory()) TR_BitVector(numLocals, comp()->trMemory());
 
-   int32_t *satisfiedCommonedSymCount = (int32_t *)trMemory()->allocateStackMemory(numLocals*sizeof(int32_t));
+   int32_t *satisfiedCommonedSymCount = (int32_t *)comp()->trMemory()->allocateStackMemory(numLocals*sizeof(int32_t));
    memset(satisfiedCommonedSymCount, 0, numLocals*sizeof(int32_t));
 
    for (int32_t i=0;i < cfg->getBackwardTraversalLength();i++)
@@ -808,8 +808,8 @@ void TR_SinkStores::lookForSinkableStores()
                traceMsg(comp(), "\n");
                }
             // visit the tree below this node and find all the symbols it uses
-            TR_BitVector *usedSymbols = new (trStackMemory()) TR_BitVector(numLocals, trMemory());
-            TR_BitVector *killedSymbols = new (trStackMemory()) TR_BitVector(numLocals, trMemory());
+            TR_BitVector *usedSymbols = new (comp()->trStackMemory()) TR_BitVector(numLocals, comp()->trMemory());
+            TR_BitVector *killedSymbols = new (comp()->trStackMemory()) TR_BitVector(numLocals, comp()->trMemory());
             // remove any commoned loads where the first reference to the load has been seen (it is 'satisfied')
             // satisfiedLiveCommonedLoads was initialized, if required, on the previous node examined
 
@@ -918,7 +918,7 @@ void TR_SinkStores::lookForSinkableStores()
                         if (store->_depth >= MIN_TREE_DEPTH_TO_MOVE)
                            {
                            if (!store->_needTempForCommonedLoads)
-                              store->_needTempForCommonedLoads = new (trStackMemory()) TR_BitVector(numLocals, trMemory());
+                              store->_needTempForCommonedLoads = new (comp()->trStackMemory()) TR_BitVector(numLocals, comp()->trMemory());
                            store->_needTempForCommonedLoads->set(killedSymIdx);
                            store->_commonedLoadsUnderTree->reset(killedSymIdx);
                            }
@@ -944,7 +944,7 @@ void TR_SinkStores::lookForSinkableStores()
             bool usedSymbolKilledBelow = usedSymbols->intersects(*killedLiveCommonedLoads);
             if (usedSymbolKilledBelow)
                {
-               TR_BitVector *firstRefsToKilledSymbols = new (trStackMemory()) TR_BitVector(*usedSymbols);
+               TR_BitVector *firstRefsToKilledSymbols = new (comp()->trStackMemory()) TR_BitVector(*usedSymbols);
                (*firstRefsToKilledSymbols) &= (*killedLiveCommonedLoads);
                if (trace())
                   {
@@ -964,7 +964,7 @@ void TR_SinkStores::lookForSinkableStores()
                         {
                         // looking at bit vectors alone may not be enough to guarantee that a temp should actually be placed here see
                         // the comment in isCorrectCommonedLoad for more information
-                        TR_BitVector *commonedLoadsUsedAboveStore = new (trStackMemory()) TR_BitVector(*(store->_needTempForCommonedLoads));
+                        TR_BitVector *commonedLoadsUsedAboveStore = new (comp()->trStackMemory()) TR_BitVector(*(store->_needTempForCommonedLoads));
                         (*commonedLoadsUsedAboveStore) &= (*firstRefsToKilledSymbols);
                         if (trace())
                            {
@@ -1038,7 +1038,7 @@ void TR_SinkStores::lookForSinkableStores()
                   // simple store-load tree won't be considered because of the overhead of creating temp store
                   if (treeDepth >= MIN_TREE_DEPTH_TO_MOVE)
                      {
-                     moveStoreWithTemps = new (trStackMemory()) TR_BitVector(*usedSymbols);
+                     moveStoreWithTemps = new (comp()->trStackMemory()) TR_BitVector(*usedSymbols);
                      (*moveStoreWithTemps) &= (*killedLiveCommonedLoads);
                      if (trace())
                         traceMsg(comp(), "         moveStoreWithTemps = %s\n", moveStoreWithTemps ? "true" : "false");
@@ -1067,10 +1067,10 @@ void TR_SinkStores::lookForSinkableStores()
                   traceMsg(comp(), "      creating use or kill info on %s node [" POINTER_PRINTF_FORMAT "] to track kills and uses\n",
                                   canMoveStore? "movable":"non-movable", tt->getNode());
 
-               useOrKill = new (trStackMemory()) TR_UseOrKillInfo(tt,
+               useOrKill = new (comp()->trStackMemory()) TR_UseOrKillInfo(tt,
                                                                   block,
                                                                   usedSymbols,
-                                                                  movedStorePinsCommonedSymbols() ? NULL : new (trStackMemory()) TR_BitVector(*treeCommonedLoads),
+                                                                  movedStorePinsCommonedSymbols() ? NULL : new (comp()->trStackMemory()) TR_BitVector(*treeCommonedLoads),
                                                                   indirectLoadCount,
                                                                   killedSymbols);
                useOrKillInfoListPtr = useOrKillInfoList.addAfter(useOrKill, useOrKillInfoListPtr);
@@ -1083,17 +1083,17 @@ void TR_SinkStores::lookForSinkableStores()
                {
                if (trace())
                   traceMsg(comp(), "      store is potentially movable, collecting commoned loads and adding to list\n");
-               TR_BitVector *myCommonedLoads = treeCommonedLoads->isEmpty() ? 0 : new (trStackMemory()) TR_BitVector(*treeCommonedLoads);
+               TR_BitVector *myCommonedLoads = treeCommonedLoads->isEmpty() ? 0 : new (comp()->trStackMemory()) TR_BitVector(*treeCommonedLoads);
                if (myCommonedLoads && moveStoreWithTemps)
                   (*myCommonedLoads) -= (*moveStoreWithTemps);
                TR_BitVector *commonedLoadsAfter = 0;
                if (!savedLiveCommonedLoads->isEmpty() && movedStorePinsCommonedSymbols())
                   {
-                  commonedLoadsAfter = new (trStackMemory()) TR_BitVector(*savedLiveCommonedLoads);
+                  commonedLoadsAfter = new (comp()->trStackMemory()) TR_BitVector(*savedLiveCommonedLoads);
                   (*commonedLoadsAfter) &= (*usedSymbols);
                   }
 
-               movableStore = new (trStackMemory()) TR_MovableStore(this,
+               movableStore = new (comp()->trStackMemory()) TR_MovableStore(this,
                                                                     useOrKill,
                                                                     symIdx,
                                                                     myCommonedLoads,
@@ -1144,9 +1144,9 @@ void TR_SinkStores::lookForSinkableStores()
 
       // may need to update dataflow sets here :( ??
       TR_ASSERT(_symbolsKilledInBlock[blockNumber] == NULL, "_symbolsKilledInBlock should not have been initialized for block_%d!", blockNumber);
-      _symbolsKilledInBlock[blockNumber] = new (trStackMemory()) TR_BitVector(numLocals, trMemory(), stackAlloc);
+      _symbolsKilledInBlock[blockNumber] = new (comp()->trStackMemory()) TR_BitVector(numLocals, comp()->trMemory(), stackAlloc);
       TR_ASSERT(_symbolsUsedInBlock[blockNumber] == NULL, "_symbolsUsedInBlock should not have been initialized for block_%d!", blockNumber);
-      _symbolsUsedInBlock[blockNumber] = new (trStackMemory()) TR_BitVector(numLocals, trMemory(), stackAlloc);
+      _symbolsUsedInBlock[blockNumber] = new (comp()->trStackMemory()) TR_BitVector(numLocals, comp()->trMemory(), stackAlloc);
 
       if (!block->isExtensionOfPreviousBlock())
          {
@@ -1671,8 +1671,8 @@ void TR_SinkStores::doSinking()
    coalesceSimilarEdgePlacements();
 
    // collect the original stores here
-   List<TR::TreeTop> storesToRemove(trMemory());
-   List<TR::TreeTop> movedStores(trMemory());
+   List<TR::TreeTop> storesToRemove(comp()->trMemory());
+   List<TR::TreeTop> movedStores(comp()->trMemory());
 
    // do all the edge placements
    if (trace())
@@ -2394,7 +2394,7 @@ TR_SinkStores::insertAnchoredNodes(TR_MovableStore *store,
          }
       if (trace())
          traceMsg(comp(),"create loadAnchored for node %p at currentBlock %d with nodeOrig %p for store node %p\n",anchoredNode,currentBlock->getNumber(),nodeOrig,store->_useOrKillInfo->_tt->getNode());
-      indirectLoadAnchorsForThisStore->add(new (trStackMemory()) TR_IndirectLoadAnchor(anchoredNode, currentBlock, store->_useOrKillInfo->_tt));
+      indirectLoadAnchorsForThisStore->add(new (comp()->trStackMemory()) TR_IndirectLoadAnchor(anchoredNode, currentBlock, store->_useOrKillInfo->_tt));
       if (trace())
          traceMsg(comp(),"      indirectCase  nodeParentCopy %p setting childnum %d with nodeOrig %p\n",nodeParentCopy,childNum,nodeOrig);
       increment++;
@@ -2497,7 +2497,7 @@ TR_SinkStores::insertAnchoredNodes(TR_MovableStore *store,
          // A first use may already exist for a blocking used symbol load if this node itself is commoned somewhere below
          if (!firstUseOfLoad)
             {
-            firstUseOfLoad = new (trStackMemory()) TR_FirstUseOfLoad(nodeOrig, store->_useOrKillInfo->_tt, store->_useOrKillInfo->_block->getNumber());
+            firstUseOfLoad = new (comp()->trStackMemory()) TR_FirstUseOfLoad(nodeOrig, store->_useOrKillInfo->_tt, store->_useOrKillInfo->_block->getNumber());
             TR_HashId addID = 0;
             _firstUseOfLoadMap->add(nodeOrig, addID, firstUseOfLoad);
             if (trace())
@@ -2596,23 +2596,23 @@ bool TR_GeneralSinkStores::sinkStorePlacement(TR_MovableStore *movableStore,
 
    int32_t sourceBlockNumber=sourceBlock->getNumber();
    int32_t sourceBlockFrequency = sourceBlock->getFrequency();
-   TR_OrderedBlockList worklist(trMemory());
+   TR_OrderedBlockList worklist(comp()->trMemory());
    vcount_t visitCount = comp()->incVisitCount();
    TR_BitVector *allUsedSymbols;
 
-   TR_BitVector *allEdgeInfoUsedOrKilledSymbols = new (trStackMemory()) TR_BitVector(*usedSymbols);
+   TR_BitVector *allEdgeInfoUsedOrKilledSymbols = new (comp()->trStackMemory()) TR_BitVector(*usedSymbols);
    allEdgeInfoUsedOrKilledSymbols->empty();
 
-   TR_BitVector *allBlockUsedSymbols = new (trStackMemory()) TR_BitVector(*usedSymbols);
+   TR_BitVector *allBlockUsedSymbols = new (comp()->trStackMemory()) TR_BitVector(*usedSymbols);
    allBlockUsedSymbols->empty();
-   TR_BitVector *allBlockKilledSymbols = new (trStackMemory()) TR_BitVector(*usedSymbols);
+   TR_BitVector *allBlockKilledSymbols = new (comp()->trStackMemory()) TR_BitVector(*usedSymbols);
    allBlockKilledSymbols->empty();
 
    // allUsedSymbols will include the ones that are commoned if temp is not used; this is used for dataflow analysis
    // when the store is attempted to be sunk out of ebb
    if (commonedSymbols)
       {
-      allUsedSymbols = new (trStackMemory()) TR_BitVector(*usedSymbols);
+      allUsedSymbols = new (comp()->trStackMemory()) TR_BitVector(*usedSymbols);
       (*allUsedSymbols) |= (*commonedSymbols);
 
       usedSymbols = allUsedSymbols;
@@ -2667,8 +2667,8 @@ bool TR_GeneralSinkStores::sinkStorePlacement(TR_MovableStore *movableStore,
    // these lists will hold the list of placements for this store
    // if we decide not to sink this store, then these placements will be discarded
    // otherwise, they will be added to the per-block lists, the per-edge lists, and the complete list of placements
-   TR_BlockStorePlacementList blockPlacementsForThisStore(trMemory());
-   TR_EdgeStorePlacementList  edgePlacementsForThisStore(trMemory());
+   TR_BlockStorePlacementList blockPlacementsForThisStore(comp()->trMemory());
+   TR_EdgeStorePlacementList  edgePlacementsForThisStore(comp()->trMemory());
 
    // now try to push it along sourceBlock's successor edges
    TR_SuccessorIterator outEdges(sourceBlock);
@@ -2718,7 +2718,7 @@ bool TR_GeneralSinkStores::sinkStorePlacement(TR_MovableStore *movableStore,
             {
             bool copyStore=!isSuccBlockInEBB;
             //recordPlacementForDefAlongEdge(tt, succEdge, true); //copyStore);
-            TR_StoreInformation *storeInfo = new (trStackMemory()) TR_StoreInformation(tt, copyStore);
+            TR_StoreInformation *storeInfo = new (comp()->trStackMemory()) TR_StoreInformation(tt, copyStore);
             // init _storeTemp field
             if (!needTempForCommonedLoads)
                storeInfo->_storeTemp = tt;
@@ -2728,10 +2728,10 @@ bool TR_GeneralSinkStores::sinkStorePlacement(TR_MovableStore *movableStore,
                replaceLoadsWithTempSym(storeInfo->_storeTemp->getNode(), tt->getNode(), needTempForCommonedLoads);
                }
 
-            TR_BitVector *symsReferenced = new (trStackMemory()) TR_BitVector(*_killedSymbolsToMove);
+            TR_BitVector *symsReferenced = new (comp()->trStackMemory()) TR_BitVector(*_killedSymbolsToMove);
             (*symsReferenced) |= (*_usedSymbolsToMove);
-            TR_EdgeInformation *edgeInfo = new (trStackMemory()) TR_EdgeInformation(succEdge, symsReferenced);
-            TR_EdgeStorePlacement *newEdgePlacement = new (trStackMemory()) TR_EdgeStorePlacement(storeInfo, edgeInfo, trMemory());
+            TR_EdgeInformation *edgeInfo = new (comp()->trStackMemory()) TR_EdgeInformation(succEdge, symsReferenced);
+            TR_EdgeStorePlacement *newEdgePlacement = new (comp()->trStackMemory()) TR_EdgeStorePlacement(storeInfo, edgeInfo, comp()->trMemory());
             edgePlacementsForThisStore.add(newEdgePlacement);
             }
          }
@@ -2758,7 +2758,7 @@ bool TR_GeneralSinkStores::sinkStorePlacement(TR_MovableStore *movableStore,
       return false;
 
    // this list will be used to update liveness info if we decide to sink the store
-   List<TR::Block> blocksVisitedWhileSinking(trMemory());
+   List<TR::Block> blocksVisitedWhileSinking(comp()->trMemory());
    blocksVisitedWhileSinking.add(sourceBlock);
 
    // try to sink the store lower than all blocks where store is LONAP
@@ -2801,7 +2801,7 @@ bool TR_GeneralSinkStores::sinkStorePlacement(TR_MovableStore *movableStore,
             bool copyStore= !areAllBlocksInEBB;
 
             //recordPlacementForDefAlongEdge(tt, predEdgeLONAP, true); // block can't be an extension of source block so copy
-            TR_StoreInformation *storeInfo = new (trStackMemory()) TR_StoreInformation(tt, copyStore);
+            TR_StoreInformation *storeInfo = new (comp()->trStackMemory()) TR_StoreInformation(tt, copyStore);
             // init _storeTemp field
             if (!needTempForCommonedLoads)
                storeInfo->_storeTemp = tt;
@@ -2810,10 +2810,10 @@ bool TR_GeneralSinkStores::sinkStorePlacement(TR_MovableStore *movableStore,
                storeInfo->_storeTemp = tt->duplicateTree();
                replaceLoadsWithTempSym(storeInfo->_storeTemp->getNode(), tt->getNode(), needTempForCommonedLoads);
                }
-            TR_BitVector *symsReferenced = new (trStackMemory()) TR_BitVector(*_killedSymbolsToMove);
+            TR_BitVector *symsReferenced = new (comp()->trStackMemory()) TR_BitVector(*_killedSymbolsToMove);
             (*symsReferenced) |= (*_usedSymbolsToMove);
-            TR_EdgeInformation *edgeInfo = new (trStackMemory()) TR_EdgeInformation(predEdgeLONAP, symsReferenced);
-            TR_EdgeStorePlacement *newEdgePlacement = new (trStackMemory()) TR_EdgeStorePlacement(storeInfo, edgeInfo, trMemory());
+            TR_EdgeInformation *edgeInfo = new (comp()->trStackMemory()) TR_EdgeInformation(predEdgeLONAP, symsReferenced);
+            TR_EdgeStorePlacement *newEdgePlacement = new (comp()->trStackMemory()) TR_EdgeStorePlacement(storeInfo, edgeInfo, comp()->trMemory());
             edgePlacementsForThisStore.add(newEdgePlacement);
             }
          }
@@ -2958,7 +2958,7 @@ bool TR_GeneralSinkStores::sinkStorePlacement(TR_MovableStore *movableStore,
                      {
                      bool copyStore=!isSuccBlockInEBB;
                      //recordPlacementForDefAlongEdge(tt, succEdge, true);   //copyStore);
-                     TR_StoreInformation *storeInfo = new (trStackMemory()) TR_StoreInformation(tt, copyStore);
+                     TR_StoreInformation *storeInfo = new (comp()->trStackMemory()) TR_StoreInformation(tt, copyStore);
                      // init _storeTemp field
                      if (!needTempForCommonedLoads)
                         storeInfo->_storeTemp = tt;
@@ -2967,10 +2967,10 @@ bool TR_GeneralSinkStores::sinkStorePlacement(TR_MovableStore *movableStore,
                         storeInfo->_storeTemp = tt->duplicateTree();
                         replaceLoadsWithTempSym(storeInfo->_storeTemp->getNode(), tt->getNode(), needTempForCommonedLoads);
                         }
-                     TR_BitVector *symsReferenced = new (trStackMemory()) TR_BitVector(*_killedSymbolsToMove);
+                     TR_BitVector *symsReferenced = new (comp()->trStackMemory()) TR_BitVector(*_killedSymbolsToMove);
                      (*symsReferenced) |= (*_usedSymbolsToMove);
-                     TR_EdgeInformation *edgeInfo = new (trStackMemory()) TR_EdgeInformation(succEdge, symsReferenced);
-                     TR_EdgeStorePlacement *newEdgePlacement = new (trStackMemory()) TR_EdgeStorePlacement(storeInfo, edgeInfo, trMemory());
+                     TR_EdgeInformation *edgeInfo = new (comp()->trStackMemory()) TR_EdgeInformation(succEdge, symsReferenced);
+                     TR_EdgeStorePlacement *newEdgePlacement = new (comp()->trStackMemory()) TR_EdgeStorePlacement(storeInfo, edgeInfo, comp()->trMemory());
                      edgePlacementsForThisStore.add(newEdgePlacement);
                      numOfEdgePlacements++;
                      }
@@ -3017,7 +3017,7 @@ bool TR_GeneralSinkStores::sinkStorePlacement(TR_MovableStore *movableStore,
             //   tree
             bool copyStore=!isCurrentBlockInEBB;
             //recordPlacementForDefInBlock(tt, block, copyStore);
-            TR_StoreInformation *storeInfo = new (trStackMemory()) TR_StoreInformation(tt, copyStore);
+            TR_StoreInformation *storeInfo = new (comp()->trStackMemory()) TR_StoreInformation(tt, copyStore);
             // init _storeTemp field
             if (!needTempForCommonedLoads)
                 storeInfo->_storeTemp = tt;
@@ -3026,7 +3026,7 @@ bool TR_GeneralSinkStores::sinkStorePlacement(TR_MovableStore *movableStore,
                storeInfo->_storeTemp = tt->duplicateTree();
                replaceLoadsWithTempSym(storeInfo->_storeTemp->getNode(), tt->getNode(), needTempForCommonedLoads);
                }
-            TR_BlockStorePlacement *newBlockPlacement = new (trStackMemory()) TR_BlockStorePlacement(storeInfo, block, trMemory());
+            TR_BlockStorePlacement *newBlockPlacement = new (comp()->trStackMemory()) TR_BlockStorePlacement(storeInfo, block, comp()->trMemory());
             blockPlacementsForThisStore.add(newBlockPlacement);
             }
          }

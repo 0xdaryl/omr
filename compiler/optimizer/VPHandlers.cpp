@@ -1588,7 +1588,7 @@ static bool addKnownObjectConstraints(OMR::ValuePropagation *vp, TR::Node *node)
       else if (jlClass) // without a jlClass, we can't tell what kind of constraint to add
          {
          TR::VPConstraint *constraint = NULL;
-         const char *classSig = TR::Compiler->cls.classSignature(vp->comp(), clazz, vp->trMemory());
+         const char *classSig = TR::Compiler->cls.classSignature(vp->comp(), clazz, vp->comp()->trMemory());
          if (isFixedJavaLangClass)
             {
             if (performTransformation(vp->comp(), "%sAdd ClassObject constraint to %p based on known java/lang/Class %s =obj%d\n", OPT_DETAILS, node, classSig, knownObjectIndex))
@@ -2958,7 +2958,7 @@ TR::Node *constrainIntStore(OMR::ValuePropagation *vp, TR::Node *node)
 
          // Mark this node as an active boolean negation
          //
-         bni = new (vp->trStackMemory()) OMR::ValuePropagation::BooleanNegationInfo;
+         bni = new (vp->comp()->trStackMemory()) OMR::ValuePropagation::BooleanNegationInfo;
          bni->_storeValueNumber = vp->getValueNumber(node);
          bni->_loadNode = loadNode;
          vp->_booleanNegationInfo.add(bni);
@@ -3631,7 +3631,7 @@ TR::Node *constrainThrow(OMR::ValuePropagation *vp, TR::Node *node)
       // our walk through the structure
       //
       node->setSecond((TR::Node *)predictedCatchBlock);
-      TR_Pair<TR::Node, TR::Block> *newPredictedThrow = new (vp->trStackMemory()) TR_Pair<TR::Node, TR::Block> (node, vp->_curBlock);
+      TR_Pair<TR::Node, TR::Block> *newPredictedThrow = new (vp->comp()->trStackMemory()) TR_Pair<TR::Node, TR::Block> (node, vp->_curBlock);
       vp->_predictedThrows.add(newPredictedThrow);
       }
    // Propagate constraints so far to the exception edges
@@ -4147,7 +4147,7 @@ TR::Node *constrainCheckcast(OMR::ValuePropagation *vp, TR::Node *node)
                         {
                         TR_OpaqueMethodBlock *ownMethod = defNode->getOwningMethod();
                         char buf[512];
-                        const char *methodSig = vp->fe()->sampleSignature(ownMethod, buf, 512, vp->trMemory());
+                        const char *methodSig = vp->fe()->sampleSignature(ownMethod, buf, 512, vp->comp()->trMemory());
                         if (methodSig && !strncmp(methodSig, "java/util/HashMap.get(Ljava/lang/Object;)Ljava/lang/Object;", 59))
                            {
                            definitionNode = defNode;
@@ -5013,7 +5013,7 @@ refineMethodSymbolInCall(
    refineSymbolReferenceForProfiledToOverridden(vp, node, newSymRef);
    node->setSymbolReference(newSymRef);
    if (vp->trace())
-      traceMsg(vp->comp(), "Refined method symbol to %s\n", resolvedMethod->signature(vp->trMemory()));
+      traceMsg(vp->comp(), "Refined method symbol to %s\n", resolvedMethod->signature(vp->comp()->trMemory()));
    return methodSymbol;
    }
 
@@ -5040,7 +5040,7 @@ static void devirtualizeCall(OMR::ValuePropagation *vp, TR::Node *node)
    if (!constraint || !(thisType = constraint->getClass()))
       {
       if (vp->trace())
-         traceMsg(vp->comp(), "Interface call [%p] to %s with unknown object type in %s\n", node, methodSymbol->getMethod()->signature(vp->trMemory(), stackAlloc), vp->comp()->signature());
+         traceMsg(vp->comp(), "Interface call [%p] to %s with unknown object type in %s\n", node, methodSymbol->getMethod()->signature(vp->comp()->trMemory(), stackAlloc), vp->comp()->signature());
 
 
       static bool dontProfileMore = feGetEnv("TR_DontProfileMoreAtHot") ? true : false;
@@ -5136,7 +5136,7 @@ static void devirtualizeCall(OMR::ValuePropagation *vp, TR::Node *node)
          if (constraint && constraint->getKnownObject() && knot)
             {
             TR::ResolvedMethodSymbol *owningMethod = symRef->getOwningMethodSymbol(vp->comp());
-            resolvedMethod = vp->comp()->fej9()->createMethodHandleArchetypeSpecimen(vp->trMemory(), knot->getPointerLocation(constraint->getKnownObject()->getIndex()), owningMethod->getResolvedMethod());
+            resolvedMethod = vp->comp()->fej9()->createMethodHandleArchetypeSpecimen(vp->comp()->trMemory(), knot->getPointerLocation(constraint->getKnownObject()->getIndex()), owningMethod->getResolvedMethod());
             if (resolvedMethod)
                {
                TR::SymbolReference *specimenSymRef = vp->getSymRefTab()->findOrCreateMethodSymbol(owningMethod->getResolvedMethodIndex(), -1, resolvedMethod, TR::MethodSymbol::ComputedVirtual);
@@ -5275,7 +5275,7 @@ static void devirtualizeCall(OMR::ValuePropagation *vp, TR::Node *node)
          // like escape analysis).
          //
          if (performTransformation(vp->comp(), "%sDevirtualizing call [%p] to %s\n", OPT_DETAILS, node,
-                  resolvedMethod->signature(vp->trMemory())))
+                  resolvedMethod->signature(vp->comp()->trMemory())))
             methodSymbol = refineMethodSymbolInCall(vp, node, symRef, resolvedMethod, offset);
          }
       else if (!resolvedMethod->virtualMethodIsOverridden() && !constraint->isFixedClass())
@@ -5283,7 +5283,7 @@ static void devirtualizeCall(OMR::ValuePropagation *vp, TR::Node *node)
 
       if (constraint->isFixedClass() || constraint->isPreexistentObject())
          {
-         if (!performTransformation(vp->comp(), "%sChanging an indirect call %s (%s) to a direct call [%p]\n", OPT_DETAILS, resolvedMethod->signature(vp->trMemory()), node->getOpCode().getName(), node))
+         if (!performTransformation(vp->comp(), "%sChanging an indirect call %s (%s) to a direct call [%p]\n", OPT_DETAILS, resolvedMethod->signature(vp->comp()->trMemory()), node->getOpCode().getName(), node))
             return;
 
          // change the opcode to be a direct call
@@ -5318,7 +5318,7 @@ static void devirtualizeCall(OMR::ValuePropagation *vp, TR::Node *node)
          }
       }
 
-   TR_PrexArgInfo *argInfo = new (vp->trStackMemory()) TR_PrexArgInfo(node->getNumChildren() - firstArgIndex, vp->trMemory());
+   TR_PrexArgInfo *argInfo = new (vp->comp()->trStackMemory()) TR_PrexArgInfo(node->getNumChildren() - firstArgIndex, vp->comp()->trMemory());
    bool tracePrex = vp->trace() || vp->comp()->trace(OMR::inlining) || vp->comp()->trace(OMR::invariantArgumentPreexistence);
    if (tracePrex)
       traceMsg(vp->comp(), "PREX.vp: Value propagation populating prex argInfo for %s %p\n", node->getOpCode().getName(), node);
@@ -5340,23 +5340,23 @@ static void devirtualizeCall(OMR::ValuePropagation *vp, TR::Node *node)
             //
             if (constr->asKnownObject() && constr->isNonNullObject())
                {
-               argInfo->set(c - firstArgIndex, new (vp->trStackMemory()) TR_PrexArgument(constr->asKnownObject()->getIndex(), vp->comp()));
+               argInfo->set(c - firstArgIndex, new (vp->comp()->trStackMemory()) TR_PrexArgument(constr->asKnownObject()->getIndex(), vp->comp()));
                if (tracePrex)
                   traceMsg(vp->comp(), "PREX.vp:    Child %d [%p] arg %p is known object obj%d\n", c, argument, argInfo->get(c-firstArgIndex), constr->asKnownObject()->getIndex());
                }
             else if (constr->isFixedClass())
                {
-               argInfo->set(c - firstArgIndex, new (vp->trStackMemory()) TR_PrexArgument(TR_PrexArgument::ClassIsFixed, constr->getClass()));
+               argInfo->set(c - firstArgIndex, new (vp->comp()->trStackMemory()) TR_PrexArgument(TR_PrexArgument::ClassIsFixed, constr->getClass()));
                if (tracePrex)
                   {
                   TR_OpaqueClassBlock *clazz = constr->getClass();
-                  const char *sig = TR::Compiler->cls.classSignature(vp->comp(), clazz, vp->trMemory());
+                  const char *sig = TR::Compiler->cls.classSignature(vp->comp(), clazz, vp->comp()->trMemory());
                   traceMsg(vp->comp(), "PREX.vp:    Child %d [%p] arg %p has fixed class %p %s\n", c, argument, argInfo->get(c-firstArgIndex), clazz, sig);
                   }
                }
             else if (constr->isPreexistentObject())
                {
-               argInfo->set(c - firstArgIndex, new (vp->trStackMemory()) TR_PrexArgument(TR_PrexArgument::ClassIsPreexistent));
+               argInfo->set(c - firstArgIndex, new (vp->comp()->trStackMemory()) TR_PrexArgument(TR_PrexArgument::ClassIsPreexistent));
                if (tracePrex)
                   traceMsg(vp->comp(), "PREX.vp:    Child %d [%p] arg %p is preexistent\n", c, argument, argInfo->get(c-firstArgIndex));
                }
@@ -5369,7 +5369,7 @@ static void devirtualizeCall(OMR::ValuePropagation *vp, TR::Node *node)
    if ((vp->lastTimeThrough() || !node->getOpCode().isIndirect()) &&
        (vp->_isGlobalPropagation || !vp->getLastRun()) &&
        !methodSymbol->isInterface())
-      vp->_devirtualizedCalls.add(new (vp->trStackMemory()) OMR::ValuePropagation::CallInfo(vp, thisType, argInfo));
+      vp->_devirtualizedCalls.add(new (vp->comp()->trStackMemory()) OMR::ValuePropagation::CallInfo(vp, thisType, argInfo));
    vp->invalidateUseDefInfo();
    vp->invalidateValueNumberInfo();
    }
@@ -5412,7 +5412,7 @@ TR::Node *constrainCall(OMR::ValuePropagation *vp, TR::Node *node)
          if (operand && ((operand->isClassObject() == TR_yes) ||
                    (operand->getClassType() && ((operand->getClassType()->isArray() == TR_no) || (operand->getClassType()->isClassObject() == TR_yes)))))
                    {
-           vp->_unsafeCallsToInline.add(new (vp->trStackMemory()) OMR::ValuePropagation::CallInfo(vp, NULL, NULL));
+           vp->_unsafeCallsToInline.add(new (vp->comp()->trStackMemory()) OMR::ValuePropagation::CallInfo(vp, NULL, NULL));
                    node->setUnsafeGetPutCASCallOnNonArray();
            // printf("change flag for node  %p\n",node);fflush(stdout);
            if (vp->trace())
@@ -5657,8 +5657,8 @@ TR::Node *constrainCall(OMR::ValuePropagation *vp, TR::Node *node)
             {
             TR::SymbolReference *hashCodeMethodSymRef = NULL;
             TR::SymbolReference *getHelpersSymRef = NULL;
-            TR_ScratchList<TR_ResolvedMethod> helperMethods(vp->trMemory());
-            vp->comp()->fej9()->getResolvedMethods(vp->trMemory(), jitHelpersClass, &helperMethods);
+            TR_ScratchList<TR_ResolvedMethod> helperMethods(vp->comp()->trMemory());
+            vp->comp()->fej9()->getResolvedMethods(vp->comp()->trMemory(), jitHelpersClass, &helperMethods);
             ListIterator<TR_ResolvedMethod> it(&helperMethods);
             for (TR_ResolvedMethod *m = it.getCurrent(); m; m = it.getNext())
                {
@@ -8921,7 +8921,7 @@ static void addDelayedConvertedGuard (TR::Node* node,
    //do not add a new guard yet ... it will be added in doDelayedTransformation and we will fix the IL accordingly
    vp->comp()->removeVirtualGuard(newGuard);
    //finish the rest of a transformation in doDelayedTransformation
-   vp->_convertedGuards.add(new (vp->trStackMemory()) OMR::ValuePropagation::VirtualGuardInfo(vp, oldVirtualGuard, newGuard, newGuardNode, callNode));
+   vp->_convertedGuards.add(new (vp->comp()->trStackMemory()) OMR::ValuePropagation::VirtualGuardInfo(vp, oldVirtualGuard, newGuard, newGuardNode, callNode));
 
    }
 
@@ -9199,9 +9199,9 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
                     ((clazzNameLen == 40) && !strncmp(clazzToBeInitialized, "Ljava/lang/String$StringCompressionFlag;", clazzNameLen))) &&
                    performTransformation(vp->comp(), "%sUsing side-effect guard to fold away condition on a load from an uninitializec class  %s [%p]\n", OPT_DETAILS, clazzToBeInitialized, node))
                   {
-                  char *clazzToBeInitializedCopy = (char *)vp->trMemory()->allocateMemory(clazzNameLen+1, heapAlloc);
+                  char *clazzToBeInitializedCopy = (char *)vp->comp()->trMemory()->allocateMemory(clazzNameLen+1, heapAlloc);
                   strcpy(clazzToBeInitializedCopy, clazzToBeInitialized);
-                  vp->_classesToCheckInit.add(new (vp->trStackMemory()) OMR::ValuePropagation::ClassInitInfo(vp, clazzToBeInitializedCopy, clazzNameLen));
+                  vp->_classesToCheckInit.add(new (vp->comp()->trStackMemory()) OMR::ValuePropagation::ClassInitInfo(vp, clazzToBeInitializedCopy, clazzNameLen));
                   }
                }
             }
@@ -10850,7 +10850,7 @@ TR::Node *constrainSwitch(OMR::ValuePropagation *vp, TR::Node *node)
          //
          if (casesRemoved)
             {
-            TR_ScratchList<TR::Block> remainingTargets(vp->trMemory());
+            TR_ScratchList<TR::Block> remainingTargets(vp->comp()->trMemory());
             for (i = node->getNumChildren()-1; i > 1; i--)
                {
                TR::Block *target = node->getChild(i)->getBranchDestination()->getNode()->getBlock();
@@ -10903,7 +10903,7 @@ TR::Node *constrainSwitch(OMR::ValuePropagation *vp, TR::Node *node)
          //
          if (casesRemoved)
             {
-            TR_ScratchList<TR::Block> remainingTargets(vp->trMemory());
+            TR_ScratchList<TR::Block> remainingTargets(vp->comp()->trMemory());
             for (i = node->getNumChildren()-1; i > 1; i--)
                {
                TR::Block *target = node->getChild(i)->getBranchDestination()->getNode()->getBlock();

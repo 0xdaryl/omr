@@ -518,7 +518,7 @@ struct TR_SequenceHead
 
 int32_t TR_ExtendBasicBlocks::orderBlocksWithFrequencyInfo()
    {
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    // Build sequences of blocks that are joined by edges with the highest
    // frequencies.
@@ -536,13 +536,13 @@ int32_t TR_ExtendBasicBlocks::orderBlocksWithFrequencyInfo()
    // Array of sequences - the Nth entry is the sequence that starts with
    // block N.
    //
-   TR_SequenceHead *sequences = (TR_SequenceHead*)trMemory()->allocateStackMemory(numBlocks*sizeof(TR_SequenceHead));
+   TR_SequenceHead *sequences = (TR_SequenceHead*)comp()->trMemory()->allocateStackMemory(numBlocks*sizeof(TR_SequenceHead));
    memset(sequences, 0, numBlocks*sizeof(TR_SequenceHead));
 
    // Initialize each sequence with a single block
    //
    block              = toBlock(cfg->getStart());
-   entry              = new (trStackMemory()) TR_SequenceEntry;
+   entry              = new (comp()->trStackMemory()) TR_SequenceEntry;
    entry->next        = NULL;
    entry->block       = block;
    i                  = block->getNumber();
@@ -550,7 +550,7 @@ int32_t TR_ExtendBasicBlocks::orderBlocksWithFrequencyInfo()
    sequences[i].last  = entry;
 
    block              = toBlock(cfg->getEnd());
-   entry              = new (trStackMemory()) TR_SequenceEntry;
+   entry              = new (comp()->trStackMemory()) TR_SequenceEntry;
    entry->next        = NULL;
    entry->block       = block;
    i                  = block->getNumber();
@@ -563,7 +563,7 @@ int32_t TR_ExtendBasicBlocks::orderBlocksWithFrequencyInfo()
    for (block = comp()->getStartTree()->getNode()->getBlock(); block;
         block = block->getNextBlock())
       {
-      entry              = new (trStackMemory()) TR_SequenceEntry;
+      entry              = new (comp()->trStackMemory()) TR_SequenceEntry;
       entry->next        = NULL;
       entry->block       = block;
       i                  = block->getNumber();
@@ -1497,7 +1497,7 @@ int32_t TR_HoistBlocks::process(TR::TreeTop *startTree, TR::TreeTop *endTree)
    static const char *useEdgeFreqs = feGetEnv("TR_UseEdgeFreqs");
    bool usingEdgeFreqs = (useEdgeFreqs != NULL);
 
-   TR_ScratchList<TR::Block> newBlocks(trMemory());
+   TR_ScratchList<TR::Block> newBlocks(comp()->trMemory());
 
    for (TR::TreeTop *treeTop = startTree, *exitTreeTop; (treeTop != endTree); treeTop = exitTreeTop->getNextTreeTop())
       {
@@ -1777,7 +1777,7 @@ int32_t TR_HoistBlocks::process(TR::TreeTop *startTree, TR::TreeTop *endTree)
                   TR::TreeTop *newPrevTree = tt;
                      {
                      TR::TreeTop *currentTree = block->getEntry()->getNextTreeTop();
-                     TR_ScratchList<TR::Node> seenNodes(trMemory()), duplicateNodes(trMemory());
+                     TR_ScratchList<TR::Node> seenNodes(comp()->trMemory()), duplicateNodes(comp()->trMemory());
                      vcount_t visitCount = comp()->incVisitCount();
                      TR::TreeTop *newCurrentTree = NULL;
                      while (!(currentTree == exitTreeTop))
@@ -1866,7 +1866,7 @@ int32_t TR_HoistBlocks::process(TR::TreeTop *startTree, TR::TreeTop *endTree)
                         // would be one edge in the CFG left, but NONE in the structure subgraph.
                         //
                         if (block != succBlock)
-                           cfg->addEdge(TR::CFGEdge::createEdge(prevBlock,  succBlock, trMemory()));
+                           cfg->addEdge(TR::CFGEdge::createEdge(prevBlock,  succBlock, comp()->trMemory()));
                         else
                            needToRemoveEdge = false;
                         }
@@ -1995,7 +1995,7 @@ int32_t TR_CompactNullChecks::process(TR::TreeTop *startTree, TR::TreeTop *endTr
    TR::TreeTop *treeTop;
    TR::TreeTop *exitTreeTop;
    int32_t symRefCount = comp()->getMaxAliasIndex();
-   TR_BitVector writtenSymbols(symRefCount, trMemory(), stackAlloc);
+   TR_BitVector writtenSymbols(symRefCount, comp()->trMemory(), stackAlloc);
    // Process each block in treetop order
    //
    for (treeTop = startTree; (treeTop != endTree); treeTop = exitTreeTop->getNextTreeTop())
@@ -2332,7 +2332,7 @@ bool TR_CompactNullChecks::replaceNullCheckIfPossible(TR::Node *cursorNode, TR::
                {
                TR::Node::recreate(prevNode, TR::checkcastAndNULLCHK);
                compactionDone = true;
-               TR_Pair<TR_ByteCodeInfo, TR::Node> *bcInfo = new (trHeapMemory()) TR_Pair<TR_ByteCodeInfo, TR::Node> (&prevNode->getByteCodeInfo(), cursorNode);
+               TR_Pair<TR_ByteCodeInfo, TR::Node> *bcInfo = new (comp()->trHeapMemory()) TR_Pair<TR_ByteCodeInfo, TR::Node> (&prevNode->getByteCodeInfo(), cursorNode);
                comp()->getCheckcastNullChkInfo().push_front(bcInfo);
                }
             return true;
@@ -2433,9 +2433,9 @@ int32_t TR_ArraysetStoreElimination::process(TR::TreeTop *startTree, TR::TreeTop
    TR::TreeTop *exitTreeTop;
 
    int32_t symRefCount = comp()->getMaxAliasIndex();
-   TR_BitVector readAndWrittenSymbols(symRefCount, trMemory(), stackAlloc);
-   TR_BitVector symbolsWrittenByArrayset(symRefCount, trMemory(), stackAlloc);
-   TR_BitVector scratch(symRefCount, trMemory(), stackAlloc);
+   TR_BitVector readAndWrittenSymbols(symRefCount, comp()->trMemory(), stackAlloc);
+   TR_BitVector symbolsWrittenByArrayset(symRefCount, comp()->trMemory(), stackAlloc);
+   TR_BitVector scratch(symRefCount, comp()->trMemory(), stackAlloc);
 
    // Process each block in treetop order
    //
@@ -2747,7 +2747,7 @@ int32_t TR_SimplifyAnds::process(TR::TreeTop *startTree, TR::TreeTop *endTree)
    comp()->incVisitCount();
    TR::TreeTop *treeTop = NULL;
    TR::TreeTop *prevBoundCheckTree = NULL;
-   TR_ScratchList<TR::Node> seenAndNodes(trMemory());
+   TR_ScratchList<TR::Node> seenAndNodes(comp()->trMemory());
    TR::Block *block = NULL;
    bool noSideEffectsInBetween = false;
 
@@ -3600,7 +3600,7 @@ int32_t TR_EliminateRedundantGotos::process(TR::TreeTop *startTree, TR::TreeTop 
                TR_StructureSubGraphNode *predNode =
                   (*(edge++))->getFrom()->asStructureSubGraphNode();
 
-               TR::CFGEdge::createEdge(predNode,  destNode, trMemory());
+               TR::CFGEdge::createEdge(predNode,  destNode, comp()->trMemory());
                blockRegion->removeEdge(predNode->getStructure(), blockStructure);
                }
             }
@@ -4131,7 +4131,7 @@ int32_t TR_ProfiledNodeVersioning::perform()
                      static char *versionNewarrayForMultipleSizes = feGetEnv("TR_versionNewarrayForMultipleSizes");
                      if (trace())
                         traceMsg(comp(), "Node %s has %d profiled values:\n", getDebug()->getName(node), totalFrequency);
-                     TR_ScratchList<TR_ExtraValueInfo> valuesSortedByFrequency(trMemory());
+                     TR_ScratchList<TR_ExtraValueInfo> valuesSortedByFrequency(comp()->trMemory());
                      numElementsInfo->getSortedList(comp(), &valuesSortedByFrequency);
                      ListIterator<TR_ExtraValueInfo> i(&valuesSortedByFrequency);
                      for (TR_ExtraValueInfo *profiledInfo = i.getFirst(); profiledInfo != NULL; profiledInfo = i.getNext())
@@ -4288,7 +4288,7 @@ TR_ProfiledNodeVersioning::optDetailString() const throw()
    }
 
 TR_Rematerialization::TR_Rematerialization(TR::OptimizationManager *manager)
-   : TR::Optimization(manager), _prefetchNodes(trMemory())
+   : TR::Optimization(manager), _prefetchNodes(comp()->trMemory())
    {}
 
 
@@ -4634,7 +4634,7 @@ int32_t TR_Rematerialization::process(TR::TreeTop *startTree, TR::TreeTop *endTr
       return 0;
 
    _nodeCount = comp()->getNodeCount();
-   _heightArray = (int32_t *)trMemory()->allocateStackMemory(_nodeCount*sizeof(int32_t));
+   _heightArray = (int32_t *)comp()->trMemory()->allocateStackMemory(_nodeCount*sizeof(int32_t));
    memset(_heightArray, 0, _nodeCount*sizeof(int32_t));
 
    visitCount = comp()->incVisitCount();
@@ -4642,7 +4642,7 @@ int32_t TR_Rematerialization::process(TR::TreeTop *startTree, TR::TreeTop *endTr
       initializeFutureUseCounts(treeTop->getNode(), NULL, visitCount, comp(), _heightArray);
 
    visitCount = comp()->incVisitCount();
-   TR_RematState *state = new (trStackMemory()) TR_RematState(comp());
+   TR_RematState *state = new (comp()->trStackMemory()) TR_RematState(comp());
    //
    // Process each block in treetop order
    //
@@ -4921,8 +4921,8 @@ bool TR_Rematerialization::examineNode(TR::TreeTop *treeTop, TR::Node *parent, T
 
     if (trace()) traceMsg(comp(), "Parent adjust %d node %p parent %p\n", adjustments.adjustmentFromParent, node, parent);
 
-   //TR_ScratchList<TR::Node> seenChildren(trMemory());
-   TR_BitVector seenChildren(node->getNumChildren(), trMemory(), stackAlloc);
+   //TR_ScratchList<TR::Node> seenChildren(comp()->trMemory());
+   TR_BitVector seenChildren(node->getNumChildren(), comp()->trMemory(), stackAlloc);
 
 
    int32_t i;
@@ -5233,7 +5233,7 @@ bool TR_Rematerialization::examineNode(TR::TreeTop *treeTop, TR::Node *parent, T
                      {
                      //traceMsg(comp(), "1Adding node %p to _currentlyCommonedFPLoads\n", node);
                      state->_currentlyCommonedFPLoads.add(node);
-                     TR_ScratchList<TR::Node> *parentList = new (trStackMemory()) TR_ScratchList<TR::Node>(trMemory());
+                     TR_ScratchList<TR::Node> *parentList = new (comp()->trStackMemory()) TR_ScratchList<TR::Node>(comp()->trMemory());
                      parentList->add(parent);
                      state->_parentsOfCommonedFPLoads.add(parentList);
                      }
@@ -5244,7 +5244,7 @@ bool TR_Rematerialization::examineNode(TR::TreeTop *treeTop, TR::Node *parent, T
                      {
                      //traceMsg(comp(), "1Adding node %p to _currentlyCommonedVector128Loads\n", node);
                      state->_currentlyCommonedVector128Loads.add(node);
-                     TR_ScratchList<TR::Node> *parentList = new (trStackMemory()) TR_ScratchList<TR::Node>(trMemory());
+                     TR_ScratchList<TR::Node> *parentList = new (comp()->trStackMemory()) TR_ScratchList<TR::Node>(comp()->trMemory());
                      parentList->add(parent);
                      state->_parentsOfCommonedVector128Loads.add(parentList);
                      }
@@ -5255,7 +5255,7 @@ bool TR_Rematerialization::examineNode(TR::TreeTop *treeTop, TR::Node *parent, T
                      {
                      //traceMsg(comp(), "1Adding node %p to _currentlyCommonedLoads\n", node);
                      state->_currentlyCommonedLoads.add(node);
-                     TR_ScratchList<TR::Node> *parentList = new (trStackMemory()) TR_ScratchList<TR::Node>(trMemory());
+                     TR_ScratchList<TR::Node> *parentList = new (comp()->trStackMemory()) TR_ScratchList<TR::Node>(comp()->trMemory());
                      parentList->add(parent);
                      state->_parentsOfCommonedLoads.add(parentList);
                      }
@@ -5267,7 +5267,7 @@ bool TR_Rematerialization::examineNode(TR::TreeTop *treeTop, TR::Node *parent, T
                   {
                   //traceMsg(comp(), "2Adding node %p to _currentlyCommonedFPCandidates\n", node);
                   state->_currentlyCommonedFPCandidates.add(node);
-                  TR_ScratchList<TR::Node> *parentList = new (trStackMemory()) TR_ScratchList<TR::Node>(trMemory());
+                  TR_ScratchList<TR::Node> *parentList = new (comp()->trStackMemory()) TR_ScratchList<TR::Node>(comp()->trMemory());
                   parentList->add(parent);
                   state->_fpParents.add(parentList);
                   }
@@ -5275,7 +5275,7 @@ bool TR_Rematerialization::examineNode(TR::TreeTop *treeTop, TR::Node *parent, T
                   {
                   //traceMsg(comp(), "2Adding node %p to _currentlyCommonedVector128Candidates\n", node);
                   state->_currentlyCommonedVector128Candidates.add(node);
-                  TR_ScratchList<TR::Node> *parentList = new (trStackMemory()) TR_ScratchList<TR::Node>(trMemory());
+                  TR_ScratchList<TR::Node> *parentList = new (comp()->trStackMemory()) TR_ScratchList<TR::Node>(comp()->trMemory());
                   parentList->add(parent);
                   state->_vector128Parents.add(parentList);
                   }
@@ -5283,7 +5283,7 @@ bool TR_Rematerialization::examineNode(TR::TreeTop *treeTop, TR::Node *parent, T
                   {
                   //traceMsg(comp(), "2Adding node %p to _currentlyCommonedCandidates\n", node);
                   state->_currentlyCommonedCandidates.add(node);
-                  TR_ScratchList<TR::Node> *parentList = new (trStackMemory()) TR_ScratchList<TR::Node>(trMemory());
+                  TR_ScratchList<TR::Node> *parentList = new (comp()->trStackMemory()) TR_ScratchList<TR::Node>(comp()->trMemory());
                   parentList->add(parent);
                   state->_parents.add(parentList);
                   }
@@ -5645,7 +5645,7 @@ int32_t TR_BlockSplitter::perform()
       }
 
    // from this point on, all stack allocations will die when the function returns
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    // Set up thresholds for block splitting
    //
@@ -5667,8 +5667,8 @@ int32_t TR_BlockSplitter::perform()
    // Merge nodes are defined to be nodes that have multiple predecessors (but
    // no exception predecessors) and that are not loop headers.
    //
-   TR_BinaryHeap                 *heap     = new (trStackMemory()) TR_BinaryHeap(trMemory(), 0);
-   TR_Stack<TR::CFGNode*>         *children = new (trStackMemory()) TR_Stack<TR::CFGNode*>(trMemory());
+   TR_BinaryHeap                 *heap     = new (comp()->trStackMemory()) TR_BinaryHeap(comp()->trMemory(), 0);
+   TR_Stack<TR::CFGNode*>         *children = new (comp()->trStackMemory()) TR_Stack<TR::CFGNode*>(comp()->trMemory());
    uint32_t                       index    = 0;
    //TR_IndexedBinaryHeapElement*   elem;
 
@@ -5813,7 +5813,7 @@ int32_t TR_BlockSplitter::perform()
          {
          if(trace())
             traceMsg(comp(), "    adding merge block_%d to heap\n", mergeNode->getNumber());
-         TR_IndexedBinaryHeapElement* temp = new (trStackMemory()) TR_IndexedBinaryHeapElement(mergeNode, index++);
+         TR_IndexedBinaryHeapElement* temp = new (comp()->trStackMemory()) TR_IndexedBinaryHeapElement(mergeNode, index++);
          heap->add(temp);
          }
       children->pop();
@@ -5921,11 +5921,11 @@ int32_t TR_BlockSplitter::perform()
       //initialize the block mapper and push the merge node on to the top
       TR_LinkHeadAndTail<BlockMapper> bMap;
       bMap.set(0,0);
-      TR::Block * to = new (trHeapMemory()) TR::Block(*mergeNode, TR::TreeTop::create(comp(), NULL), TR::TreeTop::create(comp(), NULL));
+      TR::Block * to = new (comp()->trHeapMemory()) TR::Block(*mergeNode, TR::TreeTop::create(comp(), NULL), TR::TreeTop::create(comp(), NULL));
       to->getEntry()->join(to->getExit());
       if (bMap.getLast())
          bMap.getLast()->_to->getExit()->join(to->getEntry());
-      bMap.append(new (trStackMemory()) BlockMapper(mergeNode, to));
+      bMap.append(new (comp()->trStackMemory()) BlockMapper(mergeNode, to));
 
       TR::Block *target = mergeNode;
       int tollerance = mergeNode->getFrequency() / 2;
@@ -6038,7 +6038,7 @@ int32_t TR_BlockSplitter::perform()
                traceMsg(comp(), "  Split through successor block_%d\n", child->getNumber());
 
             //create an empty block ready to be filled by the cloner and add it to the block mapper
-            bMap.append(new (trStackMemory()) BlockMapper(child, NULL));
+            bMap.append(new (comp()->trStackMemory()) BlockMapper(child, NULL));
 
             target = child;
             --depth;
@@ -6054,7 +6054,7 @@ int32_t TR_BlockSplitter::perform()
       if(pruneAndPopulateBlockMapper(&bMap, synergisticDepthCalculator(&bMap, splitPred)) > 0)
          {
          for (BlockMapper* itr = bMap.getFirst(); itr; itr = itr->getNext())
-            newToOldMapping.append(new (trStackMemory()) BlockMapper(itr->_from, itr->_to));
+            newToOldMapping.append(new (comp()->trStackMemory()) BlockMapper(itr->_from, itr->_to));
          //we need to setup the mergeNode with the frequency for all the childern
          int16_t hotFreq = splitPred->getFrequency() * mergeNode->getFrequency() / predFrequency;
          int16_t coldFreq = mergeNode->getFrequency() - hotFreq;
@@ -6268,7 +6268,7 @@ int32_t TR_BlockSplitter::pruneAndPopulateBlockMapper(TR_LinkHeadAndTail<BlockMa
          if (trace())
             traceMsg(comp(), "prune bMap iterator for join, from 0x%p to 0x%p\n", itr->_from, itr->_to);
 
-         itr->_to = new (trHeapMemory()) TR::Block(*itr->_from, TR::TreeTop::create(comp(), NULL), OMR::TreeTop::create(comp(), NULL));
+         itr->_to = new (comp()->trHeapMemory()) TR::Block(*itr->_from, TR::TreeTop::create(comp(), NULL), OMR::TreeTop::create(comp(), NULL));
          itr->_to->getEntry()->join(itr->_to->getExit());
          if (prevTreeTop)
             prevTreeTop->join(itr->_to->getEntry());
@@ -6283,7 +6283,7 @@ int32_t TR_BlockSplitter::pruneAndPopulateBlockMapper(TR_LinkHeadAndTail<BlockMa
 int32_t TR_BlockSplitter::synergisticDepthCalculator(TR_LinkHeadAndTail<BlockMapper>* bMap, TR::Block * startPoint)
    {
    //Step 1 - find the start of the preamble
-   TR_Stack<TR::Block *> preamble = TR_Stack<TR::Block *>(trMemory());
+   TR_Stack<TR::Block *> preamble = TR_Stack<TR::Block *>(comp()->trMemory());
    preamble.push(startPoint);
 
    if (trace())
@@ -6317,7 +6317,7 @@ int32_t TR_BlockSplitter::synergisticDepthCalculator(TR_LinkHeadAndTail<BlockMap
 
    //Step 2 - process the preamble to preload the symbol information
    comp()->incVisitCount();
-   TR_Array<uint32_t> synergyIndices(trMemory());
+   TR_Array<uint32_t> synergyIndices(comp()->trMemory());
    while (!preamble.isEmpty())
       {
       TR::Block * blockItr = preamble.pop();
@@ -6333,7 +6333,7 @@ int32_t TR_BlockSplitter::synergisticDepthCalculator(TR_LinkHeadAndTail<BlockMap
    if (trace())
       traceMsg(comp(), "    Find synergy in blocks being split\n");
    comp()->incVisitCount();
-   TR_Array<Synergy> synergies(trMemory());
+   TR_Array<Synergy> synergies(comp()->trMemory());
    int32_t blockIndex = 2;
    uint16_t cost = 0;
    for (BlockMapper* itr = bMap->getFirst(); itr; itr = itr->getNext())
@@ -6768,7 +6768,7 @@ int32_t TR_InvariantArgumentPreexistence::perform()
    if (comp()->mustNotBeRecompiled())
       {
       if (enableTrace)
-         traceMsg(comp(), "PREX: Aborting preexistence because %s mustNotBeRecompiled\n", feMethod->signature(trMemory()));
+         traceMsg(comp(), "PREX: Aborting preexistence because %s mustNotBeRecompiled\n", feMethod->signature(comp()->trMemory()));
       return 0;
       }
 
@@ -6777,16 +6777,16 @@ int32_t TR_InvariantArgumentPreexistence::perform()
       return 0;
 
    {
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    _peekingSymRefTab = comp()->getPeekingSymRefTab();
    _isOutermostMethod = ((comp()->getInlineDepth() == 0) && (!comp()->isPeekingMethod()));
 
    if (enableTrace)
-      traceMsg(comp(), "PREX: Starting preexistence for %s\n", feMethod->signature(trMemory()));
+      traceMsg(comp(), "PREX: Starting preexistence for %s\n", feMethod->signature(comp()->trMemory()));
 
    int32_t numParms = methodSymbol->getParameterList().getSize();
-   _parmInfo = (ParmInfo*) trMemory()->allocateStackMemory(numParms * sizeof(ParmInfo));
+   _parmInfo = (ParmInfo*) comp()->trMemory()->allocateStackMemory(numParms * sizeof(ParmInfo));
    for (int i = 0; i < numParms; i++)
       _parmInfo[i].clear();
 
@@ -6880,7 +6880,7 @@ int32_t TR_InvariantArgumentPreexistence::perform()
       {
       TR_PeekingArgInfo *peekInfo = comp()->getCurrentPeekingArgInfo();
       if (enableTrace)
-         traceMsg(comp(), "PREX:    Populating parmInfo of peeked method %s %p\n", feMethod->signature(trMemory()), peekInfo);
+         traceMsg(comp(), "PREX:    Populating parmInfo of peeked method %s %p\n", feMethod->signature(comp()->trMemory()), peekInfo);
 
       if (peekInfo)
          {
@@ -6942,7 +6942,7 @@ int32_t TR_InvariantArgumentPreexistence::perform()
       if (argInfo)
          {
          if (enableTrace)
-            traceMsg(comp(), "PREX:    Populating parmInfo of inlined method %s from argInfo %p\n", feMethod->signature(trMemory()), argInfo);
+            traceMsg(comp(), "PREX:    Populating parmInfo of inlined method %s from argInfo %p\n", feMethod->signature(comp()->trMemory()), argInfo);
 
          for (TR::ParameterSymbol *p = parms.getFirst(); p != NULL; p = parms.getNext())
             {
@@ -7016,7 +7016,7 @@ int32_t TR_InvariantArgumentPreexistence::perform()
             parmInfo.setClass(clazz);
 
             if (enableTrace)
-               traceMsg(comp(), "PREX:          Parm %d is class %p sig %s\n", index, clazz, TR::Compiler->cls.classSignature(comp(), clazz, trMemory()));
+               traceMsg(comp(), "PREX:          Parm %d is class %p sig %s\n", index, clazz, TR::Compiler->cls.classSignature(comp(), clazz, comp()->trMemory()));
 
             if (clazz != clazzFromMethod)
                {
@@ -7048,7 +7048,7 @@ int32_t TR_InvariantArgumentPreexistence::perform()
       else if (!_isOutermostMethod)
          {
          if (enableTrace)
-            traceMsg(comp(), "PREX:    No argInfo -- can't populate parmInfo for inlined method %s\n", feMethod->signature(trMemory()));
+            traceMsg(comp(), "PREX:    No argInfo -- can't populate parmInfo for inlined method %s\n", feMethod->signature(comp()->trMemory()));
          }
       }
 
@@ -7063,7 +7063,7 @@ int32_t TR_InvariantArgumentPreexistence::perform()
    // to direct calls
    //
    if (enableTrace)
-      traceMsg(comp(), "PREX:    Walking nodes in %s\n", feMethod->signature(trMemory()));
+      traceMsg(comp(), "PREX:    Walking nodes in %s\n", feMethod->signature(comp()->trMemory()));
 
    vcount_t visitCount = comp()->incOrResetVisitCount();
    for (tt = methodSymbol->getFirstTreeTop(); tt; tt = tt->getNextTreeTop())
@@ -7072,7 +7072,7 @@ int32_t TR_InvariantArgumentPreexistence::perform()
    } // scope of the stack memory region
 
    if (enableTrace)
-      traceMsg(comp(), "PREX: Done preexistence for %s\n", feMethod->signature(trMemory()));
+      traceMsg(comp(), "PREX: Done preexistence for %s\n", feMethod->signature(comp()->trMemory()));
    return 3;
    }
 
@@ -7466,7 +7466,7 @@ void TR_InvariantArgumentPreexistence::processIndirectCall(TR::Node *node, TR::T
                   // check the subclasses as well
                   if (classInfo && addAssumptions)
                      {
-                     TR_ScratchList<TR_PersistentClassInfo> subClasses(trMemory());
+                     TR_ScratchList<TR_PersistentClassInfo> subClasses(comp()->trMemory());
                      TR_ClassQueries::collectAllSubClasses(classInfo, &subClasses, comp());
                      ListIterator<TR_PersistentClassInfo> subClassesIt(&subClasses);
                      for (TR_PersistentClassInfo *subClassInfo = subClassesIt.getFirst(); subClassInfo; subClassInfo = subClassesIt.getNext())
@@ -7512,7 +7512,7 @@ void TR_InvariantArgumentPreexistence::processIndirectCall(TR::Node *node, TR::T
                      {
                      classInfo->setShouldNotBeNewlyExtended(comp()->getCompThreadID());
                      if (doInc) classInfo->incNumPrexAssumptions();
-                     TR_ScratchList<TR_PersistentClassInfo> subClasses(trMemory());
+                     TR_ScratchList<TR_PersistentClassInfo> subClasses(comp()->trMemory());
                      TR_ClassQueries::collectAllSubClasses(classInfo, &subClasses, comp());
                      ListIterator<TR_PersistentClassInfo> subClassesIt(&subClasses);
                      for (TR_PersistentClassInfo *subClassInfo = subClassesIt.getFirst(); subClassInfo; subClassInfo = subClassesIt.getNext())
@@ -7548,7 +7548,7 @@ void TR_InvariantArgumentPreexistence::processIndirectCall(TR::Node *node, TR::T
       TR::SymbolReference *symRef = node->getSymbolReference();
       int32_t offset = symRef->getOffset();
       //printf("Node %p arg %d\n", node, receiverParmOrdinal);
-      //printf("Method is %s\n", resolvedMethod->signature(trMemory()));
+      //printf("Method is %s\n", resolvedMethod->signature(comp()->trMemory()));
       //fflush(stdout);
 
       TR_ResolvedMethod *originalResolvedMethod = resolvedMethod;
@@ -8281,8 +8281,8 @@ TR_BlockManipulator::breakFallThrough(TR::Block *faller, TR::Block *fallee, bool
          comp()->getFlowGraph()->addNode(gotoBlock, faller->getCommonParentStructureIfExists(fallee, comp()->getFlowGraph()));
       else
          comp()->getFlowGraph()->addNode(gotoBlock);
-      comp()->getFlowGraph()->addEdge(TR::CFGEdge::createEdge(faller,  gotoBlock, trMemory()));
-      comp()->getFlowGraph()->addEdge(TR::CFGEdge::createEdge(gotoBlock,  fallee, trMemory()));
+      comp()->getFlowGraph()->addEdge(TR::CFGEdge::createEdge(faller,  gotoBlock, comp()->trMemory()));
+      comp()->getFlowGraph()->addEdge(TR::CFGEdge::createEdge(gotoBlock,  fallee, comp()->trMemory()));
       // remove the edge only if the branch target is not pointing to the next block
       if ((lastNode->getOpCode().isBranch() && lastNode->getBranchDestination() != fallee->getEntry()) ||
           (lastNode->getOpCode().isCall() && lastNode->getOpCode().isJumpWithMultipleTargets()))
@@ -8467,7 +8467,7 @@ TR_TrivialDeadTreeRemoval::examineNode(TR::Node *node, vcount_t visitCount)
 void
 TR_TrivialDeadTreeRemoval::transformBlock(TR::TreeTop * entryTree, TR::TreeTop * exitTree)
    {
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    vcount_t visitCount = comp()->incOrResetVisitCount();
 

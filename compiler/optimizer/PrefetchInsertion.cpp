@@ -55,7 +55,7 @@ namespace TR { class SymbolReference; }
 
 TR_PrefetchInsertion::TR_PrefetchInsertion(TR::OptimizationManager *manager)
    : TR_LoopTransformer(manager),
-     _arrayAccessInfos(manager->trMemory())
+     _arrayAccessInfos(comp()->trMemory())
    {}
 
 int32_t TR_PrefetchInsertion::perform()
@@ -81,7 +81,7 @@ int32_t TR_PrefetchInsertion::perform()
    _arrayAccessInfos.init();
 
    // From here, down, stack memory allocations will die when the function returns
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    if (trace())
       {
@@ -163,10 +163,10 @@ static bool identicalSubTrees(TR::Node *node1, TR::Node *node2)
    if (node1->getOpCode().isLoadVar() &&
        node1->getSymbolReference() != node2->getSymbolReference())
       return false;
-   
+
    if (node1->getNumChildren() != node2->getNumChildren())
       return false;
-   
+
 
    for (int32_t i = 0; i < node1->getNumChildren(); i++)
       if (!identicalSubTrees(node1->getChild(i), node2->getChild(i)))
@@ -231,7 +231,7 @@ void TR_PrefetchInsertion::insertPrefetchInstructions()
 #if defined(TR_TARGET_S390)
          //Quick search to identify it this is a store prefetch (if possible)
          //Walk all blocks in the loop and search for storei whose first child includes a[i].
-         TR_ScratchList<TR::Block> blocksInLoop(trMemory());
+         TR_ScratchList<TR::Block> blocksInLoop(comp()->trMemory());
          aai->_treeTop->getEnclosingBlock()->getStructureOf()->getContainingLoop()->getBlocks(&blocksInLoop);
          ListIterator<TR::Block> bIt(&blocksInLoop);
          for (TR::Block *blk = bIt.getFirst(); blk && !foundStore; blk = bIt.getNext())
@@ -312,7 +312,7 @@ void TR_PrefetchInsertion::examineLoop(TR_RegionStructure *loop)
    {
    intptr_t visitCount = comp()->incVisitCount();
 
-   TR_ScratchList<TR::Block> blocksInLoop(trMemory());
+   TR_ScratchList<TR::Block> blocksInLoop(comp()->trMemory());
    loop->getBlocks(&blocksInLoop);
    ListIterator<TR::Block> bIt(&blocksInLoop);
    for (TR::Block *block = bIt.getFirst(); block; block = bIt.getNext())
@@ -438,7 +438,7 @@ void TR_PrefetchInsertion::examineNode(TR::TreeTop *treeTop, TR::Block *block, T
                {
                // Save array access info
                //
-               ArrayAccessInfo *aai = (ArrayAccessInfo *) trMemory()->allocateStackMemory(sizeof(ArrayAccessInfo));
+               ArrayAccessInfo *aai = (ArrayAccessInfo *) comp()->trMemory()->allocateStackMemory(sizeof(ArrayAccessInfo));
                aai->_treeTop = treeTop;
                aai->_aaNode = node;
                aai->_addressNode = node->getFirstChild();

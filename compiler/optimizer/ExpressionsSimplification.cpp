@@ -61,7 +61,7 @@ TR_ExpressionsSimplification::TR_ExpressionsSimplification(TR::OptimizationManag
 int32_t
 TR_ExpressionsSimplification::perform()
    {
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    int32_t cost = 0;
    _supportedExpressions = NULL;
@@ -149,7 +149,7 @@ TR_ExpressionsSimplification::findAndSimplifyInvariantLoopExpressions(TR_RegionS
    // Generate a list of blocks that can be processed
    // Criteria: the block must be excucted exactly once
    //
-   TR_ScratchList<TR::Block> candidateBlocksList(trMemory());
+   TR_ScratchList<TR::Block> candidateBlocksList(comp()->trMemory());
    _currentRegion->getBlocks(&candidateBlocksList);
 
    if (candidateBlocksList.getSize() > 1)
@@ -214,7 +214,7 @@ void TR_ExpressionsSimplification::simplifyInvariantLoopExpressions(ListIterator
 
    // Initialize the list of candidates
    //
-   _candidateTTs = new (trStackMemory()) TR_ScratchList<TR::TreeTop>(trMemory());
+   _candidateTTs = new (comp()->trStackMemory()) TR_ScratchList<TR::TreeTop>(comp()->trMemory());
 
    for (TR::Block *currentBlock = blocks.getFirst(); currentBlock; currentBlock  = blocks.getNext())
       {
@@ -249,7 +249,7 @@ void TR_ExpressionsSimplification::simplifyInvariantLoopExpressions(ListIterator
    //
    if (!_supportedExpressions)
       {
-      _supportedExpressions = new (trStackMemory()) TR_BitVector(comp()->getNodeCount(), trMemory(), stackAlloc, growable);
+      _supportedExpressions = new (comp()->trStackMemory()) TR_BitVector(comp()->getNodeCount(), comp()->trMemory(), stackAlloc, growable);
       }
 
    invalidateCandidates();
@@ -508,7 +508,7 @@ TR_ExpressionsSimplification::invalidateCandidates()
          }
       }
 
-   TR_ScratchList<TR::Block> blocksInLoop(trMemory());
+   TR_ScratchList<TR::Block> blocksInLoop(comp()->trMemory());
    _currentRegion->getBlocks(&blocksInLoop);
    ListIterator<TR::Block> blocks(&blocksInLoop);
 
@@ -852,7 +852,7 @@ TR_ExpressionsSimplification::findLoopInfo(TR_RegionStructure* region)
                traceMsg(comp(), "Second child is not a const or a load\n");
             return 0;
             }
-         return new (trStackMemory()) LoopInfo(bound, lowerBound, upperBound, increment, equals);
+         return new (comp()->trStackMemory()) LoopInfo(bound, lowerBound, upperBound, increment, equals);
          }
 
       default:

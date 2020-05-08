@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -69,10 +69,10 @@
 
 TR_FieldPrivatizer::TR_FieldPrivatizer(TR::OptimizationManager *manager)
    : TR_LoopTransformer(manager),
-     _privatizedFieldSymRefs(manager->trMemory(), stackAlloc),
-     _privatizedRegCandidates(manager->trMemory()),
-     _appendCalls(manager->trMemory()),
-     _privatizedFieldNodes(manager->trMemory())
+     _privatizedFieldSymRefs(comp()->trMemory(), stackAlloc),
+     _privatizedRegCandidates(comp()->trMemory()),
+     _appendCalls(comp()->trMemory()),
+     _privatizedFieldNodes(comp()->trMemory())
    {
    }
 
@@ -88,7 +88,7 @@ int32_t TR_FieldPrivatizer::perform()
    if (comp()->incompleteOptimizerSupportForReadWriteBarriers())
       return 0;
 
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    _postDominators = NULL;
 
@@ -152,7 +152,7 @@ int32_t TR_FieldPrivatizer::detectCanonicalizedPredictableLoops(TR_Structure *lo
 
  //  traceMsg(comp(), "Considering Loop %d\n", regionStructure->getNumber());
 
-   TR_ScratchList<TR::Block> blocksInRegion(trMemory());
+   TR_ScratchList<TR::Block> blocksInRegion(comp()->trMemory());
    regionStructure->getBlocks(&blocksInRegion);
 
    ListIterator<TR::Block> blocksIt(&blocksInRegion);
@@ -281,10 +281,10 @@ int32_t TR_FieldPrivatizer::detectCanonicalizedPredictableLoops(TR_Structure *lo
        {
        int32_t symRefCount = comp()->getSymRefCount();
        initializeSymbolsWrittenAndReadExactlyOnce(symRefCount, notGrowable);
-       _privatizedFields = new (trStackMemory()) TR_BitVector(symRefCount, trMemory(), stackAlloc);
-       _fieldsThatCannotBePrivatized = new (trStackMemory()) TR_BitVector(symRefCount, trMemory(), stackAlloc);
+       _privatizedFields = new (comp()->trStackMemory()) TR_BitVector(symRefCount, comp()->trMemory(), stackAlloc);
+       _fieldsThatCannotBePrivatized = new (comp()->trStackMemory()) TR_BitVector(symRefCount, comp()->trMemory(), stackAlloc);
 
-       _needToStoreBack = new (trStackMemory()) TR_BitVector(symRefCount, trMemory(), stackAlloc, growable);
+       _needToStoreBack = new (comp()->trStackMemory()) TR_BitVector(symRefCount, comp()->trMemory(), stackAlloc, growable);
        _criticalEdgeBlock = 0;
 
        if (trace())
@@ -319,7 +319,7 @@ int32_t TR_FieldPrivatizer::detectCanonicalizedPredictableLoops(TR_Structure *lo
              {
              TR::Block *invariantBlock = loopInvariantBlock->getBlock();
              addStringInitialization(invariantBlock);
-             TR_ScratchList<TR::Block> exitBlocks(trMemory());
+             TR_ScratchList<TR::Block> exitBlocks(comp()->trMemory());
              loopStructure->collectExitBlocks(&exitBlocks);
              placeStringEpilogueInExits(&exitBlocks, &blocksInRegion);
              cleanupStringPeephole();
@@ -354,7 +354,7 @@ int32_t TR_FieldPrivatizer::detectCanonicalizedPredictableLoops(TR_Structure *lo
             visitCount = comp()->incVisitCount();
             privatizeNonEscapingLoop(loopStructure, regionStructure->getEntryBlock(), visitCount);
 
-            TR_ScratchList<TR::Block> exitBlocks(trMemory());
+            TR_ScratchList<TR::Block> exitBlocks(comp()->trMemory());
             if (!_privatizedFieldNodes.isEmpty())
                {
                loopStructure->collectExitBlocks(&exitBlocks);
@@ -941,9 +941,9 @@ void TR_FieldPrivatizer::placeInitializersInLoopInvariantBlock(TR::Block *block)
 void TR_FieldPrivatizer::placeStoresBackInExits(List<TR::Block> *exitBlocks, List<TR::Block> *blocksInLoop)
    {
    TR::CFG        *cfg              = comp()->getFlowGraph();
-   TR_BitVector  *seenExitBlocks   = new (trStackMemory()) TR_BitVector(cfg->getNextNodeNumber(), trMemory(), stackAlloc,growable);
-   TR_BitVector  *blocksInsideLoop = new (trStackMemory()) TR_BitVector(cfg->getNextNodeNumber(), trMemory(), stackAlloc);
-   TR_HashTabInt newBlocksHash(trMemory(),stackAlloc);
+   TR_BitVector  *seenExitBlocks   = new (comp()->trStackMemory()) TR_BitVector(cfg->getNextNodeNumber(), comp()->trMemory(), stackAlloc,growable);
+   TR_BitVector  *blocksInsideLoop = new (comp()->trStackMemory()) TR_BitVector(cfg->getNextNodeNumber(), comp()->trMemory(), stackAlloc);
+   TR_HashTabInt newBlocksHash(comp()->trMemory(),stackAlloc);
 
    TR::Block      *blockInLoop      = 0;
    ListIterator<TR::Block> si(blocksInLoop);
@@ -1224,8 +1224,8 @@ void TR_FieldPrivatizer::addStringInitialization(TR::Block *block)
 
    if (!_initSymRef)
       {
-      List<TR_ResolvedMethod> stringBufferMethods(trMemory());
-      comp()->fej9()->getResolvedMethods(trMemory(), _stringBufferClass, &stringBufferMethods);
+      List<TR_ResolvedMethod> stringBufferMethods(comp()->trMemory());
+      comp()->fej9()->getResolvedMethods(comp()->trMemory(), _stringBufferClass, &stringBufferMethods);
       ListIterator<TR_ResolvedMethod> it(&stringBufferMethods);
       for (TR_ResolvedMethod *method = it.getCurrent(); method; method = it.getNext())
          {
@@ -1280,8 +1280,8 @@ void TR_FieldPrivatizer::placeStringEpilogueInExits(List<TR::Block> *exitBlocks,
    {
 #ifdef J9_PROJECT_SPECIFIC
    TR::CFG *cfg = comp()->getFlowGraph();
-   TR_BitVector *seenExitBlocks = new (trStackMemory()) TR_BitVector(cfg->getNextNodeNumber(), trMemory(), stackAlloc);
-   TR_BitVector *blocksInsideLoop = new (trStackMemory()) TR_BitVector(cfg->getNextNodeNumber(), trMemory(), stackAlloc);
+   TR_BitVector *seenExitBlocks = new (comp()->trStackMemory()) TR_BitVector(cfg->getNextNodeNumber(), comp()->trMemory(), stackAlloc);
+   TR_BitVector *blocksInsideLoop = new (comp()->trStackMemory()) TR_BitVector(cfg->getNextNodeNumber(), comp()->trMemory(), stackAlloc);
 
    TR::Block *blockInLoop = 0;
    ListIterator<TR::Block> si(blocksInLoop);
@@ -1329,8 +1329,8 @@ void TR_FieldPrivatizer::placeStringEpiloguesBackInExit(TR::Block *block, bool p
 #if J9_PROJECT_SPECIFIC
    if (!_toStringSymRef)
       {
-      TR_ScratchList<TR_ResolvedMethod> stringBufferMethods(trMemory());
-      comp()->fej9()->getResolvedMethods(trMemory(), _stringBufferClass, &stringBufferMethods);
+      TR_ScratchList<TR_ResolvedMethod> stringBufferMethods(comp()->trMemory());
+      comp()->fej9()->getResolvedMethods(comp()->trMemory(), _stringBufferClass, &stringBufferMethods);
       ListIterator<TR_ResolvedMethod> it(&stringBufferMethods);
       for (TR_ResolvedMethod *method = it.getCurrent(); method; method = it.getNext())
          {
@@ -1398,8 +1398,8 @@ void TR_FieldPrivatizer::cleanupStringPeephole()
 
   if (!_appendSymRef)
       {
-      TR_ScratchList<TR_ResolvedMethod> stringBufferMethods(trMemory());
-      comp()->fej9()->getResolvedMethods(trMemory(), _stringBufferClass, &stringBufferMethods);
+      TR_ScratchList<TR_ResolvedMethod> stringBufferMethods(comp()->trMemory());
+      comp()->fej9()->getResolvedMethods(comp()->trMemory(), _stringBufferClass, &stringBufferMethods);
       ListIterator<TR_ResolvedMethod> it(&stringBufferMethods);
       for (TR_ResolvedMethod *method = it.getCurrent(); method; method = it.getNext())
          {

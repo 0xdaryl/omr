@@ -1038,7 +1038,7 @@ void OMR::Optimizer::optimize()
 
    LexicalTimer t("optimize", comp()->signature(), comp()->phaseTimer());
    TR::LexicalMemProfiler mp("optimize", comp()->signature(), comp()->phaseMemProfiler());
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    // Sometimes the Compilation object needs to host more than one Optimizer
    // (over time).  This is because Symbol::genIL can be called, for example,
@@ -1122,7 +1122,7 @@ void OMR::Optimizer::optimize()
    bool doTiming = comp()->getOption(TR_Timing);
    if (doTiming && comp()->getOutFile() != NULL)
       {
-      myTimer.initialize("all optimizations", trMemory());
+      myTimer.initialize("all optimizations", comp()->trMemory());
       }
 
    if (comp()->getOption(TR_Profile) && !comp()->isProfilingCompilation())
@@ -1737,7 +1737,7 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
          TR_SingleTimer myTimer;
          if (doTiming)
             {
-            myTimer.initialize("structural analysis", trMemory());
+            myTimer.initialize("structural analysis", comp()->trMemory());
             myTimer.startTiming(comp());
             }
 #endif
@@ -1807,14 +1807,14 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
             TR_SingleTimer myTimer;
             if (doTiming)
                {
-               myTimer.initialize("use defs (for globals definitely)", trMemory());
+               myTimer.initialize("use defs (for globals definitely)", comp()->trMemory());
                myTimer.startTiming(comp());
                }
 #endif
 
             LexicalTimer t("use defs (for globals definitely)", comp()->phaseTimer());
             TR::LexicalMemProfiler mp("use defs (for globals definitely)", comp()->phaseMemProfiler());
-            useDefInfo = createUseDefInfo(comp(), 
+            useDefInfo = createUseDefInfo(comp(),
                                    true, // requiresGlobals
                                    false,// prefersGlobals
                                    !manager->getDoesNotRequireLoadsAsDefsInUseDefs(),
@@ -1854,13 +1854,13 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
             TR_SingleTimer myTimer;
             if (doTiming)
                {
-               myTimer.initialize("use defs (for globals possibly)", trMemory());
+               myTimer.initialize("use defs (for globals possibly)", comp()->trMemory());
                myTimer.startTiming(comp());
                }
 #endif
             LexicalTimer t("use defs (for globals possibly)", comp()->phaseTimer());
             TR::LexicalMemProfiler mp("use defs (for globals possibly)", comp()->phaseMemProfiler());
-            useDefInfo = createUseDefInfo(comp(), 
+            useDefInfo = createUseDefInfo(comp(),
                                                false, // requiresGlobals
                                                manager->getPrefersGlobalsUseDefInfo() || manager->getPrefersGlobalsValueNumbering(),
                                                !manager->getDoesNotRequireLoadsAsDefsInUseDefs(),
@@ -1905,7 +1905,7 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
             TR_SingleTimer myTimer;
             if (doTiming)
                {
-               myTimer.initialize("global value numbering (for globals definitely)", trMemory());
+               myTimer.initialize("global value numbering (for globals definitely)", comp()->trMemory());
                myTimer.startTiming(comp());
                }
 #endif
@@ -1939,7 +1939,7 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
             TR_SingleTimer myTimer;
             if (doTiming)
                {
-               myTimer.initialize("global value numbering (for globals possibly)", trMemory());
+               myTimer.initialize("global value numbering (for globals possibly)", comp()->trMemory());
                myTimer.startTiming(comp());
                }
 #endif
@@ -1981,7 +1981,7 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
       TR_SingleTimer myTimer;
       if (doTiming)
          {
-         myTimer.initialize(manager->name(), trMemory());
+         myTimer.initialize(manager->name(), comp()->trMemory());
          myTimer.startTiming(comp());
          }
 #endif
@@ -2056,7 +2056,7 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
          comp()->reportAnalysisPhase(PERFORMING_OPTIMIZATION);
 
          {
-         TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+         TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
          opt->prePerform();
          actualCost += opt->perform();
          opt->postPerform();
@@ -2066,7 +2066,7 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
          }
       else if (canRunBlockByBlockOptimizations())
          {
-         TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+         TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
          opt->prePerformOnBlocks();
          ListIterator<TR::Block> blockIt(manager->getRequestedBlocks());
@@ -2748,7 +2748,7 @@ int32_t *OMR::Optimizer::getSymReferencesTable()
    if (_symReferencesTable == NULL)
       {
       int32_t symRefCount = comp()->getSymRefCount();
-      _symReferencesTable = (int32_t*)trMemory()->allocateStackMemory(symRefCount*sizeof(int32_t));
+      _symReferencesTable = (int32_t*)comp()->trMemory()->allocateStackMemory(symRefCount*sizeof(int32_t));
       memset(_symReferencesTable, 0, symRefCount*sizeof(int32_t));
       TR::SymbolReferenceTable *symRefTab = comp()->getSymRefTab();
       for (int32_t symRefNumber = 0; symRefNumber < symRefCount; symRefNumber++)
@@ -2793,7 +2793,7 @@ void OMR::Optimizer::doStructureChecks()
       TR_Structure *rootStructure = cfg->getStructure();
       if (rootStructure)
          {
-         TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+         TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
          // Allocate bit vector of block numbers that have been seen
          //

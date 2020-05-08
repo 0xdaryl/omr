@@ -81,7 +81,7 @@ TR_LocalAnticipatability::TR_LocalAnticipatability(TR_LocalAnalysisInfo &info, T
    //_filteredAliases = allocateContainer(symRefCount);
 
    // Used for aliasing calls
-   TR_BitVector *temp = new (trStackMemory()) TR_BitVector(comp()->getMaxAliasIndex(), trMemory(), stackAlloc);
+   TR_BitVector *temp = new (comp()->trStackMemory()) TR_BitVector(comp()->getMaxAliasIndex(), comp()->trMemory(), stackAlloc);
    _downwardExposedBeforeButNotAnymore = allocateTempContainer(getNumNodes());
    _notDownwardExposed = allocateTempContainer(getNumNodes());
    _visitedNodes = allocateTempContainer(comp()->getNodeCount());
@@ -128,7 +128,7 @@ TR_LocalAnticipatability::TR_LocalAnticipatability(TR_LocalAnalysisInfo &info, T
 
 void TR_LocalAnticipatability::analyzeBlock(TR::Block *block, vcount_t visitCount1, vcount_t visitCount2, TR_BitVector *temp)
    {
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    TR::TreeTop *currentTree = block->getEntry();
    TR::TreeTop *exitTree = block->getExit();
@@ -143,7 +143,7 @@ void TR_LocalAnticipatability::analyzeBlock(TR::Block *block, vcount_t visitCoun
    ContainerType *storeNodes = allocateTempContainer(getNumNodes());
 
    // Must leave as TR_BitVectory because of use in aliasing calls
-   TR_BitVector *allSymbolReferencesInStore = new (trStackMemory()) TR_BitVector(symRefCount, trMemory(), stackAlloc);
+   TR_BitVector *allSymbolReferencesInStore = new (comp()->trStackMemory()) TR_BitVector(symRefCount, comp()->trMemory(), stackAlloc);
 
    // Once an expression is killed, it cannot become anticiptable again. This is to avoid
    // running into problems where there are two loads of the same symbol (one before a def

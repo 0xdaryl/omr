@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -828,7 +828,7 @@ class TR_TrivialDeadTreeRemoval : public TR::Optimization
    {
    public:
    TR_TrivialDeadTreeRemoval(TR::OptimizationManager *manager)
-      : TR::Optimization(manager), _currentTreeTop(NULL), _currentBlock(NULL), _commonedTreeTopList(trMemory())
+      : TR::Optimization(manager), _currentTreeTop(NULL), _currentBlock(NULL), _commonedTreeTopList(comp()->trMemory())
       {}
    static TR::Optimization *create(TR::OptimizationManager *manager)
       {

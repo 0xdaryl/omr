@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -142,7 +142,7 @@ bool TR_AsyncCheckInsertion::shouldPerform()
 
 int32_t TR_AsyncCheckInsertion::perform()
    {
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    // If this is a large acyclic method - add a yield point at each return from this method
    // so that sampling will realize that we are actually in this method.

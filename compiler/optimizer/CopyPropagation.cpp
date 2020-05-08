@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -450,7 +450,7 @@ int32_t TR_CopyPropagation::perform()
    bool donePropagation = false;
 
    {
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    _cleanupTemps = false;
 
@@ -473,14 +473,14 @@ int32_t TR_CopyPropagation::perform()
    typedef std::map<int32_t, int32_t, UDMapComparator, UDMapAllocator> UsesToBeFixedMap;
    typedef std::map<int32_t, int32_t, UDMapComparator, UDMapAllocator> EquivalentDefMap;
 
-   UsesToBeFixedMap usesToBeFixed((UDMapComparator()), UDMapAllocator(trMemory()->currentStackRegion()));
-   EquivalentDefMap equivalentDefs((UDMapComparator()), UDMapAllocator(trMemory()->currentStackRegion()));
+   UsesToBeFixedMap usesToBeFixed((UDMapComparator()), UDMapAllocator(comp()->trMemory()->currentStackRegion()));
+   EquivalentDefMap equivalentDefs((UDMapComparator()), UDMapAllocator(comp()->trMemory()->currentStackRegion()));
 
    typedef TR::typed_allocator<std::pair<TR::Node* const, TR::deque<TR::Node*, TR::Region&>*>, TR::Region&> StoreNodeMapAllocator;
    typedef std::less<TR::Node*> StoreNodeMapComparator;
    typedef std::map<TR::Node*, TR::deque<TR::Node*, TR::Region&>*, StoreNodeMapComparator, StoreNodeMapAllocator> StoreNodeMap;
 
-   StoreNodeMap storeMap((StoreNodeMapComparator()), StoreNodeMapAllocator(trMemory()->currentStackRegion()));
+   StoreNodeMap storeMap((StoreNodeMapComparator()), StoreNodeMapAllocator(comp()->trMemory()->currentStackRegion()));
 
    TR::NodeChecklist checklist(comp());
 
@@ -615,7 +615,7 @@ int32_t TR_CopyPropagation::perform()
 
       if (storeLookup == storeMap.end())
          {
-         storeMap[rhsOfStoreDefNode] = new (trStackMemory()) TR::deque<TR::Node*, TR::Region&>(trMemory()->currentStackRegion());
+         storeMap[rhsOfStoreDefNode] = new (comp()->trStackMemory()) TR::deque<TR::Node*, TR::Region&>(comp()->trMemory()->currentStackRegion());
          storeMap[rhsOfStoreDefNode]->push_back(defNode);
          }
       else
@@ -1994,7 +1994,7 @@ bool TR_CopyPropagation::isRedefinedBetweenStoreTreeAnd(TR::list< TR::Node *> & 
    if (useRecursiveIsRedefinedBetweenStoreTreeAnd)
       return recursive_isRedefinedBetweenStoreTreeAnd(checkNodes, refsToCheckIfKilled, storeNode, exitTree, regNumber, defs, useDefInfo);
 
-   TR_ScratchList<TR::TreeTop> treeTopList (trMemory());
+   TR_ScratchList<TR::TreeTop> treeTopList (comp()->trMemory());
 
    TR::TreeTop *currentTree = exitTree;
    bool visitPredecessors;

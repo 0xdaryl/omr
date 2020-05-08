@@ -494,7 +494,7 @@ TR::Optimization *TR::DeadTreesElimination::create(TR::OptimizationManager *mana
 
 TR::DeadTreesElimination::DeadTreesElimination(TR::OptimizationManager *manager)
    : TR::Optimization(manager),
-     _targetTrees(manager->trMemory())
+     _targetTrees(comp()->trMemory())
    {
    _cannotBeEliminated = false;
    _delayedRegStores = false;

@@ -143,14 +143,14 @@ TR_ValueNumberInfo::TR_ValueNumberInfo(TR::Compilation *comp, TR::Optimizer *opt
    _nextInRing.GrowTo(_numberOfNodes);
 
    // Any stack allocations past this point will die when the function returns
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp->trMemory());
 
    // Allocate hash table for nodes
    //
    _hashTable._numBuckets = 1023;
-   _hashTable._buckets = (CollisionEntry**)trMemory()->allocateStackMemory(_hashTable._numBuckets*sizeof(CollisionEntry*), TR_Memory::ValueNumberInfo);
+   _hashTable._buckets = (CollisionEntry**)comp->trMemory()->allocateStackMemory(_hashTable._numBuckets*sizeof(CollisionEntry*), TR_Memory::ValueNumberInfo);
    memset(_hashTable._buckets, 0, _hashTable._numBuckets*sizeof(CollisionEntry*));
-   _matchingNodes = new (trStackMemory()) TR_Array<CollisionEntry*>(trMemory(), _numberOfNodes, false, stackAlloc);
+   _matchingNodes = new (comp->trStackMemory()) TR_Array<CollisionEntry*>(comp->trMemory(), _numberOfNodes, false, stackAlloc);
    _matchingNodes->setSize(_numberOfNodes);
 
    buildValueNumberInfo();
@@ -160,7 +160,7 @@ TR_ValueNumberInfo::TR_ValueNumberInfo(TR::Compilation *comp, TR::Optimizer *opt
       {
       // Show shared value numbers
       //
-      TR_BitVector traced(_numberOfNodes,trMemory(), stackAlloc);
+      TR_BitVector traced(_numberOfNodes, comp->trMemory(), stackAlloc);
       for (i = 0; i < _numberOfNodes; i++)
          {
          TR::Node *node = getNode(i);
@@ -443,7 +443,7 @@ void TR_ValueNumberInfo::initializeNode(TR::Node *node, int32_t &negativeValueNu
    _valueNumbers.ElementAt(index) = -1;
 
    int32_t hashValue = hash(node);
-   NodeEntry *newEntry = new (trStackMemory()) NodeEntry;
+   NodeEntry *newEntry = new (comp()->trStackMemory()) NodeEntry;
    newEntry->_node = node;
    CollisionEntry *entry;
    for (entry = _hashTable._buckets[hashValue]; entry; entry = entry->_next)
@@ -615,7 +615,7 @@ void TR_ValueNumberInfo::initializeNode(TR::Node *node, int32_t &negativeValueNu
       }
    else
       {
-      entry = new (trStackMemory()) CollisionEntry;
+      entry = new (comp()->trStackMemory()) CollisionEntry;
       entry->_nodes = newEntry;
       newEntry->_next = NULL;
       entry->_next = _hashTable._buckets[hashValue];
@@ -707,7 +707,7 @@ void TR_ValueNumberInfo::allocateParmValueNumbers()
       }
    if (_numberOfParms > 0)
       {
-      _parmSymbols = (TR::ParameterSymbol**)trMemory()->allocateHeapMemory(_numberOfParms*sizeof(TR::ParameterSymbol*), TR_Memory::ValueNumberInfo);
+      _parmSymbols = (TR::ParameterSymbol**)comp()->trMemory()->allocateHeapMemory(_numberOfParms*sizeof(TR::ParameterSymbol*), TR_Memory::ValueNumberInfo);
       parms.reset();
       int32_t i = 0;
       for (p = parms.getFirst(); p; p = parms.getNext())
@@ -1582,7 +1582,7 @@ TR_HashValueNumberInfo::TR_HashValueNumberInfo(TR::Compilation *comp, TR::Optimi
    _nextInRing.GrowTo(_numberOfNodes);
 
    // Any stack allocations made past this point will die when the function returns
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp->trMemory());
 
    buildValueNumberInfo();
 
@@ -1591,7 +1591,7 @@ TR_HashValueNumberInfo::TR_HashValueNumberInfo(TR::Compilation *comp, TR::Optimi
       {
       // Show shared value numbers
       //
-      TR_BitVector traced(_numberOfNodes,trMemory(), stackAlloc);
+      TR_BitVector traced(_numberOfNodes, comp->trMemory(), stackAlloc);
       for (i = 0; i < _numberOfNodes; i++)
          {
          TR::Node *node = getNode(i);

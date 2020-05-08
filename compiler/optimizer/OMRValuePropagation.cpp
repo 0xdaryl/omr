@@ -118,7 +118,7 @@ OMR::ValuePropagation::Relationship *OMR::ValuePropagation::createRelationship(i
    {
    Relationship *rel = _relationshipCache.pop();
    if (!rel)
-      rel = new (trStackMemory()) Relationship;
+      rel = new (comp()->trStackMemory()) Relationship;
    rel->relative = relative;
    rel->constraint = constraint;
    rel->setNext(NULL);
@@ -145,7 +145,7 @@ OMR::ValuePropagation::StoreRelationship *OMR::ValuePropagation::createStoreRela
    {
    StoreRelationship *rel = _storeRelationshipCache.pop();
    if (!rel)
-      rel = new (trStackMemory()) StoreRelationship;
+      rel = new (comp()->trStackMemory()) StoreRelationship;
    rel->symbol = symbol;
    rel->relationships.setFirst(firstRel);
    rel->setNext(NULL);
@@ -181,7 +181,7 @@ OMR::ValuePropagation::ValueConstraint *OMR::ValuePropagation::copyValueConstrai
 
 void OMR::ValuePropagation::addConstraint(TR::VPConstraint *constraint, int32_t hash)
    {
-   ConstraintsHashTableEntry *entry = new (trStackMemory()) ConstraintsHashTableEntry;
+   ConstraintsHashTableEntry *entry = new (comp()->trStackMemory()) ConstraintsHashTableEntry;
    entry->constraint = constraint;
    entry->next = _constraintsHashTable[hash];
    _constraintsHashTable[hash] = entry;
@@ -198,7 +198,7 @@ void OMR::ValuePropagation::addLoopDef(TR::Node *node)
       if (entry->node == node)
          return;
       }
-   entry = new (trStackMemory()) LoopDefsHashTableEntry;
+   entry = new (comp()->trStackMemory()) LoopDefsHashTableEntry;
    entry->node = node;
    entry->region = NULL;
    entry->next = _loopDefsHashTable[hash];
@@ -3161,7 +3161,7 @@ void OMR::ValuePropagation::checkForInductionVariableIncrement(TR::Node *node)
       {
       // This is a new induction variable. Set it up.
       //
-      iv = new (trStackMemory()) InductionVariable(sym, entryDef, incrementVN, increment, this);
+      iv = new (comp()->trStackMemory()) InductionVariable(sym, entryDef, incrementVN, increment, this);
       _loopInfo->_inductionVariables.add(iv);
       // induction variable has more than two defs, but
       // it may be possible to guess the increment at least
@@ -3554,22 +3554,22 @@ void OMR::ValuePropagation::setUpInductionVariables(TR_StructureSubGraphNode *no
              !ivInfo->_invalidEntryInfo)
             {
             if (ivInfo->_entryConstraint->asIntConst())
-               entry = new (trHeapMemory()) TR::VPIntConst(ivInfo->_entryConstraint->getLowInt());
+               entry = new (comp()->trHeapMemory()) TR::VPIntConst(ivInfo->_entryConstraint->getLowInt());
             else
-               entry = new (trHeapMemory()) TR::VPIntRange(ivInfo->_entryConstraint->getLowInt(), ivInfo->_entryConstraint->getHighInt());
+               entry = new (comp()->trHeapMemory()) TR::VPIntRange(ivInfo->_entryConstraint->getLowInt(), ivInfo->_entryConstraint->getHighInt());
             }
          else
             entry = NULL;
          if (ivInfo->_increment->asIntConst())
-            incr = new (trHeapMemory()) TR::VPIntConst(ivInfo->_increment->getLowInt());
+            incr = new (comp()->trHeapMemory()) TR::VPIntConst(ivInfo->_increment->getLowInt());
          else
-            incr = new (trHeapMemory()) TR::VPIntRange(ivInfo->_increment->getLowInt(), ivInfo->_increment->getHighInt());
+            incr = new (comp()->trHeapMemory()) TR::VPIntRange(ivInfo->_increment->getLowInt(), ivInfo->_increment->getHighInt());
          if (exitConstraint)
             {
             if (exitConstraint->asIntConst())
-               exit = new (trHeapMemory()) TR::VPIntConst(exitConstraint->getLowInt());
+               exit = new (comp()->trHeapMemory()) TR::VPIntConst(exitConstraint->getLowInt());
             else
-               exit = new (trHeapMemory()) TR::VPIntRange(exitConstraint->getLowInt(), exitConstraint->getHighInt());
+               exit = new (comp()->trHeapMemory()) TR::VPIntRange(exitConstraint->getLowInt(), exitConstraint->getHighInt());
             }
          else
             exit = NULL;
@@ -3580,22 +3580,22 @@ void OMR::ValuePropagation::setUpInductionVariables(TR_StructureSubGraphNode *no
              !ivInfo->_invalidEntryInfo)
             {
             if (ivInfo->_entryConstraint->asShortConst())
-               entry = new (trHeapMemory()) TR::VPShortConst(ivInfo->_entryConstraint->getLowShort());
+               entry = new (comp()->trHeapMemory()) TR::VPShortConst(ivInfo->_entryConstraint->getLowShort());
             else
-               entry = new (trHeapMemory()) TR::VPShortRange(ivInfo->_entryConstraint->getLowShort(), ivInfo->_entryConstraint->getHighShort());
+               entry = new (comp()->trHeapMemory()) TR::VPShortRange(ivInfo->_entryConstraint->getLowShort(), ivInfo->_entryConstraint->getHighShort());
             }
          else
             entry = NULL;
          if (ivInfo->_increment->asShortConst())
-            incr = new (trHeapMemory()) TR::VPShortConst(ivInfo->_increment->getLowShort());
+            incr = new (comp()->trHeapMemory()) TR::VPShortConst(ivInfo->_increment->getLowShort());
          else
-            incr = new (trHeapMemory()) TR::VPShortRange(ivInfo->_increment->getLowShort(), ivInfo->_increment->getHighShort());
+            incr = new (comp()->trHeapMemory()) TR::VPShortRange(ivInfo->_increment->getLowShort(), ivInfo->_increment->getHighShort());
          if (exitConstraint)
             {
             if (exitConstraint->asShortConst())
-               exit = new (trHeapMemory()) TR::VPShortConst(exitConstraint->getLowShort());
+               exit = new (comp()->trHeapMemory()) TR::VPShortConst(exitConstraint->getLowShort());
             else
-               exit = new (trHeapMemory()) TR::VPShortRange(exitConstraint->getLowShort(), exitConstraint->getHighShort());
+               exit = new (comp()->trHeapMemory()) TR::VPShortRange(exitConstraint->getLowShort(), exitConstraint->getHighShort());
             }
          else
             exit = NULL;
@@ -3607,22 +3607,22 @@ void OMR::ValuePropagation::setUpInductionVariables(TR_StructureSubGraphNode *no
              !ivInfo->_invalidEntryInfo)
             {
             if (ivInfo->_entryConstraint->asLongConst())
-               entry = new (trHeapMemory()) TR::VPLongConst(ivInfo->_entryConstraint->getLowLong());
+               entry = new (comp()->trHeapMemory()) TR::VPLongConst(ivInfo->_entryConstraint->getLowLong());
             else
-               entry = new (trHeapMemory()) TR::VPLongRange(ivInfo->_entryConstraint->getLowLong(), ivInfo->_entryConstraint->getHighLong());
+               entry = new (comp()->trHeapMemory()) TR::VPLongRange(ivInfo->_entryConstraint->getLowLong(), ivInfo->_entryConstraint->getHighLong());
             }
          else
             entry = NULL;
          if (ivInfo->_increment->asLongConst())
-            incr = new (trHeapMemory()) TR::VPLongConst(ivInfo->_increment->getLowLong());
+            incr = new (comp()->trHeapMemory()) TR::VPLongConst(ivInfo->_increment->getLowLong());
          else
-            incr = new (trHeapMemory()) TR::VPLongRange(ivInfo->_increment->getLowLong(), ivInfo->_increment->getHighLong());
+            incr = new (comp()->trHeapMemory()) TR::VPLongRange(ivInfo->_increment->getLowLong(), ivInfo->_increment->getHighLong());
          if (exitConstraint)
             {
             if (exitConstraint->asLongConst())
-               exit = new (trHeapMemory()) TR::VPLongConst(exitConstraint->getLowLong());
+               exit = new (comp()->trHeapMemory()) TR::VPLongConst(exitConstraint->getLowLong());
             else
-               exit = new (trHeapMemory()) TR::VPLongRange(exitConstraint->getLowLong(), exitConstraint->getHighLong());
+               exit = new (comp()->trHeapMemory()) TR::VPLongRange(exitConstraint->getLowLong(), exitConstraint->getHighLong());
             }
          else
             exit = NULL;
@@ -3637,7 +3637,7 @@ void OMR::ValuePropagation::setUpInductionVariables(TR_StructureSubGraphNode *no
             isSigned = TR_yes;
          }
 
-      TR_InductionVariable *iv = new (trHeapMemory()) TR_InductionVariable(ivInfo->_symbol->castToRegisterMappedSymbol(), entry, exit, incr, isSigned);
+      TR_InductionVariable *iv = new (comp()->trHeapMemory()) TR_InductionVariable(ivInfo->_symbol->castToRegisterMappedSymbol(), entry, exit, incr, isSigned);
 
       if (trace())
          {
@@ -3772,7 +3772,7 @@ int32_t TR::GlobalValuePropagation::perform()
       }
 
    // From here, down, stack memory allocations will die when the function returns
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    initialize();
 
@@ -3787,14 +3787,14 @@ int32_t TR::GlobalValuePropagation::perform()
    static char *skipBlocksThatCannotReachNonColdBlocks = feGetEnv("TR_skipBlocksThatCannotReachNonColdBlocks");
    if (skipBlocksThatCannotReachNonColdBlocks)
       {
-      _blocksToProcess = new (trStackMemory()) TR_BitVector(comp()->getFlowGraph()->getNumberOfNodes(), comp()->trMemory(), stackAlloc, notGrowable, TR_MemoryBase::ValuePropagation);
+      _blocksToProcess = new (comp()->trStackMemory()) TR_BitVector(comp()->getFlowGraph()->getNumberOfNodes(), comp()->trMemory(), stackAlloc, notGrowable, TR_MemoryBase::ValuePropagation);
       TR_CanReachNonColdBlocks(comp()).perform(_blocksToProcess);
       }
 
    static char *skipBlocksThatCannotReachNormalPaths = feGetEnv("TR_skipBlocksThatCannotReachNormalPaths");
    if (skipBlocksThatCannotReachNormalPaths)
       {
-      _blocksToProcess = new (trStackMemory()) TR_BitVector(comp()->getFlowGraph()->getNumberOfNodes(), comp()->trMemory(), stackAlloc, notGrowable, TR_MemoryBase::ValuePropagation);
+      _blocksToProcess = new (comp()->trStackMemory()) TR_BitVector(comp()->getFlowGraph()->getNumberOfNodes(), comp()->trMemory(), stackAlloc, notGrowable, TR_MemoryBase::ValuePropagation);
       TR_CanBeReachedWithoutExceptionEdges(comp()).perform(_blocksToProcess);
       TR_CanReachGivenBlocks(comp(), _blocksToProcess).perform(_blocksToProcess); // Bitvector is changed in-place
       }
@@ -4120,8 +4120,8 @@ void TR::GlobalValuePropagation::processNaturalLoop(TR_StructureSubGraphNode *no
       TR_ASSERT(lastTimeThrough, "Not last time through outer loop");
       TR_ASSERT(!_loopInfo, "Not expecting loop info");
 
-      _loopInfo = new (trStackMemory()) LoopInfo(region, NULL);
-      _loopInfo->_seenDefs = new (trStackMemory()) TR_BitVector(_numValueNumbers, trMemory(), stackAlloc);
+      _loopInfo = new (comp()->trStackMemory()) LoopInfo(region, NULL);
+      _loopInfo->_seenDefs = new (comp()->trStackMemory()) TR_BitVector(_numValueNumbers, comp()->trMemory(), stackAlloc);
       // Save the input constraints and bitvector of value numbers seen. They
       // must be reset for the second time through the loop.
       //
@@ -4170,8 +4170,8 @@ void TR::GlobalValuePropagation::processNaturalLoop(TR_StructureSubGraphNode *no
          // and add it to the parent's loop info. We can then find it the next
          // time through this loop.
          //
-         _loopInfo = new (trStackMemory()) LoopInfo(region, parentLoopInfo);
-         _loopInfo->_seenDefs = new (trStackMemory()) TR_BitVector(_numValueNumbers, trMemory(), stackAlloc);
+         _loopInfo = new (comp()->trStackMemory()) LoopInfo(region, parentLoopInfo);
+         _loopInfo->_seenDefs = new (comp()->trStackMemory()) TR_BitVector(_numValueNumbers, comp()->trMemory(), stackAlloc);
          parentLoopInfo->_subLoops.add(_loopInfo);
          }
       else
@@ -4263,7 +4263,7 @@ void TR::GlobalValuePropagation::processNaturalLoop(TR_StructureSubGraphNode *no
                }
             else
                {
-               parentEdgeDefinedOnAllPaths = new (trStackMemory()) TR_BitVector(0, trMemory(), stackAlloc);
+               parentEdgeDefinedOnAllPaths = new (comp()->trStackMemory()) TR_BitVector(0, comp()->trMemory(), stackAlloc);
                (*_definedOnAllPaths)[*itr] = parentEdgeDefinedOnAllPaths;
                *parentEdgeDefinedOnAllPaths = (*(*_definedOnAllPaths)[edge]);
                }
@@ -4565,7 +4565,7 @@ void TR::GlobalValuePropagation::processRegionNode(TR_StructureSubGraphNode *nod
 
 TR_BitVector *TR::GlobalValuePropagation::mergeDefinedOnAllPaths(TR_StructureSubGraphNode *node)
    {
-   TR_BitVector *mergeResult = new (trStackMemory()) TR_BitVector(0, trMemory(), stackAlloc);
+   TR_BitVector *mergeResult = new (comp()->trStackMemory()) TR_BitVector(0, comp()->trMemory(), stackAlloc);
 
    if (!node->getExceptionPredecessors().empty())
       return mergeResult;
@@ -5522,10 +5522,10 @@ TR::TreeTop* TR::ArraycopyTransformation::createMultipleArrayNodes(TR::TreeTop* 
 
       cfg->addNode(forwardArrayCopyBlock);
 
-      cfg->addEdge(TR::CFGEdge::createEdge(outerElseBlock,  ifBlock, trMemory()));
-      cfg->addEdge(TR::CFGEdge::createEdge(outerElseBlock,  forwardArrayCopyBlock, trMemory()));
-      cfg->addEdge(TR::CFGEdge::createEdge(arraycopyBlock,  forwardArrayCopyBlock, trMemory()));
-      cfg->addEdge(TR::CFGEdge::createEdge(forwardArrayCopyBlock,  followOnBlock, trMemory()));
+      cfg->addEdge(TR::CFGEdge::createEdge(outerElseBlock,  ifBlock, comp()->trMemory()));
+      cfg->addEdge(TR::CFGEdge::createEdge(outerElseBlock,  forwardArrayCopyBlock, comp()->trMemory()));
+      cfg->addEdge(TR::CFGEdge::createEdge(arraycopyBlock,  forwardArrayCopyBlock, comp()->trMemory()));
+      cfg->addEdge(TR::CFGEdge::createEdge(forwardArrayCopyBlock,  followOnBlock, comp()->trMemory()));
       cfg->copyExceptionSuccessors(ifBlock, forwardArrayCopyBlock);
 
       cfg->removeEdge(outerElseBlock->getSuccessors(), outerElseBlock->getNumber(), followOnBlock->getNumber());
@@ -5684,10 +5684,10 @@ void OMR::ValuePropagation::createNewBlockInfoForVersioning(TR::Block *block)
 
       if (prepareForBlockVersion(&arrayLengthsLocal))
          {
-         TR_LinkHead<ArrayLengthToVersion> *arrayLengths = new (trStackMemory())TR_LinkHead<ArrayLengthToVersion>();
+         TR_LinkHead<ArrayLengthToVersion> *arrayLengths = new (comp()->trStackMemory())TR_LinkHead<ArrayLengthToVersion>();
          arrayLengths->setFirst(arrayLengthsLocal.getFirst());
 
-         BlockVersionInfo *b = new (trStackMemory()) BlockVersionInfo;
+         BlockVersionInfo *b = new (comp()->trStackMemory()) BlockVersionInfo;
          b->_block = block;
          b->_arrayLengths = arrayLengths;
          _blocksToBeVersioned->add(b);
@@ -5727,7 +5727,7 @@ void OMR::ValuePropagation::versionBlocks()
 
       //check if all bndchecks are in the block
 
-      TR_ScratchList<TR::Node> temp(trMemory());
+      TR_ScratchList<TR::Node> temp(comp()->trMemory());
       for (ArrayLengthToVersion *arrayLength = cur->_arrayLengths->getFirst(); arrayLength; arrayLength = arrayLength->getNext())
          {
          for (ArrayIndexInfo *arrayIndex = arrayLength->_arrayIndicesInfo->getFirst(); arrayIndex; arrayIndex = arrayIndex->getNext())
@@ -5760,7 +5760,7 @@ void OMR::ValuePropagation::versionBlocks()
 
       //  Construct the tests to replace boundsChecks
       //
-      TR_ScratchList<TR::Node> comparisonNodes(trMemory());
+      TR_ScratchList<TR::Node> comparisonNodes(comp()->trMemory());
       buildBoundCheckComparisonNodes(cur, &comparisonNodes);
 
       if (comparisonNodes.isEmpty())
@@ -5868,9 +5868,9 @@ void OMR::ValuePropagation::versionBlocks()
          if (!fallsThrough)
             {
             if (succ->getEntry() && (!lastOpCode.isBranch() || (lastNode->getBranchDestination() != cloner.getToBlock(succ->getEntry()->getNode()->getBlock())->getEntry())))
-               _cfg->addEdge(TR::CFGEdge::createEdge(lastClonedBlock,  succ, trMemory()));
+               _cfg->addEdge(TR::CFGEdge::createEdge(lastClonedBlock,  succ, comp()->trMemory()));
             else
-               _cfg->addEdge(TR::CFGEdge::createEdge(lastClonedBlock, cloner.getToBlock(succ), trMemory()));
+               _cfg->addEdge(TR::CFGEdge::createEdge(lastClonedBlock, cloner.getToBlock(succ), comp()->trMemory()));
             }
          else
             {
@@ -5892,8 +5892,8 @@ void OMR::ValuePropagation::versionBlocks()
             gotoBlockExitTree->setNextTreeTop(NULL);
             endTree = gotoBlockExitTree;
 
-            _cfg->addEdge(TR::CFGEdge::createEdge(lastClonedBlock,  newGotoBlock, trMemory()));
-            _cfg->addEdge(TR::CFGEdge::createEdge(newGotoBlock,  succ, trMemory()));
+            _cfg->addEdge(TR::CFGEdge::createEdge(lastClonedBlock,  newGotoBlock, comp()->trMemory()));
+            _cfg->addEdge(TR::CFGEdge::createEdge(newGotoBlock,  succ, comp()->trMemory()));
 
             }
          }
@@ -5903,7 +5903,7 @@ void OMR::ValuePropagation::versionBlocks()
       for (auto edge = lastBlock->getExceptionSuccessors().begin(); edge != lastBlock->getExceptionSuccessors().end(); ++edge)
          {
          TR::Block *succ = toBlock((*edge)->getTo());
-         _cfg->addEdge(TR::CFGEdge::createExceptionEdge(lastClonedBlock, succ,trMemory()));
+         _cfg->addEdge(TR::CFGEdge::createExceptionEdge(lastClonedBlock, succ,comp()->trMemory()));
          }
 
 
@@ -5913,7 +5913,7 @@ void OMR::ValuePropagation::versionBlocks()
       //
       TR::Block *chooserBlock = NULL;
       ListElement<TR::Node> *comparisonNode = comparisonNodes.getListHead();
-      TR_ScratchList<TR::Block> comparisonBlocks(trMemory());
+      TR_ScratchList<TR::Block> comparisonBlocks(comp()->trMemory());
       TR::TreeTop *insertionPoint = block->getEntry();
       TR::TreeTop *treeBeforeInsertionPoint = insertionPoint->getPrevTreeTop();
 
@@ -6006,13 +6006,13 @@ void OMR::ValuePropagation::versionBlocks()
          ListElement<TR::Block> *nextComparisonBlock = currComparisonBlock->getNextElement();
          if (nextComparisonBlock)
             {
-            _cfg->addEdge(TR::CFGEdge::createEdge(currentBlock,  nextComparisonBlock->getData(), trMemory()));
-            _cfg->addEdge(TR::CFGEdge::createEdge(currentBlock,  clonedBlock, trMemory()));
+            _cfg->addEdge(TR::CFGEdge::createEdge(currentBlock,  nextComparisonBlock->getData(), comp()->trMemory()));
+            _cfg->addEdge(TR::CFGEdge::createEdge(currentBlock,  clonedBlock, comp()->trMemory()));
             }
          else
             {
-            _cfg->addEdge(TR::CFGEdge::createEdge(currentBlock,  block, trMemory()));
-            _cfg->addEdge(TR::CFGEdge::createEdge(currentBlock,  clonedBlock, trMemory()));
+            _cfg->addEdge(TR::CFGEdge::createEdge(currentBlock,  block, comp()->trMemory()));
+            _cfg->addEdge(TR::CFGEdge::createEdge(currentBlock,  clonedBlock, comp()->trMemory()));
             }
 
          currComparisonBlock = nextComparisonBlock;
@@ -6031,7 +6031,7 @@ void OMR::ValuePropagation::versionBlocks()
 bool OMR::ValuePropagation::prepareForBlockVersion(TR_LinkHead<ArrayLengthToVersion> *arrayLengths)
    {
    bool isGlobal;
-   TR_BitVector invariantVariables(comp()->getSymRefCount(), trMemory(), stackAlloc);
+   TR_BitVector invariantVariables(comp()->getSymRefCount(), comp()->trMemory(), stackAlloc);
    invariantVariables.setAll(comp()->getSymRefCount());
    invariantVariables -= *_seenDefinedSymbolReferences;
 
@@ -6369,7 +6369,7 @@ void OMR::ValuePropagation::buildBoundCheckComparisonNodes(BlockVersionInfo *blo
    for (ArrayLengthToVersion *arrayLength = blockInfo->_arrayLengths->getFirst(); arrayLength; arrayLength = arrayLength->getNext())
       {
       bool arrayLengthVersioned=false;
-      TR_ScratchList<TR::Node> temp(trMemory());
+      TR_ScratchList<TR::Node> temp(comp()->trMemory());
       for (ArrayIndexInfo *arrayIndex = arrayLength->_arrayIndicesInfo->getFirst(); arrayIndex; arrayIndex = arrayIndex->getNext())
          {
          if (!arrayIndex->_versionBucket)
@@ -6413,7 +6413,7 @@ void OMR::ValuePropagation::buildBoundCheckComparisonNodes(BlockVersionInfo *blo
 
             temp.add(nextComparisonNode);
 
-            if (arrayIndex->_baseNode && arrayIndex->_instanceOfClass && 
+            if (arrayIndex->_baseNode && arrayIndex->_instanceOfClass &&
                 arrayIndex->_baseNode->getOpCode().getOpCodeValue() == TR::iloadi)
                {
                // InstanceOf check for the object we load the array index from
@@ -6682,20 +6682,20 @@ void OMR::ValuePropagation::createNewBucketForArrayIndex(ArrayLengthToVersion *a
    {
    if (!array )
       {         //create a new arrayLengthToVersion
-      array = new (trStackMemory()) ArrayLengthToVersion;
+      array = new (comp()->trStackMemory()) ArrayLengthToVersion;
       array->_arrayLen = bndchkNode->getFirstChild();
-      array->_arrayIndicesInfo = new (trStackMemory())TR_LinkHead<ArrayIndexInfo>();
+      array->_arrayIndicesInfo = new (comp()->trStackMemory())TR_LinkHead<ArrayIndexInfo>();
       array->_instanceOfClass = instanceOfClass;
       addToSortedList(arrayLengths,array);
       }
    //create a new bucket
-   ArrayIndexInfo *arrayIndex = new (trStackMemory()) ArrayIndexInfo;
+   ArrayIndexInfo *arrayIndex = new (comp()->trStackMemory()) ArrayIndexInfo;
    arrayIndex->_min = c;
    arrayIndex->_max = c;
    arrayIndex->_delta = 0;
    arrayIndex->_baseNode = baseNode;
    arrayIndex->_instanceOfClass = indexSourceObjectClass;
-   arrayIndex->_bndChecks = new (trStackMemory()) TR_ScratchList<TR::Node>(trMemory());
+   arrayIndex->_bndChecks = new (comp()->trStackMemory()) TR_ScratchList<TR::Node>(comp()->trMemory());
    arrayIndex->_bndChecks->add(bndchkNode);
    arrayIndex->_versionBucket= false;
    if (!baseNode && c<0)
@@ -6771,7 +6771,7 @@ void OMR::ValuePropagation::collectDefSymRefs(TR::Node *node, TR::Node *parent)
                      }
                   if (!firstLoadWasSeen)
                      {
-                     FirstLoadOfNonInvariant *newFirstLoad = new (trStackMemory())FirstLoadOfNonInvariant;
+                     FirstLoadOfNonInvariant *newFirstLoad = new (comp()->trStackMemory())FirstLoadOfNonInvariant;
                      newFirstLoad->_symRefNum = load->getSymbolReference()->getReferenceNumber();
                      newFirstLoad->_node = load;
                      _firstLoads->add(newFirstLoad);
@@ -7016,7 +7016,7 @@ void OMR::ValuePropagation::transformUnknownTypeArrayCopy(TR_TreeTopWrtBarFlag *
    if ((arrayTree->_flag & NEED_ARRAYSTORE_CHECK) == 0)
       arraycopyReference->getNode()->getFirstChild()->setNoArrayStoreCheckArrayCopy(true);
    else
-      transformReferenceArrayCopyWithoutCreatingStoreTrees(new (trStackMemory())TR_TreeTopWrtBarFlag(arraycopyReference, arrayTree->_flag), srcObjRef, dstObjRef, srcRef, dstRef, lenRef);
+      transformReferenceArrayCopyWithoutCreatingStoreTrees(new (comp()->trStackMemory())TR_TreeTopWrtBarFlag(arraycopyReference, arrayTree->_flag), srcObjRef, dstObjRef, srcRef, dstRef, lenRef);
 #endif
    }
 
@@ -7273,7 +7273,7 @@ void OMR::ValuePropagation::doDelayedTransformations()
             {
            // if (!cfg->getRemovedNodes().find(node))
               if (!node->nodeIsRemoved())
-               cfg->addEdge(TR::CFGEdge::createEdge(node, cfg->getEnd(), trMemory()));
+               cfg->addEdge(TR::CFGEdge::createEdge(node, cfg->getEnd(), comp()->trMemory()));
             }
          }
       }
@@ -7655,7 +7655,7 @@ void OMR::ValuePropagation::doDelayedTransformations()
          printf("\nthrow converted to goto in %s ", comp()->signature());
       TR::Block * gotoDestination = predictedCatchBlock->split(firstTT, cfg);
 
-      List<TR::SymbolReference> l1(trMemory()), l2(trMemory()), l3(trMemory());
+      List<TR::SymbolReference> l1(comp()->trMemory()), l2(comp()->trMemory()), l3(comp()->trMemory());
       TR::ResolvedMethodSymbol * currentSymbol = comp()->getJittedMethodSymbol();
       TR_HandleInjectedBasicBlock hibb(comp(), NULL, currentSymbol, l1, l2, l3, 0);
       hibb.findAndReplaceReferences(predictedCatchBlock->getEntry(), gotoDestination, 0);
@@ -7715,7 +7715,7 @@ void OMR::ValuePropagation::doDelayedTransformations()
       TR_PersistentClassInfo *classInfo = comp()->getPersistentInfo()->getPersistentCHTable()->findClassInfoAfterLocking(prexClazz, comp());
       if (classInfo)
          {
-         TR_ScratchList<TR_PersistentClassInfo> subClasses(trMemory());
+         TR_ScratchList<TR_PersistentClassInfo> subClasses(comp()->trMemory());
          TR_ClassQueries::collectAllSubClasses(classInfo, &subClasses, comp());
          ListIterator<TR_PersistentClassInfo> subClassesIt(&subClasses);
          for (TR_PersistentClassInfo *subClassInfo = subClassesIt.getFirst(); subClassInfo; subClassInfo = subClassesIt.getNext())
@@ -7892,7 +7892,7 @@ void OMR::ValuePropagation::doDelayedTransformations()
          }
 
       if (!found)
-         comp()->getClassesThatShouldNotBeLoaded()->add(new (trHeapMemory()) TR_ClassLoadCheck(cii->_sig, cii->_len));
+         comp()->getClassesThatShouldNotBeLoaded()->add(new (comp()->trHeapMemory()) TR_ClassLoadCheck(cii->_sig, cii->_len));
       }
 
    _classesToCheckInit.setFirst(0);

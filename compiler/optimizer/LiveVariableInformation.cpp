@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -125,19 +125,19 @@ void TR_LiveVariableInformation::createGenAndKillSetCaches()
    {
    _numNodes = comp()->getFlowGraph()->getNextNodeNumber();
    int32_t arraySize = _numNodes * sizeof (TR_BitVector *);
-   _cachedRegularGenSetInfo = (TR_BitVector **) trMemory()->allocateStackMemory(arraySize);
-   _cachedRegularKillSetInfo = (TR_BitVector **) trMemory()->allocateStackMemory(arraySize);
-   _cachedExceptionGenSetInfo = (TR_BitVector **) trMemory()->allocateStackMemory(arraySize);
-   _cachedExceptionKillSetInfo = (TR_BitVector **) trMemory()->allocateStackMemory(arraySize);
+   _cachedRegularGenSetInfo = (TR_BitVector **) comp()->trMemory()->allocateStackMemory(arraySize);
+   _cachedRegularKillSetInfo = (TR_BitVector **) comp()->trMemory()->allocateStackMemory(arraySize);
+   _cachedExceptionGenSetInfo = (TR_BitVector **) comp()->trMemory()->allocateStackMemory(arraySize);
+   _cachedExceptionKillSetInfo = (TR_BitVector **) comp()->trMemory()->allocateStackMemory(arraySize);
 
    // need to allocate each block's sets here or else they may be allocated above an inner stack mark
    // and then be de-allocated before they get re-used
    for (int32_t b=0;b < _numNodes;b++)
       {
-      _cachedRegularGenSetInfo[b] = new (trStackMemory()) TR_BitVector(_numLocals, trMemory());
-      _cachedRegularKillSetInfo[b] = new (trStackMemory()) TR_BitVector(_numLocals, trMemory());
-      _cachedExceptionGenSetInfo[b] = new (trStackMemory()) TR_BitVector(_numLocals, trMemory());
-      _cachedExceptionKillSetInfo[b] = new (trStackMemory()) TR_BitVector(_numLocals, trMemory());
+      _cachedRegularGenSetInfo[b] = new (comp()->trStackMemory()) TR_BitVector(_numLocals, comp()->trMemory());
+      _cachedRegularKillSetInfo[b] = new (comp()->trStackMemory()) TR_BitVector(_numLocals, comp()->trMemory());
+      _cachedExceptionGenSetInfo[b] = new (comp()->trStackMemory()) TR_BitVector(_numLocals, comp()->trMemory());
+      _cachedExceptionKillSetInfo[b] = new (comp()->trStackMemory()) TR_BitVector(_numLocals, comp()->trMemory());
       }
 
    _haveCachedGenAndKillSets = false;
@@ -156,25 +156,25 @@ void TR_LiveVariableInformation::initializeGenAndKillSetInfo(TR_BitVector **regu
          {
          if (_cachedRegularGenSetInfo[nodeNumber] != NULL)
             {
-            regularGenSetInfo[nodeNumber] = new (trStackMemory()) TR_BitVector(_numLocals,trMemory(), stackAlloc);
+            regularGenSetInfo[nodeNumber] = new (comp()->trStackMemory()) TR_BitVector(_numLocals,comp()->trMemory(), stackAlloc);
             *(regularGenSetInfo[nodeNumber]) = *(_cachedRegularGenSetInfo[nodeNumber]);
             }
 
          if (_cachedRegularKillSetInfo[nodeNumber] != NULL)
             {
-            regularKillSetInfo[nodeNumber] = new (trStackMemory()) TR_BitVector(_numLocals,trMemory(), stackAlloc);
+            regularKillSetInfo[nodeNumber] = new (comp()->trStackMemory()) TR_BitVector(_numLocals,comp()->trMemory(), stackAlloc);
             *(regularKillSetInfo[nodeNumber]) = *(_cachedRegularKillSetInfo[nodeNumber]);
             }
 
          if (_cachedExceptionGenSetInfo[nodeNumber] != NULL)
             {
-            exceptionGenSetInfo[nodeNumber] = new (trStackMemory()) TR_BitVector(_numLocals,trMemory(), stackAlloc);
+            exceptionGenSetInfo[nodeNumber] = new (comp()->trStackMemory()) TR_BitVector(_numLocals,comp()->trMemory(), stackAlloc);
             *(exceptionGenSetInfo[nodeNumber]) = *(_cachedExceptionGenSetInfo[nodeNumber]);
             }
 
          if (_cachedExceptionKillSetInfo[nodeNumber] != NULL)
             {
-            exceptionKillSetInfo[nodeNumber] = new (trStackMemory()) TR_BitVector(_numLocals,trMemory(), stackAlloc);
+            exceptionKillSetInfo[nodeNumber] = new (comp()->trStackMemory()) TR_BitVector(_numLocals,comp()->trMemory(), stackAlloc);
             *(exceptionKillSetInfo[nodeNumber]) = *(_cachedExceptionKillSetInfo[nodeNumber]);
             }
          }
@@ -182,7 +182,7 @@ void TR_LiveVariableInformation::initializeGenAndKillSetInfo(TR_BitVector **regu
       }
 
    // allocate bit vector to store local objects as they are found by findUseOfLocal
-   _localObjects = new (trStackMemory()) TR_BitVector(_numLocals, trMemory());
+   _localObjects = new (comp()->trStackMemory()) TR_BitVector(_numLocals, comp()->trMemory());
 
    // For each block in the CFG build the gen and kill set for this analysis.
    // Go in treetop order, which guarantees that we see the correct (i.e. first)
@@ -230,7 +230,7 @@ void TR_LiveVariableInformation::initializeGenAndKillSetInfo(TR_BitVector **regu
          if (!seenException)
             {
             if (exceptionGenSetInfo[blockNum] == NULL)
-               exceptionGenSetInfo[blockNum] = new (trStackMemory()) TR_BitVector(_numLocals,trMemory(), stackAlloc);
+               exceptionGenSetInfo[blockNum] = new (comp()->trStackMemory()) TR_BitVector(_numLocals,comp()->trMemory(), stackAlloc);
             *(exceptionGenSetInfo[blockNum]) = *(regularGenSetInfo[blockNum]);
             if (_cachedExceptionGenSetInfo != NULL)
                *(_cachedExceptionGenSetInfo[blockNum]) = *(regularGenSetInfo[blockNum]);
@@ -256,7 +256,7 @@ void TR_LiveVariableInformation::initializeGenAndKillSetInfo(TR_BitVector **regu
                traceMsg(comp(), "\n Killing symbol with local index %d in block_%d\n", localIndex, blockNum);
 
                if (regularKillSetInfo[blockNum] == NULL)
-                  regularKillSetInfo[blockNum] = new (trStackMemory()) TR_BitVector(_numLocals,trMemory(), stackAlloc);
+                  regularKillSetInfo[blockNum] = new (comp()->trStackMemory()) TR_BitVector(_numLocals,comp()->trMemory(), stackAlloc);
                regularKillSetInfo[blockNum]->set(localIndex);
                if (_cachedRegularKillSetInfo)
                   _cachedRegularKillSetInfo[blockNum]->set(localIndex);
@@ -271,7 +271,7 @@ void TR_LiveVariableInformation::initializeGenAndKillSetInfo(TR_BitVector **regu
                if (!seenException)
                   {
                   if (exceptionKillSetInfo[blockNum] == NULL)
-                     exceptionKillSetInfo[blockNum] = new (trStackMemory()) TR_BitVector(_numLocals,trMemory(), stackAlloc);
+                     exceptionKillSetInfo[blockNum] = new (comp()->trStackMemory()) TR_BitVector(_numLocals,comp()->trMemory(), stackAlloc);
                   exceptionKillSetInfo[blockNum]->set(localIndex);
                   if (_cachedExceptionKillSetInfo)
                      _cachedExceptionKillSetInfo[blockNum]->set(localIndex);
@@ -306,7 +306,7 @@ void TR_LiveVariableInformation::initializeGenAndKillSetInfo(TR_BitVector **regu
                traceMsg(comp(), "            Adding local objects to gen set for block_%d\n", blockNum);
 
             if (regularGenSetInfo[blockNum] == NULL)
-               regularGenSetInfo[blockNum] = new (trStackMemory()) TR_BitVector(_numLocals,trMemory(), stackAlloc);
+               regularGenSetInfo[blockNum] = new (comp()->trStackMemory()) TR_BitVector(_numLocals,comp()->trMemory(), stackAlloc);
             *regularGenSetInfo[blockNum] |= *_localObjects;
             if (_cachedRegularGenSetInfo)
 
@@ -314,7 +314,7 @@ void TR_LiveVariableInformation::initializeGenAndKillSetInfo(TR_BitVector **regu
 
 
             if (exceptionGenSetInfo[blockNum] == NULL)
-               exceptionGenSetInfo[blockNum] = new (trStackMemory()) TR_BitVector(_numLocals,trMemory(), stackAlloc);
+               exceptionGenSetInfo[blockNum] = new (comp()->trStackMemory()) TR_BitVector(_numLocals,comp()->trMemory(), stackAlloc);
             *exceptionGenSetInfo[blockNum] |= *_localObjects;
             if (_cachedExceptionGenSetInfo)
                *_cachedExceptionGenSetInfo[blockNum] |= *_localObjects;
@@ -346,7 +346,7 @@ void TR_LiveVariableInformation::initializeGenAndKillSetInfo(TR_BitVector **regu
 // i.e. if a tree contains a commoned reference to a load of a local, then
 void TR_LiveVariableInformation::trackLiveCommonedLoads()
    {
-   _liveCommonedLoads = new (trStackMemory()) TR_BitVector(_numLocals, trMemory());
+   _liveCommonedLoads = new (comp()->trStackMemory()) TR_BitVector(_numLocals, comp()->trMemory());
    }
 
 void TR_LiveVariableInformation::findCommonedLoads(TR::Node *node, TR_BitVector *commonedLoads,
@@ -545,7 +545,7 @@ void TR_LiveVariableInformation::visitTreeForLocals(TR::Node *node, TR_BitVector
                traceMsg(comp(), "            Gening symbol with local index %d\n", localIndex);
 
             if (*blockGenSetInfo == NULL)
-               *blockGenSetInfo = new (trStackMemory()) TR_BitVector(_numLocals,trMemory(), stackAlloc);
+               *blockGenSetInfo = new (comp()->trStackMemory()) TR_BitVector(_numLocals,comp()->trMemory(), stackAlloc);
 
             if (local)
                (*blockGenSetInfo)->set(localIndex);
@@ -617,7 +617,7 @@ TR_OSRLiveVariableInformation::findUseOfLocal(TR::Node *node, int32_t blockNum,
       if (!liveSymbols->isEmpty())
          {
          if (*blockGenSetInfo == NULL)
-            *blockGenSetInfo = new (trStackMemory()) TR_BitVector(numLocals(),trMemory(), stackAlloc);
+            *blockGenSetInfo = new (comp()->trStackMemory()) TR_BitVector(numLocals(),comp()->trMemory(), stackAlloc);
 
          *(*blockGenSetInfo) |= *liveSymbols;
          }
@@ -639,7 +639,7 @@ TR_OSRLiveVariableInformation::buildLiveSymbolsBitVector(TR_OSRMethodData *osrMe
    if (osrMethodData == NULL || osrMethodData->getSymRefs() == NULL)
       return;
    TR_BitVector *deadSymRefs = osrMethodData->getLiveRangeInfo(byteCodeIndex);
-   TR_BitVector *liveSymRefs = new (comp()->trStackMemory()) TR_BitVector(0, trMemory(), stackAlloc);
+   TR_BitVector *liveSymRefs = new (comp()->trStackMemory()) TR_BitVector(0, comp()->trMemory(), stackAlloc);
 
    *liveSymRefs |= *osrMethodData->getSymRefs();
    if (deadSymRefs != NULL)

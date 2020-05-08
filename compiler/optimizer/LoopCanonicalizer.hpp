@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -68,9 +68,9 @@ class TR_LoopTransformer : public TR::Optimization
    public:
    TR_LoopTransformer(TR::OptimizationManager *manager)
       : TR::Optimization(manager),
-        _invariantBlocks(trMemory()),
-        _blocksToBeCleansed(trMemory()),
-        _analysisStack(trMemory(), 8, false, stackAlloc),
+        _invariantBlocks(comp()->trMemory()),
+        _blocksToBeCleansed(comp()->trMemory()),
+        _analysisStack(comp()->trMemory(), 8, false, stackAlloc),
         _writtenAndNotJustForHeapification(NULL),
         _writtenExactlyOnce(comp()->allocator("LoopTransformer")),
         _readExactlyOnce(comp()->allocator("LoopTransformer")),
@@ -85,13 +85,13 @@ class TR_LoopTransformer : public TR::Optimization
 
    void initializeSymbolsWrittenAndReadExactlyOnce(int32_t symRefCount, TR_BitVectorGrowable growableOrNot)
       {
-      _storeTrees = (TR::TreeTop **)trMemory()->allocateStackMemory(symRefCount*sizeof(TR::TreeTop *));
+      _storeTrees = (TR::TreeTop **)comp()->trMemory()->allocateStackMemory(symRefCount*sizeof(TR::TreeTop *));
       memset(_storeTrees, 0, symRefCount*sizeof(TR::TreeTop *));
 
-      _cannotBeEliminated = new (trStackMemory()) TR_BitVector(symRefCount, trMemory(), stackAlloc, growableOrNot);
+      _cannotBeEliminated = new (comp()->trStackMemory()) TR_BitVector(symRefCount, comp()->trMemory(), stackAlloc, growableOrNot);
 
-      _neverRead = new (trStackMemory()) TR_BitVector(symRefCount, trMemory(), stackAlloc, growableOrNot);
-      _neverWritten = new (trStackMemory()) TR_BitVector(symRefCount, trMemory(), stackAlloc, growableOrNot);
+      _neverRead = new (comp()->trStackMemory()) TR_BitVector(symRefCount, comp()->trMemory(), stackAlloc, growableOrNot);
+      _neverWritten = new (comp()->trStackMemory()) TR_BitVector(symRefCount, comp()->trMemory(), stackAlloc, growableOrNot);
 
       TR::BitVector tmp(comp()->allocator("LoopTransformer"));
       comp()->getSymRefTab()->getAllSymRefs(tmp);
@@ -213,9 +213,9 @@ class TR_LoopTransformer : public TR::Optimization
  * Class TR_LoopCanonicalizer
  * ==========================
  *
- * The loop canonicalizer optimization transforms a while loop into 
- * an if-guarded do-while loop with a loop invariant (pre-header) 
- * block. The loop test is placed at the end of the trees for the 
+ * The loop canonicalizer optimization transforms a while loop into
+ * an if-guarded do-while loop with a loop invariant (pre-header)
+ * block. The loop test is placed at the end of the trees for the
  * loop, so that the loop back-edge is almost always a backwards branch.
  */
 
@@ -276,13 +276,13 @@ class TR_LoopCanonicalizer : public TR_LoopTransformer
  * Class TR_LoopInverter
  * =====================
  *
- * The loop inverter optimization converts a loop in which the induction 
- * variable counts up from zero into one in which the induction variable 
- * counts down to zero. Note that this is legal only if the inversion of 
- * the loop does not affect program semantics inside the loop (order of 
- * exceptions thrown, etc.). The benefit of inversion is that there are, 
- * in general, instructions that can perform compare/branch against zero 
- * in an efficient manner, and in some cases (e.g. PowerPC) special count 
+ * The loop inverter optimization converts a loop in which the induction
+ * variable counts up from zero into one in which the induction variable
+ * counts down to zero. Note that this is legal only if the inversion of
+ * the loop does not affect program semantics inside the loop (order of
+ * exceptions thrown, etc.). The benefit of inversion is that there are,
+ * in general, instructions that can perform compare/branch against zero
+ * in an efficient manner, and in some cases (e.g. PowerPC) special count
  * registers can be used for counting.
  */
 

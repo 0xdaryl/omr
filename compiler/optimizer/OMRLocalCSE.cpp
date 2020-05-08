@@ -227,7 +227,7 @@ void OMR::LocalCSE::prePerformOnBlocks()
    _mayHaveRemovedChecks = false;
    manager()->setAlteredCode(false);
 
-   _simulatedNodesAsArray = (TR::Node**)trMemory()->allocateStackMemory(comp()->getNodeCount()*sizeof(TR::Node*));
+   _simulatedNodesAsArray = (TR::Node**)comp()->trMemory()->allocateStackMemory(comp()->getNodeCount()*sizeof(TR::Node*));
    memset(_simulatedNodesAsArray, 0, comp()->getNodeCount()*sizeof(TR::Node*));
    }
 
@@ -260,14 +260,14 @@ void OMR::LocalCSE::transformBlock(TR::TreeTop * entryTree, TR::TreeTop * exitTr
       return;
 
    // From here, down, stack memory allocations will die when the function returns
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    TR::TreeTop *currentTree = entryTree;
    int32_t numStores = 0, numNullChecks = 0;
    _numNodes = 0;
    _numNullCheckNodes = 0;
    _numCopyPropagations = 0;
-   _arrayRefNodes = new (stackMemoryRegion) TR_ScratchList<TR::Node>(trMemory());
+   _arrayRefNodes = new (stackMemoryRegion) TR_ScratchList<TR::Node>(comp()->trMemory());
 
    // Count the number of stores and null checks in this method; this is
    // required to allocate data structures of the correct size. Null checks
@@ -305,11 +305,11 @@ void OMR::LocalCSE::transformBlock(TR::TreeTop * entryTree, TR::TreeTop * exitTr
 
    _storeMap->clear();
 
-   _nullCheckNodesAsArray = (TR::Node**)trMemory()->allocateStackMemory(numNullChecks*sizeof(TR::Node*));
+   _nullCheckNodesAsArray = (TR::Node**)comp()->trMemory()->allocateStackMemory(numNullChecks*sizeof(TR::Node*));
    memset(_nullCheckNodesAsArray, 0, numNullChecks*sizeof(TR::Node*));
 
-   _replacedNodesAsArray = (TR::Node**)trMemory()->allocateStackMemory(_numNodes*sizeof(TR::Node*));
-   _replacedNodesByAsArray = (TR::Node**)trMemory()->allocateStackMemory(_numNodes*sizeof(TR::Node*));
+   _replacedNodesAsArray = (TR::Node**)comp()->trMemory()->allocateStackMemory(_numNodes*sizeof(TR::Node*));
+   _replacedNodesByAsArray = (TR::Node**)comp()->trMemory()->allocateStackMemory(_numNodes*sizeof(TR::Node*));
    memset(_replacedNodesAsArray, 0, _numNodes*sizeof(TR::Node*));
    memset(_replacedNodesByAsArray, 0, _numNodes*sizeof(TR::Node*));
 
@@ -765,12 +765,12 @@ void OMR::LocalCSE::doCommoningAgainIfPreviouslyCommoned(TR::Node *node, TR::Nod
    }
 /**
  * We can allow auto or parms which are not global during the volatile only phase
- * as we do not expect those field to be changing. This enables up to common volatiles that are based on an 
- * indirection chain of such non volatile autos or parms that are not global by definition. 
+ * as we do not expect those field to be changing. This enables up to common volatiles that are based on an
+ * indirection chain of such non volatile autos or parms that are not global by definition.
  * Following query returns true if the node can be commoned in volatile only pass
  */
 bool OMR::LocalCSE::canCommonNodeInVolatilePass(TR::Node *node)
-   {   
+   {
    return node->getOpCode().hasSymbolReference() && (node->getSymbol()->isVolatile() || node->getSymbol()->isAutoOrParm());
    }
 

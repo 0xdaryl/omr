@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -88,7 +88,7 @@ bool TR_Isolatedness::postInitializationProcessing()
    memset(_outSetInfo, 0, _numberOfNodes*sizeof(TR_BitVector *));
 
    for (int32_t i = 0; i<_numberOfNodes; i++)
-      _outSetInfo[i] = new (trStackMemory()) TR_BitVector(_numberOfBits, stackAlloc, trMemory());
+      _outSetInfo[i] = new (comp()->trStackMemory()) TR_BitVector(_numberOfBits, stackAlloc, comp()->trMemory());
 */
    return true;
    }

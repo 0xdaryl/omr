@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -81,7 +81,7 @@ void checkOrderingConsistency(TR::Compilation *comp);
 
 
 TR_OrderBlocks::TR_OrderBlocks(TR::OptimizationManager *manager, bool beforeExtension)
-   : TR_BlockOrderingOptimization(manager), _hotPathList(manager->trMemory()), _coldPathList(manager->trMemory())
+   : TR_BlockOrderingOptimization(manager), _hotPathList(comp()->trMemory()), _coldPathList(comp()->trMemory())
    {
    setTrace(comp()->getOptions()->trace(OMR::basicBlockOrdering));
 
@@ -583,7 +583,7 @@ TR::CFGNode *TR_OrderBlocks::chooseBestFallThroughSuccessor(TR::CFG *cfg, TR::CF
    {
    static char *reallyNewReordering=feGetEnv("TR_reallyNewReordering");
 
-   List<TR::CFGEdge> candidateEdges(trMemory());
+   List<TR::CFGEdge> candidateEdges(comp()->trMemory());
    //int32_t numCandidates = 0;
    TR::CFGEdge *bestSuccessorEdge = NULL;
 
@@ -729,8 +729,8 @@ TR::CFGNode *TR_OrderBlocks::chooseBestFallThroughSuccessor(TR::CFG *cfg, TR::CF
                if (exitEdges.getSize()>1)
                   {
 
-                  List<TR::CFGEdge> rEdges(trMemory());
-                  List<TR::Block> rBlocks(trMemory());
+                  List<TR::CFGEdge> rEdges(comp()->trMemory());
+                  List<TR::Block> rBlocks(comp()->trMemory());
 
                   innerLoop->asRegion()->collectExitBlocks(&rBlocks, &rEdges);
 
@@ -1144,8 +1144,8 @@ static bool peepHoleGotoToLoopHeader(TR::CFG *cfg, TR::Block *block, TR::Block *
             {
             success = true;
             block->getLastRealTreeTop()->getNode()->setBranchDestination(branchDest->getEntry());
-            cfg->addEdge(TR::CFGEdge::createEdge(block,  branchDest, cfg->trMemory()));
-            cfg->addEdge(TR::CFGEdge::createEdge(predBlock,  dest, cfg->trMemory()));
+            cfg->addEdge(TR::CFGEdge::createEdge(block,  branchDest, cfg->comp()->trMemory()));
+            cfg->addEdge(TR::CFGEdge::createEdge(predBlock,  dest, cfg->comp()->trMemory()));
             cfg->removeEdge(block, dest);
             cfg->removeEdge(predBlock, branchDest);
             branchNode->reverseBranch(dest->getEntry());
@@ -2054,7 +2054,7 @@ void TR_OrderBlocks::doReordering()
 
    _visitCount = comp()->incVisitCount();
 
-   TR_BlockList newBlockOrder(trMemory());
+   TR_BlockList newBlockOrder(comp()->trMemory());
    generateNewOrder(newBlockOrder);
 
    //if (performTransformation(comp(), "%s Reordering blocks to optimize fall-through paths\n", OPT_DETAILS))
@@ -2097,7 +2097,7 @@ int32_t TR_OrderBlocks::perform()
    numberOfCompiles++;
    numberMethodReplicationCandidates = 0;
 
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    if (trace()) comp()->dumpMethodTrees("Before ordering");
 
@@ -2283,7 +2283,7 @@ void TR_BlockOrderingOptimization::dumpBlockOrdering(TR::TreeTop *tt, char *titl
 
 TR::Block **TR_BlockShuffling::allocateBlockArray()
    {
-   return (TR::Block **)trMemory()->allocateStackMemory(_numBlocks * sizeof(TR::Block *));
+   return (TR::Block **)comp()->trMemory()->allocateStackMemory(_numBlocks * sizeof(TR::Block *));
    }
 
 void TR_BlockShuffling::traceBlocks(TR::Block **blocks)
@@ -2353,7 +2353,7 @@ int32_t TR_BlockShuffling::perform()
    // To do this, we build a list of all blocks (not just shufflable ones) and
    // hand it to connectTreesAccordingToOrder.
    //
-   TR_BlockList newBlockOrder(trMemory());
+   TR_BlockList newBlockOrder(comp()->trMemory());
    newBlockOrder.add(comp()->getFlowGraph()->getEnd());
    for (int32_t i = _numBlocks-1; i >= 0; i--)
       newBlockOrder.add(blocks[i]);
@@ -2396,7 +2396,7 @@ void TR_BlockShuffling::riffle(TR::Block **blocks)
 
    // It's hard to merge in-place; let's keep it simple.
    //
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    TR::Block **originalBlocks = allocateBlockArray();
    memcpy(originalBlocks, blocks, _numBlocks * sizeof(blocks[0]));

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -169,7 +169,7 @@ TR_PartialRedundancy::TR_PartialRedundancy(TR::OptimizationManager *manager)
 
 TR_PartialRedundancy::ContainerType *TR_PartialRedundancy::allocateContainer(int32_t size)
    {
-   return new (trStackMemory())TR_BitVector(size, trMemory(), stackAlloc);
+   return new (comp()->trStackMemory())TR_BitVector(size, comp()->trMemory(), stackAlloc);
    }
 
 static bool ignoreValueOfMultipleReturnNode(TR::Node *node, TR::SparseBitVector &seenNodes)
@@ -236,7 +236,7 @@ int32_t TR_PartialRedundancy::perform()
    if (comp()->incompleteOptimizerSupportForReadWriteBarriers())
       return 0;
 
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    // setAlteredCode(false);
 
@@ -279,15 +279,15 @@ int32_t TR_PartialRedundancy::perform()
 
    int i;
    _numberOfBits = _isolatedness->_latestness->_numberOfBits;
-   _optSetInfo = (ContainerType **)trMemory()->allocateStackMemory(_numNodes*sizeof(ContainerType *));
+   _optSetInfo = (ContainerType **)comp()->trMemory()->allocateStackMemory(_numNodes*sizeof(ContainerType *));
    memset(_optSetInfo, 0, _numNodes*sizeof(ContainerType *));
-   _rednSetInfo = (ContainerType **)trMemory()->allocateStackMemory(_numNodes*sizeof(ContainerType *));
+   _rednSetInfo = (ContainerType **)comp()->trMemory()->allocateStackMemory(_numNodes*sizeof(ContainerType *));
    memset(_rednSetInfo, 0, _numNodes*sizeof(ContainerType *));
-   _unavailableSetInfo = (ContainerType **)trMemory()->allocateStackMemory(_numNodes*sizeof(ContainerType *));
+   _unavailableSetInfo = (ContainerType **)comp()->trMemory()->allocateStackMemory(_numNodes*sizeof(ContainerType *));
    memset(_unavailableSetInfo, 0, _numNodes*sizeof(ContainerType *));
-   _origOptSetInfo = (ContainerType **)trMemory()->allocateStackMemory(_numNodes*sizeof(ContainerType *));
+   _origOptSetInfo = (ContainerType **)comp()->trMemory()->allocateStackMemory(_numNodes*sizeof(ContainerType *));
    memset(_origOptSetInfo, 0, _numNodes*sizeof(ContainerType *));
-   _globalRegisterWeights = (int32_t *)trMemory()->allocateStackMemory(_numNodes*sizeof(int32_t));
+   _globalRegisterWeights = (int32_t *)comp()->trMemory()->allocateStackMemory(_numNodes*sizeof(int32_t));
    memset(_globalRegisterWeights, 0, _numNodes*sizeof(int32_t));
 
    // These bit vectors are for storing some summary information
@@ -324,10 +324,10 @@ int32_t TR_PartialRedundancy::perform()
 
    // These data structures keeps track of new temps created by PRE
    //
-   _newSymbols = (TR::Symbol **)trMemory()->allocateStackMemory(_numberOfBits*sizeof(TR::Symbol *));
-   _newSymbolReferences = (TR::SymbolReference **)trMemory()->allocateStackMemory(_numberOfBits*sizeof(TR::SymbolReference *));
-   _newSymbolsMap = (int32_t*) trMemory()->allocateStackMemory(_numberOfBits*sizeof(int32_t));
-   _registerCandidates = (TR_RegisterCandidate **)trMemory()->allocateStackMemory(_numberOfBits*sizeof(TR_RegisterCandidate *));
+   _newSymbols = (TR::Symbol **)comp()->trMemory()->allocateStackMemory(_numberOfBits*sizeof(TR::Symbol *));
+   _newSymbolReferences = (TR::SymbolReference **)comp()->trMemory()->allocateStackMemory(_numberOfBits*sizeof(TR::SymbolReference *));
+   _newSymbolsMap = (int32_t*) comp()->trMemory()->allocateStackMemory(_numberOfBits*sizeof(int32_t));
+   _registerCandidates = (TR_RegisterCandidate **)comp()->trMemory()->allocateStackMemory(_numberOfBits*sizeof(TR_RegisterCandidate *));
 
    memset(_newSymbols, 0, _numberOfBits*sizeof(TR::Symbol *));
    memset(_newSymbolReferences, 0, _numberOfBits*sizeof(TR::SymbolReference *));
@@ -1243,7 +1243,7 @@ TR::TreeTop *TR_PartialRedundancy::placeComputationsOptimally(TR::Block *block, 
                TR::Node::recreate(nextOptimalNode, TR::NULLCHK);
 
             vcount_t visitCount1 = comp()->incOrResetVisitCount();
-            TR_ScratchList<TR::Node> seenNodes(trMemory()), duplicateNodes(trMemory());
+            TR_ScratchList<TR::Node> seenNodes(comp()->trMemory()), duplicateNodes(comp()->trMemory());
             TR::Node *duplicateOptimalNode = duplicateExact(nextOptimalNode->getNullCheckReference(), &seenNodes, &duplicateNodes, visitCount1);
 
             bool replacedNullCheckReference = false;
@@ -1337,7 +1337,7 @@ TR::TreeTop *TR_PartialRedundancy::placeComputationsOptimally(TR::Block *block, 
             // Its a check but not a NULLCHK
             //
             vcount_t visitCount1 = comp()->incOrResetVisitCount();
-            TR_ScratchList<TR::Node> seenNodes(trMemory()), duplicateNodes(trMemory());
+            TR_ScratchList<TR::Node> seenNodes(comp()->trMemory()), duplicateNodes(comp()->trMemory());
             TR::Node *duplicateOptimalNode = duplicateExact(nextOptimalNode, &seenNodes, &duplicateNodes, visitCount1);
 
             // This piece of code replaces any subtrees that are available
@@ -1402,7 +1402,7 @@ TR::TreeTop *TR_PartialRedundancy::placeComputationsOptimally(TR::Block *block, 
          //
          _useAliasSetsNotGuaranteedToBeCorrect = true;
 
-         TR_ScratchList<TR::Node> seenNodes(trMemory()), duplicateNodes(trMemory());
+         TR_ScratchList<TR::Node> seenNodes(comp()->trMemory()), duplicateNodes(comp()->trMemory());
          vcount_t visitCount2 = comp()->incOrResetVisitCount();
          TR::Node *duplicateOptimalNode = duplicateExact(nextOptimalNode, &seenNodes, &duplicateNodes, visitCount2);
 
@@ -1816,7 +1816,7 @@ void TR_PartialRedundancy::eliminateRedundantComputations(TR::Block *block, TR::
                      TR::TreeTop *nextTree = currentTree->getNextTreeTop();
 
                      vcount_t newVisitCount = comp()->incVisitCount();
-                     TR_ScratchList<TR::Node> anchoredNodes(trMemory());
+                     TR_ScratchList<TR::Node> anchoredNodes(comp()->trMemory());
                      collectAllNodesToBeAnchored(&anchoredNodes, currentTree->getNode(), newVisitCount);
                      ListIterator<TR::Node> anchorIt(&anchoredNodes);
                      TR::Node *nextAnchor;
@@ -2042,7 +2042,7 @@ bool TR_PartialRedundancy::eliminateRedundantSupportedNodes(TR::Node *parent, TR
             // Don't use a new visit count for each set of children
             //vcount_t visitCount1 = comp()->incVisitCount();
             resetChildrensVisitCounts(node, visitCount);
-            TR_ScratchList<TR::Node> anchoredNodes(trMemory());
+            TR_ScratchList<TR::Node> anchoredNodes(comp()->trMemory());
             int32_t j;
             for (j=0;j<node->getNumChildren();j++)
                collectAllNodesToBeAnchored(&anchoredNodes, node->getChild(j), visitCount+1);
@@ -2278,14 +2278,14 @@ TR_ExceptionCheckMotion::TR_ExceptionCheckMotion(TR::Compilation *comp, TR::Opti
    _optimisticRednSetInfo = _partialRedundancy->getRednSetInfo();
    _pendingList = NULL;
 
-   _orderedOptNumbersList  = (int32_t **)trMemory()->allocateStackMemory(_numberOfNodes*sizeof(int32_t *));
+   _orderedOptNumbersList  = (int32_t **)comp->trMemory()->allocateStackMemory(_numberOfNodes*sizeof(int32_t *));
    memset(_orderedOptNumbersList, 0, _numberOfNodes*sizeof(int32_t *));
 
-   _actualOptSetInfo = (ContainerType **)trMemory()->allocateStackMemory(_numNodes*sizeof(ContainerType *));
+   _actualOptSetInfo = (ContainerType **)comp->trMemory()->allocateStackMemory(_numNodes*sizeof(ContainerType *));
    memset(_actualOptSetInfo, 0, _numNodes*sizeof(ContainerType *));
-   _actualRednSetInfo = (ContainerType **)trMemory()->allocateStackMemory(_numNodes*sizeof(ContainerType *));
+   _actualRednSetInfo = (ContainerType **)comp->trMemory()->allocateStackMemory(_numNodes*sizeof(ContainerType *));
    memset(_actualRednSetInfo, 0, _numNodes*sizeof(ContainerType *));
-   _killedGenExprs = (ContainerType **)trMemory()->allocateStackMemory(_numNodes*sizeof(ContainerType *));
+   _killedGenExprs = (ContainerType **)comp->trMemory()->allocateStackMemory(_numNodes*sizeof(ContainerType *));
    memset(_killedGenExprs, 0, _numNodes*sizeof(ContainerType *));
    //_seenNodes = allocateContainer(_numNodes);
    _nodesInCycle = allocateContainer(_numNodes);
@@ -2301,7 +2301,7 @@ TR_ExceptionCheckMotion::TR_ExceptionCheckMotion(TR::Compilation *comp, TR::Opti
       _actualRednSetInfo[i] = partialRedundancy->allocateContainer(_numberOfBits);
       _killedGenExprs[i] = allocateContainer(_numberOfBits);
       ///// Changed to initialize here too to save multiple calls to elementCount ... Dave S
-      /////_orderedOptNumbersList[i] = (int32_t *)trMemory()->allocateStackMemory((_optimisticOptSetInfo[i]->elementCount()+_optimisticRednSetInfo[i]->elementCount())*sizeof(int32_t));
+      /////_orderedOptNumbersList[i] = (int32_t *)comp->trMemory()->allocateStackMemory((_optimisticOptSetInfo[i]->elementCount()+_optimisticRednSetInfo[i]->elementCount())*sizeof(int32_t));
       //
       // Conservatively this is the maximum number of elements
       // that could possibly be in the actual optimal set for this
@@ -2312,12 +2312,12 @@ TR_ExceptionCheckMotion::TR_ExceptionCheckMotion(TR::Compilation *comp, TR::Opti
       // ordering constraints
       //
       int32_t numElements = _optimisticOptSetInfo[i]->elementCount()+_optimisticRednSetInfo[i]->elementCount();
-      _orderedOptNumbersList[i] = (int32_t *)trMemory()->allocateStackMemory(numElements*sizeof(int32_t));
+      _orderedOptNumbersList[i] = (int32_t *)comp->trMemory()->allocateStackMemory(numElements*sizeof(int32_t));
       memset(_orderedOptNumbersList[i], -1, numElements*sizeof(int32_t));
       }
 
    _tempContainer = allocateContainer(_numberOfBits);
-   //_temp = new (trStackMemory()) TR_BitVector(_numberOfBits, trMemory(), stackAlloc);
+   //_temp = new (comp()->trStackMemory()) TR_BitVector(_numberOfBits, comp()->trMemory(), stackAlloc);
    }
 
 TR_DataFlowAnalysis::Kind TR_ExceptionCheckMotion::getKind() {return ExceptionCheckMotion;}
@@ -2409,14 +2409,14 @@ int32_t TR_ExceptionCheckMotion::areExceptionSuccessorsIdentical(TR::CFGNode *no
 
 int32_t TR_ExceptionCheckMotion::perform()
    {
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    TR::CFG *cfg = comp()->getFlowGraph();
    TR_Structure *rootStructure = cfg->getStructure();
 
    int32_t arraySize = _numberOfNodes*sizeof(List<TR::Node> *);
 
-   _orderedOptList  = (List<TR::Node> **)trMemory()->allocateStackMemory(arraySize);
+   _orderedOptList  = (List<TR::Node> **)comp()->trMemory()->allocateStackMemory(arraySize);
    memset(_orderedOptList, 0, arraySize);
 
    // These are bit vectors that keep track of where fences would
@@ -2464,10 +2464,10 @@ int32_t TR_ExceptionCheckMotion::perform()
          // Allocate the data structures required for this
          // dataflow analysis
          //
-         _currentList = (List<TR::Node> **)trMemory()->allocateStackMemory(arraySize);
+         _currentList = (List<TR::Node> **)comp()->trMemory()->allocateStackMemory(arraySize);
          int32_t i;
          for (i=0;i<_numberOfNodes;i++)
-            _currentList[i] = new (trStackMemory()) TR_ScratchList<TR::Node>(trMemory());
+            _currentList[i] = new (comp()->trStackMemory()) TR_ScratchList<TR::Node>(comp()->trMemory());
 
          _indirectAccessesThatSurvive = allocateContainer(_numberOfBits);
          _arrayAccessesThatSurvive = allocateContainer(_numberOfBits);
@@ -2677,7 +2677,7 @@ void TR_ExceptionCheckMotion::copyListFromInto(List<TR::Node> *fromList, List<TR
          {
          if (newNode == NULL)
             {
-            newNode = (ListElement<TR::Node>*)trMemory()->allocateStackMemory(sizeof(ListElement<TR::Node>));
+            newNode = (ListElement<TR::Node>*)comp()->trMemory()->allocateStackMemory(sizeof(ListElement<TR::Node>));
             newNode->setNextElement(NULL);
             if (prevNode)
                prevNode->setNextElement(newNode);
@@ -2741,7 +2741,7 @@ void TR_ExceptionCheckMotion::composeLists(List<TR::Node> *targetList, List<TR::
             {
             if (!_composeHelper->get(newNode->getData()->getLocalIndex()))
                {
-               ListElement<TR::Node> *newSourceNode = (ListElement<TR::Node>*)trMemory()->allocateStackMemory(sizeof(ListElement<TR::Node>));
+               ListElement<TR::Node> *newSourceNode = (ListElement<TR::Node>*)comp()->trMemory()->allocateStackMemory(sizeof(ListElement<TR::Node>));
                newSourceNode->setNextElement(NULL);
                if (prevNode)
                   prevNode->setNextElement(newSourceNode);
@@ -2818,7 +2818,7 @@ void TR_ExceptionCheckMotion::composeLists(List<TR::Node> *targetList, List<TR::
                {
                if (!_composeHelper->get(newNode->getData()->getLocalIndex()))
                   {
-                  ListElement<TR::Node> *newSourceNode = (ListElement<TR::Node>*)trMemory()->allocateStackMemory(sizeof(ListElement<TR::Node>));
+                  ListElement<TR::Node> *newSourceNode = (ListElement<TR::Node>*)comp()->trMemory()->allocateStackMemory(sizeof(ListElement<TR::Node>));
                   newSourceNode->setNextElement(NULL);
                   if (prevCursorNode)
                      prevCursorNode->setNextElement(newSourceNode);
@@ -2896,7 +2896,7 @@ void TR_ExceptionCheckMotion::composeLists(List<TR::Node> *targetList, List<TR::
          {
            //if (!_composeHelper->get(newNode->getData()->getLocalIndex()))
             {
-            ListElement<TR::Node> *newSourceNode = (ListElement<TR::Node>*)trMemory()->allocateStackMemory(sizeof(ListElement<TR::Node>));
+            ListElement<TR::Node> *newSourceNode = (ListElement<TR::Node>*)comp()->trMemory()->allocateStackMemory(sizeof(ListElement<TR::Node>));
             newSourceNode->setNextElement(NULL);
             if (prevCursorNode)
                prevCursorNode->setNextElement(newSourceNode);
@@ -2942,7 +2942,7 @@ void TR_ExceptionCheckMotion::appendLists(List<TR::Node> *firstList, List<TR::No
          {
          if (!_appendHelper->get(secondNode->getData()->getLocalIndex()))
             {
-            newFirstNode = (ListElement<TR::Node>*)trMemory()->allocateStackMemory(sizeof(ListElement<TR::Node>));
+            newFirstNode = (ListElement<TR::Node>*)comp()->trMemory()->allocateStackMemory(sizeof(ListElement<TR::Node>));
             newFirstNode->setNextElement(NULL);
             if (prevNode)
                prevNode->setNextElement(newFirstNode);
@@ -3026,8 +3026,8 @@ TR_ExceptionCheckMotion::ExprDominanceInfo *TR_ExceptionCheckMotion::getAnalysis
 
 TR_ExceptionCheckMotion::ExprDominanceInfo *TR_ExceptionCheckMotion::createAnalysisInfo()
    {
-   ExprDominanceInfo *analysisInfo = new (trStackMemory()) ExprDominanceInfo;
-   analysisInfo->_outList = (List<TR::Node> **)trMemory()->allocateStackMemory(_numberOfNodes*sizeof(List<TR::Node> *));
+   ExprDominanceInfo *analysisInfo = new (comp()->trStackMemory()) ExprDominanceInfo;
+   analysisInfo->_outList = (List<TR::Node> **)comp()->trMemory()->allocateStackMemory(_numberOfNodes*sizeof(List<TR::Node> *));
    memset(analysisInfo->_outList, 0, _numberOfNodes*sizeof(List<TR::Node> *));
    return analysisInfo;
    }
@@ -3052,18 +3052,18 @@ void TR_ExceptionCheckMotion::initializeAnalysisInfo(ExprDominanceInfo *info, TR
 
 void TR_ExceptionCheckMotion::initializeAnalysisInfo(ExprDominanceInfo *info, TR::Block *block)
    {
-   info->_inList = new (trStackMemory()) TR_ScratchList<TR::Node>(trMemory());
+   info->_inList = new (comp()->trStackMemory()) TR_ScratchList<TR::Node>(comp()->trMemory());
    TR::CFGNode *succBlock;
    for (auto succ = block->getSuccessors().begin(); succ != block->getSuccessors().end(); ++succ)
       {
       succBlock = (*succ)->getTo();
-      info->_outList[succBlock->getNumber()] = new (trStackMemory()) TR_ScratchList<TR::Node>(trMemory());
+      info->_outList[succBlock->getNumber()] = new (comp()->trStackMemory()) TR_ScratchList<TR::Node>(comp()->trMemory());
       }
 
    for (auto succ = block->getExceptionSuccessors().begin(); succ != block->getExceptionSuccessors().end(); ++succ)
       {
       succBlock = (*succ)->getTo();
-      info->_outList[succBlock->getNumber()] = new (trStackMemory()) TR_ScratchList<TR::Node>(trMemory());
+      info->_outList[succBlock->getNumber()] = new (comp()->trStackMemory()) TR_ScratchList<TR::Node>(comp()->trMemory());
       }
    }
 
@@ -3072,14 +3072,14 @@ void TR_ExceptionCheckMotion::initializeAnalysisInfo(ExprDominanceInfo *info, TR
 
 TR_ExceptionCheckMotion::ContainerType *TR_ExceptionCheckMotion::allocateContainer(int32_t size)
    {
-   return new (trStackMemory())TR_BitVector(size, trMemory(), stackAlloc);
+   return new (comp()->trStackMemory())TR_BitVector(size, comp()->trMemory(), stackAlloc);
    }
 
 void TR_ExceptionCheckMotion::initializeAnalysisInfo(ExprDominanceInfo *info, TR_RegionStructure *region)
    {
    ContainerType *exitNodes = allocateContainer(_numberOfNodes);
 
-   info->_inList = new (trStackMemory()) TR_ScratchList<TR::Node>(trMemory());
+   info->_inList = new (comp()->trStackMemory()) TR_ScratchList<TR::Node>(comp()->trMemory());
    //
    // Copy the current out set for comparison the next time we analyze this region
    //
@@ -3093,7 +3093,7 @@ void TR_ExceptionCheckMotion::initializeAnalysisInfo(ExprDominanceInfo *info, TR
          int32_t toStructureNumber = edge->getTo()->getNumber();
          if (!exitNodes->get(toStructureNumber))
             {
-            info->_outList[toStructureNumber] = new (trStackMemory()) TR_ScratchList<TR::Node>(trMemory());
+            info->_outList[toStructureNumber] = new (comp()->trStackMemory()) TR_ScratchList<TR::Node>(comp()->trMemory());
             exitNodes->set(toStructureNumber);
             }
          }
@@ -3111,9 +3111,9 @@ void TR_ExceptionCheckMotion::initializeGenAndKillSetInfo()
    if (_firstIteration)
       {
       int32_t arraySize = _numberOfNodes*sizeof(List<TR::Node> *);
-      _regularGenSetInfo  = (List<TR::Node> **)trMemory()->allocateStackMemory(arraySize);
+      _regularGenSetInfo  = (List<TR::Node> **)comp()->trMemory()->allocateStackMemory(arraySize);
       memset(_regularGenSetInfo, 0, arraySize);
-      _blockInfo = (List<TR::Node> **)trMemory()->allocateStackMemory(arraySize);
+      _blockInfo = (List<TR::Node> **)comp()->trMemory()->allocateStackMemory(arraySize);
       memset(_blockInfo, 0, arraySize);
       _nullCheckKilled = allocateContainer(_numberOfNodes);
       _resolveCheckKilled = allocateContainer(_numberOfNodes);
@@ -3154,8 +3154,8 @@ void TR_ExceptionCheckMotion::initializeGenAndKillSetInfo()
       int32_t blockNum    = block->getNumber();
       if (_firstIteration)
          {
-         _regularGenSetInfo[blockNum] = new (trStackMemory())TR_ScratchList<TR::Node>(trMemory());
-         _blockInfo[blockNum] = new (trStackMemory())TR_ScratchList<TR::Node>(trMemory());
+         _regularGenSetInfo[blockNum] = new (comp()->trStackMemory())TR_ScratchList<TR::Node>(comp()->trMemory());
+         _blockInfo[blockNum] = new (comp()->trStackMemory())TR_ScratchList<TR::Node>(comp()->trMemory());
          }
       else
          {
@@ -3815,7 +3815,7 @@ void TR_ExceptionCheckMotion::analyzeNodeToInitializeGenAndKillSets(TR::TreeTop 
 
 void TR_ExceptionCheckMotion::createAndAddListElement(TR::Node *node, int32_t blockNum)
    {
-   ListElement<TR::Node> *newElement = (ListElement<TR::Node>*)trMemory()->allocateStackMemory(sizeof(ListElement<TR::Node>));
+   ListElement<TR::Node> *newElement = (ListElement<TR::Node>*)comp()->trMemory()->allocateStackMemory(sizeof(ListElement<TR::Node>));
    newElement->setData(node);
    newElement->setNextElement(NULL);
    if (_lastGenSetElement)
@@ -4046,7 +4046,7 @@ bool TR_ExceptionCheckMotion::includeRelevantNodes(TR::Node *node, vcount_t visi
              (_optimisticRednSetInfo[blockNum]->get(node->getLocalIndex()) ||
               _optimisticOptSetInfo[blockNum]->get(node->getLocalIndex())))
             {
-            ListElement<TR::Node> *newElement = (ListElement<TR::Node>*)trMemory()->allocateStackMemory(sizeof(ListElement<TR::Node>));
+            ListElement<TR::Node> *newElement = (ListElement<TR::Node>*)comp()->trMemory()->allocateStackMemory(sizeof(ListElement<TR::Node>));
             newElement->setData(node);
             newElement->setNextElement(NULL);
             if (_lastGenSetElement)
@@ -4185,8 +4185,8 @@ bool TR_ExceptionCheckMotion::analyzeRegionStructure(TR_RegionStructure *regionS
          }
       }
 
-   TR_BitVector *pendingList = new (trStackMemory()) TR_BitVector(_numberOfNodes, trMemory(), stackAlloc);
-   TR_BitVector *originalPendingList = new (trStackMemory()) TR_BitVector(_numberOfNodes, trMemory(), stackAlloc);
+   TR_BitVector *pendingList = new (comp()->trStackMemory()) TR_BitVector(_numberOfNodes, comp()->trMemory(), stackAlloc);
+   TR_BitVector *originalPendingList = new (comp()->trStackMemory()) TR_BitVector(_numberOfNodes, comp()->trMemory(), stackAlloc);
 
    si.reset();
    for (subNode = si.getCurrent(); subNode; subNode = si.getNext())
@@ -5527,7 +5527,7 @@ bool TR_ExceptionCheckMotion::analyzeBlockStructure(TR_BlockStructure *blockStru
             _actualOptSetInfo[blockNum]->set(listElem->getData()->getLocalIndex());
 
             if (!_orderedOptList[blockNum])
-               _orderedOptList[blockNum] = new (trStackMemory())TR_ScratchList<TR::Node>(trMemory());
+               _orderedOptList[blockNum] = new (comp()->trStackMemory())TR_ScratchList<TR::Node>(comp()->trMemory());
 
             if (!nextOptElement)
                {
@@ -5537,7 +5537,7 @@ bool TR_ExceptionCheckMotion::analyzeBlockStructure(TR_BlockStructure *blockStru
                nextOptElement = prevOptElement;
                }
 
-            ListElement<TR::Node> *newElement = (ListElement<TR::Node>*)trMemory()->allocateStackMemory(sizeof(ListElement<TR::Node>));
+            ListElement<TR::Node> *newElement = (ListElement<TR::Node>*)comp()->trMemory()->allocateStackMemory(sizeof(ListElement<TR::Node>));
             newElement->setData(listElem->getData());
             newElement->setNextElement(NULL);
 
@@ -6079,7 +6079,7 @@ TR_RedundantExpressionAdjustment::TR_RedundantExpressionAdjustment(TR::Compilati
    initializeBlockInfo();
 
    {
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp->trMemory());
 
    performAnalysis(rootStructure, false);
 
@@ -6243,7 +6243,7 @@ bool TR_RedundantExpressionAdjustment::analyzeBlockStructure(TR_BlockStructure *
          oldMaxSize++;
          }
 
-      int32_t *orderedOldOptNumbersList = (int32_t *)trMemory()->allocateStackMemory(oldMaxSize*sizeof(int32_t));
+      int32_t *orderedOldOptNumbersList = (int32_t *)comp()->trMemory()->allocateStackMemory(oldMaxSize*sizeof(int32_t));
       j=0;
       _optSetHelper->empty();
       while (j < oldMaxSize)

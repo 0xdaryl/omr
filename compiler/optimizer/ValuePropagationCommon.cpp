@@ -115,25 +115,25 @@ OMR::ValuePropagation::ValuePropagation(TR::OptimizationManager *manager)
    : TR::Optimization(manager),
      _parmValues(NULL),
      _currentParent(NULL),
-     _arraylengthNodes(trMemory()),
-     _javaLangClassGetComponentTypeCalls(trMemory()),
-     _unknownTypeArrayCopyTrees(trMemory()),
-     _scalarizedArrayCopies(trMemory()),
-     _predictedThrows(trMemory()),
-     _prexClasses(trMemory()),
-     _prexMethods(trMemory()),
-     _prexClassesThatShouldNotBeNewlyExtended(trMemory()),
-     _resetClassesThatShouldNotBeNewlyExtended(trMemory()),
-     _referenceArrayCopyTrees(trMemory()),
-     _needRunTimeCheckArrayCopy(trMemory()),
-     _needMultiLeafArrayCopy(trMemory()),
-     _arrayCopySpineCheck(trMemory()),
-     _multiLeafCallsToInline(trMemory()),
-     _converterCalls(trMemory()),
-     _objectCloneCalls(trMemory()),
-     _arrayCloneCalls(trMemory()),
-     _objectCloneTypes(trMemory()),
-     _arrayCloneTypes(trMemory()),
+     _arraylengthNodes(comp()->trMemory()),
+     _javaLangClassGetComponentTypeCalls(comp()->trMemory()),
+     _unknownTypeArrayCopyTrees(comp()->trMemory()),
+     _scalarizedArrayCopies(comp()->trMemory()),
+     _predictedThrows(comp()->trMemory()),
+     _prexClasses(comp()->trMemory()),
+     _prexMethods(comp()->trMemory()),
+     _prexClassesThatShouldNotBeNewlyExtended(comp()->trMemory()),
+     _resetClassesThatShouldNotBeNewlyExtended(comp()->trMemory()),
+     _referenceArrayCopyTrees(comp()->trMemory()),
+     _needRunTimeCheckArrayCopy(comp()->trMemory()),
+     _needMultiLeafArrayCopy(comp()->trMemory()),
+     _arrayCopySpineCheck(comp()->trMemory()),
+     _multiLeafCallsToInline(comp()->trMemory()),
+     _converterCalls(comp()->trMemory()),
+     _objectCloneCalls(comp()->trMemory()),
+     _arrayCloneCalls(comp()->trMemory()),
+     _objectCloneTypes(comp()->trMemory()),
+     _arrayCloneTypes(comp()->trMemory()),
      _parmInfo(NULL),
      _parmTypeValid(NULL),
      _constNodeInfo(comp()->allocator())
@@ -154,11 +154,11 @@ void OMR::ValuePropagation::initialize()
    _enableVersionBlocks       = false;
    _disableVersionBlockForThisBlock = true;
 
-   _nullObjectConstraint        = new (trStackMemory()) TR::VPNullObject();
-   _nonNullObjectConstraint     = new (trStackMemory()) TR::VPNonNullObject();
-   _preexistentObjectConstraint = new (trStackMemory()) TR::VPPreexistentObject();
-   _constantZeroConstraint      = new (trStackMemory()) TR::VPIntConst(0);
-   _unreachablePathConstraint   = new (trStackMemory()) TR::VPUnreachablePath();
+   _nullObjectConstraint        = new (comp()->trStackMemory()) TR::VPNullObject();
+   _nonNullObjectConstraint     = new (comp()->trStackMemory()) TR::VPNonNullObject();
+   _preexistentObjectConstraint = new (comp()->trStackMemory()) TR::VPPreexistentObject();
+   _constantZeroConstraint      = new (comp()->trStackMemory()) TR::VPIntConst(0);
+   _unreachablePathConstraint   = new (comp()->trStackMemory()) TR::VPUnreachablePath();
 
 
    _invalidateUseDefInfo      = false;
@@ -170,14 +170,14 @@ void OMR::ValuePropagation::initialize()
    _chTableValidityChecked    = false;
    _changedThis               = TR_maybe;
 
-   _constraintsHashTable = (ConstraintsHashTableEntry**)trMemory()->allocateStackMemory(VP_HASH_TABLE_SIZE*sizeof(ConstraintsHashTableEntry*));
+   _constraintsHashTable = (ConstraintsHashTableEntry**)comp()->trMemory()->allocateStackMemory(VP_HASH_TABLE_SIZE*sizeof(ConstraintsHashTableEntry*));
    memset(_constraintsHashTable, 0, VP_HASH_TABLE_SIZE*sizeof(ConstraintsHashTableEntry*));
 
    // determine if there are any invariant parms
    //
    int32_t numParms = comp()->getMethodSymbol()->getParameterList().getSize();
-   _parmInfo = (int32_t *) trMemory()->allocateStackMemory(numParms * sizeof(int32_t));
-   _parmTypeValid = (bool *) trMemory()->allocateStackMemory(numParms * sizeof(bool));
+   _parmInfo = (int32_t *) comp()->trMemory()->allocateStackMemory(numParms * sizeof(int32_t));
+   _parmTypeValid = (bool *) comp()->trMemory()->allocateStackMemory(numParms * sizeof(bool));
    // mark all parms as invariant (0) to begin with
    //
    memset(_parmInfo, 0, numParms * sizeof(int32_t));
@@ -230,13 +230,13 @@ void OMR::ValuePropagation::initialize()
             globalConstraintsHashTableSize <<= 1;
       _globalConstraintsHTMaxBucketIndex = globalConstraintsHashTableSize - 1;
 
-      _globalConstraintsHashTable = (GlobalConstraint**)trMemory()->allocateStackMemory(globalConstraintsHashTableSize*sizeof(GlobalConstraint*));
+      _globalConstraintsHashTable = (GlobalConstraint**)comp()->trMemory()->allocateStackMemory(globalConstraintsHashTableSize*sizeof(GlobalConstraint*));
       memset(_globalConstraintsHashTable, 0, globalConstraintsHashTableSize*sizeof(GlobalConstraint*));
 
-      _edgeConstraintsHashTable = (EdgeConstraints**)trMemory()->allocateStackMemory(VP_HASH_TABLE_SIZE*sizeof(EdgeConstraints*));
+      _edgeConstraintsHashTable = (EdgeConstraints**)comp()->trMemory()->allocateStackMemory(VP_HASH_TABLE_SIZE*sizeof(EdgeConstraints*));
       memset(_edgeConstraintsHashTable, 0, VP_HASH_TABLE_SIZE*sizeof(EdgeConstraints*));
 
-      _loopDefsHashTable = (LoopDefsHashTableEntry**)trMemory()->allocateStackMemory(VP_HASH_TABLE_SIZE*sizeof(LoopDefsHashTableEntry*));
+      _loopDefsHashTable = (LoopDefsHashTableEntry**)comp()->trMemory()->allocateStackMemory(VP_HASH_TABLE_SIZE*sizeof(LoopDefsHashTableEntry*));
       memset(_loopDefsHashTable, 0, VP_HASH_TABLE_SIZE*sizeof(LoopDefsHashTableEntry*));
       }
    else
@@ -248,19 +248,19 @@ void OMR::ValuePropagation::initialize()
 
    _visitCount = comp()->incVisitCount();
 
-   _edgesToBeRemoved = new (trStackMemory()) TR_Array<TR::CFGEdge *>(trMemory(), 8, false, stackAlloc);
-   _blocksToBeRemoved = new (trStackMemory()) TR_Array<TR::CFGNode*>(trMemory(), 8, false, stackAlloc);
+   _edgesToBeRemoved = new (comp()->trStackMemory()) TR_Array<TR::CFGEdge *>(comp()->trMemory(), 8, false, stackAlloc);
+   _blocksToBeRemoved = new (comp()->trStackMemory()) TR_Array<TR::CFGNode*>(comp()->trMemory(), 8, false, stackAlloc);
    _curDefinedOnAllPaths = NULL;
    if (_isGlobalPropagation)
-      _definedOnAllPaths = new (trStackMemory()) DefinedOnAllPathsMap(std::less<TR::CFGEdge *>(), trMemory()->currentStackRegion());
+      _definedOnAllPaths = new (comp()->trStackMemory()) DefinedOnAllPathsMap(std::less<TR::CFGEdge *>(), comp()->trMemory()->currentStackRegion());
    else
       _definedOnAllPaths = NULL;
-   _defMergedNodes = new (trStackMemory()) TR_BitVector(0, trMemory(), stackAlloc, growable);
+   _defMergedNodes = new (comp()->trStackMemory()) TR_BitVector(0, comp()->trMemory(), stackAlloc, growable);
    _vcHandler.setRoot(_curConstraints, NULL);
 
    _relationshipCache.setFirst(NULL);
    _storeRelationshipCache.setFirst(NULL);
-   _valueConstraintCache = new (trStackMemory()) TR_Stack<ValueConstraint*>(trMemory(), 256, false, stackAlloc);
+   _valueConstraintCache = new (comp()->trStackMemory()) TR_Stack<ValueConstraint*>(comp()->trMemory(), 256, false, stackAlloc);
    _loopInfo = NULL;
 
    // unresolved symbols so we can track when they are known to be resolved.
@@ -312,7 +312,7 @@ void OMR::ValuePropagation::initialize()
 
          if (doTiming)
             {
-            myTimer.initialize("structural analysis", trMemory());
+            myTimer.initialize("structural analysis", comp()->trMemory());
             myTimer.startTiming(comp());
             }
 
@@ -335,16 +335,16 @@ void OMR::ValuePropagation::initialize()
       if (comp()->getFlowGraph()->getStructure())
          {
          _enableVersionBlocks = true;
-         _bndChecks = new (trStackMemory()) TR_ScratchList<TR::Node>(trMemory());
+         _bndChecks = new (comp()->trStackMemory()) TR_ScratchList<TR::Node>(comp()->trMemory());
          //The bitVector is growable /bc when we devirtaulize calls we add symbol references for the call and the parameters.
-         _seenDefinedSymbolReferences = new (trStackMemory()) TR_BitVector(comp()->getSymRefCount(), trMemory(), stackAlloc, growable);
-         _blocksToBeVersioned = new (trStackMemory()) TR_LinkHead<BlockVersionInfo>();
-         _firstLoads = new (trStackMemory()) TR_LinkHead<FirstLoadOfNonInvariant>();
+         _seenDefinedSymbolReferences = new (comp()->trStackMemory()) TR_BitVector(comp()->getSymRefCount(), comp()->trMemory(), stackAlloc, growable);
+         _blocksToBeVersioned = new (comp()->trStackMemory()) TR_LinkHead<BlockVersionInfo>();
+         _firstLoads = new (comp()->trStackMemory()) TR_LinkHead<FirstLoadOfNonInvariant>();
          _startEBB = NULL;
          }
       }
 
-     _unsafeArrayAccessNodes = new (trStackMemory()) TR_BitVector(comp()->getNodeCount(), trMemory(), stackAlloc, growable);
+     _unsafeArrayAccessNodes = new (comp()->trStackMemory()) TR_BitVector(comp()->getNodeCount(), comp()->trMemory(), stackAlloc, growable);
    }
 
 OMR::ValuePropagation::Relationship *OMR::ValuePropagation::copyRelationships(Relationship *first)
@@ -375,7 +375,7 @@ OMR::ValuePropagation::ValueConstraint *OMR::ValuePropagation::createValueConstr
    if (!_valueConstraintCache->isEmpty())
       vc = _valueConstraintCache->pop();
    else
-      vc = new (trStackMemory()) ValueConstraint(valueNumber);
+      vc = new (comp()->trStackMemory()) ValueConstraint(valueNumber);
    vc->initialize(valueNumber, relationships, storeRelationships);
    return vc;
    }
@@ -1641,7 +1641,7 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
 
          // TODO: skip spine check if copy is provably contiguous
 
-         _arrayCopySpineCheck.add(new (trStackMemory())
+         _arrayCopySpineCheck.add(new (comp()->trStackMemory())
             TR_ArrayCopySpineCheck(
                arraycopyTree,
                node->getSymbolReference(),
@@ -1657,7 +1657,7 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
          uint8_t flag = 0;
 
          _needMultiLeafArrayCopy.add(
-               new (trStackMemory()) TR_RealTimeArrayCopy(arraycopyTree, type, flag));
+               new (comp()->trStackMemory()) TR_RealTimeArrayCopy(arraycopyTree, type, flag));
 
          goto createExceptionEdgeConstraintsAndReturn;
          }
@@ -1686,7 +1686,7 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
                isStringFwdArrayCopy)
             flag |= FORWARD_ARRAYCOPY;
 
-         _needRunTimeCheckArrayCopy.add(new (trStackMemory()) TR_RealTimeArrayCopy(arraycopyTree,type,flag));
+         _needRunTimeCheckArrayCopy.add(new (comp()->trStackMemory()) TR_RealTimeArrayCopy(arraycopyTree,type,flag));
 
          goto createExceptionEdgeConstraintsAndReturn;
          }
@@ -1872,7 +1872,7 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
          {
          if (needArrayStoreCheck)
             {
-            _referenceArrayCopyTrees.add(new (trStackMemory()) TR_TreeTopWrtBarFlag(arraycopyTree, flag));
+            _referenceArrayCopyTrees.add(new (comp()->trStackMemory()) TR_TreeTopWrtBarFlag(arraycopyTree, flag));
             }
          else
             {
@@ -1890,7 +1890,7 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
       else if (!primitiveArray1 && !primitiveArray2)
          {
          if (elementSize == 0 || needArrayStoreCheck || needWriteBarrier)
-            _unknownTypeArrayCopyTrees.add(new (trStackMemory()) TR_TreeTopWrtBarFlag(arraycopyTree, flag));
+            _unknownTypeArrayCopyTrees.add(new (comp()->trStackMemory()) TR_TreeTopWrtBarFlag(arraycopyTree, flag));
          else
             changeExistingNodeToPrimitiveCopy = true;
          }
@@ -3034,9 +3034,9 @@ void OMR::ValuePropagation::transformArrayCopySpineCheck(TR_ArrayCopySpineCheck 
    srcCheckIfTree->getNode()->setBranchDestination(ifBlock->getEntry());
    dstCheckIfTree->getNode()->setBranchDestination(ifBlock->getEntry());
 
-   cfg->addEdge(TR::CFGEdge::createEdge(arraycopyBlock,  ifBlock, trMemory()));
-   cfg->addEdge(TR::CFGEdge::createEdge(elseBlock1,  ifBlock, trMemory()));
-   cfg->addEdge(TR::CFGEdge::createEdge(ifBlock,  remainderBlock, trMemory()));
+   cfg->addEdge(TR::CFGEdge::createEdge(arraycopyBlock,  ifBlock, comp()->trMemory()));
+   cfg->addEdge(TR::CFGEdge::createEdge(elseBlock1,  ifBlock, comp()->trMemory()));
+   cfg->addEdge(TR::CFGEdge::createEdge(ifBlock,  remainderBlock, comp()->trMemory()));
 
    cfg->copyExceptionSuccessors(arraycopyBlock, ifBlock);
 
@@ -3251,7 +3251,7 @@ void OMR::ValuePropagation::transformRealTimeArrayCopy(TR_RealTimeArrayCopy *rtA
 
       cfg->addNode(slowArraycopyBlock);
       cfg->findLastTreeTop()->join(slowArraycopyBlock->getEntry());
-      cfg->addEdge(TR::CFGEdge::createEdge(slowArraycopyBlock,  succ, trMemory()));
+      cfg->addEdge(TR::CFGEdge::createEdge(slowArraycopyBlock,  succ, comp()->trMemory()));
       cfg->copyExceptionSuccessors(fastArraycopyBlock, slowArraycopyBlock);
       }
 
@@ -3310,7 +3310,7 @@ void OMR::ValuePropagation::transformRealTimeArrayCopy(TR_RealTimeArrayCopy *rtA
 
       cfg->addNode(referenceArraycopyBlock);
       cfg->findLastTreeTop()->join(referenceArraycopyBlock->getEntry());
-      cfg->addEdge(TR::CFGEdge::createEdge(referenceArraycopyBlock,  succ, trMemory()));
+      cfg->addEdge(TR::CFGEdge::createEdge(referenceArraycopyBlock,  succ, comp()->trMemory()));
       cfg->copyExceptionSuccessors(fastArraycopyBlock, referenceArraycopyBlock);
 
       TR::Node* srcObject = TR::Node::createLoad(vcallNode, srcRef);
@@ -3353,7 +3353,7 @@ void OMR::ValuePropagation::transformRealTimeArrayCopy(TR_RealTimeArrayCopy *rtA
 
    uint8_t flag = 0;
    if (doMultiLeafArrayCopy)
-      _needMultiLeafArrayCopy.add(new (trStackMemory()) TR_RealTimeArrayCopy(origDupVCallTree, type, flag));
+      _needMultiLeafArrayCopy.add(new (comp()->trStackMemory()) TR_RealTimeArrayCopy(origDupVCallTree, type, flag));
    else
       origDupVCallTree->getNode()->getFirstChild()->setDontTransformArrayCopyCall();
 
@@ -3394,8 +3394,8 @@ void OMR::ValuePropagation::transformRTMultiLeafArrayCopy(TR_RealTimeArrayCopy *
    if (!helperClass)
      return;
 
-   TR_ScratchList<TR_ResolvedMethod> helperMethods(trMemory());
-   comp()->fej9()->getResolvedMethods(trMemory(), helperClass, &helperMethods);
+   TR_ScratchList<TR_ResolvedMethod> helperMethods(comp()->trMemory());
+   comp()->fej9()->getResolvedMethods(comp()->trMemory(), helperClass, &helperMethods);
    ListIterator<TR_ResolvedMethod> it(&helperMethods);
    TR::SymbolReference *helperSymRef = NULL;
    for (TR_ResolvedMethod *m = it.getCurrent(); m && !helperSymRef; m = it.getNext())
@@ -3499,7 +3499,7 @@ void OMR::ValuePropagation::transformObjectCloneCall(TR::TreeTop *callTree, OMR:
       TR::Block *fastPath = block->split(callTree, cfg, true, true);
       TR::Block *remainder = fastPath->split(callTree->getNextTreeTop(), cfg, true, true);
 
-      TR_BlockCloner *cloner = new (trStackMemory())TR_BlockCloner(cfg);
+      TR_BlockCloner *cloner = new (comp()->trStackMemory())TR_BlockCloner(cfg);
       TR::Block *slowPath = cloner->cloneBlocks(fastPath, fastPath);
       slowPath->append(TR::TreeTop::create(comp(), TR::Node::create(callNode, TR::Goto, 0, remainder->getEntry())));
       cfg->findLastTreeTop()->join(slowPath->getEntry());
@@ -3513,8 +3513,8 @@ void OMR::ValuePropagation::transformObjectCloneCall(TR::TreeTop *callTree, OMR:
       block->append(compareTree);
 
       cfg->setStructure(NULL);
-      cfg->addEdge(TR::CFGEdge::createEdge(block, slowPath, trMemory()));
-      cfg->addEdge(TR::CFGEdge::createEdge(slowPath, remainder, trMemory()));
+      cfg->addEdge(TR::CFGEdge::createEdge(block, slowPath, comp()->trMemory()));
+      cfg->addEdge(TR::CFGEdge::createEdge(slowPath, remainder, comp()->trMemory()));
       cfg->copyExceptionSuccessors(fastPath, slowPath);
 
       callTree = fastPath->getFirstRealTreeTop();

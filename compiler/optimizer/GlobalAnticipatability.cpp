@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -95,7 +95,7 @@ TR_GlobalAnticipatability::TR_GlobalAnticipatability(TR::Compilation *comp, TR::
    initializeBlockInfo();
 
    {
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp->trMemory());
 
    performAnalysis(rootStructure, false);
 
@@ -129,7 +129,7 @@ bool TR_GlobalAnticipatability::postInitializationProcessing()
    // of the other more general bit vectors allocated by any backward
    // bit vector analysis.
    //
-   _outSetInfo = (ContainerType **)trMemory()->allocateStackMemory(_numberOfNodes*sizeof(ContainerType *));
+   _outSetInfo = (ContainerType **)comp()->trMemory()->allocateStackMemory(_numberOfNodes*sizeof(ContainerType *));
 
    int32_t i;
    for (i = 0; i < _numberOfNodes; i++)
@@ -141,7 +141,7 @@ bool TR_GlobalAnticipatability::postInitializationProcessing()
 
    // this array will store _checkExpressions info per block
    // (some expressions can be exceptional in some blocks but not others)
-   _checkExpressionsInBlock = (ContainerType **)trMemory()->allocateStackMemory(_numberOfNodes*sizeof(ContainerType *));
+   _checkExpressionsInBlock = (ContainerType **)comp()->trMemory()->allocateStackMemory(_numberOfNodes*sizeof(ContainerType *));
    memset(_checkExpressionsInBlock, 0, _numberOfNodes*sizeof(ContainerType *));
    return true;
    }

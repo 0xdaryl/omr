@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -49,12 +49,12 @@ TR_DominatorsChk::TR_DominatorsChk(TR::Compilation *c)
 
    // Info will persist until the caller releases the stack
    //
-   _info = (BBInfoChk*) trMemory()->allocateStackMemory(_numBlocks*sizeof(BBInfoChk));
+   _info = (BBInfoChk*) comp()->trMemory()->allocateStackMemory(_numBlocks*sizeof(BBInfoChk));
 
    memset(_info, 0, _numBlocks*sizeof(BBInfoChk));
 
    int32_t nextNodeNumber = cfg->getNextNodeNumber();
-   _dfNumbers = (int32_t *)trMemory()->allocateStackMemory(nextNodeNumber*sizeof(int32_t));
+   _dfNumbers = (int32_t *)comp()->trMemory()->allocateStackMemory(nextNodeNumber*sizeof(int32_t));
    memset(_dfNumbers, 0, nextNodeNumber*sizeof(int32_t));
 
    findDominators(toBlock(cfg->getStart()));
@@ -113,7 +113,7 @@ void TR_DominatorsChk::findDominators(TR::Block *start)
    int32_t i,j;
    BBInfoChk *w;
    bool change = true;
-   TR_BitVector *intersection = new (trStackMemory()) TR_BitVector(_numBlocks, trMemory(), stackAlloc);
+   TR_BitVector *intersection = new (comp()->trStackMemory()) TR_BitVector(_numBlocks, comp()->trMemory(), stackAlloc);
 
    initialize(start, NULL);
 
@@ -167,7 +167,7 @@ void TR_DominatorsChk::findDominators(TR::Block *start)
 //
 void TR_DominatorsChk::initialize(TR::Block *start, TR::Block *nullParent)
    {
-   TR_Array<StackInfo> *stack = new (trStackMemory()) TR_Array<StackInfo>(trMemory(), _numBlocks/2, false, stackAlloc);
+   TR_Array<StackInfo> *stack = new (comp()->trStackMemory()) TR_Array<StackInfo>(comp()->trMemory(), _numBlocks/2, false, stackAlloc);
    // Set up to start at the start block
    //
    TR::CFGEdge dummyEdge;
@@ -212,7 +212,7 @@ void TR_DominatorsChk::initialize(TR::Block *start, TR::Block *nullParent)
       _dfNumbers[block->getNumber()] = _topDfNum++;
       BBInfoChk *binfo = _info + _topDfNum;
       binfo->_block = block;
-      binfo->_bucket = new (trStackMemory()) TR_BitVector(_numBlocks, trMemory(), stackAlloc);
+      binfo->_bucket = new (comp()->trStackMemory()) TR_BitVector(_numBlocks, comp()->trMemory(), stackAlloc);
 
       if (block != start)
          binfo->_bucket->setAll(_numBlocks-1);
@@ -300,7 +300,7 @@ void TR_DominatorsChk::initialize()
    for (i = 1; i < _topDfNum+1; i++)
       {
       w = _info + i;
-      w->_tmpbucket = new (trStackMemory()) TR_BitVector(*w->_bucket);
+      w->_tmpbucket = new (comp()->trStackMemory()) TR_BitVector(*w->_bucket);
       w->_tmpbucket->reset(i-1);
       }
    }

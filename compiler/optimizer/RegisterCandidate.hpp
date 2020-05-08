@@ -349,7 +349,7 @@ public:
    TR_RegisterCandidate *newCandidate(TR::SymbolReference *ref);
 
    void releaseCandidates() {
-      TR::Region::reset(_candidateRegion, _trMemory->heapMemoryRegion());
+      TR::Region::reset(_candidateRegion, comp()->trMemory()->heapMemoryRegion());
    }
 
    void collectCfgProperties(TR::Block **, int32_t);

@@ -152,13 +152,13 @@ TR_LoopSpecializer::optDetailString() const throw()
 
 TR_LoopVersioner::TR_LoopVersioner(TR::OptimizationManager *manager, bool onlySpecialize, bool refineAliases)
    : TR_LoopTransformer(manager),
-   _versionableInductionVariables(trMemory()), _specialVersionableInductionVariables(trMemory()),
-   _derivedVersionableInductionVariables(trMemory()),
-   ////_virtualGuardPairs(trMemory()),
-   _guardedCalls(trMemory()),
+   _versionableInductionVariables(comp()->trMemory()), _specialVersionableInductionVariables(comp()->trMemory()),
+   _derivedVersionableInductionVariables(comp()->trMemory()),
+   ////_virtualGuardPairs(comp()->trMemory()),
+   _guardedCalls(comp()->trMemory()),
      _refineLoopAliases(refineAliases),_addressingTooComplicated(false),
-   _visitedNodes(comp()->getNodeCount() /*an estimate*/, trMemory(), heapAlloc, growable),
-   _checksInDupHeader(trMemory()),
+   _visitedNodes(comp()->getNodeCount() /*an estimate*/, comp()->trMemory(), heapAlloc, growable),
+   _checksInDupHeader(comp()->trMemory()),
    _exitGotoTarget(NULL),
    _curLoop(NULL),
    _invalidateAliasSets(false)
@@ -296,12 +296,12 @@ int32_t TR_LoopVersioner::performWithoutDominators()
    bool somethingChanged = false;
 
    // From this point on stack memory allocations will die when the function returns
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    initAdditionalDataStructures();
 
-   TR_ScratchList<TR::CFGNode> newEmptyBlocks(trMemory());
-   TR_ScratchList<TR::CFGNode> newEmptyExceptionBlocks(trMemory());
+   TR_ScratchList<TR::CFGNode> newEmptyBlocks(comp()->trMemory());
+   TR_ScratchList<TR::CFGNode> newEmptyExceptionBlocks(comp()->trMemory());
    _cfg = comp()->getFlowGraph();
    if (trace())
       {
@@ -312,7 +312,7 @@ int32_t TR_LoopVersioner::performWithoutDominators()
 
    // printTrees();
 
-   TR_ScratchList<TR_Structure> whileLoops(trMemory());
+   TR_ScratchList<TR_Structure> whileLoops(comp()->trMemory());
 
    createWhileLoopsList(&whileLoops);
 
@@ -323,7 +323,7 @@ int32_t TR_LoopVersioner::performWithoutDominators()
      return false;
      }
 
-   TR_ScratchList<TR_Structure> innerWhileLoops(trMemory());
+   TR_ScratchList<TR_Structure> innerWhileLoops(comp()->trMemory());
    TR_ScratchList<TR_Structure> *curLoops = NULL;
    int32_t curWeight = 10;
    curLoops = &whileLoops;
@@ -371,9 +371,9 @@ int32_t TR_LoopVersioner::performWithoutDominators()
    // and the new duplicate header that drives the new Do While loop.
    //
    _startOfHeader = comp()->getMethodSymbol()->getLastTreeTop();
-   _seenDefinedSymbolReferences = new (trStackMemory()) TR_BitVector(comp()->getSymRefCount(), trMemory(), stackAlloc, growable);
-   _writtenAndNotJustForHeapification = new (trStackMemory()) TR_BitVector(comp()->getSymRefCount(), trMemory(), stackAlloc, growable);
-   _additionInfo = new (trStackMemory()) TR_BitVector(comp()->getSymRefCount(), trMemory(), stackAlloc, growable);
+   _seenDefinedSymbolReferences = new (comp()->trStackMemory()) TR_BitVector(comp()->getSymRefCount(), comp()->trMemory(), stackAlloc, growable);
+   _writtenAndNotJustForHeapification = new (comp()->trStackMemory()) TR_BitVector(comp()->getSymRefCount(), comp()->trMemory(), stackAlloc, growable);
+   _additionInfo = new (comp()->trStackMemory()) TR_BitVector(comp()->getSymRefCount(), comp()->trMemory(), stackAlloc, growable);
 
    _whileIndex = 0;
    _counter = 0;
@@ -397,7 +397,7 @@ int32_t TR_LoopVersioner::performWithoutDominators()
       _containsGuard = false;
       _containsUnguardedCall = false;
       _loopTransferDone = false;
-      _unchangedValueUsedInBndCheck = new(trStackMemory()) TR_BitVector(comp()->getNodeCount(), trMemory(), stackAlloc);
+      _unchangedValueUsedInBndCheck = new(comp()->trStackMemory()) TR_BitVector(comp()->getNodeCount(), comp()->trMemory(), stackAlloc);
 
       _checksInDupHeader.deleteAll();
 
@@ -410,24 +410,24 @@ int32_t TR_LoopVersioner::performWithoutDominators()
       CurLoop curLoop(comp(), curLoopMemRegion, naturalLoop);
       _curLoop = &curLoop;
 
-      TR_ScratchList<TR::Node> nullCheckedReferences(trMemory());
-      TR_ScratchList<TR::TreeTop> nullCheckTrees(trMemory());
-      TR_ScratchList<int32_t> numIndirections(trMemory());
-      TR_ScratchList<TR::TreeTop> boundCheckTrees(trMemory());
-      TR_ScratchList<TR::TreeTop> spineCheckTrees(trMemory());
-      TR_ScratchList<int32_t> numDimensions(trMemory());
-      TR_ScratchList<TR::TreeTop> conditionalTrees(trMemory());
-      TR_ScratchList<TR::TreeTop> divCheckTrees(trMemory());
-      TR_ScratchList<TR::TreeTop> checkCastTrees(trMemory());
-      TR_ScratchList<TR::TreeTop> arrayStoreCheckTrees(trMemory());
-      TR_ScratchList<TR::TreeTop> awrtbariTrees(trMemory());
-      TR_ScratchList<TR::Node> specializedInvariantNodes(trMemory());
-      TR_ScratchList<TR_NodeParentSymRef> invariantNodesList(trMemory());
-      TR_ScratchList<TR_NodeParentSymRefWeightTuple> invariantTranslationNodesList(trMemory());
-      TR_ScratchList<TR::Node> arrayAccesses(trMemory());
-      TR_ScratchList<TR_NodeParentBlockTuple> arrayLoadCandidates(trMemory());
-      TR_ScratchList<TR_NodeParentBlockTuple> arrayMemberLoadCandidates(trMemory());
-      TR_BitVector disqualifiedRefinementCandidates(1,trMemory(),stackAlloc,growable);
+      TR_ScratchList<TR::Node> nullCheckedReferences(comp()->trMemory());
+      TR_ScratchList<TR::TreeTop> nullCheckTrees(comp()->trMemory());
+      TR_ScratchList<int32_t> numIndirections(comp()->trMemory());
+      TR_ScratchList<TR::TreeTop> boundCheckTrees(comp()->trMemory());
+      TR_ScratchList<TR::TreeTop> spineCheckTrees(comp()->trMemory());
+      TR_ScratchList<int32_t> numDimensions(comp()->trMemory());
+      TR_ScratchList<TR::TreeTop> conditionalTrees(comp()->trMemory());
+      TR_ScratchList<TR::TreeTop> divCheckTrees(comp()->trMemory());
+      TR_ScratchList<TR::TreeTop> checkCastTrees(comp()->trMemory());
+      TR_ScratchList<TR::TreeTop> arrayStoreCheckTrees(comp()->trMemory());
+      TR_ScratchList<TR::TreeTop> awrtbariTrees(comp()->trMemory());
+      TR_ScratchList<TR::Node> specializedInvariantNodes(comp()->trMemory());
+      TR_ScratchList<TR_NodeParentSymRef> invariantNodesList(comp()->trMemory());
+      TR_ScratchList<TR_NodeParentSymRefWeightTuple> invariantTranslationNodesList(comp()->trMemory());
+      TR_ScratchList<TR::Node> arrayAccesses(comp()->trMemory());
+      TR_ScratchList<TR_NodeParentBlockTuple> arrayLoadCandidates(comp()->trMemory());
+      TR_ScratchList<TR_NodeParentBlockTuple> arrayMemberLoadCandidates(comp()->trMemory());
+      TR_BitVector disqualifiedRefinementCandidates(1,comp()->trMemory(),stackAlloc,growable);
       _disqualifiedRefinementCandidates = & disqualifiedRefinementCandidates;
       _arrayLoadCandidates = &arrayLoadCandidates;
       _arrayAccesses = &arrayAccesses;
@@ -626,7 +626,7 @@ int32_t TR_LoopVersioner::performWithoutDominators()
          }
 
 
-      List<TR_Structure> clonedInnerWhileLoops(trMemory());
+      List<TR_Structure> clonedInnerWhileLoops(comp()->trMemory());
       bool versionedThisLoop = false;
       if ((versionToRefineAliases || !refineAliases()) &&
           (((debug("nullCheckVersion") || comp()->cg()->performsChecksExplicitly() ||
@@ -663,7 +663,7 @@ int32_t TR_LoopVersioner::performWithoutDominators()
          if(refineAliases())
             refineArrayAliases(naturalLoop);
 
-         TR_BitVector *inductionVars = new (trStackMemory()) TR_BitVector(symRefCount, trMemory(), stackAlloc);
+         TR_BitVector *inductionVars = new (comp()->trStackMemory()) TR_BitVector(symRefCount, comp()->trMemory(), stackAlloc);
          ListElement<int32_t> *versionableInductionVar = _versionableInductionVariables.getListHead();
          while (versionableInductionVar)
             {
@@ -785,7 +785,7 @@ void TR_LoopVersioner::performLoopTransfer()
 
    dumpOptDetails(comp(), "Loop transfer in %s with size %d\n", comp()->signature(), _virtualGuardInfo.getSize());
 
-   TR_ScratchList<TR::Node> processedVirtualGuards(trMemory());
+   TR_ScratchList<TR::Node> processedVirtualGuards(comp()->trMemory());
    TR::CFG *cfg = comp()->getFlowGraph();
    VirtualGuardInfo *vgInfo = NULL;
    for (vgInfo = _virtualGuardInfo.getFirst(); vgInfo; vgInfo = vgInfo->getNext())
@@ -839,23 +839,23 @@ TR::Block *TR_LoopVersioner::createClonedHeader(TR::Block *origHeader, TR::TreeT
       }
    origHeader->getExit()->join(clonedHeader->getEntry());
 
-   TR_ScratchList<TR::CFGEdge> removedEdges(trMemory());
+   TR_ScratchList<TR::CFGEdge> removedEdges(comp()->trMemory());
    // fixup the successors
    //
    for (auto e = origHeader->getSuccessors().begin(); e != origHeader->getSuccessors().end(); ++e)
       {
       removedEdges.add(*e);
       TR::Block *dest = toBlock((*e)->getTo());
-      _cfg->addEdge(TR::CFGEdge::createEdge(clonedHeader,  dest, trMemory()));
+      _cfg->addEdge(TR::CFGEdge::createEdge(clonedHeader,  dest, comp()->trMemory()));
       }
 
    for (auto e = origHeader->getExceptionSuccessors().begin(); e != origHeader->getExceptionSuccessors().end(); ++e)
       {
       removedEdges.add(*e);
       TR::Block *dest = toBlock((*e)->getTo());
-      _cfg->addEdge(TR::CFGEdge::createExceptionEdge(clonedHeader, dest,trMemory()));
+      _cfg->addEdge(TR::CFGEdge::createExceptionEdge(clonedHeader, dest,comp()->trMemory()));
       }
-   _cfg->addEdge(TR::CFGEdge::createEdge(origHeader,  clonedHeader, trMemory()));
+   _cfg->addEdge(TR::CFGEdge::createEdge(origHeader,  clonedHeader, comp()->trMemory()));
 
    // now remove the edges
    //
@@ -1208,7 +1208,7 @@ bool TR_LoopVersioner::detectInvariantTrees(TR_RegionStructure *whileLoop, List<
    TR::TreeTop *onlyNonInlineGuardConditional = NULL;
 
 
-   TR_ScratchList<TR::Block> blocksInWhileLoop(trMemory());
+   TR_ScratchList<TR::Block> blocksInWhileLoop(comp()->trMemory());
    whileLoop->getBlocks(&blocksInWhileLoop);
 
    for (;nextTree;)
@@ -2751,7 +2751,7 @@ bool TR_LoopVersioner::detectChecksToBeEliminated(TR_RegionStructure *whileLoop,
    bool foundPotentialChecks = false;
    int32_t warmBranchCount = 0;
 
-   TR_ScratchList<TR::Block> blocksInWhileLoop(trMemory());
+   TR_ScratchList<TR::Block> blocksInWhileLoop(comp()->trMemory());
    whileLoop->getBlocks(&blocksInWhileLoop);
    int32_t loop_size = blocksInWhileLoop.getSize();
 
@@ -3247,7 +3247,7 @@ void TR_LoopVersioner::updateDefinitionsAndCollectProfiledExprs(TR::Node *parent
              !node->getOpCode().hasSymbolReference()))
           {
           if (trace()) traceMsg(comp(), "Added invariant node %p %s\n", node, node->getOpCode().getName());
-          invariantNodes->add(new (trStackMemory()) TR_NodeParentSymRef(node, parent, NULL));
+          invariantNodes->add(new (comp()->trStackMemory()) TR_NodeParentSymRef(node, parent, NULL));
           }
        }
 
@@ -3266,11 +3266,11 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
    if (!performTransformation(comp(), "%sVersioning natural loop %d\n", OPT_DETAILS_LOOP_VERSIONER, whileLoop->getNumber()))
       return;
 
-   TR_ScratchList<TR::Block> blocksInWhileLoop(trMemory());
+   TR_ScratchList<TR::Block> blocksInWhileLoop(comp()->trMemory());
    whileLoop->getBlocks(&blocksInWhileLoop);
 
    int32_t numNodes = comp()->getFlowGraph()->getNextNodeNumber();
-   TR::Block **correspondingBlocks = (TR::Block **)trMemory()->allocateStackMemory(numNodes*sizeof(TR::Block *));
+   TR::Block **correspondingBlocks = (TR::Block **)comp()->trMemory()->allocateStackMemory(numNodes*sizeof(TR::Block *));
    memset(correspondingBlocks, 0, numNodes*sizeof(TR::Block *));
 
    TR::Block *blockAtHeadOfLoop = NULL;
@@ -3356,7 +3356,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
       //
       TR::TreeTop *currentTree = entryTree->getNextTreeTop();
       TR::TreeTop *newPrevTree = newEntryTree;
-      TR_ScratchList<TR::Node> seenNodes(trMemory()), duplicateNodes(trMemory());
+      TR_ScratchList<TR::Node> seenNodes(comp()->trMemory()), duplicateNodes(comp()->trMemory());
 
       while (!(currentTree == exitTree))
          {
@@ -3409,12 +3409,12 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
          //
          if (!vgInfo)
             {
-            vgInfo = new (trStackMemory()) VirtualGuardInfo(comp());
+            vgInfo = new (comp()->trStackMemory()) VirtualGuardInfo(comp());
             vgInfo->_loopEntry = blockAtHeadOfLoop;
             _virtualGuardInfo.add(vgInfo);
             }
 
-         VirtualGuardPair *virtualGuardPair = (VirtualGuardPair *) trMemory()->allocateStackMemory(sizeof(VirtualGuardPair));
+         VirtualGuardPair *virtualGuardPair = (VirtualGuardPair *) comp()->trMemory()->allocateStackMemory(sizeof(VirtualGuardPair));
          virtualGuardPair->_hotGuardBlock = nextBlock;
          virtualGuardPair->_coldGuardBlock = nextClonedBlock;
          if (trace())
@@ -3490,7 +3490,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
    //
    _cfg->setStructure(NULL);
 
-   TR_ScratchList<TR_BlockStructure> newGotoBlockStructures(trMemory());
+   TR_ScratchList<TR_BlockStructure> newGotoBlockStructures(comp()->trMemory());
    blocksIt.reset();
    for (nextBlock = blocksIt.getCurrent(); nextBlock; nextBlock=blocksIt.getNext())
       {
@@ -3509,7 +3509,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
             // If this successor also has a cloned counterpart,
             // i.e. it belongs to the loop being cloned.
             //
-            TR::CFGEdge *e = TR::CFGEdge::createEdge(nextClonedBlock,  clonedSucc, trMemory());
+            TR::CFGEdge *e = TR::CFGEdge::createEdge(nextClonedBlock,  clonedSucc, comp()->trMemory());
             _cfg->addEdge(e);
 
             if (_neitherLoopCold)
@@ -3559,7 +3559,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
                }
 
             if (!fallsThrough)
-               _cfg->addEdge(TR::CFGEdge::createEdge(nextClonedBlock,  succ, trMemory()));
+               _cfg->addEdge(TR::CFGEdge::createEdge(nextClonedBlock,  succ, comp()->trMemory()));
             else
                {
                TR::Block *newGotoBlock = TR::Block::createEmptyBlock(lastNode, comp(), (*edge)->getFrequency(), nextClonedBlock);
@@ -3584,9 +3584,9 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
                if (endTree == clonedExit)
                   endTree = gotoBlockExitTree;
 
-               TR::CFGEdge *e1 = TR::CFGEdge::createEdge(nextClonedBlock,  newGotoBlock, trMemory());
+               TR::CFGEdge *e1 = TR::CFGEdge::createEdge(nextClonedBlock,  newGotoBlock, comp()->trMemory());
                _cfg->addEdge(e1);
-               TR::CFGEdge *e2 = TR::CFGEdge::createEdge(newGotoBlock,  succ, trMemory());
+               TR::CFGEdge *e2 = TR::CFGEdge::createEdge(newGotoBlock,  succ, comp()->trMemory());
                _cfg->addEdge(e2);
                if (_neitherLoopCold)
                   {
@@ -3643,11 +3643,11 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
 
          if (clonedSucc)
             {
-            _cfg->addEdge(TR::CFGEdge::createExceptionEdge(nextClonedBlock, clonedSucc,trMemory()));
+            _cfg->addEdge(TR::CFGEdge::createExceptionEdge(nextClonedBlock, clonedSucc,comp()->trMemory()));
             }
          else
             {
-            _cfg->addEdge(TR::CFGEdge::createExceptionEdge(nextClonedBlock, succ,trMemory()));
+            _cfg->addEdge(TR::CFGEdge::createExceptionEdge(nextClonedBlock, succ,comp()->trMemory()));
             }
          }
       }
@@ -3703,7 +3703,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
    //
    // --------------------------------------------------------------------------------
 
-   TR_ScratchList<TR::Node> comparisonTrees(trMemory());
+   TR_ScratchList<TR::Node> comparisonTrees(comp()->trMemory());
 
    if (_requiresAdditionalCheckForIncrement  && performTransformation(comp(), "%s Creating test outside loop for checking if loop driving induction variable is incremented by a loop invariant that is greater than 0\n", OPT_DETAILS_LOOP_VERSIONER))
       {
@@ -3759,7 +3759,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
                   // the static limit, do not version based on async
                   // checks--leave them in, so we can still run the
                   // version without bounds checks
-                  TR_ScratchList<TR_ExtraValueInfo> valuesSortedByFrequency(trMemory());
+                  TR_ScratchList<TR_ExtraValueInfo> valuesSortedByFrequency(comp()->trMemory());
                   valueInfo->getSortedList(comp(), &valuesSortedByFrequency);
                   ListIterator<TR_ExtraValueInfo> sortedValuesIt(&valuesSortedByFrequency);
 
@@ -3892,7 +3892,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
    //
    if (!specializedNodes->isEmpty())
       {
-      TR::SymbolReference **symRefs = (TR::SymbolReference **)trMemory()->allocateStackMemory(comp()->getSymRefCount()*sizeof(TR::SymbolReference *));
+      TR::SymbolReference **symRefs = (TR::SymbolReference **)comp()->trMemory()->allocateStackMemory(comp()->getSymRefCount()*sizeof(TR::SymbolReference *));
       memset(symRefs, 0, comp()->getSymRefCount()*sizeof(TR::SymbolReference *));
 
       //printf("Reached here in %s\n", comp()->signature());
@@ -4059,7 +4059,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
    // - method enter/exit hooks
    //
    bool safeToRemoveHCRGuards = false;
-   TR_ScratchList<TR::TreeTop> hcrGuards(trMemory());
+   TR_ScratchList<TR::TreeTop> hcrGuards(comp()->trMemory());
    static char *disableLoopHCR = feGetEnv("TR_DisableHCRGuardLoopVersioner");
 
    if (comp()->getHCRMode() != TR::none && disableLoopHCR == NULL)
@@ -4439,7 +4439,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
    TR::Block *chooserBlock = NULL;
    ///////TR::Block *lastComparisonBlock = NULL;
    ListElement<TR::Node> *comparisonNode = comparisonTrees.getListHead();
-   TR_ScratchList<TR::Block> comparisonBlocks(trMemory()), criticalEdgeBlocks(trMemory());
+   TR_ScratchList<TR::Block> comparisonBlocks(comp()->trMemory()), criticalEdgeBlocks(comp()->trMemory());
    TR::TreeTop *insertionPoint = invariantBlock->getEntry();
    TR::TreeTop *treeBeforeInsertionPoint = insertionPoint->getPrevTreeTop();
 
@@ -4481,8 +4481,8 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
          gotoTree->join(gotoBlockExitTree);
          endTree->join(gotoBlockEntryTree);
          endTree = gotoBlockExitTree;
-         //_cfg->addEdge(TR::CFGEdge::createEdge(comparisonBlock,  newGotoBlock, trMemory()));
-         //_cfg->addEdge(TR::CFGEdge::createEdge(newGotoBlock,  clonedLoopInvariantBlock, trMemory()));
+         //_cfg->addEdge(TR::CFGEdge::createEdge(comparisonBlock,  newGotoBlock, comp()->trMemory()));
+         //_cfg->addEdge(TR::CFGEdge::createEdge(newGotoBlock,  clonedLoopInvariantBlock, comp()->trMemory()));
          TR_BlockStructure *newGotoBlockStructure = new (_cfg->structureRegion()) TR_BlockStructure(comp(), newGotoBlock->getNumber(), newGotoBlock);
          newGotoBlockStructure->setCreatedByVersioning(true);
          if (!_neitherLoopCold)
@@ -4616,20 +4616,20 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
          debugCounter = TR::DebugCounter::debugCounterName(comp(), "loopVersioner.fail/(%s)/%s/origin=block_%d", comp()->signature(), comp()->getHotnessName(comp()->getMethodHotness()), currentBlock->getNumber());
 
       if (nextComparisonBlock)
-         _cfg->addEdge(TR::CFGEdge::createEdge(currentBlock, nextComparisonBlock->getData(), trMemory()));
+         _cfg->addEdge(TR::CFGEdge::createEdge(currentBlock, nextComparisonBlock->getData(), comp()->trMemory()));
       else
-         _cfg->addEdge(TR::CFGEdge::createEdge(currentBlock,  invariantBlock, trMemory()));
+         _cfg->addEdge(TR::CFGEdge::createEdge(currentBlock,  invariantBlock, comp()->trMemory()));
 
       if (isTest)
          {
          if (currCriticalEdgeBlock == NULL)
             {
-            _cfg->addEdge(TR::CFGEdge::createEdge(currentBlock,  clonedLoopInvariantBlock, trMemory()));
+            _cfg->addEdge(TR::CFGEdge::createEdge(currentBlock,  clonedLoopInvariantBlock, comp()->trMemory()));
             }
          else
             {
-            _cfg->addEdge(TR::CFGEdge::createEdge(currentBlock, currCriticalEdgeBlock->getData(), trMemory()));
-            _cfg->addEdge(TR::CFGEdge::createEdge(currCriticalEdgeBlock->getData(), clonedLoopInvariantBlock, trMemory()));
+            _cfg->addEdge(TR::CFGEdge::createEdge(currentBlock, currCriticalEdgeBlock->getData(), comp()->trMemory()));
+            _cfg->addEdge(TR::CFGEdge::createEdge(currCriticalEdgeBlock->getData(), clonedLoopInvariantBlock, comp()->trMemory()));
             TR::DebugCounter::prependDebugCounter(comp(), debugCounter, currCriticalEdgeBlock->getData()->getEntry()->getNextTreeTop());
             currCriticalEdgeBlock = currCriticalEdgeBlock->getNextElement();
             }
@@ -4638,7 +4638,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
       currComparisonBlock = nextComparisonBlock;
       }
 
-   _cfg->addEdge(TR::CFGEdge::createEdge(clonedLoopInvariantBlock,  blockAtHeadOfClonedLoop, trMemory()));
+   _cfg->addEdge(TR::CFGEdge::createEdge(clonedLoopInvariantBlock,  blockAtHeadOfClonedLoop, comp()->trMemory()));
    _cfg->setStructure(_rootStructure);
 
    // Done with trees and CFG changes
@@ -4653,7 +4653,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
    // structures successors of some of the block structures mentioned above
    // as appropriate.
    //
-   TR_StructureSubGraphNode **correspondingSubNodes = (TR_StructureSubGraphNode **)trMemory()->allocateStackMemory(numNodes*sizeof(TR_StructureSubGraphNode *));
+   TR_StructureSubGraphNode **correspondingSubNodes = (TR_StructureSubGraphNode **)comp()->trMemory()->allocateStackMemory(numNodes*sizeof(TR_StructureSubGraphNode *));
    memset(correspondingSubNodes, 0, numNodes*sizeof(TR_StructureSubGraphNode *));
 
    TR_RegionStructure *clonedWhileLoop = whileLoop->cloneStructure(correspondingBlocks, correspondingSubNodes, innerWhileLoops, clonedInnerWhileLoops)->asRegion();
@@ -4704,14 +4704,14 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
       properRegion->addSubNode(comparisonNode);
 
       if (prevComparisonNode)
-         TR::CFGEdge::createEdge(prevComparisonNode,  comparisonNode, trMemory());
+         TR::CFGEdge::createEdge(prevComparisonNode,  comparisonNode, comp()->trMemory());
       else
          {
          regionEntryNode = comparisonNode;
          properRegion->setEntry(regionEntryNode);
          }
 
-      //TR::CFGEdge::createEdge(comparisonNode,  clonedInvariantNode, trMemory());
+      //TR::CFGEdge::createEdge(comparisonNode,  clonedInvariantNode, comp()->trMemory());
       prevComparisonNode = comparisonNode;
       currComparisonBlock = currComparisonBlock->getNextElement();
 
@@ -4721,18 +4721,18 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
             {
             TR_StructureSubGraphNode *criticalEdgeNode = new (_cfg->structureRegion()) TR_StructureSubGraphNode(currCriticalEdgeBlock->getData()->getStructureOf());
             properRegion->addSubNode(criticalEdgeNode);
-            TR::CFGEdge::createEdge(prevComparisonNode,  criticalEdgeNode, trMemory());
-            TR::CFGEdge::createEdge(criticalEdgeNode,  clonedInvariantNode, trMemory());
+            TR::CFGEdge::createEdge(prevComparisonNode,  criticalEdgeNode, comp()->trMemory());
+            TR::CFGEdge::createEdge(criticalEdgeNode,  clonedInvariantNode, comp()->trMemory());
             currCriticalEdgeBlock = currCriticalEdgeBlock->getNextElement();
             }
          else
-            TR::CFGEdge::createEdge(prevComparisonNode,  clonedInvariantNode, trMemory());
+            TR::CFGEdge::createEdge(prevComparisonNode,  clonedInvariantNode, comp()->trMemory());
          }
       }
 
-   TR::CFGEdge::createEdge(prevComparisonNode,  invariantNode, trMemory());
-   TR::CFGEdge::createEdge(invariantNode,  whileNode, trMemory());
-   TR::CFGEdge::createEdge(clonedInvariantNode,  clonedWhileNode, trMemory());
+   TR::CFGEdge::createEdge(prevComparisonNode,  invariantNode, comp()->trMemory());
+   TR::CFGEdge::createEdge(invariantNode,  whileNode, comp()->trMemory());
+   TR::CFGEdge::createEdge(clonedInvariantNode,  clonedWhileNode, comp()->trMemory());
 
    // Since the new proper region replaced the original loop invariant
    // block in the parent structure, the successor of the loop
@@ -4829,13 +4829,13 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
       {
       TR_StructureSubGraphNode *newGotoBlockNode = new (_cfg->structureRegion()) TR_StructureSubGraphNode(newGotoBlockStructure);
       properRegion->addSubNode(newGotoBlockNode);
-      TR::CFGEdge::createEdge(clonedWhileNode,  newGotoBlockNode, trMemory());
+      TR::CFGEdge::createEdge(clonedWhileNode,  newGotoBlockNode, comp()->trMemory());
       }
 
    // Add appropriate exit edges into the new proper region based
    // on the original loop's exit edges.
    //
-   TR_BitVector seenExitNodes(numNodes, trMemory());
+   TR_BitVector seenExitNodes(numNodes, comp()->trMemory());
    ei.set(&whileLoop->getExitEdges());
    for (exitEdge = ei.getCurrent(); exitEdge; exitEdge = ei.getNext())
       {
@@ -4852,7 +4852,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
          // region
          if (node->getNumber() == regionEntryNode->getNumber())
             {
-            TR::CFGEdge::createEdge(whileNode, regionEntryNode, trMemory());
+            TR::CFGEdge::createEdge(whileNode, regionEntryNode, comp()->trMemory());
             }
          else
             {
@@ -4893,7 +4893,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
          // region
          if (node->getNumber() == regionEntryNode->getNumber())
             {
-            TR::CFGEdge::createEdge(clonedWhileNode, regionEntryNode, trMemory());
+            TR::CFGEdge::createEdge(clonedWhileNode, regionEntryNode, comp()->trMemory());
             }
          else
             {
@@ -8343,12 +8343,12 @@ bool TR_LoopVersioner::boundCheckUsesUnchangedValue(TR::TreeTop *bndCheckTree, T
          }
       }
 
-   TR_ScratchList<TR::Block> blocksInRegion(trMemory());
+   TR_ScratchList<TR::Block> blocksInRegion(comp()->trMemory());
    loopStructure->getBlocks(&blocksInRegion);
 
    bool flag = true;
    TR::Block *cursorBlock = currentBlock;
-   TR_ScratchList<TR::Block> innerLoopEntries(trMemory());
+   TR_ScratchList<TR::Block> innerLoopEntries(comp()->trMemory());
    while (flag)
       {
       flag = false;
@@ -8533,7 +8533,7 @@ int32_t TR_LoopVersioner::detectCanonicalizedPredictableLoops(TR_Structure *loop
    if (!loopStructure->getParent())
       return -3;
 
-   TR_ScratchList<TR::Block> blocksInWhileLoop(trMemory());
+   TR_ScratchList<TR::Block> blocksInWhileLoop(comp()->trMemory());
    loopStructure->getBlocks(&blocksInWhileLoop);
    int32_t loop_size = blocksInWhileLoop.getSize();
    int32_t hotnessFactor = 1;
@@ -8600,9 +8600,9 @@ int32_t TR_LoopVersioner::detectCanonicalizedPredictableLoops(TR_Structure *loop
           int32_t symRefCount = comp()->getSymRefCount();
 
           initializeSymbolsWrittenAndReadExactlyOnce(symRefCount, notGrowable);
-          _hasPredictableExits = new (trStackMemory()) TR_BitVector(symRefCount, trMemory(), stackAlloc);
+          _hasPredictableExits = new (comp()->trStackMemory()) TR_BitVector(symRefCount, comp()->trMemory(), stackAlloc);
           _hasPredictableExits->setAll(symRefCount);
-          //_writtenAndNotJustForHeapification = new (trStackMemory()) TR_BitVector(symRefCount, trMemory(), stackAlloc);
+          //_writtenAndNotJustForHeapification = new (comp()->trStackMemory()) TR_BitVector(symRefCount, comp()->trMemory(), stackAlloc);
 
           if (trace())
              traceMsg(comp(), "\nChecking loop %d for predictability\n", loopStructure->getNumber());
@@ -8625,7 +8625,7 @@ int32_t TR_LoopVersioner::detectCanonicalizedPredictableLoops(TR_Structure *loop
                 dumpOptDetails(comp(), "\n");
                 }
 
-             TR_ScratchList<TR::TreeTop> predictableComputations(trMemory());
+             TR_ScratchList<TR::TreeTop> predictableComputations(comp()->trMemory());
 
              TR::SparseBitVector::Cursor cursor(_writtenExactlyOnce);
              bool flushDerivedInductionVariables=false;
@@ -8661,7 +8661,7 @@ int32_t TR_LoopVersioner::detectCanonicalizedPredictableLoops(TR_Structure *loop
 
                 if (storeInRequiredForm /* && !_cannotBeEliminated->get(nextInductionVariableNumber) */)
                    {
-                   int32_t *versionableInductionVariable = (int32_t *)trMemory()->allocateStackMemory(sizeof(int32_t));
+                   int32_t *versionableInductionVariable = (int32_t *)comp()->trMemory()->allocateStackMemory(sizeof(int32_t));
                    *versionableInductionVariable = nextInductionVariableNumber;
                    _derivedVersionableInductionVariables.add(versionableInductionVariable);
                    TR::Node *loopTestNode = _loopTestTree->getNode();
@@ -8683,7 +8683,7 @@ int32_t TR_LoopVersioner::detectCanonicalizedPredictableLoops(TR_Structure *loop
                    }
                 else if (isStoreInSpecialForm(nextInductionVariableNumber, loopStructure))
                    {
-                   int32_t *versionableInductionVariable = (int32_t *)trMemory()->allocateStackMemory(sizeof(int32_t));
+                   int32_t *versionableInductionVariable = (int32_t *)comp()->trMemory()->allocateStackMemory(sizeof(int32_t));
                    *versionableInductionVariable = nextInductionVariableNumber;
                    _specialVersionableInductionVariables.add(versionableInductionVariable);
 
@@ -8700,7 +8700,7 @@ int32_t TR_LoopVersioner::detectCanonicalizedPredictableLoops(TR_Structure *loop
              //
              if (loopStructure->asRegion())
                 {
-                TR_ScratchList<TR::Block> exitBlocks(trMemory());
+                TR_ScratchList<TR::Block> exitBlocks(comp()->trMemory());
                 loopStructure->collectExitBlocks(&exitBlocks);
                 // _hasPredictableExits = true
                 //

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -90,7 +90,7 @@ int32_t TR_CompactLocals::perform()
       return 0;
       }
 
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    // If register maps are not implemented, spill temps must be included in
    // the liveness analysis.
@@ -153,14 +153,14 @@ int32_t TR_CompactLocals::perform()
 
    // Create a local index to node table and seed the interference graph.
    //
-   _localIndexToIGNode = new (trStackMemory()) TR::vector<TR_IGNode*, TR::Region&>(
+   _localIndexToIGNode = new (comp()->trStackMemory()) TR::vector<TR_IGNode*, TR::Region&>(
       numLocals,
       static_cast<TR_IGNode*>(NULL),
       comp()->trMemory()->currentStackRegion());
 
-   _localsIG = new (trHeapMemory()) TR_InterferenceGraph(comp(), numLocals);
-   referenceLocals = new (trStackMemory()) TR_BitVector(numLocals, trMemory(), stackAlloc);
-   nonReferenceLocals = new (trStackMemory()) TR_BitVector(numLocals, trMemory(), stackAlloc);
+   _localsIG = new (comp()->trHeapMemory()) TR_InterferenceGraph(comp(), numLocals);
+   referenceLocals = new (comp()->trStackMemory()) TR_BitVector(numLocals, comp()->trMemory(), stackAlloc);
+   nonReferenceLocals = new (comp()->trStackMemory()) TR_BitVector(numLocals, comp()->trMemory(), stackAlloc);
 
    for (p = locals.getFirst(); p != NULL; p = locals.getNext())
       {
@@ -217,9 +217,9 @@ int32_t TR_CompactLocals::perform()
    // Build the live on exit sets for each block and determine interferences between the
    // live ranges of all locals.
    //
-   _liveVars = new (trStackMemory()) TR_BitVector(numLocals, trMemory(), stackAlloc);
-   _prevLiveVars = new (trStackMemory()) TR_BitVector(numLocals, trMemory(), stackAlloc);
-   _temp = new (trStackMemory()) TR_BitVector(numLocals, trMemory(), stackAlloc);
+   _liveVars = new (comp()->trStackMemory()) TR_BitVector(numLocals, comp()->trMemory(), stackAlloc);
+   _prevLiveVars = new (comp()->trStackMemory()) TR_BitVector(numLocals, comp()->trMemory(), stackAlloc);
+   _temp = new (comp()->trStackMemory()) TR_BitVector(numLocals, comp()->trMemory(), stackAlloc);
 
    vcount_t visitCount = comp()->incOrResetVisitCount();
 
@@ -447,7 +447,7 @@ TR_CompactLocals::createInterferenceBetween(TR_BitVector *bv)
    TR_IGNode            *ig1, *ig2;
    int32_t              i1, i2;
 
-   TR_BitVector *workBV = new (trStackMemory()) TR_BitVector(*bv);
+   TR_BitVector *workBV = new (comp()->trStackMemory()) TR_BitVector(*bv);
 
    while (bvi.hasMoreElements())
       {

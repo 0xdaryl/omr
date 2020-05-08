@@ -671,7 +671,7 @@ TR::VPClassType *TR::VPResolvedClass::getArrayClass(OMR::ValuePropagation *vp)
    // TODO - when getArrayClassFromComponentClass is fixed up to always return
    // the array class, remove the above "if" and the following code.
    //
-   char *arraySig = (char *)vp->trMemory()->allocateStackMemory(_len+2);
+   char *arraySig = (char *)vp->comp()->trMemory()->allocateStackMemory(_len+2);
    arraySig[0] = '[';
    arraySig[_len+1] = 0;
    memcpy(arraySig+1, _sig, _len);
@@ -727,7 +727,7 @@ TR::VPClassType *TR::VPFixedClass::getArrayClass(OMR::ValuePropagation *vp)
    // TODO - when getArrayClassFromComponentClass is fixed up to always return
    // the array class, remove the above "if" and the following code.
    //
-   char *arraySig = (char *)vp->trMemory()->allocateStackMemory(_len+2);
+   char *arraySig = (char *)vp->comp()->trMemory()->allocateStackMemory(_len+2);
    arraySig[0] = '[';
    arraySig[_len+1] = 0;
    memcpy(arraySig+1, _sig, _len);
@@ -749,7 +749,7 @@ const char *TR::VPUnresolvedClass::getClassSignature(int32_t &len)
 
 TR::VPClassType *TR::VPUnresolvedClass::getArrayClass(OMR::ValuePropagation *vp)
    {
-   char *arraySig = (char *)vp->trMemory()->allocateStackMemory(_len+2);
+   char *arraySig = (char *)vp->comp()->trMemory()->allocateStackMemory(_len+2);
    arraySig[0] = '[';
    arraySig[_len+1] = 0;
    memcpy(arraySig+1, _sig, _len);
@@ -889,7 +889,7 @@ TR::VPShortConst *TR::VPShortConst::create(OMR::ValuePropagation *vp, int16_t v)
        if (constraint && constraint->getShort() == v)
            return constraint;
        }
-   constraint = new (vp->trStackMemory()) TR::VPShortConst(v);
+   constraint = new (vp->comp()->trStackMemory()) TR::VPShortConst(v);
    vp->addConstraint(constraint,hash);
    return constraint;
    }
@@ -912,7 +912,7 @@ TR::VPIntConst *TR::VPIntConst::create(OMR::ValuePropagation *vp, int32_t v)
       if (constraint && constraint->getInt() == v)
          return constraint;
       }
-   constraint = new (vp->trStackMemory()) TR::VPIntConst(v);
+   constraint = new (vp->comp()->trStackMemory()) TR::VPIntConst(v);
    vp->addConstraint(constraint, hash);
    return constraint;
    }
@@ -958,7 +958,7 @@ TR::VPShortConstraint * TR::VPShortRange::create(OMR::ValuePropagation * vp, int
            constraint->_overflow == canOverflow)
            return constraint;
        }
-   constraint = new (vp->trStackMemory()) TR::VPShortRange(low,high);
+   constraint = new (vp->comp()->trStackMemory()) TR::VPShortRange(low,high);
    constraint->setCanOverflow(canOverflow);
    vp->addConstraint(constraint,hash);
    return constraint;
@@ -1002,7 +1002,7 @@ TR::VPIntConstraint *TR::VPIntRange::create(OMR::ValuePropagation *vp, int32_t l
             constraint->_overflow == canOverflow)
          return constraint;
       }
-   constraint = new (vp->trStackMemory()) TR::VPIntRange(low, high);
+   constraint = new (vp->comp()->trStackMemory()) TR::VPIntRange(low, high);
    constraint->setCanOverflow(canOverflow);
    //if (isUnsigned)
    //   constraint->setIsUnsigned(true);
@@ -1064,7 +1064,7 @@ TR::VPLongConst *TR::VPLongConst::create(OMR::ValuePropagation *vp, int64_t v)
       if (constraint && constraint->_low == v)
          return constraint;
       }
-   constraint = new (vp->trStackMemory()) TR::VPLongConst(v);
+   constraint = new (vp->comp()->trStackMemory()) TR::VPLongConst(v);
    vp->addConstraint(constraint, hash);
    return constraint;
    }
@@ -1100,7 +1100,7 @@ TR::VPLongConstraint *TR::VPLongRange::create(OMR::ValuePropagation *vp, int64_t
             constraint->_overflow == canOverflow)
          return constraint;
       }
-   constraint = new (vp->trStackMemory()) TR::VPLongRange(low, high);
+   constraint = new (vp->comp()->trStackMemory()) TR::VPLongRange(low, high);
    constraint->setCanOverflow(canOverflow);
    vp->addConstraint(constraint, hash);
 
@@ -1182,7 +1182,7 @@ TR::VPConstraint *TR::VPClass::create(OMR::ValuePropagation *vp, TR::VPClassType
           constraint->_location     == location)
          return constraint;
       }
-   constraint = new (vp->trStackMemory()) TR::VPClass(type, presence, preexistence, arrayInfo, location);
+   constraint = new (vp->comp()->trStackMemory()) TR::VPClass(type, presence, preexistence, arrayInfo, location);
    vp->addConstraint(constraint, hash);
    return constraint;
    }
@@ -1259,7 +1259,7 @@ TR::VPResolvedClass *TR::VPResolvedClass::create(OMR::ValuePropagation *vp, TR_O
           constraint->getClass() == klass)
          return constraint;
       }
-   constraint = new (vp->trStackMemory()) TR::VPResolvedClass(klass, vp->comp());
+   constraint = new (vp->comp()->trStackMemory()) TR::VPResolvedClass(klass, vp->comp());
    vp->addConstraint(constraint, hash);
    return constraint;
    }
@@ -1279,7 +1279,7 @@ TR::VPFixedClass *TR::VPFixedClass::create(OMR::ValuePropagation *vp, TR_OpaqueC
          return constraint;
          }
       }
-   constraint = new (vp->trStackMemory()) TR::VPFixedClass(klass, vp->comp());
+   constraint = new (vp->comp()->trStackMemory()) TR::VPFixedClass(klass, vp->comp());
    vp->addConstraint(constraint, hash);
    return constraint;
    }
@@ -1325,7 +1325,7 @@ TR::VPKnownObject *TR::VPKnownObject::create(OMR::ValuePropagation *vp, TR::Know
             // clazz is already right
             TR_ASSERT(clazz != jlClass, "For java/lang/Class instances, caller needs to use createForJavaLangClass.");
             }
-         constraint = new (vp->trStackMemory()) TR::VPKnownObject(clazz, vp->comp(), index, isJavaLangClass);
+         constraint = new (vp->comp()->trStackMemory()) TR::VPKnownObject(clazz, vp->comp(), index, isJavaLangClass);
          vp->addConstraint(constraint, hash);
          }
       }
@@ -1373,7 +1373,7 @@ TR::VPConstString *TR::VPConstString::create(OMR::ValuePropagation *vp, TR::Symb
                }
             }
          }
-      constraint = new (vp->trStackMemory()) TR::VPConstString(vp->comp()->getStringClassPointer(), vp->comp(), symRef);
+      constraint = new (vp->comp()->trStackMemory()) TR::VPConstString(vp->comp()->getStringClassPointer(), vp->comp(), symRef);
       vp->addConstraint(constraint, hash);
       return constraint;
       }
@@ -1426,7 +1426,7 @@ TR::VPUnresolvedClass *TR::VPUnresolvedClass::create(OMR::ValuePropagation *vp, 
             return constraint;
          }
       }
-   constraint = new (vp->trStackMemory()) TR::VPUnresolvedClass(sig, len, method);
+   constraint = new (vp->comp()->trStackMemory()) TR::VPUnresolvedClass(sig, len, method);
    vp->addConstraint(constraint, hash);
    return constraint;
    }
@@ -1456,7 +1456,7 @@ TR::VPPreexistentObject *TR::VPPreexistentObject::create(OMR::ValuePropagation *
          }
       }
 
-   constraint = new (vp->trStackMemory()) TR::VPPreexistentObject(c);
+   constraint = new (vp->comp()->trStackMemory()) TR::VPPreexistentObject(c);
    vp->addConstraint(constraint, hash);
    return constraint;
    //return vp->_preexistentObjectConstraint;
@@ -1475,7 +1475,7 @@ TR::VPArrayInfo *TR::VPArrayInfo::create(OMR::ValuePropagation *vp, int32_t lowB
       if (constraint && constraint->lowBound() == lowBound && constraint->highBound() == highBound && constraint->elementSize() == elementSize)
          return constraint;
       }
-   constraint = new (vp->trStackMemory()) TR::VPArrayInfo(lowBound, highBound, elementSize);
+   constraint = new (vp->comp()->trStackMemory()) TR::VPArrayInfo(lowBound, highBound, elementSize);
    vp->addConstraint(constraint, hash);
    return constraint;
    }
@@ -1515,11 +1515,11 @@ TR::VPMergedConstraints *TR::VPMergedConstraints::create(OMR::ValuePropagation *
             }
          }
       }
-   TR_ScratchList<TR::VPConstraint> list(vp->trMemory());
+   TR_ScratchList<TR::VPConstraint> list(vp->comp()->trMemory());
    list.add(second);
    list.add(first);
 
-   constraint = new (vp->trStackMemory()) TR::VPMergedConstraints(list.getListHead(), vp->trMemory());
+   constraint = new (vp->comp()->trStackMemory()) TR::VPMergedConstraints(list.getListHead(), vp->comp()->trMemory());
    if (first->isUnsigned() && second->isUnsigned())
       constraint->setIsUnsigned(true);
 
@@ -1538,7 +1538,7 @@ TR::VPObjectLocation *TR::VPObjectLocation::create(OMR::ValuePropagation *vp, VP
       if (constraint && constraint->_kind == kind)
          return constraint;
       }
-   constraint = new (vp->trStackMemory()) TR::VPObjectLocation(kind);
+   constraint = new (vp->comp()->trStackMemory()) TR::VPObjectLocation(kind);
    vp->addConstraint(constraint, hash);
    return constraint;
    }
@@ -1576,7 +1576,7 @@ TR::VPMergedConstraints *TR::VPMergedConstraints::create(OMR::ValuePropagation *
             return constraint;
          }
       }
-   constraint = new (vp->trStackMemory()) TR::VPMergedConstraints(list, vp->trMemory());
+   constraint = new (vp->comp()->trStackMemory()) TR::VPMergedConstraints(list, vp->comp()->trMemory());
    if (allUnsigned)
       constraint->setIsUnsigned(true);
 
@@ -1601,7 +1601,7 @@ TR::VPSync *TR::VPSync::create(OMR::ValuePropagation *vp, TR_YesNoMaybe v)
             (constraint->syncEmitted() == v))
          return constraint;
       }
-   constraint = new (vp->trStackMemory()) TR::VPSync(v);
+   constraint = new (vp->comp()->trStackMemory()) TR::VPSync(v);
    vp->addConstraint(constraint, hash);
    return constraint;
    }
@@ -1619,7 +1619,7 @@ TR::VPLessThanOrEqual *TR::VPLessThanOrEqual::create(OMR::ValuePropagation *vp, 
       if (constraint && constraint->increment() == incr)
          return constraint;
       }
-   constraint = new (vp->trStackMemory()) TR::VPLessThanOrEqual(incr);
+   constraint = new (vp->comp()->trStackMemory()) TR::VPLessThanOrEqual(incr);
    vp->addConstraint(constraint, hash);
    return constraint;
    }
@@ -1637,7 +1637,7 @@ TR::VPGreaterThanOrEqual *TR::VPGreaterThanOrEqual::create(OMR::ValuePropagation
       if (constraint && constraint->increment() == incr)
          return constraint;
       }
-   constraint = new (vp->trStackMemory()) TR::VPGreaterThanOrEqual(incr);
+   constraint = new (vp->comp()->trStackMemory()) TR::VPGreaterThanOrEqual(incr);
    vp->addConstraint(constraint, hash);
    return constraint;
    }
@@ -1655,7 +1655,7 @@ TR::VPEqual *TR::VPEqual::create(OMR::ValuePropagation *vp, int32_t incr)
       if (constraint && constraint->increment() == incr)
          return constraint;
       }
-   constraint = new (vp->trStackMemory()) TR::VPEqual(incr);
+   constraint = new (vp->comp()->trStackMemory()) TR::VPEqual(incr);
    vp->addConstraint(constraint, hash);
    return constraint;
    }
@@ -1673,7 +1673,7 @@ TR::VPNotEqual *TR::VPNotEqual::create(OMR::ValuePropagation *vp, int32_t incr)
       if (constraint && constraint->increment() == incr)
          return constraint;
       }
-   constraint = new (vp->trStackMemory()) TR::VPNotEqual(incr);
+   constraint = new (vp->comp()->trStackMemory()) TR::VPNotEqual(incr);
    vp->addConstraint(constraint, hash);
    return constraint;
    }
@@ -2127,7 +2127,7 @@ TR::VPConstraint *TR::VPMergedConstraints::shortMerge(TR::VPConstraint * other, 
    {
    TR::VPShortConstraint *otherCur = other->asShortConstraint();
 
-   TR_ScratchList<TR::VPConstraint>  result (vp->trMemory());
+   TR_ScratchList<TR::VPConstraint>  result (vp->comp()->trMemory());
    ListElement <TR::VPConstraint> *  next   = _constraints.getListHead();
    TR::VPShortConstraint          *  cur    = next->getData()->asShortConstraint();
    ListElement<TR::VPConstraint>  *  lastResultEntry = NULL;
@@ -2239,7 +2239,7 @@ TR::VPConstraint *TR::VPMergedConstraints::intMerge(TR::VPConstraint *other, Lis
    //if (otherCur && otherCur->isUnsigned())
    //   return intMerge(otherCur, otherNext, vp, true);
 
-   TR_ScratchList<TR::VPConstraint>         result(vp->trMemory());
+   TR_ScratchList<TR::VPConstraint>         result(vp->comp()->trMemory());
    ListElement<TR::VPConstraint> *next = _constraints.getListHead();
    TR::VPIntConstraint           *cur  = next->getData()->asIntConstraint();
    ListElement<TR::VPConstraint> *lastResultEntry = NULL;
@@ -2452,7 +2452,7 @@ TR::VPConstraint *TR::VPMergedConstraints::intMerge(TR::VPConstraint *other, Lis
 
 TR::VPConstraint *TR::VPMergedConstraints::longMerge(TR::VPConstraint *other, ListElement<TR::VPConstraint> *otherNext, OMR::ValuePropagation *vp)
    {
-   TR_ScratchList<TR::VPConstraint>         result(vp->trMemory());
+   TR_ScratchList<TR::VPConstraint>         result(vp->comp()->trMemory());
    ListElement<TR::VPConstraint> *next = _constraints.getListHead();
    TR::VPLongConstraint          *cur  = next->getData()->asLongConstraint();
    ListElement<TR::VPConstraint> *lastResultEntry = NULL;
@@ -3802,7 +3802,7 @@ TR::VPConstraint *TR::VPMergedConstraints::intersect1(TR::VPConstraint *other, O
 //intersect routine below
 // TR::VPConstraint *TR::VPMergedConstraints::intIntersect(TR::VPIntConstraint *otherCur, ListElement<TR::VPConstraint> *otherNext, OMR::ValuePropagation *vp, bool isUnsigned)
 //    {
-//    TR_ScratchList<TR::VPConstraint>         result(vp->trMemory());
+//    TR_ScratchList<TR::VPConstraint>         result(vp->comp()->trMemory());
 //    ListElement<TR::VPConstraint> *next = _constraints.getListHead();
 //    TR::VPIntConstraint           *cur  = next->getData()->asIntConstraint();
 //    ListElement<TR::VPConstraint> *lastResultEntry = NULL;
@@ -3901,7 +3901,7 @@ TR::VPConstraint *TR::VPMergedConstraints::shortIntersect(TR::VPConstraint * oth
    {
    TR::VPShortConstraint *otherCur = other->asShortConstraint();
 
-   TR_ScratchList<TR::VPConstraint>  result (vp->trMemory());
+   TR_ScratchList<TR::VPConstraint>  result (vp->comp()->trMemory());
    ListElement<TR::VPConstraint>    *next = _constraints.getListHead();
    TR::VPShortConstraint            *cur  = next->getData()->asShortConstraint();
    ListElement<TR::VPConstraint>    *lastResultEntry = NULL;
@@ -4000,7 +4000,7 @@ TR::VPConstraint *TR::VPMergedConstraints::intIntersect(TR::VPConstraint *other,
    //if (otherCur && otherCur->isUnsigned())
    //   return intIntersect(otherCur, otherNext, vp, true);
 
-   TR_ScratchList<TR::VPConstraint>         result(vp->trMemory());
+   TR_ScratchList<TR::VPConstraint>         result(vp->comp()->trMemory());
    ListElement<TR::VPConstraint> *next = _constraints.getListHead();
    TR::VPIntConstraint           *cur  = next->getData()->asIntConstraint();
    ListElement<TR::VPConstraint> *lastResultEntry = NULL;
@@ -4176,7 +4176,7 @@ TR::VPConstraint *TR::VPMergedConstraints::intIntersect(TR::VPConstraint *other,
 
 TR::VPConstraint *TR::VPMergedConstraints::longIntersect(TR::VPConstraint *other, ListElement<TR::VPConstraint> *otherNext, OMR::ValuePropagation *vp)
    {
-   TR_ScratchList<TR::VPConstraint>         result(vp->trMemory());
+   TR_ScratchList<TR::VPConstraint>         result(vp->comp()->trMemory());
    ListElement<TR::VPConstraint> *next = _constraints.getListHead();
    TR::VPLongConstraint          *cur  = next->getData()->asLongConstraint();
    ListElement<TR::VPConstraint> *lastResultEntry = NULL;

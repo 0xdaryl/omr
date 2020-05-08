@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -65,7 +65,7 @@ TR_IndexExprManipulator::TR_IndexExprManipulator(TR::OptimizationManager *manage
 
 int32_t TR_IndexExprManipulator::perform()
    {
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    int32_t cost = 0;
 
@@ -115,7 +115,7 @@ TR_IndexExprManipulator::rewriteIndexExpression(TR_Structure *loopStructure)
        !regionStructure->isNaturalLoop())
       return;
 
-   TR_ScratchList<TR::Block> blocksInRegion(trMemory());
+   TR_ScratchList<TR::Block> blocksInRegion(comp()->trMemory());
    regionStructure->getBlocks(&blocksInRegion);
 
    if (_debug) traceMsg(comp(), "XX looking at region %d\n",regionStructure->getNumber());

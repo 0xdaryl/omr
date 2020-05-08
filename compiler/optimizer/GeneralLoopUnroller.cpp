@@ -484,10 +484,10 @@ void TR_LoopUnroller::modifyBranchTree(TR_RegionStructure *loop,
 
       TR::CFGEdge *edgeToRemove = pBlock->getSuccessors().front();
 
-      _cfg->addEdge(TR::CFGEdge::createEdge(pBlock,  newBlock, trMemory()));
-      TR::CFGEdge::createEdge(predNode,  newNode, trMemory());
-      _cfg->addEdge(TR::CFGEdge::createEdge(newBlock, loop->getEntryBlock(), trMemory()));
-      TR::CFGEdge::createEdge(newNode,  loopNode, trMemory());
+      _cfg->addEdge(TR::CFGEdge::createEdge(pBlock,  newBlock, comp()->trMemory()));
+      TR::CFGEdge::createEdge(predNode,  newNode, comp()->trMemory());
+      _cfg->addEdge(TR::CFGEdge::createEdge(newBlock, loop->getEntryBlock(), comp()->trMemory()));
+      TR::CFGEdge::createEdge(newNode,  loopNode, comp()->trMemory());
 
       _cfg->removeEdge(edgeToRemove);
       parent->removeEdge(predBlock, loopNode->getStructure());
@@ -642,10 +642,10 @@ void TR_LoopUnroller::modifyBranchTree(TR_RegionStructure *loop,
 
          TR::CFGEdge *edgeToRemove = pBlock->getSuccessors().front();
 
-         _cfg->addEdge(TR::CFGEdge::createEdge(pBlock,  newBlock, trMemory()));
-         TR::CFGEdge::createEdge(predNode,  newSubNode, trMemory());
-         _cfg->addEdge(TR::CFGEdge::createEdge(newBlock, loop->getEntryBlock(), trMemory()));
-         TR::CFGEdge::createEdge(newSubNode,  loopNode, trMemory());
+         _cfg->addEdge(TR::CFGEdge::createEdge(pBlock,  newBlock, comp()->trMemory()));
+         TR::CFGEdge::createEdge(predNode,  newSubNode, comp()->trMemory());
+         _cfg->addEdge(TR::CFGEdge::createEdge(newBlock, loop->getEntryBlock(), comp()->trMemory()));
+         TR::CFGEdge::createEdge(newSubNode,  loopNode, comp()->trMemory());
 
          _cfg->removeEdge(edgeToRemove);
          parent->removeEdge(predBlock, loopNode->getStructure());
@@ -683,8 +683,8 @@ void TR_LoopUnroller::modifyBranchTree(TR_RegionStructure *loop,
 
       _overflowTestBlock = pBlock;
 
-      _cfg->addEdge(TR::CFGEdge::createEdge(pBlock,  spillBlock, trMemory()));
-      TR::CFGEdge::createEdge(predNode,  _spillNode, trMemory());
+      _cfg->addEdge(TR::CFGEdge::createEdge(pBlock,  spillBlock, comp()->trMemory()));
+      TR::CFGEdge::createEdge(predNode,  _spillNode, comp()->trMemory());
       }
 
    originalLimitNode->recursivelyDecReferenceCount();
@@ -801,12 +801,12 @@ void TR_LoopUnroller::modifyBranchTree(TR_RegionStructure *loop,
                }
             }
 
-         _cfg->addEdge(TR::CFGEdge::createEdge(pBlock,  newBlock, trMemory()));
-         TR::CFGEdge::createEdge(predNode,  newSubNode, trMemory());
-         _cfg->addEdge(TR::CFGEdge::createEdge(newBlock,  spillBlock, trMemory()));
-         TR::CFGEdge::createEdge(newSubNode,  _spillNode, trMemory());
-         _cfg->addEdge(TR::CFGEdge::createEdge(newBlock,  nextBlock, trMemory()));
-         TR::CFGEdge::createEdge(newSubNode, parent->findSubNodeInRegion(nextBlock->getNumber()), trMemory());
+         _cfg->addEdge(TR::CFGEdge::createEdge(pBlock,  newBlock, comp()->trMemory()));
+         TR::CFGEdge::createEdge(predNode,  newSubNode, comp()->trMemory());
+         _cfg->addEdge(TR::CFGEdge::createEdge(newBlock,  spillBlock, comp()->trMemory()));
+         TR::CFGEdge::createEdge(newSubNode,  _spillNode, comp()->trMemory());
+         _cfg->addEdge(TR::CFGEdge::createEdge(newBlock,  nextBlock, comp()->trMemory()));
+         TR::CFGEdge::createEdge(newSubNode, parent->findSubNodeInRegion(nextBlock->getNumber()), comp()->trMemory());
 
          _cfg->removeEdge(edgeToRemove);
          parent->removeEdge(predBlock, parent->findSubNodeInRegion(nextBlock->getNumber())->getStructure());
@@ -824,12 +824,12 @@ void TR_LoopUnroller::modifyBranchTree(TR_RegionStructure *loop,
          TR_StructureSubGraphNode *newSubNode = new (_cfg->structureRegion()) TR_StructureSubGraphNode(newBlockStructure);
          parent->addSubNode(newSubNode);
 
-         _cfg->addEdge(TR::CFGEdge::createEdge(pBlock,  spillBlock, trMemory()));
-         TR::CFGEdge::createEdge(predNode,  _spillNode, trMemory());
+         _cfg->addEdge(TR::CFGEdge::createEdge(pBlock,  spillBlock, comp()->trMemory()));
+         TR::CFGEdge::createEdge(predNode,  _spillNode, comp()->trMemory());
 
          // TR::Block::split does not know how to fix the structure edges, so do that ourselves
-         TR::CFGEdge::createEdge(predNode,  newSubNode, trMemory());
-         TR::CFGEdge::createEdge(newSubNode,  loopNode, trMemory());
+         TR::CFGEdge::createEdge(predNode,  newSubNode, comp()->trMemory());
+         TR::CFGEdge::createEdge(newSubNode,  loopNode, comp()->trMemory());
 
          parent->removeEdge(predBlock, loop);
          _loopIterTestBlock = pBlock;
@@ -1002,7 +1002,7 @@ void TR_LoopUnroller::modifyOriginalLoop(TR_RegionStructure *loop, TR_StructureS
    //    if (isCountedLoop && !_completeUnroll && !_spillLoopRequired)
    //       {
    //       //Adjust the induction variable information to include the new information
-   //       _indVar->setIncr(new (trHeapMemory()) TR::VPIntConst(_loopStride * (1 + _unrollCount)));
+   //       _indVar->setIncr(new (comp()->trHeapMemory()) TR::VPIntConst(_loopStride * (1 + _unrollCount)));
    //       }
    //    else
    //       {
@@ -1043,7 +1043,7 @@ void TR_LoopUnroller::modifyOriginalLoop(TR_RegionStructure *loop, TR_StructureS
          if (!edgeAlreadyExists(_spillNode, destNum))
             {
             if (concreteNode->getStructure()->getParent() == parent)
-               TR::CFGEdge::createEdge(_spillNode,  concreteNode, trMemory());
+               TR::CFGEdge::createEdge(_spillNode,  concreteNode, comp()->trMemory());
             else
                parent->addExitEdge(_spillNode, destNum);
             }
@@ -1180,7 +1180,7 @@ void TR_LoopUnroller::modifyOriginalLoop(TR_RegionStructure *loop, TR_StructureS
             TR::Block *gotoBlock = TR::Block::createEmptyBlock(gotoNode, comp(), origExitBlock->getFrequency(), origExitBlock); //spillLoop->getEntryBlock()->getFrequency());
             gotoBlock->append(TR::TreeTop::create(comp(), gotoNode));
             _cfg->addNode(gotoBlock);
-            _cfg->addEdge(TR::CFGEdge::createEdge(gotoBlock, spillLoop->getEntryBlock(), trMemory()));
+            _cfg->addEdge(TR::CFGEdge::createEdge(gotoBlock, spillLoop->getEntryBlock(), comp()->trMemory()));
 
             TR_StructureSubGraphNode *gotoSubNode = new (_cfg->structureRegion()) TR_StructureSubGraphNode
                (new (_cfg->structureRegion()) TR_BlockStructure(comp(), gotoBlock->getNumber(), gotoBlock));
@@ -1202,20 +1202,20 @@ void TR_LoopUnroller::modifyOriginalLoop(TR_RegionStructure *loop, TR_StructureS
                gotoBlock->getExit()->join(0);
                }
 
-            _cfg->addEdge(TR::CFGEdge::createEdge(newIfBlock,  origExitBlock, trMemory()));
-            _cfg->addEdge(TR::CFGEdge::createEdge(newIfBlock,  gotoBlock, trMemory()));
+            _cfg->addEdge(TR::CFGEdge::createEdge(newIfBlock,  origExitBlock, comp()->trMemory()));
+            _cfg->addEdge(TR::CFGEdge::createEdge(newIfBlock,  gotoBlock, comp()->trMemory()));
 
             TR_StructureSubGraphNode *otherSuccSubNode = parent->findSubNodeInRegion(origExitBlock->getNumber());
             if (otherSuccSubNode)
-               TR::CFGEdge::createEdge(newIfSubNode,  otherSuccSubNode, trMemory());
+               TR::CFGEdge::createEdge(newIfSubNode,  otherSuccSubNode, comp()->trMemory());
             else
                parent->addExitEdge(newIfSubNode, origExitBlock->getNumber(), false);
-            TR::CFGEdge::createEdge(newIfSubNode,  gotoSubNode, trMemory());
-            TR::CFGEdge::createEdge(gotoSubNode,  _spillNode, trMemory());
+            TR::CFGEdge::createEdge(newIfSubNode,  gotoSubNode, comp()->trMemory());
+            TR::CFGEdge::createEdge(gotoSubNode,  _spillNode, comp()->trMemory());
             }
 
          // Add L->I
-         TR::CFGEdge::createEdge(loopNode,  newIfSubNode, trMemory()); // the CFG is already correct
+         TR::CFGEdge::createEdge(loopNode,  newIfSubNode, comp()->trMemory()); // the CFG is already correct
 
          // Remove B->X* in L
          removeExternalEdge(loop, branchNode, exitNode->getNumber());
@@ -1288,7 +1288,7 @@ void TR_LoopUnroller::modifyOriginalLoop(TR_RegionStructure *loop, TR_StructureS
             correspondingExitEdge = *edge;
 
       //Add L->S in P
-      TR::CFGEdge::createEdge(loopNode,  _spillNode, trMemory());
+      TR::CFGEdge::createEdge(loopNode,  _spillNode, comp()->trMemory());
 
       //Look at exit edges of S, and add appropriate edges as needed
       it.set(&_spillNode->getStructure()->asRegion()->getExitEdges());
@@ -1302,7 +1302,7 @@ void TR_LoopUnroller::modifyOriginalLoop(TR_RegionStructure *loop, TR_StructureS
          if (!edgeAlreadyExists(_spillNode, destNum))
             {
             if (concreteNode->getStructure()->getParent() == parent)
-               TR::CFGEdge::createEdge(_spillNode,  concreteNode, trMemory());
+               TR::CFGEdge::createEdge(_spillNode,  concreteNode, comp()->trMemory());
             else
                parent->addExitEdge(_spillNode, destNum);
             }
@@ -1420,17 +1420,17 @@ void TR_LoopUnroller::modifyOriginalLoop(TR_RegionStructure *loop, TR_StructureS
             newIfBlock->getExit()->join(gotoBlock->getEntry());
             gotoBlock->getExit()->join(oldSpillEntryBlock->getEntry());
 
-            _cfg->addEdge(TR::CFGEdge::createEdge(newIfBlock,  origExitBlock, trMemory()));
-            _cfg->addEdge(TR::CFGEdge::createEdge(newIfBlock,  gotoBlock, trMemory()));
-            //_cfg->addEdge(TR::CFGEdge::createEdge(gotoBlock,  oldSpillEntryBlock, trMemory()));
+            _cfg->addEdge(TR::CFGEdge::createEdge(newIfBlock,  origExitBlock, comp()->trMemory()));
+            _cfg->addEdge(TR::CFGEdge::createEdge(newIfBlock,  gotoBlock, comp()->trMemory()));
+            //_cfg->addEdge(TR::CFGEdge::createEdge(gotoBlock,  oldSpillEntryBlock, comp()->trMemory()));
 
             TR_StructureSubGraphNode *otherSuccSubNode = parent->findSubNodeInRegion(origExitBlock->getNumber());
             if (otherSuccSubNode)
-               TR::CFGEdge::createEdge(newIfSubNode,  otherSuccSubNode, trMemory());
+               TR::CFGEdge::createEdge(newIfSubNode,  otherSuccSubNode, comp()->trMemory());
             else
                parent->addExitEdge(newIfSubNode, origExitBlock->getNumber(), false);
-            TR::CFGEdge::createEdge(newIfSubNode,  gotoSubNode, trMemory());
-            TR::CFGEdge::createEdge(gotoSubNode,   _spillNode, trMemory());
+            TR::CFGEdge::createEdge(newIfSubNode,  gotoSubNode, comp()->trMemory());
+            TR::CFGEdge::createEdge(gotoSubNode,   _spillNode, comp()->trMemory());
             }
 
          // Modify entry of the spill loop to be the the original correct entry
@@ -1479,14 +1479,14 @@ void TR_LoopUnroller::modifyOriginalLoop(TR_RegionStructure *loop, TR_StructureS
                lastTree->getNode()->setBranchDestination(newIfBlock->getEntry());
                }
 
-            _cfg->addEdge(TR::CFGEdge::createEdge(fromBlock,  newIfBlock, trMemory()));
+            _cfg->addEdge(TR::CFGEdge::createEdge(fromBlock,  newIfBlock, comp()->trMemory()));
             loop->addExitEdge(fromSubNode, newIfBlock->getNumber());
             _cfg->removeEdge(fromBlock, oldSpillEntryBlock);
             removeExternalEdge(loop, fromSubNode, oldSpillNum);
             }
 
          // add L->I
-         TR::CFGEdge::createEdge(loopNode,  newIfSubNode, trMemory()); // the CFG is already fine
+         TR::CFGEdge::createEdge(loopNode,  newIfSubNode, comp()->trMemory()); // the CFG is already fine
 
          // Remove L->S'
          if (1)
@@ -1503,7 +1503,7 @@ void TR_LoopUnroller::modifyOriginalLoop(TR_RegionStructure *loop, TR_StructureS
 
          TR::Block *newEntryBlock = spillLoop->getEntryBlock();
          gotoNode->setBranchDestination(newEntryBlock->getEntry());
-         _cfg->addEdge(TR::CFGEdge::createEdge(gotoBlock,  newEntryBlock, trMemory()));
+         _cfg->addEdge(TR::CFGEdge::createEdge(gotoBlock,  newEntryBlock, comp()->trMemory()));
 
          /// Fixup the overflow test
          if (_overflowTestBlock)
@@ -1513,7 +1513,7 @@ void TR_LoopUnroller::modifyOriginalLoop(TR_RegionStructure *loop, TR_StructureS
             TR_StructureSubGraphNode *overflowTestNode = parent->findSubNodeInRegion
                (_overflowTestBlock->getNumber());
 
-            _cfg->addEdge(TR::CFGEdge::createEdge(_overflowTestBlock,  newEntryBlock, trMemory()));
+            _cfg->addEdge(TR::CFGEdge::createEdge(_overflowTestBlock,  newEntryBlock, comp()->trMemory()));
             _cfg->removeEdge(_overflowTestBlock, oldSpillEntryBlock);
             // no need to fixup structure edges - they are already fine!!!
             }
@@ -1525,7 +1525,7 @@ void TR_LoopUnroller::modifyOriginalLoop(TR_RegionStructure *loop, TR_StructureS
             _loopIterTestBlock->getLastRealTreeTop()->getNode()->setBranchDestination
                (newEntryBlock->getEntry());
             _cfg->removeEdge(_loopIterTestBlock, oldSpillEntryBlock);
-            _cfg->addEdge(TR::CFGEdge::createEdge(_loopIterTestBlock,  newEntryBlock, trMemory()));
+            _cfg->addEdge(TR::CFGEdge::createEdge(_loopIterTestBlock,  newEntryBlock, comp()->trMemory()));
             }
 
          //printf("--glui-- in %s\n", signature(comp()->getCurrentMethod()));
@@ -1713,7 +1713,7 @@ static bool isBiv(TR_RegionStructure *loop, TR::SymbolReference *symRef, TR_Basi
 
 void TR_LoopUnroller::collectInternalPointers()
    {
-   TR_ScratchList<TR::Block> preheaders(trMemory());
+   TR_ScratchList<TR::Block> preheaders(comp()->trMemory());
    getLoopPreheaders(_loop, &preheaders);
 
    ListIterator<TR::Block> it(&preheaders);
@@ -1777,7 +1777,7 @@ void TR_LoopUnroller::collectInternalPointers()
                            {
                            if (trace())
                               traceMsg(comp(), "\tFound internal pointer %p with iv %d in offset node %p\n", node, biv->getSymRef()->getReferenceNumber(), secondChild);
-                           IntrnPtr *intrnPtr = (IntrnPtr *) trMemory()->allocateStackMemory(sizeof(IntrnPtr));
+                           IntrnPtr *intrnPtr = (IntrnPtr *) comp()->trMemory()->allocateStackMemory(sizeof(IntrnPtr));
                            intrnPtr->symRefNum = node->getSymbolReference()->getReferenceNumber();
                            if (canMatch)
 			      {
@@ -1807,7 +1807,7 @@ void TR_LoopUnroller::collectInternalPointers()
 void TR_LoopUnroller::collectArrayAccesses()
    {
    intptr_t visitCount = comp()->incVisitCount();
-   TR_ScratchList<TR::Block> blocksInRegion(trMemory());
+   TR_ScratchList<TR::Block> blocksInRegion(comp()->trMemory());
    _loop->getBlocks(&blocksInRegion);
 
    if (trace())
@@ -1862,14 +1862,14 @@ void TR_LoopUnroller::examineNode(TR::Node *node, intptr_t visitCount)
          }
       if (!listOfAA)
          {
-         ListsOfArrayAccesses *loaa = (ListsOfArrayAccesses *) trMemory()->allocateStackMemory(sizeof(ListsOfArrayAccesses));
+         ListsOfArrayAccesses *loaa = (ListsOfArrayAccesses *) comp()->trMemory()->allocateStackMemory(sizeof(ListsOfArrayAccesses));
          loaa->symRefNum = node->getSymbolReference()->getReferenceNumber();
-         loaa->list = new (trHeapMemory()) TR_ScratchList<ArrayAccess>(trMemory());
+         loaa->list = new (comp()->trHeapMemory()) TR_ScratchList<ArrayAccess>(comp()->trMemory());
          listOfAA = loaa->list;
          _listOfListsOfArrayAccesses.add(loaa);
          }
 
-      ArrayAccess *aa = (ArrayAccess *) trMemory()->allocateStackMemory(sizeof(ArrayAccess));
+      ArrayAccess *aa = (ArrayAccess *) comp()->trMemory()->allocateStackMemory(sizeof(ArrayAccess));
       aa->aaNode = node;
 
       if (node->getFirstChild()->getOpCodeValue() == TR::aload &&
@@ -2053,14 +2053,14 @@ void TR_LoopUnroller::refineArrayAliasing()
 
 int32_t TR_LoopUnroller::unroll(TR_RegionStructure *loop, TR_StructureSubGraphNode *branchNode)
    {
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    // Initialize the mapping datastructures
    //
-   _blockMapper[0] = (TR::Block **) trMemory()->allocateStackMemory(_numNodes * sizeof(TR::Block *));
-   _blockMapper[1] = (TR::Block **) trMemory()->allocateStackMemory(_numNodes * sizeof(TR::Block *));
-   _nodeMapper[0]  = (TR_StructureSubGraphNode **) trMemory()->allocateStackMemory(_numNodes * sizeof(TR::Block *));
-   _nodeMapper[1]  = (TR_StructureSubGraphNode **) trMemory()->allocateStackMemory(_numNodes * sizeof(TR::Block *));
+   _blockMapper[0] = (TR::Block **) comp()->trMemory()->allocateStackMemory(_numNodes * sizeof(TR::Block *));
+   _blockMapper[1] = (TR::Block **) comp()->trMemory()->allocateStackMemory(_numNodes * sizeof(TR::Block *));
+   _nodeMapper[0]  = (TR_StructureSubGraphNode **) comp()->trMemory()->allocateStackMemory(_numNodes * sizeof(TR::Block *));
+   _nodeMapper[1]  = (TR_StructureSubGraphNode **) comp()->trMemory()->allocateStackMemory(_numNodes * sizeof(TR::Block *));
    memset(_blockMapper[0], 0, _numNodes * sizeof(TR::Block *));
    memset(_nodeMapper[0],  0, _numNodes * sizeof(TR_StructureSubGraphNode *));
    memset(_blockMapper[1], 0, _numNodes * sizeof(TR::Block *));
@@ -2301,7 +2301,7 @@ void TR_LoopUnroller::generateSpillLoop(TR_RegionStructure *loop,
    endTreeTop->join(newBranchBlock->getEntry());
 
    //add an edge from B to B'
-   TR::CFGEdge::createEdge(clonedBranchNode,  newBranchNode, trMemory())
+   TR::CFGEdge::createEdge(clonedBranchNode,  newBranchNode, comp()->trMemory())
    _cfg->addEdge(clonedBranchBlock, newBranchBlock);
 
    //we will need to add a goto as well. B must fall through to B'
@@ -2386,11 +2386,11 @@ void TR_LoopUnroller::addEdgeForSpillLoop(TR_RegionStructure *region,
             !lastGenerationEndsInBranch)
          {
          if (newToNode->getStructure()->getParent() == region)
-            TR::CFGEdge::createEdge(newFromNode,  newToNode, trMemory());
+            TR::CFGEdge::createEdge(newFromNode,  newToNode, comp()->trMemory());
          else
             region->addExitEdge(newFromNode, newToNode->getNumber());
 
-         _cfg->addEdge(TR::CFGEdge::createEdge(newFrom,  newTo, trMemory()));
+         _cfg->addEdge(TR::CFGEdge::createEdge(newFrom,  newTo, comp()->trMemory()));
 
          // In case of this special contex the exit edge was already removed by unrollLoopOnce
          if (edgeContext != BackEdgeFromLastGenerationCompleteUnroll)
@@ -2410,11 +2410,11 @@ void TR_LoopUnroller::addEdgeForSpillLoop(TR_RegionStructure *region,
       else if (lastNode->getOpCode().isJumpWithMultipleTargets())
          {
          if (newToNode->getStructure()->getParent() == region)
-            TR::CFGEdge::createEdge(newFromNode,  newToNode, trMemory());
+            TR::CFGEdge::createEdge(newFromNode,  newToNode, comp()->trMemory());
          else
             region->addExitEdge(newFromNode, newToNode->getNumber());
 
-         _cfg->addEdge(TR::CFGEdge::createEdge(newFrom,  newTo, trMemory()));
+         _cfg->addEdge(TR::CFGEdge::createEdge(newFrom,  newTo, comp()->trMemory()));
          newFrom->getLastRealTreeTop()->adjustBranchOrSwitchTreeTop(comp(), to->getEntry(),
                                                                     newTo->getEntry());
 
@@ -2425,7 +2425,7 @@ void TR_LoopUnroller::addEdgeForSpillLoop(TR_RegionStructure *region,
          if (!edgeAlreadyExists(newFromNode, to->getNumber()))
             region->addExitEdge(newFromNode, to->getNumber());
          if (!cfgEdgeAlreadyExists(newFrom, newTo))
-            _cfg->addEdge(TR::CFGEdge::createEdge(newFrom,  newTo, trMemory()));
+            _cfg->addEdge(TR::CFGEdge::createEdge(newFrom,  newTo, comp()->trMemory()));
          }
       //FALLS INTO
       else
@@ -2508,22 +2508,22 @@ void TR_LoopUnroller::addEdgeForSpillLoop(TR_RegionStructure *region,
             region->addSubNode(gotoSubNode);
 
             //create the cfg edges
-            _cfg->addEdge(TR::CFGEdge::createEdge(newFrom,  gotoBlock, trMemory()));
-            _cfg->addEdge(TR::CFGEdge::createEdge(gotoBlock,  newTo, trMemory()));
+            _cfg->addEdge(TR::CFGEdge::createEdge(newFrom,  gotoBlock, comp()->trMemory()));
+            _cfg->addEdge(TR::CFGEdge::createEdge(gotoBlock,  newTo, comp()->trMemory()));
 
-            TR::CFGEdge::createEdge(newFromNode,  gotoSubNode, trMemory());
+            TR::CFGEdge::createEdge(newFromNode,  gotoSubNode, comp()->trMemory());
             if (newToNode->getStructure()->getParent() == region)
-               TR::CFGEdge::createEdge(gotoSubNode,  newToNode, trMemory());
+               TR::CFGEdge::createEdge(gotoSubNode,  newToNode, comp()->trMemory());
             else
                region->addExitEdge(gotoSubNode, newToNode->getNumber());
             }
          else //newFromNextBlock == newTo
             {
             if (newToNode->getStructure()->getParent() == region)
-               TR::CFGEdge::createEdge(newFromNode,  newToNode, trMemory());
+               TR::CFGEdge::createEdge(newFromNode,  newToNode, comp()->trMemory());
             else
                region->addExitEdge(newFromNode, newToNode->getNumber());
-            _cfg->addEdge(TR::CFGEdge::createEdge(newFrom,  newTo, trMemory()));
+            _cfg->addEdge(TR::CFGEdge::createEdge(newFrom,  newTo, comp()->trMemory()));
             }
 
          }
@@ -2578,7 +2578,7 @@ void TR_LoopUnroller::addExitEdgeAndFixEverything(TR_RegionStructure *region,
          if (!edgeAlreadyExists(newFromNode, exitNum))
             region->addExitEdge(newFromNode, exitNum);
          if (!cfgEdgeAlreadyExists(newFrom, newTo, context))
-            _cfg->addEdge(TR::CFGEdge::createEdge(newFrom,  newTo, trMemory()));
+            _cfg->addEdge(TR::CFGEdge::createEdge(newFrom,  newTo, comp()->trMemory()));
          newFrom->getLastRealTreeTop()->adjustBranchOrSwitchTreeTop(comp(), to->getEntry(),
                                                                     newTo->getEntry());
          }
@@ -2588,7 +2588,7 @@ void TR_LoopUnroller::addExitEdgeAndFixEverything(TR_RegionStructure *region,
          if (!edgeAlreadyExists(newFromNode, exitNum))
             region->addExitEdge(newFromNode, exitNum);
          if (!cfgEdgeAlreadyExists(newFrom, newTo))
-            _cfg->addEdge(TR::CFGEdge::createEdge(newFrom,  newTo, trMemory()));
+            _cfg->addEdge(TR::CFGEdge::createEdge(newFrom,  newTo, comp()->trMemory()));
          newFrom->getLastRealTreeTop()->adjustBranchOrSwitchTreeTop(comp(), to->getEntry(),
                                                                     newTo->getEntry());
          }
@@ -2598,7 +2598,7 @@ void TR_LoopUnroller::addExitEdgeAndFixEverything(TR_RegionStructure *region,
          if (!edgeAlreadyExists(newFromNode, exitNum))
             region->addExitEdge(newFromNode, exitNum);
          if (!cfgEdgeAlreadyExists(newFrom, newTo))
-            _cfg->addEdge(TR::CFGEdge::createEdge(newFrom,  newTo, trMemory()));
+            _cfg->addEdge(TR::CFGEdge::createEdge(newFrom,  newTo, comp()->trMemory()));
          }
       //FALLS INTO
       else
@@ -2611,7 +2611,7 @@ void TR_LoopUnroller::addExitEdgeAndFixEverything(TR_RegionStructure *region,
                {
                swingBlocks(newFrom, newTo);
                if (!cfgEdgeAlreadyExists(newFrom, newTo))
-                  _cfg->addEdge(TR::CFGEdge::createEdge(newFrom,  newTo, trMemory()));
+                  _cfg->addEdge(TR::CFGEdge::createEdge(newFrom,  newTo, comp()->trMemory()));
                if (!edgeAlreadyExists(newFromNode, exitNum))
                   region->addExitEdge(newFromNode, exitNum);
                }
@@ -2643,10 +2643,10 @@ void TR_LoopUnroller::addExitEdgeAndFixEverything(TR_RegionStructure *region,
                   region->addSubNode(gotoSubNode);
 
                   //create the cfg edges
-                  _cfg->addEdge(TR::CFGEdge::createEdge(newFrom,  gotoBlock, trMemory()));
-                  _cfg->addEdge(TR::CFGEdge::createEdge(gotoBlock,  newTo, trMemory()));
+                  _cfg->addEdge(TR::CFGEdge::createEdge(newFrom,  gotoBlock, comp()->trMemory()));
+                  _cfg->addEdge(TR::CFGEdge::createEdge(gotoBlock,  newTo, comp()->trMemory()));
 
-                  TR::CFGEdge::createEdge(newFromNode,  gotoSubNode, trMemory());
+                  TR::CFGEdge::createEdge(newFromNode,  gotoSubNode, comp()->trMemory());
                   region->addExitEdge(gotoSubNode, exitNum);
                   }
                else if (!edgeAlreadyExists(newFromNode, exitNum))
@@ -2658,7 +2658,7 @@ void TR_LoopUnroller::addExitEdgeAndFixEverything(TR_RegionStructure *region,
             if (!edgeAlreadyExists(newFromNode, exitNum))
                region->addExitEdge(newFromNode, exitNum);
             if (!cfgEdgeAlreadyExists(newFrom, newTo))
-               _cfg->addEdge(TR::CFGEdge::createEdge(newFrom,  newTo, trMemory()));
+               _cfg->addEdge(TR::CFGEdge::createEdge(newFrom,  newTo, comp()->trMemory()));
             }
          }
       }
@@ -2720,7 +2720,7 @@ void TR_LoopUnroller::addEdgeAndFixEverything(TR_RegionStructure *region,
             {
             //we do have a branch: simple add the edges & fix the trees
             if (!edgeAlreadyExists(newFromNode,newToNode))
-               TR::CFGEdge::createEdge(newFromNode,  newToNode, trMemory());
+               TR::CFGEdge::createEdge(newFromNode,  newToNode, comp()->trMemory());
             if (!cfgEdgeAlreadyExists(newFrom, newTo))
                _cfg->addEdge(newFrom, newTo);
             newFrom->getLastRealTreeTop()->adjustBranchOrSwitchTreeTop(comp(), to->getEntry(),
@@ -2730,7 +2730,7 @@ void TR_LoopUnroller::addEdgeAndFixEverything(TR_RegionStructure *region,
             {
             //we do NOT have a branch in the newFrom, we must add a goto tree
             if (!edgeAlreadyExists(newFromNode,newToNode))
-               TR::CFGEdge::createEdge(newFromNode,  newToNode, trMemory());
+               TR::CFGEdge::createEdge(newFromNode,  newToNode, comp()->trMemory());
             if (!cfgEdgeAlreadyExists(newFrom, newTo))
                _cfg->addEdge(newFrom, newTo);
 
@@ -2747,7 +2747,7 @@ void TR_LoopUnroller::addEdgeAndFixEverything(TR_RegionStructure *region,
       else if (lastNode->getOpCode().isJumpWithMultipleTargets())
          {
          if (!edgeAlreadyExists(newFromNode,newToNode))
-            TR::CFGEdge::createEdge(newFromNode,  newToNode, trMemory());
+            TR::CFGEdge::createEdge(newFromNode,  newToNode, comp()->trMemory());
          if (!cfgEdgeAlreadyExists(newFrom, newTo))
             _cfg->addEdge(newFrom, newTo);
          newFrom->getLastRealTreeTop()->adjustBranchOrSwitchTreeTop(comp(), to->getEntry(),
@@ -2759,7 +2759,7 @@ void TR_LoopUnroller::addEdgeAndFixEverything(TR_RegionStructure *region,
          if (!edgeAlreadyExists(newFromNode, to->getNumber()))
             region->addExitEdge(newFromNode, to->getNumber());
          if (!cfgEdgeAlreadyExists(newFrom, newTo))
-            _cfg->addEdge(TR::CFGEdge::createEdge(newFrom,  newTo, trMemory()));
+            _cfg->addEdge(TR::CFGEdge::createEdge(newFrom,  newTo, comp()->trMemory()));
          }
       //FALLS INTO
       else
@@ -2775,9 +2775,9 @@ void TR_LoopUnroller::addEdgeAndFixEverything(TR_RegionStructure *region,
             }
 
          if (!edgeAlreadyExists(newFromNode, newToNode))
-            TR::CFGEdge::createEdge(newFromNode,  newToNode, trMemory());
+            TR::CFGEdge::createEdge(newFromNode,  newToNode, comp()->trMemory());
          if (!cfgEdgeAlreadyExists(newFrom, newTo))
-            _cfg->addEdge(TR::CFGEdge::createEdge(newFrom,  newTo, trMemory()));
+            _cfg->addEdge(TR::CFGEdge::createEdge(newFrom,  newTo, comp()->trMemory()));
          //I am sure that there is no need to adjust tree tops.
          }
 
@@ -2850,7 +2850,7 @@ TR_StructureSubGraphNode *TR_LoopUnroller::getEntryBlockNode(TR_StructureSubGrap
 
 void TR_LoopUnroller::cloneBlocksInRegion(TR_RegionStructure *region, bool isSpillLoop)
    {
-   TR_ScratchList<TR::Block> blocksInRegion(trMemory());
+   TR_ScratchList<TR::Block> blocksInRegion(comp()->trMemory());
    region->getBlocks(&blocksInRegion);
 
    //Find the last tree top, so that we can append our blocks after that
@@ -2981,7 +2981,7 @@ TR_Structure *TR_LoopUnroller::cloneRegionStructure(TR_RegionStructure *region)
 void TR_LoopUnroller::swingBlocks(TR::Block *from, TR::Block *to)
    {
    //Put this into a job-queue that will be processed later.
-   SwingPair *pair = (SwingPair *) trMemory()->allocateStackMemory(sizeof(SwingPair));
+   SwingPair *pair = (SwingPair *) comp()->trMemory()->allocateStackMemory(sizeof(SwingPair));
    pair->from = from;
    pair->to = to;
    _swingQueue.add(pair);
@@ -3163,7 +3163,7 @@ void TR_LoopUnroller::fixExitEdges(TR_Structure *s, TR_Structure *clone,
 void
 TR_LoopUnroller::prepareLoopStructure(TR_RegionStructure *loop)
    {
-   TR_ScratchList<TR::Block> blocksInRegion(trMemory());
+   TR_ScratchList<TR::Block> blocksInRegion(comp()->trMemory());
    loop->getBlocks(&blocksInRegion);
 
    ListIterator<TR::Block> it(&blocksInRegion);
@@ -3655,7 +3655,7 @@ TR_GeneralLoopUnroller::perform()
    if (optimizer()->optsThatCanCreateLoopsDisabled())
       return 0;
 
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    _cfg = comp()->getFlowGraph();
    TR_RegionStructure *root = _cfg->getStructure()->asRegion();
@@ -3665,7 +3665,7 @@ TR_GeneralLoopUnroller::perform()
    //
    _haveProfilingInfo = true;
 
-   List<TR_RegionStructure> innerLoops(trMemory());
+   List<TR_RegionStructure> innerLoops(comp()->trMemory());
    collectNonColdInnerLoops(root, innerLoops);
    if (innerLoops.isEmpty())
       {
@@ -3720,7 +3720,7 @@ TR_GeneralLoopUnroller::perform()
    //if (trace())
       dumpOptDetails(comp(), "Starting GLU with a budget of %d.  Total number of nodes in method %d\n", budget, nodeCount);
 
-   TR_ScratchList<UnrollInfo> Q(trMemory());
+   TR_ScratchList<UnrollInfo> Q(comp()->trMemory());
    ListIterator<TR_RegionStructure> it(&innerLoops);
    for (TR_RegionStructure *loop = it.getFirst(); loop; loop = it.getNext())
       {
@@ -3732,7 +3732,7 @@ TR_GeneralLoopUnroller::perform()
 
       if (weight > 0 && unrollCount > 0 && loopCanBeUnrolled)
          {
-         UnrollInfo *info = new (trStackMemory()) UnrollInfo(loop, weight, cost,
+         UnrollInfo *info = new (comp()->trStackMemory()) UnrollInfo(loop, weight, cost,
                                                        unrollKind, unrollCount,
                                                        peelCount);
          Q.add(info);
@@ -3784,7 +3784,7 @@ TR_GeneralLoopUnroller::collectNonColdInnerLoops(TR_RegionStructure *region, Lis
    if (region->getEntryBlock()->isCold()) return;
 
    TR_RegionStructure::Cursor it(*region);
-   List<TR_RegionStructure> myInnerLoops(trMemory());
+   List<TR_RegionStructure> myInnerLoops(comp()->trMemory());
    for (TR_StructureSubGraphNode *node = it.getFirst();
         node;
         node = it.getNext())
@@ -4408,7 +4408,7 @@ TR_GeneralLoopUnroller::canUnrollUnCountedLoop(TR_RegionStructure *loop,
           ((entryBlockFrequency * 100) > (MAX_BLOCK_COUNT + MAX_COLD_BLOCK_COUNT))))
       {
 
-      TR_ScratchList<TR::Block> blocksInLoop(trMemory());
+      TR_ScratchList<TR::Block> blocksInLoop(comp()->trMemory());
       loop->getBlocks(&blocksInLoop);
       ListIterator<TR::Block> bilIt(&blocksInLoop);
       TR::Block *b = NULL;

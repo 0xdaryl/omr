@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -181,17 +181,17 @@ class multipleJumpSuccessorIterator : public SuccessorIterator
 
 TR_GlobalRegisterAllocator::TR_GlobalRegisterAllocator(TR::OptimizationManager *manager)
    : TR::Optimization(manager),
-     _pairedSymbols(manager->trMemory()),
-     _allocatedPerformCellSymRefs(manager->allocator()),
+     _pairedSymbols(comp()->trMemory()),
+     _allocatedPerformCellSymRefs(comp()->allocator()),
      _performCellCount(0),
-     _newBlocks(manager->trMemory()),
-     _nodesToBeChecked(manager->trMemory()),
-     _nodeTriplesToBeChecked(manager->trMemory()),
-     _rejectedSignExtNodes(manager->trMemory()),
+     _newBlocks(comp()->trMemory()),
+     _nodesToBeChecked(comp()->trMemory()),
+     _nodeTriplesToBeChecked(comp()->trMemory()),
+     _rejectedSignExtNodes(comp()->trMemory()),
      _storeSymRef(NULL),
      _seenInternalMethods(NULL),
      _osrCatchSucc(NULL),
-     _defIndexToTempMap(manager->allocator())
+     _defIndexToTempMap(comp()->allocator())
    {}
 
 void TR_GlobalRegisterAllocator::populateSymRefNodes(TR::Node *node, vcount_t visitCount)
@@ -383,12 +383,12 @@ TR_GlobalRegisterAllocator::perform()
    int32_t numberOfBlocks = cfg->getNextNodeNumber();
 
    TR_RegisterCandidates * candidates = comp()->getGlobalRegisterCandidates();
-   candidates->_candidateForSymRefs = new (trStackMemory()) TR_RegisterCandidates::SymRefCandidateMap((TR_RegisterCandidates::SymRefCandidateMapComparator()), (TR_RegisterCandidates::SymRefCandidateMapAllocator(trMemory()->currentStackRegion())));
+   candidates->_candidateForSymRefs = new (comp()->trStackMemory()) TR_RegisterCandidates::SymRefCandidateMap((TR_RegisterCandidates::SymRefCandidateMapComparator()), (TR_RegisterCandidates::SymRefCandidateMapAllocator(comp()->trMemory()->currentStackRegion())));
    TR_RegisterCandidate *rc = candidates->getFirst();
    for (; rc ; rc = rc->getNext())
       (*candidates->_candidateForSymRefs)[GET_INDEX_FOR_CANDIDATE_FOR_SYMREF(rc->getSymbolReference())] = rc;
 
-   candidates->_startOfExtendedBBForBB.init(trMemory(),
+   candidates->_startOfExtendedBBForBB.init(comp()->trMemory(),
                                             (uint32_t)(comp()->getFlowGraph()->getNextNodeNumber() * sizeof(TR::Block *) * 1.5),
                                             false, stackAlloc);
    TR::Block * lastStartOfExtendedBB = comp()->getStartBlock();
@@ -444,7 +444,7 @@ TR_GlobalRegisterAllocator::perform()
                 int32_t blockNum    = block->getNumber();
                 if (blockNum > 0 && liveLocals._blockAnalysisInfo[blockNum])
                    {
-                   liveVars = new (trHeapMemory()) TR_BitVector(numLocals, trMemory());
+                   liveVars = new (comp()->trHeapMemory()) TR_BitVector(numLocals, comp()->trMemory());
                    *liveVars = *liveLocals._blockAnalysisInfo[blockNum];
                    block->setLiveLocals(liveVars);
                    }
@@ -453,7 +453,7 @@ TR_GlobalRegisterAllocator::perform()
             // Make sure the code generator knows there are live locals for blocks, and
             // create a bit vector of the correct size for it.
             //
-            liveVars = new (trHeapMemory()) TR_BitVector(numLocals, trMemory());
+            liveVars = new (comp()->trHeapMemory()) TR_BitVector(numLocals, comp()->trMemory());
             cg()->setLiveLocals(liveVars);
             }
          }
@@ -470,15 +470,15 @@ TR_GlobalRegisterAllocator::perform()
 
       _temp = NULL;
       _origSymRefCount = comp()->getSymRefCount();
-      _temp2 = new (trStackMemory()) TR_BitVector(_origSymRefCount, trMemory(), stackAlloc);
+      _temp2 = new (comp()->trStackMemory()) TR_BitVector(_origSymRefCount, comp()->trMemory(), stackAlloc);
 
 
       if (comp()->target().is64Bit() &&
           optimizer()->getUseDefInfo())
          {
-         _temp = new (trStackMemory()) TR_BitVector(optimizer()->getUseDefInfo()->getNumDefNodes(), trMemory(), stackAlloc);
-         _candidatesNeedingSignExtension = new (trStackMemory()) TR_BitVector(_origSymRefCount, trMemory(), stackAlloc);
-         _candidatesSignExtendedInThisLoop = new (trStackMemory()) TR_BitVector(_origSymRefCount, trMemory(), stackAlloc);
+         _temp = new (comp()->trStackMemory()) TR_BitVector(optimizer()->getUseDefInfo()->getNumDefNodes(), comp()->trMemory(), stackAlloc);
+         _candidatesNeedingSignExtension = new (comp()->trStackMemory()) TR_BitVector(_origSymRefCount, comp()->trMemory(), stackAlloc);
+         _candidatesSignExtendedInThisLoop = new (comp()->trStackMemory()) TR_BitVector(_origSymRefCount, comp()->trMemory(), stackAlloc);
          }
 
       candidates->getReferencedAutoSymRefs(comp()->trMemory()->currentStackRegion());
@@ -487,7 +487,7 @@ TR_GlobalRegisterAllocator::perform()
       else
          offerAllFPAutosAndParmsAsCandidates(cfgBlocks, numberOfBlocks);
 
-      _registerCandidates = new (trStackMemory()) SymRefCandidateMap((SymRefCandidateMapComparator()), SymRefCandidateMapAllocator(trMemory()->currentStackRegion()));
+      _registerCandidates = new (comp()->trStackMemory()) SymRefCandidateMap((SymRefCandidateMapComparator()), SymRefCandidateMapAllocator(comp()->trMemory()->currentStackRegion()));
 
       _candidates = comp()->getGlobalRegisterCandidates();
 
@@ -526,9 +526,9 @@ TR_GlobalRegisterAllocator::perform()
             canAffordAssignment = false;
          }
 
-      _valueModifiedSymRefs = new (trStackMemory()) TR_BitVector(_origSymRefCount, trMemory(), stackAlloc);
-      TR_BitVector splitSymRefs(_origSymRefCount, trMemory(), stackAlloc);
-      TR_BitVector nonSplittingCopyStored(_origSymRefCount, trMemory(), stackAlloc);
+      _valueModifiedSymRefs = new (comp()->trStackMemory()) TR_BitVector(_origSymRefCount, comp()->trMemory(), stackAlloc);
+      TR_BitVector splitSymRefs(_origSymRefCount, comp()->trMemory(), stackAlloc);
+      TR_BitVector nonSplittingCopyStored(_origSymRefCount, comp()->trMemory(), stackAlloc);
 
       //
       // Assign registers to candidates
@@ -542,9 +542,9 @@ TR_GlobalRegisterAllocator::perform()
             _visitCount = comp()->incVisitCount();
             _gotoCreated = false;
 
-            _signExtAdjustmentReqd = new (trStackMemory()) TR_BitVector(_lastGlobalRegisterNumber+1, trMemory(), stackAlloc);
-            _signExtAdjustmentNotReqd = new (trStackMemory()) TR_BitVector(_lastGlobalRegisterNumber+1, trMemory(), stackAlloc);
-            _signExtDifference = new (trStackMemory()) TR_BitVector(_lastGlobalRegisterNumber+1, trMemory(), stackAlloc);
+            _signExtAdjustmentReqd = new (comp()->trStackMemory()) TR_BitVector(_lastGlobalRegisterNumber+1, comp()->trMemory(), stackAlloc);
+            _signExtAdjustmentNotReqd = new (comp()->trStackMemory()) TR_BitVector(_lastGlobalRegisterNumber+1, comp()->trMemory(), stackAlloc);
+            _signExtDifference = new (comp()->trStackMemory()) TR_BitVector(_lastGlobalRegisterNumber+1, comp()->trMemory(), stackAlloc);
 
             //
             // Transform IL
@@ -662,7 +662,7 @@ TR_GlobalRegisterAllocator::perform()
             //
             if (trace)
                traceMsg(comp(), "\nPropagating value modified information\n");
-            List<TR::TreeTop>        storesFromRegisters(trMemory());
+            List<TR::TreeTop>        storesFromRegisters(comp()->trMemory());
             TR::TreeTop *tt = NULL, *nextTreeTop = NULL;
             for (tt = comp()->getStartTree(); tt; tt = tt->getNextTreeTop())
                {
@@ -1264,7 +1264,7 @@ TR_GlobalRegisterAllocator::transformNode(
 
             if (node->getReferenceCount() > 1)
                {
-               extBlockNodeMapping->add(node, value, trMemory());
+               extBlockNodeMapping->add(node, value, comp()->trMemory());
 
                TR_RegisterCandidate *rc = gr->getCurrentRegisterCandidate();
                if (rc->rcNeeds2Regs(comp()))
@@ -1489,7 +1489,7 @@ TR_GlobalRegisterAllocator::transformNode(
                storeInfo = findRegInStoreInfo(gr);
                if (!storeInfo)
                   {
-                  storeInfo = new (trStackMemory()) StoresInBlockInfo;
+                  storeInfo = new (comp()->trStackMemory()) StoresInBlockInfo;
                   _storesInBlockInfo.add(storeInfo);
                   }
                storeInfo->_gr = gr;
@@ -1654,7 +1654,7 @@ void
 TR_GlobalRegisterAllocator::transformMultiWayBranch(
    TR::TreeTop * exitTreeTop, TR::Node * node, TR::Block * block, TR_Array<TR_GlobalRegister> & registers, bool regStarTransformDone)
    {
-   TR_Array<TR::Node *> regDepNodes(trMemory(), _lastGlobalRegisterNumber + 1, true, stackAlloc);;
+   TR_Array<TR::Node *> regDepNodes(comp()->trMemory(), _lastGlobalRegisterNumber + 1, true, stackAlloc);;
 
    SuccessorIterator *si;
    if (node->getOpCode().isSwitch())
@@ -1714,7 +1714,7 @@ TR_GlobalRegisterAllocator::transformBlockExit(
    TR::TreeTop * exitTreeTop, TR::Node * exitNode, TR::Block * block,
    TR_Array<TR_GlobalRegister> & registers, TR::Block * successorBlock)
    {
-   TR_Array<TR::Node *> regDepNodes(trMemory(), _lastGlobalRegisterNumber + 1, true, stackAlloc);;
+   TR_Array<TR::Node *> regDepNodes(comp()->trMemory(), _lastGlobalRegisterNumber + 1, true, stackAlloc);;
 
    prepareForBlockExit(exitTreeTop, exitNode, block, registers, successorBlock, regDepNodes);
 
@@ -1875,7 +1875,7 @@ TR_GlobalRegisterAllocator::addRegLoadsToEntry(TR::TreeTop * bbStartTT, TR_Array
    comp()->setCurrentBlock(bbStartTT->getEnclosingBlock());
    TR_Array<TR_GlobalRegister> & currRegisters = block->getGlobalRegisters(comp());
    int32_t numLoads = 0;
-   TR_ScratchList<TR_RegisterCandidate> seenCandidates(trMemory());
+   TR_ScratchList<TR_RegisterCandidate> seenCandidates(comp()->trMemory());
    int32_t i;
    for (i = _firstGlobalRegisterNumber; i <= _lastGlobalRegisterNumber; ++i)
       {
@@ -1924,7 +1924,7 @@ TR_GlobalRegisterAllocator::addGlRegDepToExit(
    {
    int32_t numLoads = 0, i;
 
-   TR_ScratchList<TR_RegisterCandidate> seenCandidates(trMemory());
+   TR_ScratchList<TR_RegisterCandidate> seenCandidates(comp()->trMemory());
    TR_Array<TR_GlobalRegister> & currRegisters = block->getGlobalRegisters(comp());
    for (i = _firstGlobalRegisterNumber; i <= _lastGlobalRegisterNumber; ++i)
       {
@@ -1988,7 +1988,7 @@ TR_GlobalRegisterAllocator::prepareForBlockExit(
    TR_Array<TR_GlobalRegister> & extRegisters = _candidates->_startOfExtendedBBForBB[block->getNumber()]->getGlobalRegisters(comp());
 
    TR::TreeTop * prevTreeTop = 0;
-   TR_ScratchList<TR_RegisterCandidate> seenCurrCandidates(trMemory()), seenExitCandidates(trMemory());
+   TR_ScratchList<TR_RegisterCandidate> seenCurrCandidates(comp()->trMemory()), seenExitCandidates(comp()->trMemory());
 
    int32_t i;
    for (i = _firstGlobalRegisterNumber; i <= _lastGlobalRegisterNumber; ++i)
@@ -2707,7 +2707,7 @@ int32_t
 TR_GlobalRegisterAllocator::numberOfRegistersLiveOnEntry(TR_Array<TR_GlobalRegister> & registers, bool countMachineRegs)
    {
    int32_t numLoads = 0;
-   TR_ScratchList<TR_RegisterCandidate> seenCandidates(trMemory());
+   TR_ScratchList<TR_RegisterCandidate> seenCandidates(comp()->trMemory());
    int32_t i;
    for (i = _firstGlobalRegisterNumber; i <= _lastGlobalRegisterNumber; ++i)
       {
@@ -3158,7 +3158,7 @@ TR_GlobalRegisterAllocator::findIfThenRegisterCandidates()
    {
    LexicalTimer t("TR_GlobalRegisterAllocator::findIfThenRegisterCandidates", comp()->phaseTimer());
 
-   TR_ScratchList<TR_RegisterCandidate> registerCandidates(trMemory());
+   TR_ScratchList<TR_RegisterCandidate> registerCandidates(comp()->trMemory());
    TR::CFG * cfg = comp()->getFlowGraph();
 
    TR::ResolvedMethodSymbol              *methodSymbol = comp()->getJittedMethodSymbol();
@@ -3181,8 +3181,8 @@ TR_GlobalRegisterAllocator::findIfThenRegisterCandidates()
      if(guess && guess->numChunks()*BITS_IN_CHUNK > guessSize)
        guessSize = guess->numChunks()*BITS_IN_CHUNK;
 
-     TR_BitVector autoAndParmLiveLocalIndex(guessSize, trMemory(), stackAlloc, growable);
-     TR_Array<TR_RegisterCandidate*> registerCandidateByIndex(trMemory(), guessSize, false, stackAlloc);
+     TR_BitVector autoAndParmLiveLocalIndex(guessSize, comp()->trMemory(), stackAlloc, growable);
+     TR_Array<TR_RegisterCandidate*> registerCandidateByIndex(comp()->trMemory(), guessSize, false, stackAlloc);
      autoAndParmLiveLocalIndex.empty();
      int32_t i;
      while (paramCursor != NULL)
@@ -3219,7 +3219,7 @@ TR_GlobalRegisterAllocator::findIfThenRegisterCandidates()
      // For each intersected bit ensure BlockInfo exists for the candidate and initialize it
      // to zero NumberOfLoadsAndStores if it does not exist
      guessSize = autoAndParmLiveLocalIndex.numChunks()*BITS_IN_CHUNK;
-     TR_BitVector intersection(guessSize, trMemory(), stackAlloc, growable);
+     TR_BitVector intersection(guessSize, comp()->trMemory(), stackAlloc, growable);
      for (TR::CFGNode * block = cfg->getFirstNode(); block; block = block->getNext())
        {
        TR_BitVector * liveLocals = toBlock(block)->getLiveLocals();
@@ -3627,12 +3627,12 @@ void
 TR_GlobalRegisterAllocator::findLoopAutoRegisterCandidates()
    {
    LexicalTimer t("TR_GlobalRegisterAllocator::findLoopAutoRegisterCandidates", comp()->phaseTimer());
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    TR::CFG * cfg = comp()->getFlowGraph();
    vcount_t visitCount = comp()->incVisitCount();
    TR_Structure *rootStructure = comp()->getFlowGraph()->getStructure();
-   SymRefCandidateMap * registerCandidates = new (trStackMemory()) SymRefCandidateMap((SymRefCandidateMapComparator()), SymRefCandidateMapAllocator(trMemory()->currentStackRegion()));
+   SymRefCandidateMap * registerCandidates = new (comp()->trStackMemory()) SymRefCandidateMap((SymRefCandidateMapComparator()), SymRefCandidateMapAllocator(comp()->trMemory()->currentStackRegion()));
    findLoopsAndCorrespondingAutos(NULL, visitCount, *registerCandidates);
    }
 
@@ -3667,10 +3667,10 @@ TR_GlobalRegisterAllocator::findLoopsAndCorrespondingAutos(TR_StructureSubGraphN
 
       if (!regionStructure->isAcyclic() && structureNode)
          {
-         TR_ScratchList<TR::Block> blocksInLoop(trMemory());
+         TR_ScratchList<TR::Block> blocksInLoop(comp()->trMemory());
          regionStructure->getBlocks(&blocksInLoop);
 
-         TR_BitVector assignedAutosInCurrentLoop(_origSymRefCount, trMemory(), stackAlloc);
+         TR_BitVector assignedAutosInCurrentLoop(_origSymRefCount, comp()->trMemory(), stackAlloc);
 
          TR_BitVector *symsThatShouldNotBeAssignedInCurrentLoop = NULL;
          TR_BitVector *symsThatShouldBeAssignedInCurrentLoop = NULL;
@@ -3680,9 +3680,9 @@ TR_GlobalRegisterAllocator::findLoopsAndCorrespondingAutos(TR_StructureSubGraphN
 
          if (excludeInvariantsEnabled)
             {
-            symsThatShouldNotBeAssignedInCurrentLoop = new (trStackMemory()) TR_BitVector(_origSymRefCount, trMemory(), stackAlloc);
+            symsThatShouldNotBeAssignedInCurrentLoop = new (comp()->trStackMemory()) TR_BitVector(_origSymRefCount, comp()->trMemory(), stackAlloc);
             symsThatShouldNotBeAssignedInCurrentLoop->setAll(_origSymRefCount);
-            symsThatShouldBeAssignedInCurrentLoop = new (trStackMemory()) TR_BitVector(_origSymRefCount, trMemory(), stackAlloc);
+            symsThatShouldBeAssignedInCurrentLoop = new (comp()->trStackMemory()) TR_BitVector(_origSymRefCount, comp()->trMemory(), stackAlloc);
             }
 
          ListIterator<TR::Block> blocksIt(&blocksInLoop);
@@ -3697,7 +3697,7 @@ TR_GlobalRegisterAllocator::findLoopsAndCorrespondingAutos(TR_StructureSubGraphN
          TR_BitVector *oldCandidatesSignExtendedInThisLoop = NULL;
          if (_candidatesSignExtendedInThisLoop)
             {
-            oldCandidatesSignExtendedInThisLoop = new (trStackMemory()) TR_BitVector(_origSymRefCount, trMemory(), stackAlloc);
+            oldCandidatesSignExtendedInThisLoop = new (comp()->trStackMemory()) TR_BitVector(_origSymRefCount, comp()->trMemory(), stackAlloc);
             *oldCandidatesSignExtendedInThisLoop = *_candidatesSignExtendedInThisLoop;
             _candidatesSignExtendedInThisLoop->empty();
             }
@@ -4168,7 +4168,7 @@ TR_PairedSymbols * TR_GlobalRegisterAllocator::findOrCreatePairedSymbols(TR::Sym
    TR_PairedSymbols *pairedSymbols = findPairedSymbols(symRef1, symRef2);
    if (!pairedSymbols)
       {
-      pairedSymbols = new (trStackMemory()) TR_PairedSymbols(symRef1, symRef2);
+      pairedSymbols = new (comp()->trStackMemory()) TR_PairedSymbols(symRef1, symRef2);
       _pairedSymbols.add(pairedSymbols);
       }
    return pairedSymbols;
@@ -4271,7 +4271,7 @@ TR_GlobalRegisterAllocator::findLoopsAndCreateAutosForSignExt(TR_StructureSubGra
 
       if (!regionStructure->isAcyclic() && structureNode)
          {
-         TR_ScratchList<TR::Block> blocksInLoop(trMemory());
+         TR_ScratchList<TR::Block> blocksInLoop(comp()->trMemory());
          regionStructure->getBlocks(&blocksInLoop);
 
          visitCount = comp()->incVisitCount();
@@ -4343,7 +4343,7 @@ TR_GlobalRegisterAllocator::optDetailString() const throw()
    }
 
 TR_LiveRangeSplitter::TR_LiveRangeSplitter(TR::OptimizationManager *manager)
-   : TR::Optimization(manager), _splitBlocks(manager->trMemory()), _changedSomething(false), _origSymRefs(NULL)
+   : TR::Optimization(manager), _splitBlocks(comp()->trMemory()), _changedSomething(false), _origSymRefs(NULL)
    {}
 
 int32_t TR_LiveRangeSplitter::perform()
@@ -4360,7 +4360,7 @@ int32_t TR_LiveRangeSplitter::perform()
       }
 
    {
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
    splitLiveRanges();
    }
 
@@ -4373,7 +4373,7 @@ int32_t TR_LiveRangeSplitter::perform()
  */
 void TR_LiveRangeSplitter::splitLiveRanges()
    {
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    _changedSomething = false;
 
@@ -4403,7 +4403,7 @@ void TR_LiveRangeSplitter::splitLiveRanges()
             int32_t blockNum    = block->getNumber();
             if (blockNum > 0 && liveLocals._blockAnalysisInfo[blockNum])
                {
-               liveVars = new (trHeapMemory()) TR_BitVector(numLocals, trMemory());
+               liveVars = new (comp()->trHeapMemory()) TR_BitVector(numLocals, comp()->trMemory());
                *liveVars = *liveLocals._blockAnalysisInfo[blockNum];
                block->setLiveLocals(liveVars);
                }
@@ -4412,7 +4412,7 @@ void TR_LiveRangeSplitter::splitLiveRanges()
          // Make sure the code generator knows there are live locals for blocks, and
          // create a bit vector of the correct size for it.
          //
-         liveVars = new (trHeapMemory()) TR_BitVector(numLocals, trMemory());
+         liveVars = new (comp()->trHeapMemory()) TR_BitVector(numLocals, comp()->trMemory());
          cg()->setLiveLocals(liveVars);
          }
       }
@@ -4420,7 +4420,7 @@ void TR_LiveRangeSplitter::splitLiveRanges()
    if (trace())
       comp()->dumpMethodTrees("Trees before live range splitter ", comp()->getMethodSymbol());
 
-   //_origSymRefs = (TR::SymbolReference **)trMemory()->allocateStackMemory(comp()->getSymRefCount()*sizeof(TR::SymbolReference *));
+   //_origSymRefs = (TR::SymbolReference **)comp()->trMemory()->allocateStackMemory(comp()->getSymRefCount()*sizeof(TR::SymbolReference *));
    //memset(_origSymRefs, 0, comp()->getSymRefCount()*sizeof(TR::SymbolReference *));
    _origSymRefs = NULL;
    _origSymRefCount = 0;
@@ -4493,32 +4493,32 @@ TR_LiveRangeSplitter::splitLiveRanges(TR_StructureSubGraphNode *structureNode)
 
          if (loopInvariantBlock)
             {
-            TR_ScratchList<TR::Block> blocksInLoop(trMemory());
+            TR_ScratchList<TR::Block> blocksInLoop(comp()->trMemory());
             regionStructure->getBlocks(&blocksInLoop);
 
             _splitBlocks.deleteAll();
             _numberOfGPRs = 0;
             _numberOfFPRs = 0;
 
-            SymRefCandidateMap *registerCandidates = new (trStackMemory()) SymRefCandidateMap((SymRefCandidateMapComparator()), SymRefCandidateMapAllocator(trMemory()->currentStackRegion()));
+            SymRefCandidateMap *registerCandidates = new (comp()->trStackMemory()) SymRefCandidateMap((SymRefCandidateMapComparator()), SymRefCandidateMapAllocator(comp()->trMemory()->currentStackRegion()));
 
-            TR_BitVector *replacedAutosInCurrentLoop = new (trStackMemory()) TR_BitVector(comp()->getSymRefCount(), trMemory(), stackAlloc);
-            TR_BitVector *autosThatCannotBeReplacedInCurrentLoop = new (trStackMemory()) TR_BitVector(comp()->getSymRefCount(), trMemory(), stackAlloc);
-            _storedSymRefs = new (trStackMemory()) TR_BitVector(comp()->getSymRefCount(), trMemory(), stackAlloc);
+            TR_BitVector *replacedAutosInCurrentLoop = new (comp()->trStackMemory()) TR_BitVector(comp()->getSymRefCount(), comp()->trMemory(), stackAlloc);
+            TR_BitVector *autosThatCannotBeReplacedInCurrentLoop = new (comp()->trStackMemory()) TR_BitVector(comp()->getSymRefCount(), comp()->trMemory(), stackAlloc);
+            _storedSymRefs = new (comp()->trStackMemory()) TR_BitVector(comp()->getSymRefCount(), comp()->trMemory(), stackAlloc);
 
-            TR_SymRefCandidatePair **correspondingSymRefs = (TR_SymRefCandidatePair **)trMemory()->allocateStackMemory(comp()->getSymRefCount()*sizeof(TR_SymRefCandidatePair *));
+            TR_SymRefCandidatePair **correspondingSymRefs = (TR_SymRefCandidatePair **)comp()->trMemory()->allocateStackMemory(comp()->getSymRefCount()*sizeof(TR_SymRefCandidatePair *));
             memset(correspondingSymRefs, 0, comp()->getSymRefCount()*sizeof(TR_SymRefCandidatePair *));
 
             int32_t symRefCount = comp()->getSymRefCount();
 
-            TR_ScratchList<TR::Block> loopExitBlocks(trMemory());
+            TR_ScratchList<TR::Block> loopExitBlocks(comp()->trMemory());
             regionStructure->collectExitBlocks(&loopExitBlocks);
 
-            TR_BitVector *exitsFromCurrentLoop = new (trStackMemory()) TR_BitVector(comp()->getFlowGraph()->getNextNodeNumber(), trMemory(), stackAlloc);
+            TR_BitVector *exitsFromCurrentLoop = new (comp()->trStackMemory()) TR_BitVector(comp()->getFlowGraph()->getNextNodeNumber(), comp()->trMemory(), stackAlloc);
             for (auto succ = structureNode->getSuccessors().begin(); succ != structureNode->getSuccessors().end(); ++succ)
                exitsFromCurrentLoop->set((*succ)->getTo()->getNumber());
 
-            TR_ScratchList<TR::Block> exitBlocks(trMemory());
+            TR_ScratchList<TR::Block> exitBlocks(comp()->trMemory());
             ListIterator<TR::Block> blocksIt(&loopExitBlocks);
             TR::Block *nextBlock;
             for (nextBlock = blocksIt.getCurrent(); nextBlock; nextBlock=blocksIt.getNext())
@@ -4653,7 +4653,7 @@ TR_LiveRangeSplitter::splitLiveRanges(TR_StructureSubGraphNode *structureNode)
             prevOrigSymRefs = _origSymRefs;
             prevSymRefCount = _origSymRefCount;
             _origSymRefCount = comp()->getSymRefCount(); // _origSymRefCount was always zero becasue there was no definition
-            _origSymRefs = (TR::SymbolReference **)trMemory()->allocateStackMemory(comp()->getSymRefCount()*sizeof(TR::SymbolReference *));
+            _origSymRefs = (TR::SymbolReference **)comp()->trMemory()->allocateStackMemory(comp()->getSymRefCount()*sizeof(TR::SymbolReference *));
             memset(_origSymRefs, 0, comp()->getSymRefCount()*sizeof(TR::SymbolReference *));
             if (prevOrigSymRefs)
                {
@@ -4860,7 +4860,7 @@ TR_LiveRangeSplitter::splitAndFixPreHeader(TR::SymbolReference *symRef, TR_SymRe
    requestOpt(OMR::globalCopyPropagation);
    requestOpt(OMR::globalDeadStoreGroup);
 
-   TR_SymRefCandidatePair *correspondingSymRefCandidate = new (trStackMemory()) TR_SymRefCandidatePair(correspondingSymRef, 0);
+   TR_SymRefCandidatePair *correspondingSymRefCandidate = new (comp()->trStackMemory()) TR_SymRefCandidatePair(correspondingSymRef, 0);
    correspondingSymRefs[symRef->getReferenceNumber()] = correspondingSymRefCandidate;
 
    //lay down store in loop pre-header and in loop exits
@@ -4908,7 +4908,7 @@ TR_LiveRangeSplitter::fixExitsAfterSplit(TR::SymbolReference *symRef, TR_SymRefC
             correspondingRc->setRestoreSymbolReference(symRef);
             correspondingSymRefCandidate->_rc = correspondingRc;
 
-            TR_BitVector *blocksInInnerLoop = new (trStackMemory()) TR_BitVector(comp()->getFlowGraph()->getNextNodeNumber(), trMemory(), stackAlloc);
+            TR_BitVector *blocksInInnerLoop = new (comp()->trStackMemory()) TR_BitVector(comp()->getFlowGraph()->getNextNodeNumber(), comp()->trMemory(), stackAlloc);
             ListIterator<TR::Block> blocksIt(blocksInLoop);
             TR::Block *nextBlock;
             for (nextBlock = blocksIt.getCurrent(); nextBlock; nextBlock=blocksIt.getNext())
@@ -4926,7 +4926,7 @@ TR_LiveRangeSplitter::fixExitsAfterSplit(TR::SymbolReference *symRef, TR_SymRefC
             TR_Structure *parentOfLoop = loop->getStructure()->getContainingLoop();
             if (parentOfLoop)
                {
-               TR_ScratchList<TR::Block> blocksInParent(trMemory());
+               TR_ScratchList<TR::Block> blocksInParent(comp()->trMemory());
                parentOfLoop->getBlocks(&blocksInParent);
                ListIterator<TR::Block> blocksIt(&blocksInParent);
                TR::Block *nextBlock;
@@ -5067,14 +5067,14 @@ TR_LiveRangeSplitter::placeStoresInLoopExits(TR::Node *node, TR_StructureSubGrap
    //traceMsg(comp(), " place initialization of auto #%d by auto #%d in loop pre-header block_%d\n", replacement->getReferenceNumber(), orig->getReferenceNumber(), loopInvariantBlock->getNumber());
    //appendStoreToBlock(replacement, orig, loopInvariantBlock, node);
 
-   TR_ScratchList<TR::Block> loopExitBlocks(trMemory());
+   TR_ScratchList<TR::Block> loopExitBlocks(comp()->trMemory());
    loop->getStructure()->collectExitBlocks(&loopExitBlocks);
 
-   TR_BitVector *exitsFromCurrentLoop = new (trStackMemory()) TR_BitVector(comp()->getFlowGraph()->getNextNodeNumber(), trMemory(), stackAlloc);
+   TR_BitVector *exitsFromCurrentLoop = new (comp()->trStackMemory()) TR_BitVector(comp()->getFlowGraph()->getNextNodeNumber(), comp()->trMemory(), stackAlloc);
    for (auto succ = loop->getSuccessors().begin(); succ != loop->getSuccessors().end(); ++succ)
       exitsFromCurrentLoop->set((*succ)->getTo()->getNumber());
 
-   TR_ScratchList<TR::Block> exitBlocks(trMemory());
+   TR_ScratchList<TR::Block> exitBlocks(comp()->trMemory());
    ListIterator<TR::Block> blocksIt(&loopExitBlocks);
    TR::Block *nextBlock;
    for (nextBlock = blocksIt.getCurrent(); nextBlock; nextBlock=blocksIt.getNext())
@@ -5096,7 +5096,7 @@ TR_LiveRangeSplitter::placeStoresInLoopExits(TR::Node *node, TR_StructureSubGrap
          exitsFromCurrentLoop->reset(exitBlock->getNumber());
          if (!(exitBlock->getPredecessors().size() == 1))
             {
-            TR_ScratchList<TR::CFGEdge> edgesFromLoop(trMemory());
+            TR_ScratchList<TR::CFGEdge> edgesFromLoop(comp()->trMemory());
             for (auto nextEdge = exitBlock->getPredecessors().begin(); nextEdge != exitBlock->getPredecessors().end(); ++nextEdge)
                {
                TR::Block *pred = (*nextEdge)->getFrom()->asBlock();

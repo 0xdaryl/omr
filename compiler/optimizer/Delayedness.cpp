@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -105,7 +105,7 @@ TR_Delayedness::TR_Delayedness(TR::Compilation *comp, TR::Optimizer *optimizer, 
 
 bool TR_Delayedness::postInitializationProcessing()
    {
-   _inSetInfo = (ContainerType **)trMemory()->allocateStackMemory(_numberOfNodes*sizeof(ContainerType *));
+   _inSetInfo = (ContainerType **)comp()->trMemory()->allocateStackMemory(_numberOfNodes*sizeof(ContainerType *));
 
    int32_t i;
    for (i = 0; i < _numberOfNodes; i++)

@@ -142,7 +142,7 @@ class TR_InlinerTracer : public TR_LogTracer
       template <typename ObjWithSignatureMethod>
       const char* traceSignature(ObjWithSignatureMethod *obj)
          {
-         return heuristicLevel() ? obj->signature(trMemory()) : "";
+         return heuristicLevel() ? obj->signature(comp()->trMemory()) : "";
          }
 
    protected:

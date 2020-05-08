@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -99,7 +99,7 @@ static inline int32_t ceiling(int32_t numer, int32_t denom)
 
 
 TR_RedundantAsyncCheckRemoval::TR_RedundantAsyncCheckRemoval(TR::OptimizationManager *manager)
-   : TR::Optimization(manager), _ancestors(trMemory())
+   : TR::Optimization(manager), _ancestors(comp()->trMemory())
    {}
 
 bool TR_RedundantAsyncCheckRemoval::shouldPerform()
@@ -122,7 +122,7 @@ bool TR_RedundantAsyncCheckRemoval::shouldPerform()
 
 int32_t TR_RedundantAsyncCheckRemoval::perform()
    {
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    if (trace())
       comp()->dumpMethodTrees("Before analysis:");
@@ -254,7 +254,7 @@ int32_t TR_RedundantAsyncCheckRemoval::perform(TR_Structure *str, bool insideImp
 //
 void TR_RedundantAsyncCheckRemoval::initialize(TR_Structure *str)
    {
-   AsyncInfo *info = new (trStackMemory()) AsyncInfo(trMemory());
+   AsyncInfo *info = new (comp()->trStackMemory()) AsyncInfo(comp()->trMemory());
    info->setVisitMarker(0);
    str->setAnalysisInfo(info);
 
@@ -640,7 +640,7 @@ bool TR_RedundantAsyncCheckRemoval::isMaxLoopIterationGuardedLoop(TR_RegionStruc
    // NOTE: there is no use of visit counts in this loop, a node can never be visited twice
    // in the following walk
    //
-   TR_Queue<TR_StructureSubGraphNode> q(trMemory());
+   TR_Queue<TR_StructureSubGraphNode> q(comp()->trMemory());
    q.enqueue(pred);
    while (!q.isEmpty())
       {
@@ -856,10 +856,10 @@ bool TR_RedundantAsyncCheckRemoval::originatesFromShortRunningMethod(TR_RegionSt
    // have the same owning method, then that loop originates from that method.
 
    //First build a list of branches in all basic blocks of the loop (region)
-   TR_ScratchList<TR::Block> blocksInRegion(trMemory());
+   TR_ScratchList<TR::Block> blocksInRegion(comp()->trMemory());
    region->getBlocks(&blocksInRegion);
    ListIterator<TR::Block> blocksIt(&blocksInRegion);
-   TR_ScratchList<TR::Node> branches(trMemory());
+   TR_ScratchList<TR::Node> branches(comp()->trMemory());
    for (TR::Block * block = blocksIt.getCurrent(); block; block=blocksIt.getNext())
       {
       TR::TreeTop* lastTreeTop = block->getLastRealTreeTop();
@@ -1388,7 +1388,7 @@ int32_t TR_RedundantAsyncCheckRemoval::processImproperRegion(TR_RegionStructure 
    // normally: they execute an AC definitely, before and after the transformation, so
    // we should be correct.
    //
-   TR_ScratchList<TR_RegionStructure> stack(trMemory());
+   TR_ScratchList<TR_RegionStructure> stack(comp()->trMemory());
    stack.add(region);
    while (!stack.isEmpty())
       {
@@ -1464,7 +1464,7 @@ bool TR_RedundantAsyncCheckRemoval::performRegionalBackwardAnalysis(TR_RegionStr
    {
    bool earlyExit = hasEarlyExit(region);
 
-   TR_Queue<TR_StructureSubGraphNode> *q = new (trHeapMemory()) TR_Queue<TR_StructureSubGraphNode>(trMemory());
+   TR_Queue<TR_StructureSubGraphNode> *q = new (comp()->trHeapMemory()) TR_Queue<TR_StructureSubGraphNode>(comp()->trMemory());
 
    // Start off by enqueue-ing all sinks for the region.
    // In a natural loop, a sink is defined to be a node from which the backedge
@@ -1645,7 +1645,7 @@ TR_RedundantAsyncCheckRemoval::optDetailString() const throw()
 
 uint32_t TR_LoopEstimator::estimateLoopIterationsUpperBound()
    {
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    int32_t numSymRefs = comp()->getSymRefTab()->getNumSymRefs();
 
@@ -1660,7 +1660,7 @@ uint32_t TR_LoopEstimator::estimateLoopIterationsUpperBound()
 
    // A list of all the exit conditions in the loop
    //
-   TR_ScratchList<ExitCondition> conditions(trMemory());
+   TR_ScratchList<ExitCondition> conditions(comp()->trMemory());
 
    uint16_t index = 0;
    ListIterator<TR::CFGEdge> eit(&_loop->getExitEdges());
@@ -1691,7 +1691,7 @@ uint32_t TR_LoopEstimator::estimateLoopIterationsUpperBound()
 
          // Add the condition block to the list of conditions that we know about.
          //
-         conditions.add(new (trStackMemory()) ExitCondition(op, symRef, limit));
+         conditions.add(new (comp()->trStackMemory()) ExitCondition(op, symRef, limit));
 
          if (trace())
             traceMsg(comp(), "found candidate symbol #%d (%d) in condition block_%d\n",
@@ -1862,7 +1862,7 @@ void TR_LoopEstimator::getLoopIncrements(TR_BitVector &candidates, IncrementInfo
 
    // Mark all blocks that are contained inside the loop region
    //
-   TR_ScratchList<TR::Block> blocksInLoop(trMemory());
+   TR_ScratchList<TR::Block> blocksInLoop(comp()->trMemory());
    _loop->getBlocks(&blocksInLoop);
    ListIterator<TR::Block> bit(&blocksInLoop);
    TR::Block *block;
@@ -1873,7 +1873,7 @@ void TR_LoopEstimator::getLoopIncrements(TR_BitVector &candidates, IncrementInfo
    // Visit the blocks in breadth first order
    //
    vcount_t visitCount = comp()->incVisitCount();
-   TR_Queue<TR::Block> queue(trMemory());
+   TR_Queue<TR::Block> queue(comp()->trMemory());
    queue.enqueue(_loop->getEntryBlock());
    while (!queue.isEmpty())
       {
@@ -1945,7 +1945,7 @@ void TR_LoopEstimator::processBlock(TR::Block *block, TR_BitVector &candidates)
             if (otherSymbol)
                {
                if (!inSymbol)
-                  inSymbols[i] = new (trStackMemory()) IncrementInfo(otherSymbol);
+                  inSymbols[i] = new (comp()->trStackMemory()) IncrementInfo(otherSymbol);
                else
                   inSymbol->merge(otherSymbol);
                }
@@ -1973,7 +1973,7 @@ void TR_LoopEstimator::processBlock(TR::Block *block, TR_BitVector &candidates)
             IncrementInfo *inSymbol = inSymbols[refIndex];
 
             if (!inSymbol)
-               inSymbol = inSymbols[refIndex] = new (trStackMemory()) IncrementInfo(0);
+               inSymbol = inSymbols[refIndex] = new (comp()->trStackMemory()) IncrementInfo(0);
 
             int32_t increment;
             TR_ProgressionKind kind;
@@ -2004,7 +2004,7 @@ void TR_LoopEstimator::mergeWithLoopIncrements(TR::Block *block, IncrementInfo *
       if (outSymbol)
          {
          if (!loopSymbol)
-            loopIncrements[i] = new (trStackMemory()) IncrementInfo(outSymbol);
+            loopIncrements[i] = new (comp()->trStackMemory()) IncrementInfo(outSymbol);
          else
             loopSymbol->merge(outSymbol);
          }
@@ -2134,21 +2134,21 @@ bool TR_LoopEstimator::isRecognizableExitEdge(TR::CFGEdge *edge, TR::ILOpCodes *
 
 TR_LoopEstimator::IncrementInfo ***TR_LoopEstimator::getBlockInfoArray()
    {
-   IncrementInfo ***array = (IncrementInfo ***) trMemory()->allocateStackMemory(_numBlocks*sizeof(IncrementInfo **));
+   IncrementInfo ***array = (IncrementInfo ***) comp()->trMemory()->allocateStackMemory(_numBlocks*sizeof(IncrementInfo **));
    memset(array, 0, _numBlocks * sizeof(IncrementInfo **));
    return array;
    }
 
 TR_LoopEstimator::IncrementInfo **TR_LoopEstimator::getIncrementInfoArray()
    {
-   IncrementInfo **array = (IncrementInfo **) trMemory()->allocateStackMemory(_numCandidates * sizeof(IncrementInfo *));
+   IncrementInfo **array = (IncrementInfo **) comp()->trMemory()->allocateStackMemory(_numCandidates * sizeof(IncrementInfo *));
    memset(array, 0, _numCandidates * sizeof(IncrementInfo *));
    return array;
    }
 
 TR_LoopEstimator::EntryInfo **TR_LoopEstimator::getEntryInfoArray()
    {
-   EntryInfo **array = (EntryInfo **) trMemory()->allocateStackMemory(_numBlocks * sizeof(EntryInfo *));
+   EntryInfo **array = (EntryInfo **) comp()->trMemory()->allocateStackMemory(_numBlocks * sizeof(EntryInfo *));
    memset(array, 0, _numBlocks * sizeof(EntryInfo *));
    return array;
    }
@@ -2274,7 +2274,7 @@ TR_LoopEstimator::EntryInfo *TR_LoopEstimator::getEntryValue(TR::Block *block, T
       {
       if (symRef->getSymbol()->isParm())
          {
-         entryInfos[blockIndex] = myInfo = new (trStackMemory()) EntryInfo(); // parameters have unintialized values
+         entryInfos[blockIndex] = myInfo = new (comp()->trStackMemory()) EntryInfo(); // parameters have unintialized values
          }
       else
          TR_ASSERT(entryTree, "unintialized local discovered.  Uninitialized locals cannot exist in Java");
@@ -2296,9 +2296,9 @@ TR_LoopEstimator::EntryInfo *TR_LoopEstimator::getEntryValue(TR::Block *block, T
          if (ref->getReferenceNumber() == symRef->getReferenceNumber())
             {
             if (node->getFirstChild()->getOpCode().isLoadConst())
-               entryInfos[blockIndex] = myInfo = new (trStackMemory()) EntryInfo(node->getFirstChild()->getInt());
+               entryInfos[blockIndex] = myInfo = new (comp()->trStackMemory()) EntryInfo(node->getFirstChild()->getInt());
             else
-               entryInfos[blockIndex] = myInfo = new (trStackMemory()) EntryInfo(); // unknown value
+               entryInfos[blockIndex] = myInfo = new (comp()->trStackMemory()) EntryInfo(); // unknown value
             }
          }
       }
@@ -2314,7 +2314,7 @@ TR_LoopEstimator::EntryInfo *TR_LoopEstimator::getEntryValue(TR::Block *block, T
          if (predInfo)
             {
             if (!myInfo)
-               entryInfos[blockIndex] = myInfo = new (trStackMemory()) EntryInfo(predInfo);
+               entryInfos[blockIndex] = myInfo = new (comp()->trStackMemory()) EntryInfo(predInfo);
             else
                myInfo->merge(predInfo);
             }

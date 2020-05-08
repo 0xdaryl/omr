@@ -61,7 +61,7 @@ TR_StripMiner::TR_StripMiner(TR::OptimizationManager *manager)
    : TR_LoopTransformer(manager),
      _nodesInCFG(0),
      _endTree(NULL),
-     _loopInfos(manager->trMemory()),
+     _loopInfos(comp()->trMemory()),
      _origBlockMapper(NULL),
      _mainBlockMapper(NULL),
      _preBlockMapper(NULL),
@@ -108,7 +108,7 @@ int32_t TR_StripMiner::perform()
    _loopInfos.init();
 
    // From here, down, stack memory allocations will die when the function returns
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    if (trace())
       {
@@ -128,17 +128,17 @@ int32_t TR_StripMiner::perform()
 
       /* Initialize block mappers */
       intptr_t size = _nodesInCFG * sizeof(TR::Block *);
-      _origBlockMapper = (TR::Block **) trMemory()->allocateStackMemory(size);
+      _origBlockMapper = (TR::Block **) comp()->trMemory()->allocateStackMemory(size);
       memset(_origBlockMapper, 0, size);
-      _mainBlockMapper = (TR::Block **) trMemory()->allocateStackMemory(size);
+      _mainBlockMapper = (TR::Block **) comp()->trMemory()->allocateStackMemory(size);
       memset(_mainBlockMapper, 0, size);
-      _preBlockMapper = (TR::Block **) trMemory()->allocateStackMemory(size);
+      _preBlockMapper = (TR::Block **) comp()->trMemory()->allocateStackMemory(size);
       memset(_preBlockMapper, 0, size);
-      _postBlockMapper = (TR::Block **) trMemory()->allocateStackMemory(size);
+      _postBlockMapper = (TR::Block **) comp()->trMemory()->allocateStackMemory(size);
       memset(_postBlockMapper, 0, size);
-      _residualBlockMapper = (TR::Block **) trMemory()->allocateStackMemory(size);
+      _residualBlockMapper = (TR::Block **) comp()->trMemory()->allocateStackMemory(size);
       memset(_residualBlockMapper, 0, size);
-      _offsetBlockMapper = (TR::Block **) trMemory()->allocateStackMemory(size);
+      _offsetBlockMapper = (TR::Block **) comp()->trMemory()->allocateStackMemory(size);
       memset(_offsetBlockMapper, 0, size);
 
       for (TR::CFGNode *node = _cfg->getFirstNode(); node; node = node->getNext())
@@ -220,7 +220,7 @@ void TR_StripMiner::collectLoops(TR_Structure *str)
 
       //FIXME: no support for loops with catch blocks
       //
-      TR_ScratchList<TR::Block> blocksInLoop(trMemory());
+      TR_ScratchList<TR::Block> blocksInLoop(comp()->trMemory());
       region->getBlocks(&blocksInLoop);
       ListIterator<TR::Block> bIt(&blocksInLoop);
       for (TR::Block *b = bIt.getFirst(); b; b = bIt.getNext())
@@ -243,7 +243,7 @@ void TR_StripMiner::collectLoops(TR_Structure *str)
 
       // Save loop info
       //
-      LoopInfo *li = (LoopInfo *) trMemory()->allocateStackMemory(sizeof(LoopInfo));
+      LoopInfo *li = (LoopInfo *) comp()->trMemory()->allocateStackMemory(sizeof(LoopInfo));
       li->_region = region;
       li->_regionNum = region->getNumber();
       li->_arrayDataSize = 0;
@@ -275,7 +275,7 @@ void TR_StripMiner::collectLoops(TR_Structure *str)
       li->_loopTest = loopTest;
       li->_piv = piv;
       li->_asyncTree = NULL;
-      TR::Region &scratchRegion = trMemory()->currentStackRegion();
+      TR::Region &scratchRegion = comp()->trMemory()->currentStackRegion();
       li->_mainParentsOfLoads.setRegion(scratchRegion);
       li->_mainParentsOfLoads.init();
       li->_mainParentsOfStores.setRegion(scratchRegion);
@@ -484,7 +484,7 @@ void TR_StripMiner::transformLoops()
          duplicateLoop(li, postLoop);
 
          TR_RegionStructure *loop = li->_region;
-         TR_ScratchList<TR::Block> blocksInLoop(trMemory());
+         TR_ScratchList<TR::Block> blocksInLoop(comp()->trMemory());
          loop->getBlocks(&blocksInLoop);
          // Fix up everything
          //
@@ -571,7 +571,7 @@ void TR_StripMiner::duplicateLoop(LoopInfo *li, TR_ClonedLoopType type)
    // Clone the loop
    //
    TR_RegionStructure *loop = li->_region;
-   TR_ScratchList<TR::Block> blocksInLoop(trMemory());
+   TR_ScratchList<TR::Block> blocksInLoop(comp()->trMemory());
    loop->getBlocks(&blocksInLoop);
    blocksInLoop.add(li->_preHeader);
 
@@ -1309,7 +1309,7 @@ TR::Block *TR_StripMiner::stripMineLoop(LoopInfo *li, TR::Block *outerHeader)
 
    //fixing exit edges other than loop test
    //For each block with exit edges, fix each exit edge.
-   TR_ScratchList<TR::Block> blocksInLoop(trMemory());
+   TR_ScratchList<TR::Block> blocksInLoop(comp()->trMemory());
    loop->getBlocks(&blocksInLoop);
    ListIterator<TR::Block> bIt(&blocksInLoop);
    TR::Block *block = NULL;
@@ -1554,7 +1554,7 @@ void TR_StripMiner::examineLoop(LoopInfo *li, TR_ClonedLoopType type, bool check
 
    TR_RegionStructure *loop = li->_region;
    TR::SymbolReference *oldCounter = li->_piv->getSymRef();
-   TR_ScratchList<TR::Block> blocksInLoop(trMemory());
+   TR_ScratchList<TR::Block> blocksInLoop(comp()->trMemory());
    loop->getBlocks(&blocksInLoop);
 
    ListIterator<TR::Block> bIt(&blocksInLoop);
@@ -1613,8 +1613,8 @@ void TR_StripMiner::examineNode(LoopInfo *li, TR::Node *parent, TR::Node *node,
                traceMsg(comp(), "      adding node [%p] to load list parent: [%p], childNum: %d\n", node, parent, childNum);
 
             type == mainLoop ?
-               li->_mainParentsOfLoads.add(new (trStackMemory()) TR_ParentOfChildNode(parent, childNum)) :
-               li->_residualParentsOfLoads.add(new (trStackMemory()) TR_ParentOfChildNode(parent, childNum));
+               li->_mainParentsOfLoads.add(new (comp()->trStackMemory()) TR_ParentOfChildNode(parent, childNum)) :
+               li->_residualParentsOfLoads.add(new (comp()->trStackMemory()) TR_ParentOfChildNode(parent, childNum));
             }
          }
       else
@@ -1623,8 +1623,8 @@ void TR_StripMiner::examineNode(LoopInfo *li, TR::Node *parent, TR::Node *node,
             traceMsg(comp(), "      adding node [%p] store list parent: [%p]\n", node, parent);
 
          type == mainLoop ?
-            li->_mainParentsOfStores.add(new (trStackMemory()) TR_ParentOfChildNode(parent, -1)) :
-            li->_residualParentsOfStores.add(new (trStackMemory()) TR_ParentOfChildNode(parent, -1));
+            li->_mainParentsOfStores.add(new (comp()->trStackMemory()) TR_ParentOfChildNode(parent, -1)) :
+            li->_residualParentsOfStores.add(new (comp()->trStackMemory()) TR_ParentOfChildNode(parent, -1));
          }
       }
 
@@ -1818,8 +1818,8 @@ void TR_StripMiner::replaceLoopPivs(LoopInfo *li, TR::ILOpCodes newOpCode, TR::N
    TR::SymbolReference *origSymRef = li->_piv->getSymRef();
    ListIterator<TR_ParentOfChildNode> it;
    TR_ParentOfChildNode *parent = NULL;
-   TR_ScratchList<TR_Pair<TR::Node, TR::Node> > loadMapper(trMemory());
-   TR_ScratchList<TR_Pair<TR::Node, TR::Node> > storeMapper(trMemory());
+   TR_ScratchList<TR_Pair<TR::Node, TR::Node> > loadMapper(comp()->trMemory());
+   TR_ScratchList<TR_Pair<TR::Node, TR::Node> > storeMapper(comp()->trMemory());
 
    if (trace())
       traceMsg(comp(), "   replacing Pivs in %s loop %d...\n", type == mainLoop ? "main" : "residual",
@@ -2032,7 +2032,7 @@ bool TR_StripMiner::checkIfIncrementalIncreasesOfPIV(LoopInfo *li)
    TR_RegionStructure *loop = li->_region;
    TR::SymbolReference *oldCounter = li->_piv->getSymRef();
    bool isInt32 = li->_piv->getSymRef()->getSymbol()->getType().isInt32();
-   TR_ScratchList<TR::Block> blocksInLoop(trMemory());
+   TR_ScratchList<TR::Block> blocksInLoop(comp()->trMemory());
    loop->getBlocks(&blocksInLoop);
 
    ListIterator<TR::Block> bIt(&blocksInLoop);

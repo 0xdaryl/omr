@@ -73,7 +73,7 @@ int32_t OMR::CFGSimplifier::perform()
    bool anySuccess = false;
 
    {
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
 
    _cfg = comp()->getFlowGraph();
@@ -295,7 +295,7 @@ bool OMR::CFGSimplifier::simplifyInstanceOfTestToCheckcast(bool needToDuplicateT
    lastTree->join(catchBlock->getEntry());
 
    TR::Node *checkcastAndNULLCHKNode = TR::Node::createWithSymRef(compareNode->getFirstChild(), TR::checkcastAndNULLCHK, 2, comp()->getSymRefTab()->findOrCreateCheckCastSymbolRef(comp()->getMethodSymbol()));
-   TR_Pair<TR_ByteCodeInfo, TR::Node> *bcInfo = new (trHeapMemory()) TR_Pair<TR_ByteCodeInfo, TR::Node> (&compareNode->getFirstChild()->getByteCodeInfo(), checkcastAndNULLCHKNode);
+   TR_Pair<TR_ByteCodeInfo, TR::Node> *bcInfo = new (comp()->trHeapMemory()) TR_Pair<TR_ByteCodeInfo, TR::Node> (&compareNode->getFirstChild()->getByteCodeInfo(), checkcastAndNULLCHKNode);
    comp()->getCheckcastNullChkInfo().push_front(bcInfo);
    checkcastAndNULLCHKNode->setAndIncChild(0, objNode);
    checkcastAndNULLCHKNode->setAndIncChild(1, classNode);
@@ -957,7 +957,7 @@ bool OMR::CFGSimplifier::simplifyBooleanStore(bool needToDuplicateTree)
    if (!performTransformation(comp(), "%sReplace compare-and-branch node [%p] with boolean compare\n", OPT_DETAILS, compareNode))
       return false;
 
-   _cfg->addEdge(TR::CFGEdge::createEdge(_block, joinBlock, trMemory()));
+   _cfg->addEdge(TR::CFGEdge::createEdge(_block, joinBlock, comp()->trMemory()));
 
 
    // Re-use the store with the non-trivial value - for boolean store it doesn't
@@ -1411,7 +1411,7 @@ bool OMR::CFGSimplifier::simplifyCondCodeBooleanStore(TR::Block *joinBlock, TR::
       branchNode->setBranchDestination(takenBlock->getEntry());
 
       // Add a (always fallthrough) edge from block A to D
-      _cfg->addEdge(TR::CFGEdge::createEdge(_block, joinBlock, trMemory()));
+      _cfg->addEdge(TR::CFGEdge::createEdge(_block, joinBlock, comp()->trMemory()));
       joinBlock->setIsExtensionOfPreviousBlock(true);
 
       // Create an empty block, G
@@ -1432,8 +1432,8 @@ bool OMR::CFGSimplifier::simplifyCondCodeBooleanStore(TR::Block *joinBlock, TR::
 
       // Add the new block to the CFG and update edges
       _cfg->addNode(newGotoBlock, fallthroughBlock->getParentStructureIfExists(_cfg));
-      _cfg->addEdge(TR::CFGEdge::createEdge(joinBlock,  newGotoBlock, trMemory())); // Add edge from D to G
-      _cfg->addEdge(TR::CFGEdge::createEdge(newGotoBlock,  fallthroughBlock, trMemory())); // Add edge from G to E
+      _cfg->addEdge(TR::CFGEdge::createEdge(joinBlock,  newGotoBlock, comp()->trMemory())); // Add edge from D to G
+      _cfg->addEdge(TR::CFGEdge::createEdge(newGotoBlock,  fallthroughBlock, comp()->trMemory())); // Add edge from G to E
       _cfg->removeEdge(oldTakenEdge); // Remove edge from D to E
       }
    else
@@ -1453,7 +1453,7 @@ bool OMR::CFGSimplifier::simplifyCondCodeBooleanStore(TR::Block *joinBlock, TR::
       branchNode->setBranchDestination(compareNode->getBranchDestination());
 
       // Add a (always fallthrough) edge from block A to D
-      _cfg->addEdge(TR::CFGEdge::createEdge(_block, joinBlock, trMemory()));
+      _cfg->addEdge(TR::CFGEdge::createEdge(_block, joinBlock, comp()->trMemory()));
       joinBlock->setIsExtensionOfPreviousBlock(true);
 
       // Invert the mask bits

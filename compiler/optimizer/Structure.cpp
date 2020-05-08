@@ -1116,7 +1116,7 @@ void TR_RegionStructure::replaceExitPart(int32_t fromNumber, int32_t toNumber)
 
 void TR_RegionStructure::collectExitBlocks(List<TR::Block> *exitBlocks, List<TR::CFGEdge> *exitEdges)
    {
-   TR_BitVector *seenNodes = new (trStackMemory()) TR_BitVector(1, trMemory(), stackAlloc, growable);
+   TR_BitVector *seenNodes = new (comp()->trStackMemory()) TR_BitVector(1, comp()->trMemory(), stackAlloc, growable);
    TR::CFGEdge *edge;
    ListIterator<TR::CFGEdge> ei(&_exitEdges);
    for (edge = ei.getCurrent(); edge; edge = ei.getNext())
@@ -1150,7 +1150,7 @@ void TR_BlockStructure::collectExitBlocks(List<TR::Block> *exitBlocks, List<TR::
 
 void TR_RegionStructure::addGlobalRegisterCandidateToExits(TR_RegisterCandidate *inductionCandidate)
    {
-   TR_ScratchList<TR::Block> exitBlocks(trMemory());
+   TR_ScratchList<TR::Block> exitBlocks(comp()->trMemory());
    collectExitBlocks(&exitBlocks);
 
    TR::Block *nextBlock;
@@ -1314,7 +1314,7 @@ static bool findCycle(TR::Compilation *comp, TR_StructureSubGraphNode *origin, T
 
 void TR_RegionStructure::checkForInternalCycles()
    {
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    int32_t numNodes = comp()->getFlowGraph()->getNextNodeNumber();
    TR_BitVector regionNodes(numNodes, stackMemoryRegion);
@@ -1761,7 +1761,7 @@ TR_Structure *TR_RegionStructure::cloneStructure(TR::Block **correspondingBlocks
       correspondingSubNodes[subNode->getNumber()] = clonedSubNode;
       }
 
-   TR_ScratchList<TR_StructureSubGraphNode> seenExitNodes(trMemory());
+   TR_ScratchList<TR_StructureSubGraphNode> seenExitNodes(comp()->trMemory());
    si.reset();
    for (subNode = si.getCurrent(); subNode != NULL; subNode = si.getNext())
       {
@@ -1772,7 +1772,7 @@ TR_Structure *TR_RegionStructure::cloneStructure(TR::Block **correspondingBlocks
          TR_StructureSubGraphNode *succ = toStructureSubGraphNode((*edge)->getTo());
          if (!isExitEdge(*edge))
             {
-            TR::CFGEdge::createEdge(correspondingSubNode, correspondingSubNodes[succ->getNumber()], trMemory());
+            TR::CFGEdge::createEdge(correspondingSubNode, correspondingSubNodes[succ->getNumber()], comp()->trMemory());
             }
          else
             {
@@ -1785,7 +1785,7 @@ TR_Structure *TR_RegionStructure::cloneStructure(TR::Block **correspondingBlocks
          TR_StructureSubGraphNode *succ = toStructureSubGraphNode((*edge)->getTo());
          if (!isExitEdge(*edge))
             {
-            TR::CFGEdge::createExceptionEdge(correspondingSubNode, correspondingSubNodes[succ->getNumber()], trMemory());
+            TR::CFGEdge::createExceptionEdge(correspondingSubNode, correspondingSubNodes[succ->getNumber()], comp()->trMemory());
             }
          else
             {
@@ -1841,7 +1841,7 @@ void TR_RegionStructure::cloneStructureEdges(TR::Block **correspondingBlocks)
       subNode->getStructure()->cloneStructureEdges(correspondingBlocks);
       }
 
-   TR_ScratchList<TR::CFGNode> seenExitNodes(trMemory());
+   TR_ScratchList<TR::CFGNode> seenExitNodes(comp()->trMemory());
    ListIterator<TR::CFGEdge> ei(&getExitEdges());
    TR::CFGEdge *edge;
    for (edge = ei.getFirst(); edge; edge= ei.getNext())
@@ -2019,9 +2019,9 @@ void TR_RegionStructure::addEdge(TR::CFGEdge *edge, bool isExceptionEdge)
    if (iter == list->end())
       {
       if (isExceptionEdge)
-         TR::CFGEdge::createExceptionEdge(fromNode,toNode,trMemory());
+         TR::CFGEdge::createExceptionEdge(fromNode,toNode,comp()->trMemory());
       else
-         TR::CFGEdge::createEdge(fromNode, toNode, trMemory());
+         TR::CFGEdge::createEdge(fromNode, toNode, comp()->trMemory());
 
       // Adding this edge may have given this region internal cycles.
       //
@@ -2082,7 +2082,7 @@ void TR_RegionStructure::collapseIntoParent()
 
    // Build up a bit vector for each node in this region
    //
-   TR_BitVector regionNodes(comp()->getFlowGraph()->getNextNodeNumber(), trMemory(), stackAlloc);
+   TR_BitVector regionNodes(comp()->getFlowGraph()->getNextNodeNumber(), comp()->trMemory(), stackAlloc);
    for (node = nodes.getCurrent(); node; node = nodes.getNext())
       regionNodes.set(node->getNumber());
 
@@ -2091,7 +2091,7 @@ void TR_RegionStructure::collapseIntoParent()
    //
    TR_RegionStructure *parent = getParent()->asRegion();
    TR_RegionStructure::Cursor targets(*parent);
-   TR_BitVector parentNodes(comp()->getFlowGraph()->getNextNodeNumber(), trMemory(), stackAlloc);
+   TR_BitVector parentNodes(comp()->getFlowGraph()->getNextNodeNumber(), comp()->trMemory(), stackAlloc);
    TR_StructureSubGraphNode *nodeInParent = NULL;
    TR_RegionStructure::Cursor pNodes(*parent);
    for (node = pNodes.getCurrent(); node; node = pNodes.getNext())
@@ -2310,8 +2310,8 @@ TR_RegionStructure::addExitEdge(TR_StructureSubGraphNode *from, int32_t to, bool
    else
       {
       edge = isExceptionEdge ?
-         TR::CFGEdge::createExceptionEdge(from, toNode,trMemory()) :
-         TR::CFGEdge::createEdge(from,  toNode, trMemory());
+         TR::CFGEdge::createExceptionEdge(from, toNode,comp()->trMemory()) :
+         TR::CFGEdge::createEdge(from,  toNode, comp()->trMemory());
       }
    _exitEdges.add(edge);
    return edge;
@@ -2523,7 +2523,7 @@ void TR_RegionStructure::checkStructure(TR_BitVector* _blockNumbers)
          }
       }
 
-   TR_ScratchList<TR_StructureSubGraphNode> exitNodes(trMemory());
+   TR_ScratchList<TR_StructureSubGraphNode> exitNodes(comp()->trMemory());
    ListIterator<TR::CFGEdge> exitEdges(&_exitEdges);
    TR::CFGEdge *edge;
    for (edge = exitEdges.getFirst(); edge; edge = exitEdges.getNext())
@@ -2652,8 +2652,8 @@ bool TR_RegionStructure::changeContinueLoopsToNestedLoops(TR_RegionStructure *ro
       TR::CFG *cfg=comp()->getFlowGraph();
       TR::CFGEdge *backEdgeToHeader = NULL;
       TR::Block *entryBlock = getEntryBlock();
-      TR_ScratchList<TR::CFGEdge> splitEdges(trMemory());
-      TR_ScratchList<TR::CFGEdge> incomingEdges(trMemory());
+      TR_ScratchList<TR::CFGEdge> splitEdges(comp()->trMemory());
+      TR_ScratchList<TR::CFGEdge> incomingEdges(comp()->trMemory());
       unsigned numNewHeaders=0;
       for (auto nextEdge = entryBlock->getPredecessors().begin(); nextEdge != entryBlock->getPredecessors().end(); ++nextEdge)
          {
@@ -3259,9 +3259,9 @@ bool TR_RegionStructure::renumberRecursively(int32_t origNum, int32_t num)
 void TR_RegionStructure::computeInvariantSymbols()
    {
    int32_t symRefCount = comp()->getSymRefCount();
-   _invariantSymbols = new (trStackMemory()) TR_BitVector(symRefCount, trMemory(), stackAlloc);
+   _invariantSymbols = new (comp()->trStackMemory()) TR_BitVector(symRefCount, comp()->trMemory(), stackAlloc);
    _invariantSymbols->setAll(symRefCount);
-   TR_ScratchList<TR::Block> blocksInRegion(trMemory());
+   TR_ScratchList<TR::Block> blocksInRegion(comp()->trMemory());
    getBlocks(&blocksInRegion);
    vcount_t visitCount = comp()->incVisitCount();
    ListIterator<TR::Block> blocksIt(&blocksInRegion);
@@ -3327,9 +3327,9 @@ void TR_RegionStructure::computeInvariantExpressions()
    computeInvariantSymbols();
 
    int32_t nodeCount = comp()->getNodeCount();
-   _invariantExpressions = new (trStackMemory()) TR_BitVector(nodeCount, trMemory(), stackAlloc, growable);
+   _invariantExpressions = new (comp()->trStackMemory()) TR_BitVector(nodeCount, comp()->trMemory(), stackAlloc, growable);
 
-   TR_ScratchList<TR::Block> blocksInRegion(trMemory());
+   TR_ScratchList<TR::Block> blocksInRegion(comp()->trMemory());
    getBlocks(&blocksInRegion);
    vcount_t visitCount = comp()->incVisitCount();
    ListIterator<TR::Block> blocksIt(&blocksInRegion);
@@ -3459,7 +3459,7 @@ TR_SequenceStructure::hoistInvariantsOutOfNestedLoops(
 
             if (!(optSetInfo[loopInvariantBlock->getNumber()])->isEmpty())
                {
-               TR_BitVector *optMask = new (trStackMemory()) TR_BitVector(bitVectorSize, trMemory(), stackAlloc);
+               TR_BitVector *optMask = new (comp()->trStackMemory()) TR_BitVector(bitVectorSize, comp()->trMemory(), stackAlloc);
 
                TR_BitVectorIterator bvi(*(optSetInfo[loopInvariantBlock->getNumber()]));
                int32_t nextOptimalComputation = -1;
@@ -3597,7 +3597,7 @@ TR_RegionStructure::hoistInvariantsOutOfNestedLoops(
              {
              if (!(optSetInfo[loopInvariantBlock->getNumber()])->isEmpty())
                 {
-                TR_BitVector *optMask = new (trStackMemory()) TR_BitVector(bitVectorSize, trMemory(), stackAlloc);
+                TR_BitVector *optMask = new (comp()->trStackMemory()) TR_BitVector(bitVectorSize, comp()->trMemory(), stackAlloc);
 
                 TR_BitVectorIterator bvi(*(optSetInfo[loopInvariantBlock->getNumber()]));
                 int32_t nextOptimalComputation = -1;

@@ -71,7 +71,7 @@ TR_LocalTransparency::TR_LocalTransparency(TR_LocalAnalysisInfo &info, bool t)
    // then we can easily obtain the expressions not locally transparent in the
    // block
    //
-   _transparencyInfo = (ContainerType**)trMemory()->allocateStackMemory(symRefCount*sizeof(ContainerType*));
+   _transparencyInfo = (ContainerType**)comp()->trMemory()->allocateStackMemory(symRefCount*sizeof(ContainerType*));
    memset(_transparencyInfo, 0, symRefCount*sizeof(ContainerType *));
 
    int32_t i;
@@ -87,7 +87,7 @@ TR_LocalTransparency::TR_LocalTransparency(TR_LocalAnalysisInfo &info, bool t)
     * so we should consider this when moving the stack memory region's scope earlier
     */
    {
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    _supportedNodes = allocateContainer(getNumNodes());
    _supportedNodes->setAll(getNumNodes());
@@ -111,13 +111,13 @@ TR_LocalTransparency::TR_LocalTransparency(TR_LocalAnalysisInfo &info, bool t)
    _hasTransparencyInfoFor = allocateContainer(symRefCount);
    ContainerType *allStoredSymRefsInMethod = allocateContainer(symRefCount);
 
-   ContainerType **definedSymbolReferencesInBlock = (ContainerType **)trMemory()->allocateStackMemory(numberOfNodes*sizeof(ContainerType *));
+   ContainerType **definedSymbolReferencesInBlock = (ContainerType **)comp()->trMemory()->allocateStackMemory(numberOfNodes*sizeof(ContainerType *));
    memset(definedSymbolReferencesInBlock, 0, numberOfNodes*sizeof(ContainerType *));
-   ContainerType **storedSymRefsInBlock = (ContainerType **)trMemory()->allocateStackMemory(numberOfNodes*sizeof(ContainerType *));
+   ContainerType **storedSymRefsInBlock = (ContainerType **)comp()->trMemory()->allocateStackMemory(numberOfNodes*sizeof(ContainerType *));
    memset(storedSymRefsInBlock, 0, numberOfNodes*sizeof(ContainerType *));
-   ContainerType **symRefsDefinedAfterStoredInBlock = (ContainerType **)trMemory()->allocateStackMemory(numberOfNodes*sizeof(ContainerType *));
+   ContainerType **symRefsDefinedAfterStoredInBlock = (ContainerType **)comp()->trMemory()->allocateStackMemory(numberOfNodes*sizeof(ContainerType *));
    memset(symRefsDefinedAfterStoredInBlock, 0, numberOfNodes*sizeof(ContainerType *));
-   ContainerType **symRefsUsedAfterDefinedInBlock = (ContainerType **)trMemory()->allocateStackMemory(numberOfNodes*sizeof(ContainerType *));
+   ContainerType **symRefsUsedAfterDefinedInBlock = (ContainerType **)comp()->trMemory()->allocateStackMemory(numberOfNodes*sizeof(ContainerType *));
    memset(symRefsUsedAfterDefinedInBlock, 0, numberOfNodes*sizeof(ContainerType *));
 
 
@@ -133,7 +133,7 @@ TR_LocalTransparency::TR_LocalTransparency(TR_LocalAnalysisInfo &info, bool t)
 
    ContainerType *globalDefinedSymbolReferences = allocateContainer(symRefCount);
    ContainerType *tempContainer = allocateContainer(comp()->getMaxAliasIndex());
-   TR_BitVector *temp = new (trStackMemory()) TR_BitVector(comp()->getMaxAliasIndex(), trMemory(), stackAlloc);
+   TR_BitVector *temp = new (comp()->trStackMemory()) TR_BitVector(comp()->getMaxAliasIndex(), comp()->trMemory(), stackAlloc);
 
    // First pass over trees to collect symbols that are stored/defined
    // in each block and in the method as a whole

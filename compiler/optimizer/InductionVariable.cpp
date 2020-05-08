@@ -84,7 +84,7 @@
 
 TR_LoopStrider::TR_LoopStrider(TR::OptimizationManager *manager)
    : TR_LoopTransformer(manager),
-   _reassociatedNodes(trMemory()),
+   _reassociatedNodes(comp()->trMemory()),
    _storeTreesSingleton((StoreTreeMapComparator()), StoreTreeMapAllocator(comp()->trMemory()->currentStackRegion()))
    {
    _indirectInductionVariable = false; // TODO: add this c->getMethodHotness() >= scorching;
@@ -109,7 +109,7 @@ int32_t TR_LoopStrider::perform()
 
    _registersScarce = cg()->areAssignableGPRsScarce();
 
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    _hoistedAutos = new (stackMemoryRegion) SymRefPairMap((SymRefPairMapComparator()), SymRefPairMapAllocator(stackMemoryRegion));
    _reassociatedAutos = new (stackMemoryRegion) SymRefMap((SymRefMapComparator()), SymRefMapAllocator(stackMemoryRegion));
@@ -261,7 +261,7 @@ int32_t TR_LoopStrider::detectCanonicalizedPredictableLoops(TR_Structure *loopSt
        regionStructure->getEntryBlock()->isCold())
       return 0;
 
-   TR_ScratchList<TR::Block> blocksInRegion(trMemory());
+   TR_ScratchList<TR::Block> blocksInRegion(comp()->trMemory());
    regionStructure->getBlocks(&blocksInRegion);
    ListIterator<TR::Block> blocksIt(&blocksInRegion);
    TR::Block *nextBlock;
@@ -296,14 +296,14 @@ int32_t TR_LoopStrider::detectCanonicalizedPredictableLoops(TR_Structure *loopSt
          _storeTreesList = &_storeTreesSingleton;
       _storeTreesList->clear();
 
-      //_storeTreesList = (List<TR_StoreTreeInfo> **)trMemory()->allocateStackMemory(symRefCount*sizeof(List<TR_StoreTreeInfo> *));
-      //_loadUsedInNewLoopIncrementList = (List<TR::Node> **)trMemory()->allocateStackMemory(symRefCount*sizeof(List<TR::Node> *));
+      //_storeTreesList = (List<TR_StoreTreeInfo> **)comp()->trMemory()->allocateStackMemory(symRefCount*sizeof(List<TR_StoreTreeInfo> *));
+      //_loadUsedInNewLoopIncrementList = (List<TR::Node> **)comp()->trMemory()->allocateStackMemory(symRefCount*sizeof(List<TR::Node> *));
       //memset(_storeTreesList, 0, symRefCount*sizeof(List<TR::TreeTop> *));
       //int32_t i = 0;
       //while (i < symRefCount)
       //   {
-      //   _storeTreesList[i] = new (trStackMemory()) TR_ScratchList<TR_StoreTreeInfo>(trMemory());
-      //   //_loadUsedInNewLoopIncrementList[i] = new (trStackMemory()) TR_ScratchList<TR::Node>(trMemory());
+      //   _storeTreesList[i] = new (comp()->trStackMemory()) TR_ScratchList<TR_StoreTreeInfo>(comp()->trMemory());
+      //   //_loadUsedInNewLoopIncrementList[i] = new (comp()->trStackMemory()) TR_ScratchList<TR::Node>(comp()->trMemory());
       //   i++;
       //   }
 
@@ -335,7 +335,7 @@ int32_t TR_LoopStrider::detectCanonicalizedPredictableLoops(TR_Structure *loopSt
             }
          }
 
-      _autosAccessed = new (trStackMemory()) TR_BitVector(symRefCount, trMemory(), stackAlloc);
+      _autosAccessed = new (comp()->trStackMemory()) TR_BitVector(symRefCount, comp()->trMemory(), stackAlloc);
       _numberOfLinearExprs = 0;
 
       _parmAutoPairs = NULL;
@@ -369,17 +369,17 @@ int32_t TR_LoopStrider::detectCanonicalizedPredictableLoops(TR_Structure *loopSt
          // calculate _numberOfLinearExprs
          identifyExpressionsLinearInInductionVariables(loopStructure, visitCount);
 
-         _linearEquations = (int64_t **)trMemory()->allocateStackMemory(_numberOfLinearExprs*sizeof(int64_t *));
+         _linearEquations = (int64_t **)comp()->trMemory()->allocateStackMemory(_numberOfLinearExprs*sizeof(int64_t *));
          memset(_linearEquations, 0, _numberOfLinearExprs*sizeof(int64_t *));
-         _loadUsedInNewLoopIncrement = (TR::Node **)trMemory()->allocateStackMemory(_numberOfLinearExprs*sizeof(TR::Node *));
+         _loadUsedInNewLoopIncrement = (TR::Node **)comp()->trMemory()->allocateStackMemory(_numberOfLinearExprs*sizeof(TR::Node *));
          memset(_loadUsedInNewLoopIncrement, 0, _numberOfLinearExprs*sizeof(TR::Node *));
 
          int32_t j;
          for (j=0;j<_numberOfLinearExprs;j++)
-            _linearEquations[j] = (int64_t *)trMemory()->allocateStackMemory(5*sizeof(int64_t));
+            _linearEquations[j] = (int64_t *)comp()->trMemory()->allocateStackMemory(5*sizeof(int64_t));
          _nextExpression = 0;
 
-         TR_ScratchList<TR::TreeTop> predictableComputations(trMemory());
+         TR_ScratchList<TR::TreeTop> predictableComputations(comp()->trMemory());
          TR::SymbolReference *newSymbolReference = NULL;
          TR::SymbolReference *inductionVarSymRef = NULL;
 
@@ -690,7 +690,7 @@ int32_t TR_LoopStrider::detectCanonicalizedPredictableLoops(TR_Structure *loopSt
             bool exitValueNeeded = false;
             //if (_cannotBeEliminated->get(nextInductionVariableNumber))
             {
-               List<TR::Block> exitBlocks(trMemory());
+               List<TR::Block> exitBlocks(comp()->trMemory());
                ListIterator<TR::CFGEdge> ei(&loopStructure->asRegion()->getExitEdges());
                for (TR::CFGEdge *edge = ei.getCurrent(); edge != NULL; edge = ei.getNext())
                   {
@@ -843,7 +843,7 @@ int32_t TR_LoopStrider::detectCanonicalizedPredictableLoops(TR_Structure *loopSt
                               newIncr = genVPIntRange(incr, mulConst, 0);
                               }
 
-                           TR_InductionVariable *iv = new (trHeapMemory()) TR_InductionVariable(newSymbolReference->getSymbol()->castToRegisterMappedSymbol(),
+                           TR_InductionVariable *iv = new (comp()->trHeapMemory()) TR_InductionVariable(newSymbolReference->getSymbol()->castToRegisterMappedSymbol(),
                                                                                                 newEntryVal, newExitVal, newIncr,
                                                                                                 _loopTestTree->getNode()->getOpCode().isUnsignedCompare() ? TR_no : TR_yes);
                            if (bestCandidate == k)
@@ -1072,7 +1072,7 @@ TR::VPLongRange* TR_LoopStrider::genVPLongRange(TR::VPConstraint* cons, int64_t 
          high = cons->getHighLong();
          }
 
-      return new (trHeapMemory()) TR::VPLongRange(low*coeff + additive, high*coeff + additive);
+      return new (comp()->trHeapMemory()) TR::VPLongRange(low*coeff + additive, high*coeff + additive);
       }
    return NULL;
    }
@@ -1083,7 +1083,7 @@ TR::VPIntRange* TR_LoopStrider::genVPIntRange(TR::VPConstraint* cons, int64_t co
       {
       int32_t low = cons->getLowInt();
       int32_t high = cons->getHighInt();
-      return new (trHeapMemory()) TR::VPIntRange((int32_t)(low*coeff + additive), (int32_t)(high*coeff + additive));
+      return new (comp()->trHeapMemory()) TR::VPIntRange((int32_t)(low*coeff + additive), (int32_t)(high*coeff + additive));
       }
    return NULL;
    }
@@ -1103,12 +1103,12 @@ void TR_LoopStrider::findOrCreateStoreInfo(TR::TreeTop *tree, int32_t i)
             return;
          }
 
-      lookup->second->add(new (trStackMemory()) TR_StoreTreeInfo(tree, NULL, NULL, NULL, NULL, false, NULL, false));
+      lookup->second->add(new (comp()->trStackMemory()) TR_StoreTreeInfo(tree, NULL, NULL, NULL, NULL, false, NULL, false));
       }
    else
       {
-      TR_ScratchList<TR_StoreTreeInfo> *newList = new (trStackMemory()) TR_ScratchList<TR_StoreTreeInfo>(trMemory());
-      newList->add(new (trStackMemory()) TR_StoreTreeInfo(tree, NULL, NULL, NULL, NULL, false, NULL, false));
+      TR_ScratchList<TR_StoreTreeInfo> *newList = new (comp()->trStackMemory()) TR_ScratchList<TR_StoreTreeInfo>(comp()->trMemory());
+      newList->add(new (comp()->trStackMemory()) TR_StoreTreeInfo(tree, NULL, NULL, NULL, NULL, false, NULL, false));
       (*_storeTreesList)[i] = newList;
       }
    }
@@ -2349,7 +2349,7 @@ TR::DataType TR_LoopStrider::findDataType(TR::Node *node, bool usingAladd, bool 
 
 void TR_LoopStrider::createParmAutoPair(TR::SymbolReference *parmSymRef, TR::SymbolReference *autoSymRef)
    {
-   SymRefPair *pair = (SymRefPair *)trMemory()->allocateStackMemory(sizeof(SymRefPair));
+   SymRefPair *pair = (SymRefPair *)comp()->trMemory()->allocateStackMemory(sizeof(SymRefPair));
    pair->_indexSymRef = parmSymRef;
    pair->_derivedSymRef = autoSymRef;
    pair->_isConst = false;
@@ -2374,7 +2374,7 @@ void TR_LoopStrider::addLoad(TR_StoreTreeInfo *info, TR::Node *load, int32_t ind
       cursor = cursor->_next;
       }
 
-   TR_NodeIndexPair *pair = new (trStackMemory()) TR_NodeIndexPair(load, index, NULL);
+   TR_NodeIndexPair *pair = new (comp()->trStackMemory()) TR_NodeIndexPair(load, index, NULL);
    pair->_next = head;
    info->_loads = pair;
    info->_load = load;
@@ -2509,8 +2509,8 @@ TR::Node *TR_LoopStrider::placeNewInductionVariableIncrementTree(TR_BlockStructu
       ListIterator<TR_StoreTreeInfo> si(storeTreesList);
       ListElement<TR_StoreTreeInfo> *storeTree;
       storeTree = storeTreesList->getListHead();
-      TR_ScratchList<TR::Node> seenLoads(trMemory());
-      TR_ScratchList<TR_NodeIndexPair> seenLoadPairs(trMemory());
+      TR_ScratchList<TR::Node> seenLoads(comp()->trMemory());
+      TR_ScratchList<TR_NodeIndexPair> seenLoadPairs(comp()->trMemory());
       for (;storeTree != NULL;)
          {
          TR_NodeIndexPair *loadPair = storeTree->getData()->_loads;
@@ -2584,7 +2584,7 @@ TR::Node *TR_LoopStrider::placeNewInductionVariableIncrementTree(TR_BlockStructu
             storeTree->getData()->_load = newLoad;
 
             TR_NodeIndexPair *head = storeTree->getData()->_loads;
-            TR_NodeIndexPair *pair = new (trStackMemory()) TR_NodeIndexPair(newLoad, k, NULL);
+            TR_NodeIndexPair *pair = new (comp()->trStackMemory()) TR_NodeIndexPair(newLoad, k, NULL);
             pair->_next = head;
             storeTree->getData()->_loads = pair;
 
@@ -3518,7 +3518,7 @@ bool TR_LoopStrider::reassociateAndHoistComputations(TR::Block *loopInvariantBlo
             else
                symbol->castToInternalPointerAutoSymbol()->setPinningArrayPointer(pinningArrayPointer->castToInternalPointerAutoSymbol()->getPinningArrayPointer());
 
-            SymRefPair *pair = (SymRefPair *) trMemory()->allocateStackMemory(sizeof(SymRefPair));
+            SymRefPair *pair = (SymRefPair *) comp()->trMemory()->allocateStackMemory(sizeof(SymRefPair));
             if (isConst)
                {
                int32_t constNodeValue;
@@ -4240,7 +4240,7 @@ void TR_LoopStrider::detectLoopsForIndVarConversion(
    if (regionStructure->getEntryBlock()->isCold() && !stressMode)
       return;
 
-   TR_ScratchList<TR::Block> blocksInRegion(trMemory());
+   TR_ScratchList<TR::Block> blocksInRegion(comp()->trMemory());
    regionStructure->getBlocks(&blocksInRegion);
    ListIterator<TR::Block> bi (&blocksInRegion);
    TR::Block *nextBlock;
@@ -4419,7 +4419,7 @@ void TR_LoopStrider::truncateIVsOnLoopExit(
    const TR::list<std::pair<int32_t, int32_t> > &ivs,
    TR_RegionStructure *loop)
    {
-   TR_ScratchList<TR::Block> loopBlocks(trMemory());
+   TR_ScratchList<TR::Block> loopBlocks(comp()->trMemory());
    loop->getBlocks(&loopBlocks);
 
    ListIterator<TR::Block> lit(&loopBlocks);
@@ -4431,7 +4431,7 @@ void TR_LoopStrider::truncateIVsOnLoopExit(
    for (TR::Block *src = lit.getFirst(); src != NULL; src = lit.getNext())
       {
       // Defer any edge splitting until iteration is finished.
-      TR_ScratchList<TR::Block> exits(trMemory());
+      TR_ScratchList<TR::Block> exits(comp()->trMemory());
       TR_SuccessorIterator sit(src);
       for (TR::CFGEdge *e = sit.getFirst(); e != NULL; e = sit.getNext())
          {
@@ -4521,7 +4521,7 @@ void TR_LoopStrider::createConstraintsForNewInductionVariable(TR_Structure *loop
       TR_InductionVariable *oldIV = loopStructure->asRegion()->findMatchingIV(oldSymRef);
 
       // add the new constraint and new induction variable
-      TR_InductionVariable *newv = new (trHeapMemory()) TR_InductionVariable(newSymRef->getSymbol()->castToRegisterMappedSymbol(), newEntryVal, newExitVal, newIncr,
+      TR_InductionVariable *newv = new (comp()->trHeapMemory()) TR_InductionVariable(newSymRef->getSymbol()->castToRegisterMappedSymbol(), newEntryVal, newExitVal, newIncr,
                                                                              oldIV ? oldIV->isSigned() : TR_maybe);
       loopStructure->asRegion()->addInductionVariable(newv);
       }
@@ -5499,8 +5499,8 @@ TR_InductionVariableAnalysis::TR_InductionVariableAnalysis(TR::OptimizationManag
      _ivs(0),
      _blockInfo(0),
      _dominators(NULL),
-     _seenInnerRegionExit(0, trMemory(), stackAlloc, growable),
-     _isOSRInduceBlock(0, trMemory(), stackAlloc, growable)
+     _seenInnerRegionExit(0, comp()->trMemory(), stackAlloc, growable),
+     _isOSRInduceBlock(0, comp()->trMemory(), stackAlloc, growable)
    {}
 
 int32_t TR_InductionVariableAnalysis::perform()
@@ -5515,10 +5515,10 @@ int32_t TR_InductionVariableAnalysis::perform()
       return 0;
       }
 
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    // FIXME: Why is this allocated with heap memory?
-   _dominators = new (trHeapMemory()) TR_Dominators(comp());
+   _dominators = new (comp()->trHeapMemory()) TR_Dominators(comp());
 
    // Gathers symrefs that are assigned inside a loop. This removes stale IVs
    // in the same traversal, so there's no need to removeStaleIVs().
@@ -5555,8 +5555,8 @@ void TR_InductionVariableAnalysis::gatherCandidates(TR_Structure *s, TR_BitVecto
 
       if (!region->isAcyclic())
          {
-         loopLocalDefs = new (trStackMemory()) TR_BitVector(comp()->getSymRefTab()->getNumSymRefs(), trMemory());
-         myAllDefs     = new (trStackMemory()) TR_BitVector(comp()->getSymRefTab()->getNumSymRefs(), trMemory());
+         loopLocalDefs = new (comp()->trStackMemory()) TR_BitVector(comp()->getSymRefTab()->getNumSymRefs(), comp()->trMemory());
+         myAllDefs     = new (comp()->trStackMemory()) TR_BitVector(comp()->getSymRefTab()->getNumSymRefs(), comp()->trMemory());
          }
       else
          myAllDefs     = allDefs;
@@ -5568,7 +5568,7 @@ void TR_InductionVariableAnalysis::gatherCandidates(TR_Structure *s, TR_BitVecto
 
       if (!region->isAcyclic())
          {
-         region->setAnalysisInfo(new (trStackMemory())  AnalysisInfo(loopLocalDefs, myAllDefs));
+         region->setAnalysisInfo(new (comp()->trStackMemory())  AnalysisInfo(loopLocalDefs, myAllDefs));
 
          if (trace())
             {
@@ -5642,7 +5642,7 @@ void TR_InductionVariableAnalysis::analyzeNaturalLoop(TR_RegionStructure *loop)
       }
 
    {
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    if (trace())
       traceMsg(comp(), "<analyzeNaturalLoop loop=%d addr=%p>\n", loop->getNumber(), loop);
@@ -5715,7 +5715,7 @@ TR_InductionVariableAnalysis::analyzeAcyclicRegion(TR_RegionStructure *region, T
    if (loop != region)
       TR_ASSERT(region->isAcyclic(), "assertion failure");
 
-   TR_Queue<TR_StructureSubGraphNode> q(trMemory());
+   TR_Queue<TR_StructureSubGraphNode> q(comp()->trMemory());
    q.enqueue(region->getEntry());
 
    while (!q.isEmpty())
@@ -5827,7 +5827,7 @@ void TR_InductionVariableAnalysis::analyzeBlock(TR_BlockStructure *structure, TR
             DeltaInfo *inSymbol = inSet[refIndex];
 
             if (!inSymbol)
-               inSymbol = inSet[refIndex] = new (trStackMemory())  DeltaInfo(0);
+               inSymbol = inSet[refIndex] = new (comp()->trStackMemory())  DeltaInfo(0);
 
             if (trace())
                {
@@ -5902,7 +5902,7 @@ void TR_InductionVariableAnalysis::analyzeCyclicRegion(TR_RegionStructure *regio
 
          DeltaInfo *inSymbol = inSet[refIndex];
          if (!inSymbol)
-            inSymbol = inSet[refIndex] = new (trStackMemory())  DeltaInfo(0);
+            inSymbol = inSet[refIndex] = new (comp()->trStackMemory())  DeltaInfo(0);
 
          //traceMsg(comp(),"For loop %d setting symref %d to unknown value\n",loop->getNumber(),symRef->getReferenceNumber());
          inSymbol->setUnknownValue();
@@ -5948,13 +5948,13 @@ void TR_InductionVariableAnalysis::mergeWithSet(DeltaInfo **mySet, DeltaInfo **i
       if (inSymbol)
          {
          if (!mySymbol)
-            mySymbol = mySet[i] = new (trStackMemory())  DeltaInfo(inSymbol);
+            mySymbol = mySet[i] = new (comp()->trStackMemory())  DeltaInfo(inSymbol);
          else
             mySymbol->merge(inSymbol);
          }
       else
          {
-         DeltaInfo *identity = new (trStackMemory())  DeltaInfo(0);
+         DeltaInfo *identity = new (comp()->trStackMemory())  DeltaInfo(0);
          if (!mySymbol)
             mySymbol = mySet[i] = identity;
          else
@@ -5969,7 +5969,7 @@ TR_InductionVariableAnalysis::DeltaInfo **
 TR_InductionVariableAnalysis::newBlockInfo(TR_RegionStructure *loop)
    {
    int32_t numCandidates = ((AnalysisInfo*)loop->getAnalysisInfo())->getLoopLocalDefs()->elementCount(); /// FIXME
-   DeltaInfo **mySet = (DeltaInfo **) trMemory()->allocateStackMemory(numCandidates * sizeof(DeltaInfo *));
+   DeltaInfo **mySet = (DeltaInfo **) comp()->trMemory()->allocateStackMemory(numCandidates * sizeof(DeltaInfo *));
    memset(mySet, 0, numCandidates * sizeof(DeltaInfo*));
    return mySet;
    }
@@ -5978,7 +5978,7 @@ void
 TR_InductionVariableAnalysis::initializeBlockInfoArray(TR_RegionStructure *loop)
    {
    int32_t numBlocks = comp()->getFlowGraph()->getNextNodeNumber();
-   _blockInfo = (DeltaInfo ***)trMemory()->allocateStackMemory(numBlocks * sizeof(DeltaInfo**));
+   _blockInfo = (DeltaInfo ***)comp()->trMemory()->allocateStackMemory(numBlocks * sizeof(DeltaInfo**));
    memset(_blockInfo, 0, numBlocks * sizeof(DeltaInfo**));
    }
 
@@ -6191,7 +6191,7 @@ TR_InductionVariableAnalysis::analyzeLoopExpressions(
    comp()->incVisitCount();
 
    TR_Array<TR_BasicInductionVariable*> *ivs =
-      new (trHeapMemory()) TR_Array<TR_BasicInductionVariable*>(trMemory(), candidates->elementCount(), true, heapAlloc);
+      new (comp()->trHeapMemory()) TR_Array<TR_BasicInductionVariable*>(comp()->trMemory(), candidates->elementCount(), true, heapAlloc);
    TR_Array<TR_BasicInductionVariable*> &basicIVs = *ivs;
 
    TR_BitVectorIterator it(*candidates);
@@ -6230,7 +6230,7 @@ TR_InductionVariableAnalysis::analyzeLoopExpressions(
                traceMsg(comp(), "====> Found basic linear induction variable symRef #%d[%p] with increment %d\n",
                       refNum, symRef, info->getDelta());
 
-            TR_BasicInductionVariable *biv = new (trHeapMemory()) TR_BasicInductionVariable(comp(), loop, symRef);
+            TR_BasicInductionVariable *biv = new (comp()->trHeapMemory()) TR_BasicInductionVariable(comp(), loop, symRef);
             biv->setDeltaOnBackEdge(info->getDelta());
             biv->setIncrement(info->getDelta());
 
@@ -6420,8 +6420,8 @@ TR_InductionVariableAnalysis::analyzeExitEdges(TR_RegionStructure *loop,
    if (trace())
       traceMsg(comp(), "Trying to analyze the exit edges to determine if this is a counted loop\n");
 
-   TR_Array<DeltaInfo*> exitInfos(trMemory(), candidates->elementCount(), true, stackAlloc);
-   TR_Array<TR::Node*>   bounds(trMemory(), candidates->elementCount(), true, stackAlloc);
+   TR_Array<DeltaInfo*> exitInfos(comp()->trMemory(), candidates->elementCount(), true, stackAlloc);
+   TR_Array<TR::Node*>   bounds(comp()->trMemory(), candidates->elementCount(), true, stackAlloc);
 
    int32_t     controllingIV = -1;
    TR::TreeTop *controllingBranch = 0;
@@ -6659,7 +6659,7 @@ TR_InductionVariableAnalysis::analyzeExitEdges(TR_RegionStructure *loop,
          // we are testing the unmodified value of the induction variable
          // at the branch block
          //
-         exitInfo = exitSet[index] = new (trStackMemory())  DeltaInfo(0);
+         exitInfo = exitSet[index] = new (comp()->trStackMemory())  DeltaInfo(0);
          }
 
       if (exitInfo->isUnknownValue())
@@ -7085,7 +7085,7 @@ TR_InductionVariableAnalysis::analyzeExitEdges(TR_RegionStructure *loop,
       }
 
    // Create the PrimaryInductionVariable
-   TR_PrimaryInductionVariable *piv = new (trHeapMemory()) TR_PrimaryInductionVariable(biv, controllingBlock, boundNode->duplicateTree(), opCode, comp(), optimizer(), usesUnchangedValueInLoopTest, trace());
+   TR_PrimaryInductionVariable *piv = new (comp()->trHeapMemory()) TR_PrimaryInductionVariable(biv, controllingBlock, boundNode->duplicateTree(), opCode, comp(), optimizer(), usesUnchangedValueInLoopTest, trace());
    piv->setNumLoopExits(legitimateBranches);
    ///piv->setUsesUnchangedValueInLoopTest(usesUnchangedValueInLoopTest);
 
@@ -7098,7 +7098,7 @@ TR_InductionVariableAnalysis::analyzeExitEdges(TR_RegionStructure *loop,
       if (iv != piv)
          {
          int32_t index = iv->getSymRef()->getSymbol()->getLocalIndex();
-         TR_DerivedInductionVariable *div = new (trHeapMemory()) TR_DerivedInductionVariable(comp(), iv, piv);
+         TR_DerivedInductionVariable *div = new (comp()->trHeapMemory()) TR_DerivedInductionVariable(comp(), iv, piv);
          basicIVs[index] = div;
 
          loop->addInductionVariable(div);
@@ -7141,8 +7141,8 @@ TR_InductionVariableAnalysis::findEntryValueForSymRef(TR_RegionStructure *loop,
    // flow backward until we hit a def on each path
 
    TR::Block *header = loop->getEntryBlock();
-   TR_BitVector nodesDone(comp()->getFlowGraph()->getNextNodeNumber(), trMemory(), stackAlloc);
-   TR_Array<TR::Node*> cachedValues(trMemory(), comp()->getFlowGraph()->getNextNodeNumber(), true, stackAlloc);
+   TR_BitVector nodesDone(comp()->getFlowGraph()->getNextNodeNumber(), comp()->trMemory(), stackAlloc);
+   TR_Array<TR::Node*> cachedValues(comp()->trMemory(), comp()->getFlowGraph()->getNextNodeNumber(), true, stackAlloc);
 
    TR::Node *defValue = (TR::Node *)-1;
    TR_PredecessorIterator pit(header);
@@ -7402,7 +7402,7 @@ TR::Node *TR_DerivedInductionVariable::getExitValue()
 
 int32_t TR_IVTypeTransformer::perform()
    {
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    _cfg = comp()->getFlowGraph();
    if (!_cfg || !(_rootStructure = _cfg->getStructure()))
@@ -7414,11 +7414,11 @@ int32_t TR_IVTypeTransformer::perform()
    if (trace())
       comp()->dumpMethodTrees("Trees before TR_IVTypeTransformation");
 
-   TR_ScratchList<TR_Structure> whileLoops(trMemory());
+   TR_ScratchList<TR_Structure> whileLoops(comp()->trMemory());
    ListAppender<TR_Structure> whileLoopsInnerFirst(&whileLoops);
-   TR_ScratchList<TR_Structure> doWhileLoops(trMemory());
+   TR_ScratchList<TR_Structure> doWhileLoops(comp()->trMemory());
    ListAppender<TR_Structure> doWhileLoopsInnerFirst(&doWhileLoops);
-   _nodesInCycle = new (trStackMemory()) TR_BitVector(_cfg->getNextNodeNumber(), trMemory(), stackAlloc);
+   _nodesInCycle = new (comp()->trStackMemory()) TR_BitVector(_cfg->getNextNodeNumber(), comp()->trMemory(), stackAlloc);
 
    detectWhileLoops(whileLoopsInnerFirst, whileLoops, doWhileLoopsInnerFirst, doWhileLoops, _rootStructure, true);
 

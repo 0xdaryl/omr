@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -44,7 +44,7 @@
 TR_DominatorVerifier::TR_DominatorVerifier(TR_Dominators &findDominators)
    : _compilation(findDominators.comp())
    {
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    _dominators = &findDominators;
 
@@ -134,8 +134,8 @@ bool TR_DominatorVerifier::areBothImplementationsConsistent(TR_DominatorsChk &fi
 bool TR_DominatorVerifier::isExpensiveAlgorithmCorrect(TR_DominatorsChk &expensiveAlgorithm)
    {
    int32_t i,j;
-   _nodesSeenOnEveryPath = new (trStackMemory()) TR_BitVector(_numBlocks,trMemory(), stackAlloc);
-   _nodesSeenOnCurrentPath = new (trStackMemory()) TR_BitVector(_numBlocks,trMemory(), stackAlloc);
+   _nodesSeenOnEveryPath = new (comp()->trStackMemory()) TR_BitVector(_numBlocks, comp()->trMemory(), stackAlloc);
+   _nodesSeenOnCurrentPath = new (comp()->trStackMemory()) TR_BitVector(_numBlocks, comp()->trMemory(), stackAlloc);
    _dominatorsChkInfo = expensiveAlgorithm.getDominatorsChkInfo();
 
    for (i = 2; i < _numBlocks-1; i++)

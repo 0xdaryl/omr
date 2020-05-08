@@ -765,11 +765,11 @@ int32_t TR_OSRLiveRangeAnalysis::perform()
       traceMsg(comp(), "OSR reaching live range analysis can be done\n");
 
    // Initalize BitVectors that exist only for this optimization
-   _pendingPushSymRefs = new (trStackMemory()) TR_BitVector(0, trMemory(), stackAlloc);
-   _sharedSymRefs = new (trStackMemory()) TR_BitVector(0, trMemory(), stackAlloc);
-   _workBitVector = new (trStackMemory()) TR_BitVector(0, trMemory(), stackAlloc);
-   _workDeadSymRefs = new (trStackMemory()) TR_BitVector(0, trMemory(), stackAlloc);
-   _visitedBCI = new (trStackMemory()) TR_BitVector(0, trMemory(), stackAlloc);
+   _pendingPushSymRefs = new (comp()->trStackMemory()) TR_BitVector(0, comp()->trMemory(), stackAlloc);
+   _sharedSymRefs = new (comp()->trStackMemory()) TR_BitVector(0, comp()->trMemory(), stackAlloc);
+   _workBitVector = new (comp()->trStackMemory()) TR_BitVector(0, comp()->trMemory(), stackAlloc);
+   _workDeadSymRefs = new (comp()->trStackMemory()) TR_BitVector(0, comp()->trMemory(), stackAlloc);
+   _visitedBCI = new (comp()->trStackMemory()) TR_BitVector(0, comp()->trMemory(), stackAlloc);
 
    bool containsAuto = false, sharesParm = false, containsPendingPush = false;
    TR_OSRMethodData *osrMethodData = comp()->getOSRCompilationData()->findOSRMethodData(
@@ -780,7 +780,7 @@ int32_t TR_OSRLiveRangeAnalysis::perform()
    TR_Array<List<TR::SymbolReference>> *autosListArray = methodSymbol->getAutoSymRefs();
    if (comp()->getOSRMode() == TR::involuntaryOSR && autosListArray)
       {
-      TR_BitVector *symRefs = new (trHeapMemory()) TR_BitVector(0, trMemory(), heapAlloc);
+      TR_BitVector *symRefs = new (comp()->trHeapMemory()) TR_BitVector(0, comp()->trMemory(), heapAlloc);
       osrMethodData->setSymRefs(symRefs);
       }
 
@@ -828,7 +828,7 @@ int32_t TR_OSRLiveRangeAnalysis::perform()
       {
       if (!osrMethodData->getSymRefs())
          {
-         TR_BitVector *symRefs = new (trHeapMemory()) TR_BitVector(0, trMemory(), heapAlloc);
+         TR_BitVector *symRefs = new (comp()->trHeapMemory()) TR_BitVector(0, comp()->trMemory(), heapAlloc);
          osrMethodData->setSymRefs(symRefs);
          }
       *osrMethodData->getSymRefs() |= *_pendingPushSymRefs;
@@ -866,7 +866,7 @@ int32_t TR_OSRLiveRangeAnalysis::perform()
  */
 int32_t TR_OSRLiveRangeAnalysis::partialAnalysis()
    {
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    TR_ASSERT(comp()->pendingPushLivenessDuringIlgen(), "Partial analysis is only possible if liveness has been solved in Ilgen");
 
@@ -975,7 +975,7 @@ void TR_OSRLiveRangeAnalysis::pendingPushLiveRangeInfo(TR::Node *node, TR_BitVec
       *_workBitVector -= *liveSymRefs;
    if (!_workBitVector->isEmpty())
       {
-      deadBV = new (trHeapMemory()) TR_BitVector(0, trMemory(), heapAlloc);
+      deadBV = new (comp()->trHeapMemory()) TR_BitVector(0, comp()->trMemory(), heapAlloc);
       *deadBV = *_workBitVector;
       osrMethodData->addLiveRangeInfo(byteCodeIndex, deadBV);
       }
@@ -1058,7 +1058,7 @@ void TR_OSRLiveRangeAnalysis::buildDeadPendingPushSlotsInfo(TR::Node *node, TR_B
    if (pendingPushSymRefs)
       {
       numOfPPSSlots = pendingPushSymRefs->size();
-      deadPPSSlots = new (trStackMemory()) TR_BitVector(numOfPPSSlots, trMemory(), stackAlloc);
+      deadPPSSlots = new (comp()->trStackMemory()) TR_BitVector(numOfPPSSlots, comp()->trMemory(), stackAlloc);
       deadPPSSlots->setAll(numOfPPSSlots);
       }
 
@@ -1187,7 +1187,7 @@ void TR_OSRLiveRangeAnalysis::buildDeadSlotsInfo(TR::Node *node, TR_BitVector *l
       if (pendingPushSymRefs)
          {
          numOfPPSSlots = pendingPushSymRefs->size();
-         deadPPSSlots = new (trStackMemory()) TR_BitVector(numOfPPSSlots, trMemory(), stackAlloc);
+         deadPPSSlots = new (comp()->trStackMemory()) TR_BitVector(numOfPPSSlots, comp()->trMemory(), stackAlloc);
          deadPPSSlots->setAll(numOfPPSSlots);
          }
       }
@@ -1197,7 +1197,7 @@ void TR_OSRLiveRangeAnalysis::buildDeadSlotsInfo(TR::Node *node, TR_BitVector *l
    numOfAutoSlots = comp()->getMethodSymbol()->getFirstJitTempIndex();
    if (numOfAutoSlots > 0)
       {
-      deadAutoSlots = new (trStackMemory()) TR_BitVector(numOfAutoSlots, trMemory(), stackAlloc);
+      deadAutoSlots = new (comp()->trStackMemory()) TR_BitVector(numOfAutoSlots, comp()->trMemory(), stackAlloc);
       deadAutoSlots->setAll(numOfAutoSlots);
       }
 
@@ -1302,14 +1302,14 @@ int32_t TR_OSRLiveRangeAnalysis::fullAnalysis(bool includeParms, bool containsPe
       }
 
    {
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    // Perform liveness analysis
    //
    bool ignoreOSRuses = true;
    bool includeParms = true;
    TR_Liveness liveLocals(comp(), optimizer(), comp()->getFlowGraph()->getStructure(), ignoreOSRuses, NULL, false, includeParms);
-   _liveVars = new (trStackMemory()) TR_BitVector(liveLocals.getNumberOfBits(), trMemory(), stackAlloc);
+   _liveVars = new (comp()->trStackMemory()) TR_BitVector(liveLocals.getNumberOfBits(), comp()->trMemory(), stackAlloc);
 
    //set the structure to NULL so that the inliner (which is applied very soon after) doesn't need
    //update it.
@@ -1338,7 +1338,7 @@ int32_t TR_OSRLiveRangeAnalysis::fullAnalysis(bool includeParms, bool containsPe
    if (pendingPushSymRefs)
       numPendingSlots = pendingPushSymRefs->size();
 
-   int32_t *liveLocalIndexToSymRefNumberMap = (int32_t *) trMemory()->allocateStackMemory(numBits*sizeof(int32_t));
+   int32_t *liveLocalIndexToSymRefNumberMap = (int32_t *) comp()->trMemory()->allocateStackMemory(numBits*sizeof(int32_t));
    memset(liveLocalIndexToSymRefNumberMap, 0xFF, numBits*sizeof(int32_t));
 
    int32_t i;
@@ -1794,7 +1794,7 @@ void TR_OSRLiveRangeAnalysis::buildOSRLiveRangeInfo(TR::Node *node, TR_BitVector
          {
          if (!deadSymRefs && !_workDeadSymRefs->isEmpty())
             {
-            deadSymRefs = new (trHeapMemory()) TR_BitVector(0, trMemory(), heapAlloc);
+            deadSymRefs = new (comp()->trHeapMemory()) TR_BitVector(0, comp()->trMemory(), heapAlloc);
             newlyAllocated = true;
             }
 
@@ -1965,10 +1965,10 @@ int32_t TR_OSRExceptionEdgeRemoval::perform()
    if (!disableDeadStoreCleanup)
       {
       // A stack of blocks is used to stash blocks that will be revisited for cleanup
-      TR_Stack<TR::Block *> osrBlocks(trMemory(), 8, false, stackAlloc);
+      TR_Stack<TR::Block *> osrBlocks(comp()->trMemory(), 8, false, stackAlloc);
 
       TR_BitVector alwaysDead(comp()->trMemory()->currentStackRegion());
-      _seenDeadStores = new (trStackMemory()) TR_BitVector(comp()->trMemory()->currentStackRegion());
+      _seenDeadStores = new (comp()->trStackMemory()) TR_BitVector(comp()->trMemory()->currentStackRegion());
 
       // OSR induce and code blocks will contain dead stores for the next
       // frame.

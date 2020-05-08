@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -75,7 +75,7 @@ TR_Liveness::TR_Liveness(TR::Compilation           *comp,
 
    if (liveVariableInfo == NULL)
       // can be re-used by the caller because it's allocated in caller's stack
-      _liveVariableInfo = new (trStackMemory()) TR_LiveVariableInformation(comp, optimizer, rootStructure, splitLongs, includeParms,
+      _liveVariableInfo = new (comp->trStackMemory()) TR_LiveVariableInformation(comp, optimizer, rootStructure, splitLongs, includeParms,
                                                                            ignoreOSRUses);
    else
       _liveVariableInfo = liveVariableInfo;
@@ -92,7 +92,7 @@ TR_Liveness::TR_Liveness(TR::Compilation           *comp,
    initializeBlockInfo();
 
    {
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp->trMemory());
 
    performAnalysis(rootStructure, false);
 

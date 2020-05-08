@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -158,8 +158,8 @@ static void computeInvarianceOfAllStructures(TR::Compilation *comp, TR_Structure
 //
 OMR::Simplifier::Simplifier(TR::OptimizationManager *manager)
    : TR::Optimization(manager),
-     _hashTable(manager->trMemory(), stackAlloc),
-     _ccHashTab(manager->trMemory(), stackAlloc),
+     _hashTable(comp()->trMemory(), stackAlloc),
+     _ccHashTab(comp()->trMemory(), stackAlloc),
      _performLowerTreeNodePairs(getTypedAllocator<std::pair<TR::TreeTop*, TR::Node*>>(self()->allocator()))
    {
    _invalidateUseDefInfo      = false;

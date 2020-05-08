@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -191,9 +191,9 @@ struct UnsafeSubexpressionRemoval   // PR69613
 
 int32_t TR_IsolatedStoreElimination::perform()
    {
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
-   _storeNodes  = new(trStackMemory()) TR_Array<TR::Node *>(trMemory(), 64, true, stackAlloc);
+   _storeNodes  = new(comp()->trStackMemory()) TR_Array<TR::Node *>(comp()->trMemory(), 64, true, stackAlloc);
 
    // If there is use/def information available, use it to find isolated stores.
    // Otherwise we must munge through the trees.
@@ -590,7 +590,7 @@ int32_t TR_IsolatedStoreElimination::performWithUseDefInfo()
    //
    const int32_t bitVectorSize = info->getNumDefOnlyNodes();
 
-   _defParentOfUse  = new(trStackMemory()) TR_Array<int32_t>(trMemory(), info->getNumUseNodes(), true, stackAlloc);
+   _defParentOfUse  = new(comp()->trStackMemory()) TR_Array<int32_t>(comp()->trMemory(), info->getNumUseNodes(), true, stackAlloc);
    for (i = 0; i < info->getNumUseNodes();i++)
       _defParentOfUse->add(-1);
    //*******************************************************************************************
@@ -602,12 +602,12 @@ int32_t TR_IsolatedStoreElimination::performWithUseDefInfo()
    //After finding the group set the right bits in "ToBeRemoved" or "ShouldNotBeRemoved and update Visited vector. Also, emtpy InTransit vector
    //*******************************************************************************************
 
-   _defStatus = new(trStackMemory()) TR_Array<defStatus>(trMemory(), info->getNumDefOnlyNodes(), true, stackAlloc);
+   _defStatus = new(comp()->trStackMemory()) TR_Array<defStatus>(comp()->trMemory(), info->getNumDefOnlyNodes(), true, stackAlloc);
    _defStatus->setSize(info->getNumDefOnlyNodes());
 
-   _trivialDefs = new (trStackMemory()) TR_BitVector(info->getNumDefOnlyNodes(), trMemory(), stackAlloc);
+   _trivialDefs = new (comp()->trStackMemory()) TR_BitVector(info->getNumDefOnlyNodes(), comp()->trMemory(), stackAlloc);
 
-   _groupsOfStoreNodes = new(trStackMemory()) TR_Array<TR_BitVector *>(trMemory(), 4, true, stackAlloc);
+   _groupsOfStoreNodes = new(comp()->trStackMemory()) TR_Array<TR_BitVector *>(comp()->trMemory(), 4, true, stackAlloc);
 
    info->buildDefUseInfo();
 
@@ -642,7 +642,7 @@ int32_t TR_IsolatedStoreElimination::performWithUseDefInfo()
          _defStatus->element(i) = doNotExamine;
       }
 
-   TR_BitVector currentGroupOfStores(bitVectorSize, trMemory(), stackAlloc);
+   TR_BitVector currentGroupOfStores(bitVectorSize, comp()->trMemory(), stackAlloc);
    for (i = info->getNumDefOnlyNodes()-1; i >= 0; --i)
       {
       if (_defStatus->element(i) == notVisited)
@@ -666,7 +666,7 @@ int32_t TR_IsolatedStoreElimination::performWithUseDefInfo()
 
          if (foundGroupOfStores)
             {
-            TR_BitVector *newGroupOfStoresToRemove = new (trStackMemory()) TR_BitVector(bitVectorSize, trMemory(), stackAlloc);
+            TR_BitVector *newGroupOfStoresToRemove = new (comp()->trStackMemory()) TR_BitVector(bitVectorSize, comp()->trMemory(), stackAlloc);
             newGroupOfStoresToRemove->setAll(bitVectorSize);
             *newGroupOfStoresToRemove &= currentGroupOfStores;
             _groupsOfStoreNodes->add(newGroupOfStoresToRemove);
@@ -864,7 +864,7 @@ int32_t TR_IsolatedStoreElimination::performWithoutUseDefInfo()
          }
       }
 
-   _usedSymbols = new(trStackMemory()) TR_BitVector(numSymbols, trMemory(), stackAlloc);
+   _usedSymbols = new(comp()->trStackMemory()) TR_BitVector(numSymbols, comp()->trMemory(), stackAlloc);
 
    // Go through the trees and
    //    1) Mark each symbol referenced by a load as used
@@ -960,13 +960,13 @@ void TR_IsolatedStoreElimination::performDeadStructureRemoval(TR_UseDefInfo *inf
    if (info->getTotalNodes() > MAX_TOTAL_NODES || cfg->getNumberOfNodes() > MAX_CFG_SIZE)
       return;
 
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    vcount_t visitCount = comp()->incVisitCount();
    TR_Structure *rootStructure = comp()->getFlowGraph()->getStructure();
    bool propagateRemovalToParent = false;
-   TR_BitVector *nodesInStructure = new (trStackMemory()) TR_BitVector(0, trMemory(), stackAlloc, growable);
-   TR_BitVector *defsInStructure = new (trStackMemory()) TR_BitVector(0, trMemory(), stackAlloc, growable);
+   TR_BitVector *nodesInStructure = new (comp()->trStackMemory()) TR_BitVector(0, comp()->trMemory(), stackAlloc, growable);
+   TR_BitVector *defsInStructure = new (comp()->trStackMemory()) TR_BitVector(0, comp()->trMemory(), stackAlloc, growable);
 
    findStructuresAndNodesUsedIn(info, rootStructure, visitCount, nodesInStructure, defsInStructure, &propagateRemovalToParent);
    }
@@ -1001,7 +1001,7 @@ TR_IsolatedStoreElimination::findStructuresAndNodesUsedIn(TR_UseDefInfo *info, T
          {
          TR::Block *entryBlock = regionStructure->getEntryBlock();
 
-         TR_ScratchList<TR::Block> blocksInLoop(trMemory());
+         TR_ScratchList<TR::Block> blocksInLoop(comp()->trMemory());
          regionStructure->getBlocks(&blocksInLoop);
          if ((blocksInLoop.getSize() == 1) &&
              debug("deadStructure"))
@@ -1068,8 +1068,8 @@ TR_IsolatedStoreElimination::findStructuresAndNodesUsedIn(TR_UseDefInfo *info, T
 
       bool subStructureHasSideEffect = false;
 
-      TR_BitVector *nodesInSubStructure = new (trStackMemory()) TR_BitVector(0, trMemory(), stackAlloc, growable);
-      TR_BitVector *defsInSubStructure = new (trStackMemory()) TR_BitVector(0, trMemory(), stackAlloc, growable);
+      TR_BitVector *nodesInSubStructure = new (comp()->trStackMemory()) TR_BitVector(0, comp()->trMemory(), stackAlloc, growable);
+      TR_BitVector *defsInSubStructure = new (comp()->trStackMemory()) TR_BitVector(0, comp()->trMemory(), stackAlloc, growable);
       TR_RegionStructure::Cursor si(*regionStructure);
       for (subNode = si.getCurrent(); subNode != NULL; subNode = si.getNext())
          {
@@ -1356,7 +1356,7 @@ TR_IsolatedStoreElimination::findStructuresAndNodesUsedIn(TR_UseDefInfo *info, T
          _deferUseDefInfoInvalidation = true;
          optimizer()->setValueNumberInfo(NULL);
 
-         TR::CFGEdge *newEdge = TR::CFGEdge::createEdge(entryBlock,  targetExitBlock, trMemory());
+         TR::CFGEdge *newEdge = TR::CFGEdge::createEdge(entryBlock,  targetExitBlock, comp()->trMemory());
          if (!entryBlock->hasSuccessor(targetExitBlock))
             cfg->addEdge(newEdge);
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -70,12 +70,12 @@ TR::SwitchAnalyzer::SwitchAnalyzer(TR::OptimizationManager *manager)
 
 int32_t TR::SwitchAnalyzer::perform()
    {
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    _cfg               = comp()->getFlowGraph();
    _haveProfilingInfo = (comp()->isOptServer()) ? _cfg->setFrequencies() : false;
-   _blocksGeneratedByMe = new (trStackMemory()) TR_BitVector(_cfg->getNextNodeNumber(),
-                                                       trMemory(), stackAlloc, growable);
+   _blocksGeneratedByMe = new (comp()->trStackMemory()) TR_BitVector(_cfg->getNextNodeNumber(),
+                                                       comp()->trMemory(), stackAlloc, growable);
 
    if (trace())
       {
@@ -147,8 +147,8 @@ void TR::SwitchAnalyzer::analyze(TR::Node *node, TR::Block *block)
 
    // Build Switch Info
    //
-   TR_LinkHead<SwitchInfo> *chain = new (trStackMemory()) TR_LinkHead<SwitchInfo>();
-   TR_LinkHead<SwitchInfo> *earlyUniques = new (trStackMemory()) TR_LinkHead<SwitchInfo>();
+   TR_LinkHead<SwitchInfo> *chain = new (comp()->trStackMemory()) TR_LinkHead<SwitchInfo>();
+   TR_LinkHead<SwitchInfo> *earlyUniques = new (comp()->trStackMemory()) TR_LinkHead<SwitchInfo>();
    for (int32_t i = upperBound - 1; i > 1; --i)
       {
       TR::Node *caseNode = node->getChild(i);
@@ -165,7 +165,7 @@ void TR::SwitchAnalyzer::analyze(TR::Node *node, TR::Block *block)
 
       TR::TreeTop *target = caseNode->getBranchDestination();
 
-      SwitchInfo *info = new (trStackMemory()) SwitchInfo(konst, target, _costUnique);
+      SwitchInfo *info = new (comp()->trStackMemory()) SwitchInfo(konst, target, _costUnique);
       if (frequencies)
          {
          info->_freq = ((float)frequencies[i]) / block->getFrequency();
@@ -271,7 +271,7 @@ void TR::SwitchAnalyzer::findDenseSets(TR_LinkHead<SwitchInfo> *chain)
          SwitchInfo *end = getConsecutiveUniques(cur);
          if (end != cur)
             {
-            SwitchInfo *dense = new (trStackMemory()) SwitchInfo(trMemory());
+            SwitchInfo *dense = new (comp()->trStackMemory()) SwitchInfo(comp()->trMemory());
             SwitchInfo *tail = end->getNext();
 
             for (SwitchInfo *t   = cur, *next = t->getNext();
@@ -325,7 +325,7 @@ bool TR::SwitchAnalyzer::mergeDenseSets(TR_LinkHead<SwitchInfo> *chain)
          change=true;
          if (cur->_kind != Dense)
             {
-            SwitchInfo *dense = new (trStackMemory()) SwitchInfo(trMemory());
+            SwitchInfo *dense = new (comp()->trStackMemory()) SwitchInfo(comp()->trMemory());
             denseInsert(dense, cur);
             if (prev)
                prev->setNext(dense);
@@ -363,7 +363,7 @@ TR_LinkHead<TR::SwitchAnalyzer::SwitchInfo> *TR::SwitchAnalyzer::gather(TR_LinkH
    SwitchInfo *cur  = chain->getFirst(); // will be non-null, chain cannot be empty
    SwitchInfo *next = cur->getNext();
 
-   TR_LinkHead<SwitchInfo> *bound = new (trStackMemory()) TR_LinkHead<SwitchInfo>();
+   TR_LinkHead<SwitchInfo> *bound = new (comp()->trStackMemory()) TR_LinkHead<SwitchInfo>();
 
    // Remove lonely uniques and small denses from the chain
    //
@@ -485,7 +485,7 @@ void TR::SwitchAnalyzer::denseInsert(SwitchInfo *dense, SwitchInfo *info)
       {
       // Split the range into unique nodes, and insert the nodes
       for (CASECONST_TYPE i = info->_min; i <= info->_max; ++i)
-         denseInsert(dense, new (trStackMemory()) SwitchInfo(i, info->_target, _costUnique));
+         denseInsert(dense, new (comp()->trStackMemory()) SwitchInfo(i, info->_target, _costUnique));
 
       return;
       }
@@ -738,7 +738,7 @@ void TR::SwitchAnalyzer::fixUpUnsigned(TR_LinkHead<SwitchInfo> *chain)
          {
          // break up zero straddler
          SwitchInfo *next = csr->getNext();
-         firstPos = new (trStackMemory()) SwitchInfo(*csr);
+         firstPos = new (comp()->trStackMemory()) SwitchInfo(*csr);
          firstPos->_max = csr->_max;
          SwitchInfo *firstPosFirstChainInfo = NULL, *prev = NULL;
          for (auto info = firstPos->_chain->getFirst(); info; info = info->getNext())
@@ -753,7 +753,7 @@ void TR::SwitchAnalyzer::fixUpUnsigned(TR_LinkHead<SwitchInfo> *chain)
             prev = info;
             }
          TR_ASSERT(firstPosFirstChainInfo != NULL, "Could not find the neg to pos SwitchInfo\n");
-         firstPos->_chain = new (trStackMemory()) TR_LinkHead<SwitchInfo>();
+         firstPos->_chain = new (comp()->trStackMemory()) TR_LinkHead<SwitchInfo>();
          firstPos->_chain->setFirst(firstPosFirstChainInfo);
          firstPos->_min = firstPosFirstChainInfo->_min;
 
@@ -1271,7 +1271,7 @@ TR::Block *TR::SwitchAnalyzer::addTableBlock(SwitchInfo *dense)
 
    node->setAndIncChild(1, TR::Node::createCase(_switch, _defaultDest));
 
-   TR_BitVector seenSuccessors(_cfg->getNextNodeNumber(), trMemory(), stackAlloc);
+   TR_BitVector seenSuccessors(_cfg->getNextNodeNumber(), comp()->trMemory(), stackAlloc);
 
    TR::Block *newBlock = TR::Block::createEmptyBlock(node, comp(), _block->getFrequency(), _block);
 
@@ -1322,9 +1322,9 @@ int32_t *TR::SwitchAnalyzer::setupFrequencies(TR::Node *node)
    {
    if (!_haveProfilingInfo) return 0;
 
-   int32_t *targetCounts = (int32_t*)   trMemory()->allocateStackMemory(_cfg->getNextNodeNumber() * sizeof(int32_t));
+   int32_t *targetCounts = (int32_t*)   comp()->trMemory()->allocateStackMemory(_cfg->getNextNodeNumber() * sizeof(int32_t));
    memset (targetCounts, 0, sizeof(int32_t) * _cfg->getNextNodeNumber());
-   int32_t *frequencies = (int32_t *) trMemory()->allocateStackMemory(node->getCaseIndexUpperBound() * sizeof(int32_t));
+   int32_t *frequencies = (int32_t *) comp()->trMemory()->allocateStackMemory(node->getCaseIndexUpperBound() * sizeof(int32_t));
    memset  (frequencies, 0, sizeof(int32_t) * node->getCaseIndexUpperBound());
 
    // Count the number of cases reaching a particular target, divide target block frequency

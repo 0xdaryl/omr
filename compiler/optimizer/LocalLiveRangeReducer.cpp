@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -52,14 +52,14 @@
 
 TR_LocalLiveRangeReduction::TR_LocalLiveRangeReduction(TR::OptimizationManager *manager)
    : TR::Optimization(manager),
-     _movedTreesList(trMemory()), _depPairList(trMemory())
+     _movedTreesList(comp()->trMemory()), _depPairList(comp()->trMemory())
    {}
 
 void TR_LocalLiveRangeReduction::prePerformOnBlocks()
    {
    comp()->incVisitCount();
     int32_t symRefCount = comp()->getSymRefCount();
-   _temp = new (trStackMemory()) TR_BitVector(symRefCount, trMemory(), stackAlloc);
+   _temp = new (comp()->trStackMemory()) TR_BitVector(symRefCount, comp()->trMemory(), stackAlloc);
    }
 
 void TR_LocalLiveRangeReduction::postPerformOnBlocks()
@@ -79,7 +79,7 @@ int32_t TR_LocalLiveRangeReduction::perform()
    //calculate number of TreeTops in each bb (or extended bb)
    for (tt = comp()->getStartTree(); tt; tt = nextTT)
       {
-      TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+      TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
       TR::Node *node = tt->getNode();
       b = node->getBlock();
@@ -94,7 +94,7 @@ int32_t TR_LocalLiveRangeReduction::perform()
          exitTT = b->getExit();
          }
 
-      _treesRefInfoArray = (TR_TreeRefInfo**)trMemory()->allocateStackMemory(_numTreeTops*sizeof(TR_TreeRefInfo*));
+      _treesRefInfoArray = (TR_TreeRefInfo**)comp()->trMemory()->allocateStackMemory(_numTreeTops*sizeof(TR_TreeRefInfo*));
       memset(_treesRefInfoArray, 0, _numTreeTops*sizeof(TR_TreeRefInfo*));
       _movedTreesList.deleteAll();
       _depPairList.deleteAll();
@@ -175,7 +175,7 @@ void TR_LocalLiveRangeReduction::collectInfo(TR::TreeTop *entryTree,TR::TreeTop 
 
    while (!(currentTree == exitTree))
       {
-      treeRefInfo = new (trStackMemory()) TR_TreeRefInfo(currentTree, trMemory());
+      treeRefInfo = new (comp()->trStackMemory()) TR_TreeRefInfo(currentTree, comp()->trMemory());
       collectRefInfo(treeRefInfo, currentTree->getNode(),visitCount,&maxRefCount);
       _treesRefInfoArray[i++] = treeRefInfo;
       initPotentialDeps(treeRefInfo);
@@ -335,9 +335,9 @@ void TR_LocalLiveRangeReduction::initPotentialDeps(TR_TreeRefInfo *tree)
    {
    int32_t symRefCount = comp()->getSymRefCount();
    if (tree->getDefSym() == NULL)
-      tree->setDefSym(new (trStackMemory()) TR_BitVector(symRefCount, trMemory(), stackAlloc));
+      tree->setDefSym(new (comp()->trStackMemory()) TR_BitVector(symRefCount, comp()->trMemory(), stackAlloc));
    if (tree->getUseSym() == NULL)
-      tree->setUseSym(new (trStackMemory()) TR_BitVector(symRefCount, trMemory(), stackAlloc));
+      tree->setUseSym(new (comp()->trStackMemory()) TR_BitVector(symRefCount, comp()->trMemory(), stackAlloc));
    }
 
 
@@ -665,12 +665,12 @@ bool TR_LocalLiveRangeReduction::moveTreeBefore(TR_TreeRefInfo *treeToMove,TR_Tr
 
    //verifier
    {
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    vcount_t visitCount = comp()->getVisitCount();
    int32_t maxRefCount = 0;
    TR::TreeTop *tt;
-   TR_TreeRefInfo **treesRefInfoArrayTemp = (TR_TreeRefInfo**)trMemory()->allocateStackMemory(_numTreeTops*sizeof(TR_TreeRefInfo*));
+   TR_TreeRefInfo **treesRefInfoArrayTemp = (TR_TreeRefInfo**)comp()->trMemory()->allocateStackMemory(_numTreeTops*sizeof(TR_TreeRefInfo*));
    memset(treesRefInfoArrayTemp, 0, _numTreeTops*sizeof(TR_TreeRefInfo*));
    TR_TreeRefInfo *treeRefInfoTemp;
 
@@ -679,7 +679,7 @@ bool TR_LocalLiveRangeReduction::moveTreeBefore(TR_TreeRefInfo *treeToMove,TR_Tr
    for ( int32_t i  = 0; i<_numTreeTops-1; i++)
       {
       tt =_treesRefInfoArray[i]->getTreeTop();
-      treeRefInfoTemp = new (trStackMemory()) TR_TreeRefInfo(tt, trMemory());
+      treeRefInfoTemp = new (comp()->trStackMemory()) TR_TreeRefInfo(tt, comp()->trMemory());
       collectRefInfo(treeRefInfoTemp, tt->getNode(),visitCount,&maxRefCount);
       treesRefInfoArrayTemp[i] = treeRefInfoTemp;
       }
@@ -717,7 +717,7 @@ bool TR_LocalLiveRangeReduction::moveTreeBefore(TR_TreeRefInfo *treeToMove,TR_Tr
 //add pair into dependant list
 void  TR_LocalLiveRangeReduction::addDepPair(TR_TreeRefInfo *dep,TR_TreeRefInfo *anchor)
    {
-   DepPair *depPair = new (trStackMemory()) DepPair(dep,anchor);
+   DepPair *depPair = new (comp()->trStackMemory()) DepPair(dep,anchor);
    _depPairList.add(depPair);
    }
 

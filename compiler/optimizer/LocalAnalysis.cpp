@@ -174,7 +174,7 @@ TR_LocalAnalysisInfo::TR_LocalAnalysisInfo(TR::Compilation *c, bool t)
    // of this class to determine the life of the information by using jitStackMark
    // and jitStackRelease.
    //
-   //_blocksInfo = (TR::Block **) trMemory()->allocateStackMemory(_numBlocks*sizeof(TR::Block *));
+   //_blocksInfo = (TR::Block **) comp()->trMemory()->allocateStackMemory(_numBlocks*sizeof(TR::Block *));
    //memset(_blocksInfo, 0, _numBlocks*sizeof(TR::Block *));
 
    TR::TreeTop *currentTree = comp()->getStartTree();
@@ -226,13 +226,13 @@ TR_LocalAnalysisInfo::TR_LocalAnalysisInfo(TR::Compilation *c, bool t)
          _nullCheckNodesAsArray = NULL;
       else
          {
-         _nullCheckNodesAsArray = (TR::Node**)trMemory()->allocateStackMemory(_numNullChecks*sizeof(TR::Node*));
+         _nullCheckNodesAsArray = (TR::Node**)comp()->trMemory()->allocateStackMemory(_numNullChecks*sizeof(TR::Node*));
          memset(_nullCheckNodesAsArray, 0, _numNullChecks*sizeof(TR::Node*));
          }
 
       currentTree = comp()->getStartTree();
       int32_t symRefCount = comp()->getSymRefCount();
-      _checkSymbolReferences = new (trStackMemory()) TR_BitVector(symRefCount, trMemory(), stackAlloc);
+      _checkSymbolReferences = new (comp()->trStackMemory()) TR_BitVector(symRefCount, comp()->trMemory(), stackAlloc);
 
       _numNodes = 1;
       _numNullChecks = 0;
@@ -325,11 +325,11 @@ TR_LocalAnalysisInfo::TR_LocalAnalysisInfo(TR::Compilation *c, bool t)
          }
       }
 
-   _supportedNodesAsArray = (TR::Node**)trMemory()->allocateStackMemory(_numNodes*sizeof(TR::Node*));
+   _supportedNodesAsArray = (TR::Node**)comp()->trMemory()->allocateStackMemory(_numNodes*sizeof(TR::Node*));
    memset(_supportedNodesAsArray, 0, _numNodes*sizeof(TR::Node*));
-   _checkExpressions = new (trStackMemory()) TR_BitVector(_numNodes, trMemory(), stackAlloc);
+   _checkExpressions = new (comp()->trStackMemory()) TR_BitVector(_numNodes, comp()->trMemory(), stackAlloc);
 
-   //_checkExpressions.init(_numNodes, trMemory(), stackAlloc);
+   //_checkExpressions.init(_numNodes, comp()->trMemory(), stackAlloc);
 
    // This loop goes through the trees and collects the nodes
    // that would take part in PRE. Each node has its local index set to
@@ -390,7 +390,7 @@ TR_LocalAnalysis::TR_LocalAnalysis(TR_LocalAnalysisInfo &info, bool trace)
 
 void TR_LocalAnalysis::initializeLocalAnalysis(bool isSparse, bool lock)
    {
-   _info = (TR_LocalAnalysisInfo::LAInfo*) trMemory()->allocateStackMemory(_lainfo._numBlocks*sizeof(TR_LocalAnalysisInfo::LAInfo));
+   _info = (TR_LocalAnalysisInfo::LAInfo*) comp()->trMemory()->allocateStackMemory(_lainfo._numBlocks*sizeof(TR_LocalAnalysisInfo::LAInfo));
    memset(_info, 0, _lainfo._numBlocks*sizeof(TR_LocalAnalysisInfo::LAInfo));
 
    TR::BitVector blocksSeen(comp()->allocator());

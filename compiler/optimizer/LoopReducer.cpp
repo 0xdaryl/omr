@@ -2044,7 +2044,7 @@ TR_LoopReducer::generateArraycmp(TR_RegionStructure * whileLoop, TR_InductionVar
    //
    // Since I will not know the value of i other than i==len.
    //
-   TR_Queue<TR::Block> queue(trMemory());
+   TR_Queue<TR::Block> queue(comp()->trMemory());
    whileLoop->collectExitBlocks(&queue);
    comp()->incVisitCount();
    TR::RegisterMappedSymbol * indVarSym = indVar->getLocal();
@@ -3343,47 +3343,47 @@ TR_LoopReducer::generateArraytranslate(TR_RegionStructure * whileLoop, TR_Induct
 
    if (alignmentBlock)
       {
-      _cfg->addEdge(TR::CFGEdge::createEdge(loadBlock,  newLoadBlock, trMemory()));
-      _cfg->addEdge(TR::CFGEdge::createEdge(loadBlock,  alignmentBlock, trMemory()));
-      _cfg->addEdge(TR::CFGEdge::createEdge(alignmentBlock,  newLoadBlock, trMemory()));
-      _cfg->addEdge(TR::CFGEdge::createEdge(alignmentBlock,  translateBlock, trMemory()));
+      _cfg->addEdge(TR::CFGEdge::createEdge(loadBlock,  newLoadBlock, comp()->trMemory()));
+      _cfg->addEdge(TR::CFGEdge::createEdge(loadBlock,  alignmentBlock, comp()->trMemory()));
+      _cfg->addEdge(TR::CFGEdge::createEdge(alignmentBlock,  newLoadBlock, comp()->trMemory()));
+      _cfg->addEdge(TR::CFGEdge::createEdge(alignmentBlock,  translateBlock, comp()->trMemory()));
       }
    else
       {
-      _cfg->addEdge(TR::CFGEdge::createEdge(loadBlock,  newLoadBlock, trMemory()));
-      _cfg->addEdge(TR::CFGEdge::createEdge(loadBlock,  translateBlock, trMemory()));
+      _cfg->addEdge(TR::CFGEdge::createEdge(loadBlock,  newLoadBlock, comp()->trMemory()));
+      _cfg->addEdge(TR::CFGEdge::createEdge(loadBlock,  translateBlock, comp()->trMemory()));
       }
 
    if (hasBreak)
-      _cfg->addEdge(TR::CFGEdge::createEdge(matchBlock,  gotoBlock, trMemory()));
+      _cfg->addEdge(TR::CFGEdge::createEdge(matchBlock,  gotoBlock, comp()->trMemory()));
    else
-      _cfg->addEdge(TR::CFGEdge::createEdge(translateBlock,  gotoBlock, trMemory()));
-   _cfg->addEdge(TR::CFGEdge::createEdge(gotoBlock,  nextBlock, trMemory()));
+      _cfg->addEdge(TR::CFGEdge::createEdge(translateBlock,  gotoBlock, comp()->trMemory()));
+   _cfg->addEdge(TR::CFGEdge::createEdge(gotoBlock,  nextBlock, comp()->trMemory()));
 
    if (hasBreak)
       {
-      _cfg->addEdge(TR::CFGEdge::createEdge(translateBlock,  loadElementBlock, trMemory()));
-      _cfg->addEdge(TR::CFGEdge::createEdge(translateBlock,  loadLastElementBlock, trMemory()));
-      _cfg->addEdge(TR::CFGEdge::createEdge(loadElementBlock,  matchBlock, trMemory()));
-      _cfg->addEdge(TR::CFGEdge::createEdge(loadLastElementBlock,  matchBlock, trMemory()));
-      _cfg->addEdge(TR::CFGEdge::createEdge(matchBlock,  breakExitBlock, trMemory()));
+      _cfg->addEdge(TR::CFGEdge::createEdge(translateBlock,  loadElementBlock, comp()->trMemory()));
+      _cfg->addEdge(TR::CFGEdge::createEdge(translateBlock,  loadLastElementBlock, comp()->trMemory()));
+      _cfg->addEdge(TR::CFGEdge::createEdge(loadElementBlock,  matchBlock, comp()->trMemory()));
+      _cfg->addEdge(TR::CFGEdge::createEdge(loadLastElementBlock,  matchBlock, comp()->trMemory()));
+      _cfg->addEdge(TR::CFGEdge::createEdge(matchBlock,  breakExitBlock, comp()->trMemory()));
 
-      _cfg->addEdge(TR::CFGEdge::createEdge(newLoadBlock,  storeBlock, trMemory()));
-      _cfg->addEdge(TR::CFGEdge::createEdge(newLoadBlock,  breakExitBlock, trMemory()));
-      _cfg->addEdge(TR::CFGEdge::createEdge(storeBlock,  newLoadBlock, trMemory()));
+      _cfg->addEdge(TR::CFGEdge::createEdge(newLoadBlock,  storeBlock, comp()->trMemory()));
+      _cfg->addEdge(TR::CFGEdge::createEdge(newLoadBlock,  breakExitBlock, comp()->trMemory()));
+      _cfg->addEdge(TR::CFGEdge::createEdge(storeBlock,  newLoadBlock, comp()->trMemory()));
       }
    else
       {
       if (hasBranch)
          {
-         _cfg->addEdge(TR::CFGEdge::createEdge(newLoadBlock,  storeBlock, trMemory()));
-         _cfg->addEdge(TR::CFGEdge::createEdge(newLoadBlock,  otherStoreBlock, trMemory()));
-         _cfg->addEdge(TR::CFGEdge::createEdge(cmpBlock,  newLoadBlock, trMemory()));
+         _cfg->addEdge(TR::CFGEdge::createEdge(newLoadBlock,  storeBlock, comp()->trMemory()));
+         _cfg->addEdge(TR::CFGEdge::createEdge(newLoadBlock,  otherStoreBlock, comp()->trMemory()));
+         _cfg->addEdge(TR::CFGEdge::createEdge(cmpBlock,  newLoadBlock, comp()->trMemory()));
          }
       else
          {
-         _cfg->addEdge(TR::CFGEdge::createEdge(newLoadBlock,  newLoadBlock, trMemory()));
-         _cfg->addEdge(TR::CFGEdge::createEdge(newLoadBlock,  nextBlock, trMemory()));
+         _cfg->addEdge(TR::CFGEdge::createEdge(newLoadBlock,  newLoadBlock, comp()->trMemory()));
+         _cfg->addEdge(TR::CFGEdge::createEdge(newLoadBlock,  nextBlock, comp()->trMemory()));
          }
       }
 
@@ -3684,7 +3684,7 @@ TR_LoopReducer::generateArraytranslateAndTest(TR_RegionStructure * whileLoop, TR
       loadTree->join(compareTreeTop);
       compareTreeTop->join(loadBlock->getExit());
 
-      _cfg->addEdge(TR::CFGEdge::createEdge(loadBlock,  nextBlock, trMemory()));
+      _cfg->addEdge(TR::CFGEdge::createEdge(loadBlock,  nextBlock, comp()->trMemory()));
       }
    _cfg->setStructure(NULL);
 
@@ -4316,7 +4316,7 @@ TR_LoopReducer::reduceNaturalLoop(TR_RegionStructure * whileLoop)
    // Find the basic blocks that represent the loop header and the
    // first block in the loop body.
    //
-   TR_ScratchList<TR::Block> blocksInReferencedLoop(trMemory());
+   TR_ScratchList<TR::Block> blocksInReferencedLoop(comp()->trMemory());
    whileLoop->getBlocks(&blocksInReferencedLoop);
    int32_t numBlocks = blocksInReferencedLoop.getSize();
 
@@ -4454,9 +4454,9 @@ TR_LoopReducer::perform()
       }
 
    // From this point on, stack memory allocations will die when the function returns
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
-   TR_ScratchList<TR_Structure> whileLoops(trMemory());
+   TR_ScratchList<TR_Structure> whileLoops(comp()->trMemory());
 
    createWhileLoopsList(&whileLoops);
 

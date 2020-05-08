@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -82,7 +82,7 @@ TR_VirtualGuardTailSplitter::TR_VirtualGuardTailSplitter(TR::OptimizationManager
 
 int32_t TR_VirtualGuardTailSplitter::perform()
    {
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    _splitDone = false;
    // Initialize any necessary data structures
@@ -114,9 +114,9 @@ void TR_VirtualGuardTailSplitter::initializeDataStructures()
    {
    vcount_t visitCount = comp()->incVisitCount();
 
-   List     <VGInfo>   allGuards(trMemory());
-   List     <TR::Block> dfsList(trMemory());
-   ListStack<VGInfo>   vgStack(trMemory());
+   List     <VGInfo>   allGuards(comp()->trMemory());
+   List     <TR::Block> dfsList(comp()->trMemory());
+   ListStack<VGInfo>   vgStack(comp()->trMemory());
 
    uint32_t            numGuards = 0;
 
@@ -196,7 +196,7 @@ void TR_VirtualGuardTailSplitter::initializeDataStructures()
    // Put the information into the virtual guard table
    //
    _numGuards = numGuards;
-   _table = (VGInfo **) trMemory()->allocateStackMemory(numGuards * sizeof(VGInfo *));
+   _table = (VGInfo **) comp()->trMemory()->allocateStackMemory(numGuards * sizeof(VGInfo *));
    ListIterator<VGInfo> it(&allGuards);
    uint32_t i = 0;
    for (VGInfo *info = it.getFirst(); info; info = it.getNext())
@@ -219,8 +219,8 @@ TR_VirtualGuardTailSplitter::VGInfo *TR_VirtualGuardTailSplitter::getVirtualGuar
 
 void TR_VirtualGuardTailSplitter::splitLinear(TR::Block *start, TR::Block *end)
    {
-   List<TR::Block> stack(trMemory());
-   List<VGInfo> deferred(trMemory());
+   List<TR::Block> stack(comp()->trMemory());
+   List<VGInfo> deferred(comp()->trMemory());
 
    stack.add(start);
    while (!stack.isEmpty())
@@ -291,7 +291,7 @@ void TR_VirtualGuardTailSplitter::splitLinear(TR::Block *start, TR::Block *end)
 TR::Block *TR_VirtualGuardTailSplitter::lookAheadAndSplit(VGInfo *guard, List<TR::Block> *stack)
    {
    VGInfo *lastInfo = 0;
-   List<VGInfo> deferred(trMemory());
+   List<VGInfo> deferred(comp()->trMemory());
 
    TR::Block *cursor = guard->getMergeBlock();
    bool isMergeBlock = true;
@@ -646,7 +646,7 @@ TR_VirtualGuardTailSplitter::VGInfo *TR_VirtualGuardTailSplitter::recognizeVirtu
       return 0;
       }
 
-   return new (trStackMemory()) VGInfo(block, call, inlined, merge, parent);
+   return new (comp()->trStackMemory()) VGInfo(block, call, inlined, merge, parent);
    }
 
 
@@ -824,7 +824,7 @@ TR_InnerPreexistence::perform()
    if (!comp()->performVirtualGuardNOPing())
       return 0;
 
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    if (trace())
       comp()->dumpMethodTrees("Trees before InnerPreexistence");
@@ -844,7 +844,7 @@ TR_InnerPreexistence::initialize()
    {
    _numInlinedSites = comp()->getNumInlinedCallSites();
    // array of guard blocks index by the inlined call site index of the guarded method
-   TR::Block **guardBlocks  = (TR::Block **) trMemory()->allocateStackMemory(_numInlinedSites * sizeof(TR::Block *));
+   TR::Block **guardBlocks  = (TR::Block **) comp()->trMemory()->allocateStackMemory(_numInlinedSites * sizeof(TR::Block *));
    memset(guardBlocks, 0, _numInlinedSites * sizeof(TR::Block *));
 
    int32_t numGuards = 0;
@@ -874,7 +874,7 @@ TR_InnerPreexistence::initialize()
    if (numGuards == 0)
       return 0;
 
-   _guardTable = (GuardInfo **) trMemory()->allocateStackMemory(_numInlinedSites * sizeof(GuardInfo *));
+   _guardTable = (GuardInfo **) comp()->trMemory()->allocateStackMemory(_numInlinedSites * sizeof(GuardInfo *));
    memset(_guardTable, 0, _numInlinedSites * sizeof(GuardInfo*));
 
    _vnInfo = optimizer()->getValueNumberInfo();
@@ -901,7 +901,7 @@ TR_InnerPreexistence::initialize()
          }
       while (cursor >= 0 && !outerGuard);
 
-      GuardInfo *info = new (trStackMemory()) GuardInfo(comp(), guard, outerGuard, _vnInfo, _numInlinedSites);
+      GuardInfo *info = new (comp()->trStackMemory()) GuardInfo(comp(), guard, outerGuard, _vnInfo, _numInlinedSites);
       if (outerGuard)
          numInnerGuards++;
       _guardTable[i] = info;

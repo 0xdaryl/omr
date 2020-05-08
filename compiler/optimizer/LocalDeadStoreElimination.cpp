@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -891,7 +891,7 @@ void TR::LocalDeadStoreElimination::eliminateDeadObjectInitializations()
 
    visitCount = comp()->incVisitCount();
    //TR::Node *currentNew = NULL;
-   TR_ScratchList<TR::Node> currentNews(trMemory()), removedNews(trMemory());
+   TR_ScratchList<TR::Node> currentNews(comp()->trMemory()), removedNews(comp()->trMemory());
    for (tt = comp()->getStartTree(); tt; tt = tt->getNextTreeTop())
       {
       TR::Node *node = tt->getNode();

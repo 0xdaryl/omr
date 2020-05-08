@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -75,7 +75,7 @@ int32_t TR_ReachingDefinitions::perform()
    initializeBlockInfo(false);
 
    {
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    TR_Structure *rootStructure = _cfg->getStructure();
    performAnalysis(rootStructure, false);
@@ -119,7 +119,7 @@ void TR_ReachingDefinitions::initializeGenAndKillSetInfo()
    TR::Block *block;
    int32_t   blockNum = 0;
    bool      seenException = false;
-   TR_BitVector defsKilled(getNumberOfBits(), trMemory()->currentStackRegion());
+   TR_BitVector defsKilled(getNumberOfBits(), comp()->trMemory()->currentStackRegion());
 
    comp()->incVisitCount();
    for (TR::TreeTop *treeTop = comp()->getStartTree(); treeTop; treeTop = treeTop->getNextTreeTop())

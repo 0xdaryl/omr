@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -134,12 +134,12 @@ int32_t TR_LoopCanonicalizer::perform()
    _doingVersioning = false;
 
    {
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    optimizer()->changeContinueLoopsToNestedLoops();
 
-   TR_ScratchList<TR::CFGNode> newEmptyBlocks(trMemory());
-   TR_ScratchList<TR::CFGNode> newEmptyExceptionBlocks(trMemory());
+   TR_ScratchList<TR::CFGNode> newEmptyBlocks(comp()->trMemory());
+   TR_ScratchList<TR::CFGNode> newEmptyExceptionBlocks(comp()->trMemory());
    _cfg = comp()->getFlowGraph();
    _rootStructure = _cfg->getStructure();
 
@@ -157,11 +157,11 @@ int32_t TR_LoopCanonicalizer::perform()
    // Note that only while loops with a single block as its
    // header will be detected here.
    //
-   TR_ScratchList<TR_Structure> whileLoops(trMemory());
+   TR_ScratchList<TR_Structure> whileLoops(comp()->trMemory());
    ListAppender<TR_Structure> whileLoopsInnerFirst(&whileLoops);
-   TR_ScratchList<TR_Structure> doWhileLoops(trMemory());
+   TR_ScratchList<TR_Structure> doWhileLoops(comp()->trMemory());
    ListAppender<TR_Structure> doWhileLoopsInnerFirst(&doWhileLoops);
-   _nodesInCycle = new (trStackMemory()) TR_BitVector(_cfg->getNextNodeNumber(), trMemory(), stackAlloc);
+   _nodesInCycle = new (comp()->trStackMemory()) TR_BitVector(_cfg->getNextNodeNumber(), comp()->trMemory(), stackAlloc);
    //comp()->incVisitCount();
 
    detectWhileLoops(whileLoopsInnerFirst, whileLoops, doWhileLoopsInnerFirst, doWhileLoops, _rootStructure, true);
@@ -466,8 +466,8 @@ void TR_LoopTransformer::detectWhileLoopsInSubnodesInOrder(ListAppender<TR_Struc
 
 void TR_LoopTransformer::createWhileLoopsList(TR_ScratchList<TR_Structure>* whileLoops)
    {
-   TR_ScratchList<TR::CFGNode> newEmptyBlocks(trMemory());
-   TR_ScratchList<TR::CFGNode> newEmptyExceptionBlocks(trMemory());
+   TR_ScratchList<TR::CFGNode> newEmptyBlocks(comp()->trMemory());
+   TR_ScratchList<TR::CFGNode> newEmptyExceptionBlocks(comp()->trMemory());
 
    // printTrees();
 
@@ -477,12 +477,12 @@ void TR_LoopTransformer::createWhileLoopsList(TR_ScratchList<TR_Structure>* whil
    // header will be detected here.
    //
    ListAppender<TR_Structure> whileLoopsInnerFirst(whileLoops);
-   TR_ScratchList<TR_Structure> doWhileLoops(trMemory());
+   TR_ScratchList<TR_Structure> doWhileLoops(comp()->trMemory());
    ListAppender<TR_Structure> doWhileLoopsInnerFirst(&doWhileLoops);
    //comp()->incVisitCount();
    _cfg = comp()->getFlowGraph();
    _rootStructure = _cfg->getStructure();
-   _nodesInCycle = new (trStackMemory()) TR_BitVector(_cfg->getNextNodeNumber(), trMemory(), stackAlloc);
+   _nodesInCycle = new (comp()->trStackMemory()) TR_BitVector(_cfg->getNextNodeNumber(), comp()->trMemory(), stackAlloc);
 
    if (asLoopVersioner())
       detectWhileLoops(whileLoopsInnerFirst, *whileLoops, doWhileLoopsInnerFirst, doWhileLoops, _rootStructure, false);
@@ -531,7 +531,7 @@ void TR_LoopTransformer::detectWhileLoops(ListAppender<TR_Structure> &whileLoops
    TR_StructureSubGraphNode *node;
    int32_t numSubNodes = 0;
    int32_t numberOfNodes = comp()->getFlowGraph()->getNextNodeNumber();
-   TR_BitVector *pendingList = new (trStackMemory()) TR_BitVector(numberOfNodes, trMemory(), stackAlloc);
+   TR_BitVector *pendingList = new (comp()->trStackMemory()) TR_BitVector(numberOfNodes, comp()->trMemory(), stackAlloc);
    pendingList->setAll(numberOfNodes);
    vcount_t visitCount = comp()->getVisitCount();
 
@@ -613,7 +613,7 @@ void TR_LoopTransformer::detectWhileLoops(ListAppender<TR_Structure> &whileLoops
                   if (firstTree == hdrBlock->getLastRealTreeTop() ||
                       firstTree->getNextTreeTop() == hdrBlock->getLastRealTreeTop())
                      {
-                     TR_ScratchList<TR::Block> exitBlocks(trMemory());
+                     TR_ScratchList<TR::Block> exitBlocks(comp()->trMemory());
                      region->collectExitBlocks(&exitBlocks);
 
                      bool doNotConsiderAsWhile = false;
@@ -725,7 +725,7 @@ void TR_LoopTransformer::detectWhileLoops(ListAppender<TR_Structure> &whileLoops
                // created by IL generator and if we try to create new catch blocks, then
                // there was a crash when generating exception table entries.
                //
-               TR_ScratchList<TR::Block> blocksInRegion(trMemory());
+               TR_ScratchList<TR::Block> blocksInRegion(comp()->trMemory());
                region->getBlocks(&blocksInRegion);
                ListIterator<TR::Block> blocksIt(&blocksInRegion);
                TR::Block *nextBlock;
@@ -873,8 +873,8 @@ void TR_LoopCanonicalizer::canonicalizeNaturalLoop(TR_RegionStructure *whileLoop
          }
       }
 
-   TR_ScratchList<TR::Block> newBlocks(trMemory());
-   TR_ScratchList<TR::CFGEdge> removedEdges(trMemory());
+   TR_ScratchList<TR::Block> newBlocks(comp()->trMemory());
+   TR_ScratchList<TR::CFGEdge> removedEdges(comp()->trMemory());
 
    TR::TreeTop *entryTree = loopHeader->getEntry();
    TR::TreeTop *exitTree = loopHeader->getExit();
@@ -1009,7 +1009,7 @@ void TR_LoopCanonicalizer::canonicalizeNaturalLoop(TR_RegionStructure *whileLoop
          // instead.
          //
          removedEdges.add(*edge);
-         TR::CFGEdge *newEdge = TR::CFGEdge::createEdge(pred,  clonedHeader, trMemory());
+         TR::CFGEdge *newEdge = TR::CFGEdge::createEdge(pred,  clonedHeader, comp()->trMemory());
          _cfg->addEdge(newEdge);
          //traceMsg(comp(), "newEdge %p freq %d\n", newEdge, newEdge->getFrequency());
 
@@ -1115,7 +1115,7 @@ void TR_LoopCanonicalizer::canonicalizeNaturalLoop(TR_RegionStructure *whileLoop
    //
    TR::TreeTop *currentTree = entryTree->getNextTreeTop();
    TR::TreeTop *newPrevTree = newEntryTree;
-   TR_ScratchList<TR::Node> seenNodes(trMemory()), duplicateNodes(trMemory());
+   TR_ScratchList<TR::Node> seenNodes(comp()->trMemory()), duplicateNodes(comp()->trMemory());
    vcount_t visitCount = comp()->incVisitCount();
    while (!(currentTree == exitTree))
       {
@@ -1263,7 +1263,7 @@ void TR_LoopCanonicalizer::canonicalizeNaturalLoop(TR_RegionStructure *whileLoop
       {
       // Need to add an extra edge if extraGoto was created
       //
-      TR::CFGEdge *newEdge = TR::CFGEdge::createEdge(clonedHeader,  extraGoto, trMemory());
+      TR::CFGEdge *newEdge = TR::CFGEdge::createEdge(clonedHeader,  extraGoto, comp()->trMemory());
       _cfg->addEdge(newEdge);
       predBlock = extraGoto;
       }
@@ -1282,13 +1282,13 @@ void TR_LoopCanonicalizer::canonicalizeNaturalLoop(TR_RegionStructure *whileLoop
       if (dest == loopBody)
          {
          // This edge is to the loop body
-         newEdge = TR::CFGEdge::createEdge(clonedHeader,  dest, trMemory());
+         newEdge = TR::CFGEdge::createEdge(clonedHeader,  dest, comp()->trMemory());
          }
       else
          {
          // This edge is to the join block
          joinBlock = dest;
-         newEdge = TR::CFGEdge::createEdge(predBlock,  dest, trMemory());
+         newEdge = TR::CFGEdge::createEdge(predBlock,  dest, comp()->trMemory());
          }
       _cfg->addEdge(newEdge);
       }
@@ -1351,10 +1351,10 @@ void TR_LoopCanonicalizer::canonicalizeNaturalLoop(TR_RegionStructure *whileLoop
       lastNonFenceTreeInHdr->getNode()->setBranchDestination(splitter2->getEntry());
       }
 
-   _cfg->addEdge(TR::CFGEdge::createEdge(loopHeader,  splitter1, trMemory()));
-   _cfg->addEdge(TR::CFGEdge::createEdge(splitter1,  joinBlock, trMemory()));
-   _cfg->addEdge(TR::CFGEdge::createEdge(loopHeader,  splitter2, trMemory()));
-   _cfg->addEdge(TR::CFGEdge::createEdge(splitter2,  loopBody, trMemory()));
+   _cfg->addEdge(TR::CFGEdge::createEdge(loopHeader,  splitter1, comp()->trMemory()));
+   _cfg->addEdge(TR::CFGEdge::createEdge(splitter1,  joinBlock, comp()->trMemory()));
+   _cfg->addEdge(TR::CFGEdge::createEdge(loopHeader,  splitter2, comp()->trMemory()));
+   _cfg->addEdge(TR::CFGEdge::createEdge(splitter2,  loopBody, comp()->trMemory()));
 
    //splitter1->setIsCold();
    //splitter1->setFrequency(VERSIONED_COLD_BLOCK_COUNT);
@@ -1446,22 +1446,22 @@ void TR_LoopCanonicalizer::canonicalizeNaturalLoop(TR_RegionStructure *whileLoop
    node->getStructure()->asBlock()->setAsLoopInvariantBlock(true);
    _invariantBlocks.add(splitter2);
    properRegion->addSubNode(node);
-   TR::CFGEdge::createEdge(hdrNode, node, trMemory());
+   TR::CFGEdge::createEdge(hdrNode, node, comp()->trMemory());
 
    TR_StructureSubGraphNode *loopNode = new (_cfg->structureRegion()) TR_StructureSubGraphNode(whileLoop);
    properRegion->addSubNode(loopNode);
-   TR::CFGEdge::createEdge(node, loopNode, trMemory());
+   TR::CFGEdge::createEdge(node, loopNode, comp()->trMemory());
 
    node = new (_cfg->structureRegion()) TR_StructureSubGraphNode(new (_cfg->structureRegion()) TR_BlockStructure(comp(), splitter1->getNumber(), splitter1));
    properRegion->addSubNode(node);
-   TR::CFGEdge::createEdge(hdrNode, node, trMemory());
+   TR::CFGEdge::createEdge(hdrNode, node, comp()->trMemory());
 
    properRegion->addExitEdge(node, joinNumber);
 
    // All exit edges from the while loop except the one to the join node are
    // also exit edges from the new proper region
    //
-   TR_BitVector seenExitNodes(_cfg->getNextNodeNumber(), trMemory(), stackAlloc);
+   TR_BitVector seenExitNodes(_cfg->getNextNodeNumber(), comp()->trMemory(), stackAlloc);
    ListIterator<TR::CFGEdge> succ;
    succ.set(&whileLoop->getExitEdges());
    for (TR::CFGEdge* edge = succ.getCurrent(); edge; edge = succ.getNext())
@@ -1487,7 +1487,7 @@ void TR_LoopCanonicalizer::canonicalizeNaturalLoop(TR_RegionStructure *whileLoop
       TR_BlockStructure *extraGotoStruct = new (_cfg->structureRegion()) TR_BlockStructure(comp(), extraGoto->getNumber(), extraGoto);
       node = new (_cfg->structureRegion()) TR_StructureSubGraphNode(extraGotoStruct);
       properRegion->addSubNode(node);
-      TR::CFGEdge::createEdge(loopNode, node, trMemory());
+      TR::CFGEdge::createEdge(loopNode, node, comp()->trMemory());
 
       // The exit edge from the original while loop now goes to the extra goto
       // block.
@@ -1608,7 +1608,7 @@ bool TR_LoopCanonicalizer::modifyBranchesForSplitEdges(
 
          if (!isCheckOnly)
             {
-            _cfg->addEdge(TR::CFGEdge::createEdge(pred,  targetBlock, trMemory()));
+            _cfg->addEdge(TR::CFGEdge::createEdge(pred,  targetBlock, comp()->trMemory()));
             _cfg->removeEdge(*edge++);
             }
          else
@@ -1647,7 +1647,7 @@ void TR_LoopCanonicalizer::canonicalizeDoWhileLoop(TR_RegionStructure *doWhileLo
       //printf("Found a do-while that is also parent's entry in method %s\n", comp()->signature());
       }
 
-   TR_ScratchList<TR::Block> blocksInDoWhileLoop(trMemory());
+   TR_ScratchList<TR::Block> blocksInDoWhileLoop(comp()->trMemory());
    doWhileLoop->getBlocks(&blocksInDoWhileLoop);
 
    TR_StructureSubGraphNode *blockNode = doWhileLoop->getEntry();
@@ -1743,12 +1743,12 @@ void TR_LoopCanonicalizer::canonicalizeDoWhileLoop(TR_RegionStructure *doWhileLo
       targetBlock = loopInvariantBlock;
 
    _cfg->setStructure(NULL);
-   TR::CFGEdge *loopInvariantBlock_blockAtHeadOfLoop_Edge = TR::CFGEdge::createEdge(loopInvariantBlock,  blockAtHeadOfLoop, trMemory());
+   TR::CFGEdge *loopInvariantBlock_blockAtHeadOfLoop_Edge = TR::CFGEdge::createEdge(loopInvariantBlock,  blockAtHeadOfLoop, comp()->trMemory());
    _cfg->addEdge(loopInvariantBlock_blockAtHeadOfLoop_Edge);
    TR::CFGEdge *dummyEntryBlock_loopInvariantBlock_Edge = NULL;
    if (isEntry)
       {
-      dummyEntryBlock_loopInvariantBlock_Edge = TR::CFGEdge::createEdge(dummyEntryBlock,  loopInvariantBlock, trMemory());
+      dummyEntryBlock_loopInvariantBlock_Edge = TR::CFGEdge::createEdge(dummyEntryBlock,  loopInvariantBlock, comp()->trMemory());
       _cfg->addEdge(dummyEntryBlock_loopInvariantBlock_Edge);
       }
 
@@ -1775,7 +1775,7 @@ void TR_LoopCanonicalizer::canonicalizeDoWhileLoop(TR_RegionStructure *doWhileLo
    TR_StructureSubGraphNode *invariantNode = new (_cfg->structureRegion()) TR_StructureSubGraphNode(invariantBlockStructure);
    parentStructure->addSubNode(invariantNode);
 
-   TR::CFGEdge::createEdge(invariantNode,  doWhileNode, trMemory());
+   TR::CFGEdge::createEdge(invariantNode,  doWhileNode, comp()->trMemory());
 
    TR_StructureSubGraphNode *targetNode = NULL;
    TR_Structure *targetStructure = NULL;
@@ -1784,7 +1784,7 @@ void TR_LoopCanonicalizer::canonicalizeDoWhileLoop(TR_RegionStructure *doWhileLo
       TR_StructureSubGraphNode *dummyEntryNode = new (_cfg->structureRegion()) TR_StructureSubGraphNode(dummyEntryBlockStructure);
       parentStructure->addSubNode(dummyEntryNode);
 
-      TR::CFGEdge::createEdge(dummyEntryNode,  invariantNode, trMemory());
+      TR::CFGEdge::createEdge(dummyEntryNode,  invariantNode, comp()->trMemory());
 
       parentStructure->setEntry(dummyEntryNode);
       int32_t doWhileNumber = doWhileNode->getNumber();
@@ -1920,7 +1920,7 @@ void TR_LoopCanonicalizer::eliminateRedundantInductionVariablesFromLoop(TR_Regio
        //  symbolInCompare = NULL;
       }
 /*
-   TR_ScratchList<TR_InductionVariable> derivedInductionVariables(trMemory());
+   TR_ScratchList<TR_InductionVariable> derivedInductionVariables(comp()->trMemory());
    if (symbolInCompare)
       {
       TR_InductionVariable *v;
@@ -2008,8 +2008,8 @@ void TR_LoopCanonicalizer::eliminateRedundantInductionVariablesFromLoop(TR_Regio
             _loopTestBlock = loopTestBlock;
             _primaryIncr = primaryIncr;
             _derivedIncr = nextIndVarIncr;
-            TR_ScratchList<TR::Block> derivedInductionVarIncrementBlocks(trMemory());
-            TR_ScratchList<TR::Block> primaryInductionVarIncrementBlocks(trMemory());
+            TR_ScratchList<TR::Block> derivedInductionVarIncrementBlocks(comp()->trMemory());
+            TR_ScratchList<TR::Block> primaryInductionVarIncrementBlocks(comp()->trMemory());
             //comp()->incVisitCount();
             bool incrementsInLockStep = incrementedInLockStep(naturalLoop, derivedInductionVar, symRefInCompare, nextIndVarIncr, primaryIncr, &derivedInductionVarIncrementBlocks, &primaryInductionVarIncrementBlocks);
             if (incrementsInLockStep &&
@@ -3930,10 +3930,10 @@ bool TR_LoopTransformer::blockIsAlwaysExecutedInLoop(TR::Block *currentBlock, TR
       return true;
       }
 
-   TR_ScratchList<TR::Block> blocksInRegion(trMemory());
+   TR_ScratchList<TR::Block> blocksInRegion(comp()->trMemory());
    loopStructure->getBlocks(&blocksInRegion);
 
-   TR_ScratchList<TR::Block> seenBlocks(trMemory());
+   TR_ScratchList<TR::Block> seenBlocks(comp()->trMemory());
 
    bool flag = true;
    TR::Block *cursorBlock = currentBlock;
@@ -4053,15 +4053,15 @@ bool TR_LoopTransformer::blockIsAlwaysExecutedInLoop(TR::Block *currentBlock, TR
 int32_t TR_RedundantInductionVarElimination::perform()
    {
 
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
    _cfg = comp()->getFlowGraph();
    _rootStructure = _cfg->getStructure();
 
-   TR_ScratchList<TR_Structure> whileLoops(trMemory());
+   TR_ScratchList<TR_Structure> whileLoops(comp()->trMemory());
    ListAppender<TR_Structure> whileLoopsInnerFirst(&whileLoops);
-   TR_ScratchList<TR_Structure> doWhileLoops(trMemory());
+   TR_ScratchList<TR_Structure> doWhileLoops(comp()->trMemory());
    ListAppender<TR_Structure> doWhileLoopsInnerFirst(&doWhileLoops);
-   _nodesInCycle = new (trStackMemory()) TR_BitVector(_cfg->getNextNodeNumber(), trMemory(), stackAlloc);
+   _nodesInCycle = new (comp()->trStackMemory()) TR_BitVector(_cfg->getNextNodeNumber(), comp()->trMemory(), stackAlloc);
 
    detectWhileLoops(whileLoopsInnerFirst, whileLoops, doWhileLoopsInnerFirst, doWhileLoops, _rootStructure, true);
 
@@ -4172,7 +4172,7 @@ int32_t TR_LoopInverter::perform()
    if (!invert)
       return 0;
 
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    //_count = 0;
 
@@ -4203,7 +4203,7 @@ int32_t TR_LoopInverter::detectCanonicalizedPredictableLoops(TR_Structure *loopS
 
    regionStructure->resetInvariance();
 
-   TR_ScratchList<TR::Block> blocksInRegion(trMemory());
+   TR_ScratchList<TR::Block> blocksInRegion(comp()->trMemory());
    regionStructure->getBlocks(&blocksInRegion);
    ListIterator<TR::Block> blocksIt(&blocksInRegion);
 
@@ -4232,7 +4232,7 @@ int32_t TR_LoopInverter::detectCanonicalizedPredictableLoops(TR_Structure *loopS
    if (!loopInvariantBlock)
       return 0;
 
-   TR_ScratchList<TR::Block> exitBlocks(trMemory());
+   TR_ScratchList<TR::Block> exitBlocks(comp()->trMemory());
    loopStructure->collectExitBlocks(&exitBlocks);
 
    if (!exitBlocks.isSingleton())
@@ -4427,7 +4427,7 @@ int32_t TR_LoopInverter::detectCanonicalizedPredictableLoops(TR_Structure *loopS
          loopTestNode->getSecondChild()->recursivelyDecReferenceCount();
          loopTestNode->setAndIncChild(1, TR::Node::create(loopTestNode, TR::iconst, 0, 0));
 
-         TR_ScratchList<TR::Block> blocksInRegion(trMemory());
+         TR_ScratchList<TR::Block> blocksInRegion(comp()->trMemory());
          loopStructure->getBlocks(&blocksInRegion);
 
          ListIterator<TR::Block> blocksIt(&exitBlocks);

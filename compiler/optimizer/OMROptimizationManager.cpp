@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -56,7 +56,7 @@ OMR::OptimizationManager::OptimizationManager(TR::Optimizer *o, OptimizationFact
         _optPolicy(NULL),
         _enabled(!o->comp()->isDisabled(optNum)),
         _requested(false),
-        _requestedBlocks(o->trMemory()),
+        _requestedBlocks(o->comp()->trMemory()),
         _trace(o->comp()->getOptions()->trace(optNum))
    {
    if (_id < OMR::Optimizations::numGroups)
@@ -270,7 +270,7 @@ void OMR::OptimizationManager::performChecks()
    TR::Compilation::CompilationPhaseScope performChecks(self()->comp());
    self()->comp()->reportAnalysisPhase(TR::Optimizer::PERFORMING_CHECKS);
    // From here, down, stack memory allocations will die when the function returns.
-   TR::StackMemoryRegion stackMemoryRegion(*(self()->trMemory()));
+   TR::StackMemoryRegion stackMemoryRegion(*(self()->comp()->trMemory()));
    if (self()->getVerifyTrees() || self()->comp()->getOption(TR_EnableParanoidOptCheck) || debug("paranoidOptCheck"))
       {
       if (self()->comp()->getOption(TR_UseILValidator))
