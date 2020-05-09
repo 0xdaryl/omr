@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -63,8 +63,6 @@ class TR_DominatorVerifier
    void    compareWithPredsOf(TR::Block *, TR::Block *);
 
    TR::Compilation * comp()          {return _compilation;}
-   TR_Memory *      trMemory()      { return comp()->trMemory(); }
-   TR_StackMemory   trStackMemory() { return trMemory(); }
 
    TR::Compilation              *_compilation;
    TR_DominatorsChk::BBInfoChk *_dominatorsChkInfo;

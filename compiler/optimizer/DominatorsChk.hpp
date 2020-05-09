@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -66,8 +66,6 @@ class TR_DominatorsChk
    private :
 
    TR::Compilation * comp()          {return _compilation;}
-   TR_Memory *      trMemory()      { return comp()->trMemory(); }
-   TR_StackMemory   trStackMemory() { return trMemory(); }
 
    void    findDominators(TR::Block *start);
    void    initialize(TR::Block *block, TR::Block *parent);

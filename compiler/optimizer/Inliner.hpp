@@ -104,11 +104,6 @@ class TR_InlinerTracer : public TR_LogTracer
 
       TR_FrontEnd * fe()                        { return _fe;   }
 
-      TR_Memory * trMemory()                    { return _trMemory; }
-      TR_StackMemory trStackMemory()            { return _trMemory; }
-      TR_HeapMemory  trHeapMemory()             { return _trMemory; }
-      TR_PersistentMemory * trPersistentMemory(){ return _trMemory->trPersistentMemory(); }
-
       // determine the tracing level
       bool partialLevel()                            { return comp()->getOption(TR_TracePartialInlining); }        // the > ensures partial tracing gets turned on for debug
 
@@ -147,7 +142,6 @@ class TR_InlinerTracer : public TR_LogTracer
 
    protected:
 
-      TR_Memory *             _trMemory;
       TR_FrontEnd *           _fe;
 
    };
@@ -200,10 +194,6 @@ class TR_InnerPreexistenceInfo
                                TR_VirtualGuardKind _guardKind);
 
       TR::Compilation * comp()                  { return _comp; }
-      TR_Memory * trMemory()                    { return _trMemory; }
-      TR_StackMemory trStackMemory()            { return _trMemory; }
-      TR_HeapMemory  trHeapMemory()             { return _trMemory; }
-      TR_PersistentMemory * trPersistentMemory(){ return _trMemory->trPersistentMemory(); }
 
       bool hasInnerAssumptions()                                { return !_assumptions.isEmpty(); }
 
@@ -211,7 +201,6 @@ class TR_InnerPreexistenceInfo
 
    protected:
       TR::Compilation *         _comp;
-      TR_Memory *              _trMemory;
       TR::ResolvedMethodSymbol *_methodSymbol; // the method being called
       TR_CallStack            *_callStack;    // the stack of callers (not including _methodSymbol)
       TR::TreeTop              *_callTree;
@@ -300,10 +289,6 @@ class TR_InlinerBase: public TR_HasRandomGenerator
       void createParmMap(TR::ResolvedMethodSymbol *calleeSymbol, TR_LinkHead<TR_ParameterMapping> &map);
 
       TR::Compilation * comp()                   { return _optimizer->comp();}
-      TR_Memory * trMemory()                    { return _trMemory; }
-      TR_StackMemory trStackMemory()            { return _trMemory; }
-      TR_HeapMemory  trHeapMemory()             { return _trMemory; }
-      TR_PersistentMemory * trPersistentMemory(){ return _trMemory->trPersistentMemory(); }
       TR_FrontEnd    * fe()                     { return _optimizer->comp()->fe(); }
 
 
@@ -385,7 +370,6 @@ class TR_InlinerBase: public TR_HasRandomGenerator
          };
 
       TR::Optimizer *       _optimizer;
-      TR_Memory *              _trMemory;
       List<TR::SymbolReference> _availableTemps;
       List<TR::SymbolReference> _availableBasicBlockTemps;
       flags16_t                _flags;
@@ -494,9 +478,6 @@ class TR_ParameterToArgumentMapper
       void                  printMapping();
 
       TR::Compilation * comp()                   { return _inliner->comp(); }
-      TR_Memory * trMemory()                    { return comp()->trMemory(); }
-      TR_StackMemory trStackMemory()            { return trMemory(); }
-      TR_HeapMemory  trHeapMemory()             { return trMemory(); }
       TR_InlinerTracer * tracer()               { return _inliner->tracer(); }
 
       TR_ParameterMapping * findMapping(TR::Symbol *);
@@ -694,9 +675,6 @@ class TR_TransformInlinedFunction
 
       TR::Compilation * comp()                   { return _comp; }
       TR_InlinerTracer * tracer()               { return _tracer; }
-      TR_Memory * trMemory()                    { return comp()->trMemory(); }
-      TR_StackMemory trStackMemory()            { return trMemory(); }
-      TR_HeapMemory  trHeapMemory()             { return trMemory(); }
 
    protected:
       void                 transformNode(TR::Node *, TR::Node *, uint32_t, TR::NodeChecklist &visitedNodes);

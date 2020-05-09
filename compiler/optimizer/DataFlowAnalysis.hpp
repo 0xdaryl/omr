@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -137,11 +137,6 @@ class TR_DataFlowAnalysis
    TR::CodeGenerator *      cg()                            { return _comp->cg(); }
    TR_FrontEnd *             fe()                            { return _comp->fe(); }
    TR_Debug *            getDebug()                      { return _comp->getDebug(); }
-
-   TR_Memory *               trMemory()                      { return _comp->trMemory(); }
-   TR_StackMemory            trStackMemory()                 { return _comp->trStackMemory(); }
-   TR_HeapMemory             trHeapMemory()                  { return _comp->trHeapMemory(); }
-   TR_PersistentMemory *     trPersistentMemory()            { return _comp->trPersistentMemory(); }
 
    TR::Allocator             allocator()                     { return _comp->allocator(); }
 
@@ -750,10 +745,6 @@ class TR_LiveVariableInformation
 
    TR::Compilation *comp()            { return _compilation; }
 
-   TR_Memory *    trMemory()         { return _trMemory; }
-   TR_StackMemory trStackMemory()    { return _trMemory; }
-   TR_HeapMemory  trHeapMemory()     { return _trMemory; }
-
    int32_t numLocals()                 { return _numLocals; }
    bool includeParms()                 { return _includeParms; }
    bool splitLongs()                   { return _splitLongs; }
@@ -785,7 +776,6 @@ class TR_LiveVariableInformation
                            TR_BitVector *commonedLoads, bool belowCommonedNode);
 
    TR::Compilation *_compilation;
-   TR_Memory *     _trMemory;
    int32_t         _numLocals;
    bool            _includeParms;
    bool            _splitLongs;

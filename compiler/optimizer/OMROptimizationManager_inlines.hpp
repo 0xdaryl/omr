@@ -55,30 +55,6 @@ TR::SymbolReferenceTable *OMR::OptimizationManager::getSymRefTab()
    }
 
 inline
-TR_Memory *OMR::OptimizationManager::trMemory()
-   {
-   return self()->comp()->trMemory();
-   }
-
-inline
-TR_StackMemory OMR::OptimizationManager::trStackMemory()
-   {
-   return self()->comp()->trStackMemory();
-   }
-
-inline
-TR_HeapMemory OMR::OptimizationManager::trHeapMemory()
-   {
-   return self()->comp()->trHeapMemory();
-   }
-
-inline
-TR_PersistentMemory *OMR::OptimizationManager::trPersistentMemory()
-   {
-   return self()->comp()->trPersistentMemory();
-   }
-
-inline
 TR::Allocator OMR::OptimizationManager::allocator()
    {
    return self()->comp()->allocator();

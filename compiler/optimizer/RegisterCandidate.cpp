@@ -246,7 +246,7 @@ void TR_RegisterCandidate::addAllBlocksInStructure(TR_Structure *structure, TR::
 
 
 TR_RegisterCandidates::TR_RegisterCandidates(TR::Compilation *comp)
-  : _compilation(comp), _trMemory(comp->trMemory()), _candidateRegion(_trMemory->heapMemoryRegion()),
+  : _compilation(comp), _candidateRegion(comp->trMemory()->heapMemoryRegion()),
     _referencedAutoSymRefsInBlock(NULL)
    {
    _candidateForSymRefs = 0;
@@ -2077,7 +2077,7 @@ void TR_RegisterCandidates::collectCfgProperties(TR::Block **blocks, int32_t num
 
 
    // Collect firstBlock property. These are BBs that follow the procedure entry.
-   _firstBlock.init(cfg->getNextNodeNumber(),_trMemory,stackAlloc,notGrowable);
+   _firstBlock.init(cfg->getNextNodeNumber(), comp()->trMemory(), stackAlloc,notGrowable);
    _firstBlock.empty();
 
    TR::CFGNode * start = cfg->getStart();
@@ -2095,7 +2095,7 @@ void TR_RegisterCandidates::collectCfgProperties(TR::Block **blocks, int32_t num
    // that bundling this info together into a bit vector to be referenced repeatedly for each RegisterCandidate
    // will speed up compilation of large programs.
    int i;
-   _isExtensionOfPreviousBlock.init(cfg->getNextNodeNumber(),_trMemory,stackAlloc,notGrowable);
+   _isExtensionOfPreviousBlock.init(cfg->getNextNodeNumber(), comp()->trMemory(), stackAlloc,notGrowable);
    _isExtensionOfPreviousBlock.empty();
    for(i=0;i<numberOfBlocks;i++)
      {

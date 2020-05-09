@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -70,9 +70,6 @@ class TR_LiveOnNotAllPaths
    TR_LiveOnNotAllPaths(TR::Compilation *comp, TR_Liveness *liveOnSomePaths, TR_LiveOnAllPaths *liveOnAllPaths);
 
    TR::Compilation *   comp()          { return _comp; }
-
-   TR_Memory *          trMemory()      { return comp()->trMemory(); }
-   TR_StackMemory       trStackMemory() { return trMemory(); }
 
    TR::Allocator        allocator()     { return comp()->allocator(); }
 
@@ -179,9 +176,6 @@ class TR_MovableStore
                                             // - syms that have associated temps are excluded (only when enablePreciseSymbolTracking() == false otherwise all syms are included)
    TR_BitVector *_commonedLoadsAfter;       // used syms which are commoned following the store (syms are first used and are commoned later)
    TR::Compilation * comp() { return _comp; }
-
-   TR_Memory *    trMemory()      { return comp()->trMemory(); }
-   TR_StackMemory trStackMemory() { return trMemory(); }
 
    TR::Compilation * _comp;
 

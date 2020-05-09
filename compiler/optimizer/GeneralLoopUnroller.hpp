@@ -103,11 +103,6 @@ class TR_LoopUnroller
    bool            trace() { return comp()->trace(OMR::generalLoopUnroller) || comp()->trace(OMR::SPMDKernelParallelization); }
    TR_Debug *  getDebug() { return comp()->getDebug(); }
 
-   TR_Memory *               trMemory()                    { return _trMemory; }
-   TR_StackMemory            trStackMemory()               { return _trMemory; }
-   TR_HeapMemory             trHeapMemory()                { return _trMemory; }
-   TR_PersistentMemory *     trPersistentMemory()          { return _trMemory->trPersistentMemory(); }
-
    bool            isCountedLoop()     { return (_piv != 0); }
    bool            isIncreasingLoop()  { TR_ASSERT(isCountedLoop(), "assertion failure"); return (_piv->getDeltaOnBackEdge() > 0); }
    int32_t getLoopStride()
@@ -219,7 +214,6 @@ class TR_LoopUnroller
       };
 
    TR::Compilation            *_comp;
-   TR_Memory *                _trMemory;
    TR::Optimizer             *_optimizer;
    TR_RegionStructure        *_loop;
    TR_StructureSubGraphNode  *_branchNode;
@@ -283,21 +277,21 @@ class TR_LoopUnroller
  * Class TR_GeneralLoopUnroller
  * ============================
  *
- * The general loop unroller optimization can unroll or peel a majority of 
- * loops with or without the loop driving tests done after each iteration 
- * (loop) body. Usually a peel is inserted before the unrolled loop, and 
- * the residual iterations to be done (at most u - 1 residual iterations 
- * where u is the unroll factor) are also done using the peeled code. 
- * Peeling aids partial redundancy elimination (PRE) as code does not have 
- * to be moved; instead dominated expressions can be commoned (which is far 
- * easier than code motion due to problems introduced by exception 
+ * The general loop unroller optimization can unroll or peel a majority of
+ * loops with or without the loop driving tests done after each iteration
+ * (loop) body. Usually a peel is inserted before the unrolled loop, and
+ * the residual iterations to be done (at most u - 1 residual iterations
+ * where u is the unroll factor) are also done using the peeled code.
+ * Peeling aids partial redundancy elimination (PRE) as code does not have
+ * to be moved; instead dominated expressions can be commoned (which is far
+ * easier than code motion due to problems introduced by exception
  * checks in Java).
  *
- * Async checks (yield points) are eliminated from u - 1 unrolled bodies 
+ * Async checks (yield points) are eliminated from u - 1 unrolled bodies
  * and only one remains.
- * 
- * Unroll factors and code growth thresholds are arrived at based on 
- * profiling information when available. This analysis uses induction 
+ *
+ * Unroll factors and code growth thresholds are arrived at based on
+ * profiling information when available. This analysis uses induction
  * variable information found by value propagation.
  */
 

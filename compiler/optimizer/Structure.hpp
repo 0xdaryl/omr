@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -68,17 +68,12 @@ class TR_Structure
       };
 
    TR_Structure(TR::Compilation * c, int32_t index)
-      : _comp(c), _nodeIndex(index), _parent(NULL), _weight(-1), _versionedStructure(NULL), _trMemory(c->trMemory()), _maxNestingDepth(0), _nestingDepth(0), _analyzedBefore(false), _containsImproperRegion(false)
+      : _comp(c), _nodeIndex(index), _parent(NULL), _weight(-1), _versionedStructure(NULL), _maxNestingDepth(0), _nestingDepth(0), _analyzedBefore(false), _containsImproperRegion(false)
       {
       }
 
    TR::Compilation * comp() { return _comp; }
    TR::CFG *cfg() { return _comp->getFlowGraph(); }
-
-   TR_Memory *               trMemory()                    { return _trMemory; }
-   TR_StackMemory            trStackMemory()               { return _trMemory; }
-   TR_HeapMemory             trHeapMemory()                { return _trMemory; }
-   TR_PersistentMemory *     trPersistentMemory()          { return _trMemory->trPersistentMemory(); }
 
    virtual Kind getKind();
    virtual TR_BlockStructure        *asBlock() { return NULL; }
@@ -244,7 +239,6 @@ class TR_Structure
    private:
 
    TR::Compilation *         _comp;
-   TR_Memory *                _trMemory;
    TR_StructureSubGraphNode * _graphNode;
    int32_t                    _weight;
    TR_RegionStructure *       _parent;

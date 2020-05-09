@@ -45,10 +45,6 @@ class TR_LocalAnalysisInfo
 
    TR::Compilation *comp()            { return _compilation; }
 
-   TR_Memory *    trMemory()         { return _trMemory; }
-   TR_StackMemory trStackMemory()    { return _trMemory; }
-   TR_HeapMemory  trHeapMemory()     { return _trMemory; }
-
    struct LAInfo
       {
       TR_ALLOC(TR_Memory::LocalAnalysis)
@@ -150,7 +146,6 @@ class TR_LocalAnalysisInfo
    bool trace() { return _trace; }
 
    TR::Compilation *_compilation;
-   TR_Memory * _trMemory;
    //TR::Block **_blocksInfo;
    TR::Node **_supportedNodesAsArray;
    TR::Node **_nullCheckNodesAsArray;
@@ -178,10 +173,6 @@ class TR_LocalAnalysis
    void initializeBlocks(TR::Block *, TR::BitVector &);
 
    TR::Compilation *comp() {return _lainfo._compilation;}
-
-   TR_Memory *    trMemory()         { return comp()->trMemory(); }
-   TR_StackMemory trStackMemory()    { return comp()->trMemory(); }
-   TR_HeapMemory  trHeapMemory()     { return comp()->trMemory(); }
 
    int32_t       getNumNodes() {return _lainfo._numNodes;}
    bool          trace()       {return _trace; }

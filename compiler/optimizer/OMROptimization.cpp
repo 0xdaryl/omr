@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -85,30 +85,6 @@ TR::SymbolReferenceTable *
 OMR::Optimization::getSymRefTab()
    {
    return self()->comp()->getSymRefTab();
-   }
-
-TR_Memory *
-OMR::Optimization::trMemory()
-   {
-   return self()->comp()->trMemory();
-   }
-
-TR_StackMemory
-OMR::Optimization::trStackMemory()
-   {
-   return self()->comp()->trStackMemory();
-   }
-
-TR_HeapMemory
-OMR::Optimization::trHeapMemory()
-   {
-   return self()->comp()->trHeapMemory();
-   }
-
-TR_PersistentMemory *
-OMR::Optimization::trPersistentMemory()
-   {
-   return self()->comp()->trPersistentMemory();
    }
 
 TR::Allocator

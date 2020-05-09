@@ -3275,7 +3275,7 @@ TR_LoopUnroller::TR_LoopUnroller(TR::Compilation *c, TR::Optimizer *optimizer, T
                                  TR_StructureSubGraphNode *branchNode,
                                  int32_t unrollCount, int32_t peelCount, TR::Block *invariantBlock,
                                  UnrollKind unrollKind, int32_t vectorSize)
-   : _comp(c), _trMemory(c->trMemory()), _optimizer(optimizer), _loop(loop), _vectorSize(vectorSize),
+   : _comp(c), _optimizer(optimizer), _loop(loop), _vectorSize(vectorSize),
      _branchNode(branchNode), _unrollCount(unrollCount),
      _peelCount(peelCount), _unrollKind(unrollKind),
      _iteration(0), _firstEntryNode(0), _piv(0),
@@ -3302,7 +3302,7 @@ TR_LoopUnroller::TR_LoopUnroller(TR::Compilation *c, TR::Optimizer *optimizer, T
 TR_LoopUnroller::TR_LoopUnroller(TR::Compilation *c, TR::Optimizer *optimizer, TR_RegionStructure *loop,
                                  TR_PrimaryInductionVariable *piv, UnrollKind unrollKind,
                                  int32_t unrollCount, int32_t peelCount, TR::Block *invariantBlock, int32_t vectorSize)
-   : _comp(c), _trMemory(c->trMemory()), _optimizer(optimizer), _loop(loop), _unrollKind(unrollKind),  _vectorSize(vectorSize),
+   : _comp(c), _optimizer(optimizer), _loop(loop), _unrollKind(unrollKind),  _vectorSize(vectorSize),
      _unrollCount(unrollCount), _peelCount(peelCount), _piv(piv),
      _spillNode(0), _overflowTestBlock(0), _loopIterTestBlock(0), _loopInvariantBlock(invariantBlock),
      _loopInvariantBlockAtEnd(false), _iteration(0), _firstEntryNode(0),// goto init

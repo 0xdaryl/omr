@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -67,10 +67,6 @@ class TR_CallStack : public TR_Link<TR_CallStack>
       void commit();
 
       TR::Compilation * comp()                   { return _comp; }
-      TR_Memory * trMemory()                    { return _trMemory; }
-      TR_StackMemory trStackMemory()            { return _trMemory; }
-      TR_HeapMemory  trHeapMemory()             { return _trMemory; }
-      TR_PersistentMemory * trPersistentMemory(){ return _trMemory->trPersistentMemory(); }
 
       void initializeControlFlowInfo(TR::ResolvedMethodSymbol *);
       TR_CallStack * isCurrentlyOnTheStack(TR_ResolvedMethod *, int32_t);
@@ -110,7 +106,6 @@ class TR_CallStack : public TR_Link<TR_CallStack>
          };
 
       TR::Compilation *          _comp;
-      TR_Memory *               _trMemory;
       TR::ResolvedMethodSymbol * _methodSymbol;
       TR_ResolvedMethod *       _method;
       TR::Node *                 _currentCallNode;

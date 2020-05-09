@@ -60,7 +60,7 @@ TR_LiveVariableInformation::TR_LiveVariableInformation(TR::Compilation   *c,
 			                               bool              splitLongs,
 			                               bool              includeParms,
                                                        bool              ignoreOSRUses)
-   : _compilation(c), _trMemory(c->trMemory()), _ignoreOSRUses(ignoreOSRUses)
+   : _compilation(c), _ignoreOSRUses(ignoreOSRUses)
    {
    _traceLiveVariableInfo = comp()->getOption(TR_TraceLiveness);
 

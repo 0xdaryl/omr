@@ -248,9 +248,8 @@ TR_InlinerBase::TR_InlinerBase(TR::Optimizer * optimizer, TR::Optimization *opti
      _visitCount(optimizer->comp()->incVisitCount()),
      _inliningAsWeWalk(false),
      _optimizer(optimizer),
-     _trMemory(optimizer->comp()->trMemory()),
-     _availableTemps(_trMemory),
-     _availableBasicBlockTemps(_trMemory),
+     _availableTemps(optimizer->comp()->trMemory()),
+     _availableBasicBlockTemps(optimizer->comp()->trMemory()),
      _storeToCachedPrivateStatic(NULL),
      _disableTailRecursion(false),
      _currentNumberOfNodes(optimizer->comp()->getAccurateNodeCount()),
@@ -811,7 +810,7 @@ TR_CallStack::TR_CallStack(
    TR::ResolvedMethodSymbol * methodSymbol, TR_ResolvedMethod * method,
    TR_CallStack * nextCallStack, int32_t maxCallSize, bool safeToAddSymRefs)
    : TR_Link<TR_CallStack>(nextCallStack),
-     _comp(c), _trMemory(c->trMemory()),
+     _comp(c),
      _methodSymbol(methodSymbol),
      _method(method),
      _currentCallNode(NULL),
@@ -5799,7 +5798,7 @@ bool TR_InlineBlocks::isInExceptionList(int32_t index)
 
 
 TR_InlinerTracer::TR_InlinerTracer( TR::Compilation *comp, TR_FrontEnd *fe, TR::Optimization *opt )
-  : TR_LogTracer(comp,opt), _fe(fe), _trMemory(_comp->trMemory())
+  : TR_LogTracer(comp,opt), _fe(fe)
    {
    _traceLevel = 0;
    if(opt)                      //this means I want tracing on
@@ -6484,7 +6483,7 @@ TR_InnerPreexistenceInfo::perform(TR::Compilation *comp, TR::Node *guardNode, bo
 TR_InnerPreexistenceInfo::TR_InnerPreexistenceInfo(TR::Compilation * c, TR::ResolvedMethodSymbol *methodSymbol,
       TR_CallStack *callStack, TR::TreeTop *treeTop,
       TR::Node *callNode, TR_VirtualGuardKind guardKind)
-   : _comp(c), _trMemory(c->trMemory()), _methodSymbol(methodSymbol), _callStack(callStack),
+   : _comp(c), _methodSymbol(methodSymbol), _callStack(callStack),
      _callTree(treeTop), _callNode(callNode), _guardKind(guardKind), _assumptions(c->trMemory())
    {
    }

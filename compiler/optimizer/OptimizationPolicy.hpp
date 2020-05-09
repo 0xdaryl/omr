@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -45,13 +45,12 @@ class OptimizationPolicy
     * See "Modern C++ Design" section 4.7
     */
    virtual ~OptimizationPolicy() {}
-   
+
    OptimizationPolicy(TR::Compilation *comp) : _comp(comp) {}
 
    TR::Compilation *comp()   { return _comp; }
    TR_FrontEnd *fe()         { return _comp->fe(); }
    TR::Allocator allocator() { return comp()->allocator(); }
-   TR_Memory * trMemory()    { return comp()->trMemory(); }
 
    private:
    TR::Compilation *_comp;

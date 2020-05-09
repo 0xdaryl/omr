@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -162,11 +162,6 @@ class Optimizer
    TR::CodeGenerator *    cg()             { return _cg; }
    TR_Debug *          getDebug();
 
-   TR_Memory *               trMemory()                    { return _trMemory; }
-   TR_StackMemory            trStackMemory()               { return _trMemory; }
-   TR_HeapMemory             trHeapMemory()                { return _trMemory; }
-   TR_PersistentMemory *     trPersistentMemory()          { return _trMemory->trPersistentMemory(); }
-
    static const char * getOptimizationName(OMR::Optimizations opt);
 
    static const OptimizationStrategy *optimizationStrategy( TR::Compilation *c);
@@ -176,9 +171,9 @@ class Optimizer
     * functionality as the `optTest=` parameter, it does not require
     * reinitializing the JIT, nor manually changing the optFile.
     *
-    * If _mockStrategy is NULL, has no effect on the optimizer. 
+    * If _mockStrategy is NULL, has no effect on the optimizer.
     *
-    * @param strategy The #OptimizationStrategy to return when requested. 
+    * @param strategy The #OptimizationStrategy to return when requested.
     */
    static void setMockStrategy(const OptimizationStrategy *strategy) { _mockStrategy = strategy; };
 
@@ -353,7 +348,6 @@ class Optimizer
 
 
    TR::Compilation *            _compilation;
-   TR_Memory *                   _trMemory;
    TR::CodeGenerator *          _cg;
 
    TR::ResolvedMethodSymbol *   _methodSymbol;
@@ -361,9 +355,9 @@ class Optimizer
 
    const OptimizationStrategy *          _strategy;
 
-   /* 
+   /*
     * Since mock strategies are only used in testing right now, we make this
-    * static to ease implementation. 
+    * static to ease implementation.
     *
     * This is currently not a thread-safe implementation beause doing a
     * thread-safe implementation would require a more invasive compilation

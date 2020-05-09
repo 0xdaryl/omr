@@ -151,7 +151,7 @@ bool TR_LocalAnalysis::isSupportedNodeForFunctionality(TR::Node *node, TR::Compi
 
 
 TR_LocalAnalysisInfo::TR_LocalAnalysisInfo(TR::Compilation *c, bool t)
-   : _compilation(c), _trace(t), _trMemory(c->trMemory())
+   : _compilation(c), _trace(t)
    {
    _numNodes = -1;
 

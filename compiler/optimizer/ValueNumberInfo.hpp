@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -38,7 +38,7 @@ class TR_ValueNumberInfo
    {
 
    public:
-  
+
    static void *operator new(size_t size, TR::Allocator a)
       { return a.allocate(size); }
    static void  operator delete(void *ptr, TR::Allocator a)
@@ -52,8 +52,8 @@ class TR_ValueNumberInfo
    /* Virtual destructor is necessary for the above delete operator to work
     * See "Modern C++ Design" section 4.7
     */
-   virtual ~TR_ValueNumberInfo() {}     
- 
+   virtual ~TR_ValueNumberInfo() {}
+
 
    TR_ValueNumberInfo(TR::Compilation *);
    TR_ValueNumberInfo(TR::Compilation *, TR::Optimizer *, bool requiresGlobals = false, bool prefersGlobals = true, bool noUseDefInfo = false);
@@ -63,9 +63,6 @@ class TR_ValueNumberInfo
 
    //Public Interface
    TR::Allocator allocator() { return comp()->allocator(); }
-   TR_Memory *    trMemory()      { return comp()->trMemory(); }
-   TR_StackMemory trStackMemory() { return trMemory(); }
-   TR_HeapMemory  trHeapMemory()  { return trMemory(); }
 
    bool infoIsValid()            {return _infoIsValid;}
    bool hasGlobalsValueNumbers() {return _hasGlobalsValueNumbers;}

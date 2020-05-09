@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -114,11 +114,6 @@ class OMR_EXTENSIBLE Optimization: public TR_HasRandomGenerator
    TR_Debug *             getDebug();
    TR::SymbolReferenceTable *getSymRefTab();
 
-   TR_Memory *                trMemory();
-   TR_StackMemory             trStackMemory();
-   TR_HeapMemory              trHeapMemory();
-   TR_PersistentMemory *      trPersistentMemory();
-
    TR::Allocator              allocator();
 
    OMR::Optimizations         id();
@@ -129,7 +124,7 @@ class OMR_EXTENSIBLE Optimization: public TR_HasRandomGenerator
    void                       setTrace(bool trace = true);
    /**
     * @brief Checks if opt has any trace options specified
-    * 
+    *
     * @return True if any trace option is specified, false otherwise
     */
    bool                       traceAny();
