@@ -195,7 +195,7 @@ OMR::X86::I386::CodeGenerator::pickRegister(
 
 
    if (!_assignedGlobalRegisters)
-      _assignedGlobalRegisters = new (self()->trStackMemory()) TR_BitVector(self()->comp()->getSymRefCount(), self()->comp()->trMemory(), stackAlloc, growable);
+      _assignedGlobalRegisters = new (self()->comp()->trStackMemory()) TR_BitVector(self()->comp()->getSymRefCount(), self()->comp()->trMemory(), stackAlloc, growable);
 
    if (availableRegisters.get(5))
       return 5; // esi

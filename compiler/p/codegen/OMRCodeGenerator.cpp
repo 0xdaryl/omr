@@ -2180,7 +2180,7 @@ TR_GlobalRegisterNumber OMR::Power::CodeGenerator::pickRegister(TR_RegisterCandi
          }
 
       if (!_assignedGlobalRegisters)
-         _assignedGlobalRegisters = new (self()->trStackMemory()) TR_BitVector(self()->comp()->getSymRefCount(), self()->comp()->trMemory(), stackAlloc, growable);
+         _assignedGlobalRegisters = new (self()->comp()->trStackMemory()) TR_BitVector(self()->comp()->getSymRefCount(), self()->comp()->trMemory(), stackAlloc, growable);
 
       bool vmThreadUsed = false;
       bool assigningEDX = false;

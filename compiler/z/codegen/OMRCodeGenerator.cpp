@@ -216,7 +216,7 @@ OMR::Z::CodeGenerator::checkIsUnneededIALoad(TR::Node *parent, TR::Node *node, T
          if (node->getReferenceCount() > 1)
             {
             uint32_t *temp ;
-            TR_Pair<TR::Node, int32_t> *newEntry = new (self()->trStackMemory()) TR_Pair<TR::Node, int32_t> (node, (int32_t *)1);
+            TR_Pair<TR::Node, int32_t> *newEntry = new (self()->comp()->trStackMemory()) TR_Pair<TR::Node, int32_t> (node, (int32_t *)1);
             _ialoadUnneeded.add(newEntry);
             }
          node->setUnneededIALoad (true);

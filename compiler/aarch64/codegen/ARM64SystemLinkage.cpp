@@ -662,7 +662,7 @@ int32_t TR::ARM64SystemLinkage::buildArgs(TR::Node *callNode,
    /* End result of Step 1 - determined number of memory arguments! */
    if (numMemArgs > 0)
       {
-      pushToMemory = new (trStackMemory()) TR::ARM64MemoryArgument[numMemArgs];
+      pushToMemory = new (comp()->trStackMemory()) TR::ARM64MemoryArgument[numMemArgs];
 
       argMemReg = cg()->allocateRegister();
       }

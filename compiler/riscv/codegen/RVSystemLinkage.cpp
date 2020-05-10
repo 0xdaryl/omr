@@ -608,7 +608,7 @@ int32_t TR::RVSystemLinkage::buildArgs(TR::Node *callNode,
    /* End result of Step 1 - determined number of memory arguments! */
    if (numMemArgs > 0)
       {
-      pushToMemory = new (trStackMemory()) TR::RVMemoryArgument[numMemArgs];
+      pushToMemory = new (comp()->trStackMemory()) TR::RVMemoryArgument[numMemArgs];
 
       argMemReg = cg()->allocateRegister();
       }

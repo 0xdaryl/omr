@@ -667,7 +667,7 @@ OMR::CodeGenerator::doInstructionSelection()
          //
          else if (liveLocals && debug("checkBlockEntryLiveLocals"))
             {
-            TR_BitVector *extendedBlockLocals = new (self()->trStackMemory()) TR_BitVector(*(block->getLiveLocals()));
+            TR_BitVector *extendedBlockLocals = new (comp->trStackMemory()) TR_BitVector(*(block->getLiveLocals()));
             *extendedBlockLocals -= *(liveLocals);
 
             TR_ASSERT(extendedBlockLocals->isEmpty(),

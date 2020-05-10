@@ -635,7 +635,7 @@ printf("%s: numIntegerArgs %d numMemArgs %d\n", sig,  numIntegerArgs, numMemArgs
    TR::StackMemoryRegion stackMemoryRegion(*self()->trMemory());
    if (numMemArgs > 0)
       {
-      pushToMemory = new(self()->trStackMemory()) TR::ARMMemoryArgument[numMemArgs];
+      pushToMemory = new(comp->trStackMemory()) TR::ARMMemoryArgument[numMemArgs];
       }
 
    if (specialArgReg)

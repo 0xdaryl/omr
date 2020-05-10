@@ -961,7 +961,7 @@ int32_t TR::PPCSystemLinkage::buildArgs(TR::Node *callNode,
    /* End result of Step 1 - determined number of memory arguments! */
    if (memArgs > 0)
       {
-      pushToMemory = new (trStackMemory()) TR::PPCMemoryArgument[memArgs];
+      pushToMemory = new (comp()->trStackMemory()) TR::PPCMemoryArgument[memArgs];
       }
 
    numIntegerArgs = 0;

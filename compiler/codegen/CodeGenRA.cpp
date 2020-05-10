@@ -1049,13 +1049,13 @@ void
 OMR::CodeGenerator::initializeRegisterPressureSimulator()
    {
    int32_t numBlocks = self()->comp()->getFlowGraph()->getNextNodeNumber();
-   _simulatedNodeStates = new (self()->trStackMemory()) TR_SimulatedNodeState[self()->comp()->getNodeCount()];
+   _simulatedNodeStates = new (self()->comp()->trStackMemory()) TR_SimulatedNodeState[self()->comp()->getNodeCount()];
 
-   _blockRegisterPressureCache = new (self()->trStackMemory()) TR_RegisterPressureSummary[numBlocks];
+   _blockRegisterPressureCache = new (self()->comp()->trStackMemory()) TR_RegisterPressureSummary[numBlocks];
 
 #if defined(CACHE_CANDIDATE_SPECIFIC_RESULTS)
    int32_t tagsSize = numBlocks * sizeof(_blockAndCandidateRegisterPressureCacheTags[0]);
-   _blockAndCandidateRegisterPressureCache = new (trStackMemory()) TR_RegisterPressureSummary[numBlocks];
+   _blockAndCandidateRegisterPressureCache = new (self()->comp()->trStackMemory()) TR_RegisterPressureSummary[numBlocks];
    _blockAndCandidateRegisterPressureCacheTags = (int32_t*)self()->comp()->trMemory()->allocateStackMemory(tagsSize);
    memset(_blockAndCandidateRegisterPressureCacheTags, -1, tagsSize);
 #endif
