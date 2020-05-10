@@ -93,9 +93,9 @@ protected:
    void initialize()
       {
       uint32_t size = this->maxByteCodeIndex() + 5;
-      _flags  = (flags8_t *) this->trMemory()->allocateStackMemory(size * sizeof(flags8_t));
-      _blocks = (TR::Block * *) this->trMemory()->allocateStackMemory(size * sizeof(TR::Block *));
-      _stacks = (ByteCodeStack * *) this->trMemory()->allocateStackMemory(size * sizeof(ByteCodeStack *));
+      _flags  = (flags8_t *) this->comp()->trMemory()->allocateStackMemory(size * sizeof(flags8_t));
+      _blocks = (TR::Block * *) this->comp()->trMemory()->allocateStackMemory(size * sizeof(TR::Block *));
+      _stacks = (ByteCodeStack * *) this->comp()->trMemory()->allocateStackMemory(size * sizeof(ByteCodeStack *));
       memset(_flags, 0, size * sizeof(flags8_t));
       memset(_blocks, 0, size * sizeof(TR::Block *));
       memset(_stacks, 0, size * sizeof(ByteCodeStack *));

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -39,20 +39,19 @@ TR_InterferenceGraph::TR_InterferenceGraph(TR::Compilation *comp, int32_t estima
       _compilation(comp),
       _nodeTable(NULL),
       _nodeStack(NULL),
-      _trMemory(comp->trMemory()),
       TR_IGBase()
    {
    TR_ASSERT(estimatedNodes > 0, "interference graph must be created with a node estimate!");
 
    int32_t numBits = (estimatedNodes * (estimatedNodes - 1)) >> 1;
-   setInterferenceMatrix(new (trHeapMemory()) TR_BitVector(numBits, trMemory(), heapAlloc, growable));
-   _nodeTable = new (trHeapMemory()) TR_Array<TR_IGNode *>(trMemory(), estimatedNodes, false, heapAlloc);
-   _nodeStack = new (trHeapMemory()) TR_Stack<TR_IGNode *>(trMemory(), estimatedNodes, false, heapAlloc);
+   setInterferenceMatrix(new (comp->trHeapMemory()) TR_BitVector(numBits, comp->trMemory(), heapAlloc, growable));
+   _nodeTable = new (comp->trHeapMemory()) TR_Array<TR_IGNode *>(comp->trMemory(), estimatedNodes, false, heapAlloc);
+   _nodeStack = new (comp->trHeapMemory()) TR_Stack<TR_IGNode *>(comp->trMemory(), estimatedNodes, false, heapAlloc);
 
    // TODO: allocate from stack memory
    //
    _entityHash._numBuckets = 73;
-   _entityHash._buckets = (HashTableEntry **)trMemory()->allocateHeapMemory(_entityHash._numBuckets*sizeof(HashTableEntry *));
+   _entityHash._buckets = (HashTableEntry **)comp->trMemory()->allocateHeapMemory(_entityHash._numBuckets*sizeof(HashTableEntry *));
    memset(_entityHash._buckets, 0, _entityHash._numBuckets*sizeof(HashTableEntry *));
    }
 
@@ -69,7 +68,7 @@ TR_IGNode *TR_InterferenceGraph::add(void *entity, bool ignoreDuplicates)
    TR_ASSERT(!igNode,
            "entity %p already exists in this interference graph\n", entity);
 
-   igNode = new (trHeapMemory()) TR_IGNode(entity, trMemory());
+   igNode = new (comp()->trHeapMemory()) TR_IGNode(entity, comp()->trMemory());
 
    addIGNodeToEntityHash(igNode);
 
@@ -159,7 +158,7 @@ void TR_InterferenceGraph::addIGNodeToEntityHash(TR_IGNode *igNode)
 
    // TODO: allocate from stack memory
    //
-   HashTableEntry *entry = (HashTableEntry *)trMemory()->allocateHeapMemory(sizeof(HashTableEntry));
+   HashTableEntry *entry = (HashTableEntry *)comp()->trMemory()->allocateHeapMemory(sizeof(HashTableEntry));
    entry->_igNode = igNode;
 
    HashTableEntry *prevEntry = _entityHash._buckets[hashBucket];
@@ -297,7 +296,7 @@ bool TR_InterferenceGraph::doColouring(IGNodeColour numColours)
    {
    bool success;
 
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    TR_ASSERT(numColours > 0, "doColouring: invalid chromatic number\n");
    setNumColours(numColours);

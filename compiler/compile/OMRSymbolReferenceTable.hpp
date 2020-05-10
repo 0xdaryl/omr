@@ -74,9 +74,6 @@ class SymbolReferenceTable
 
    TR::Compilation *comp() { return _compilation; }
    TR_FrontEnd *fe() { return _fe; }
-   TR_Memory *trMemory() { return _trMemory; }
-   TR_StackMemory trStackMemory() { return _trMemory; }
-   TR_HeapMemory trHeapMemory() { return _trMemory; }
 
    TR_Array<TR::SymbolReference *> baseArray;
 
@@ -176,7 +173,7 @@ class SymbolReferenceTable
        */
       osrFearPointHelperSymbol,
       /** \brief
-       * 
+       *
        * A call with this symbol marks a place where we want/need escape analysis to add heapifications for any stack allocated
        * objects. The primary use case is to force escape of all live local objects ahead of a throw to an OSR catch block
        * but they may also be inserted to facilitate peeking of methods under HCR or other uses. Calls to this helper should
@@ -357,16 +354,16 @@ class SymbolReferenceTable
       atomicCompareAndSwapReturnValueSymbol,
 
       /** \brief
-       *  
+       *
        * These symbols represent placeholder calls for profiling value which will be lowered into trees later.
-       * 
+       *
        * \code
        *    call <jProfileValue/jProfileValueWithNullCHK>
        *       <value to be profiled>
        *       <table address>
        * \endcode
        */
-      jProfileValueSymbol, 
+      jProfileValueSymbol,
       jProfileValueWithNullCHKSymbol,
 
       firstPerCodeCacheHelperSymbol,
@@ -817,7 +814,6 @@ class SymbolReferenceTable
 
    TR_FrontEnd *_fe;
    TR::Compilation *_compilation;
-   TR_Memory *_trMemory;
 
    // J9
 #define _numNonUserFieldClasses 4

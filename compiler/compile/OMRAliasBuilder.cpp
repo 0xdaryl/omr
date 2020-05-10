@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -60,8 +60,7 @@ OMR::AliasBuilder::AliasBuilder(TR::SymbolReferenceTable *symRefTab, size_t size
      _conservativeGenericIntShadowAliasingRequired(false),
      _mutableGenericIntShadowHasBeenCreated(false),
      _symRefTab(symRefTab),
-     _compilation(c),
-     _trMemory(c->trMemory())
+     _compilation(c)
    {
    }
 
@@ -99,7 +98,7 @@ OMR::AliasBuilder::methodAliases(TR::SymbolReference *symRef)
 void
 OMR::AliasBuilder::setVeryRefinedCallAliasSets(TR::ResolvedMethodSymbol * m, TR_BitVector * bc)
    {
-   _callAliases.add(new (trHeapMemory()) CallAliases(bc, m));
+   _callAliases.add(new (comp()->trHeapMemory()) CallAliases(bc, m));
    }
 
 TR_BitVector *
@@ -115,7 +114,7 @@ OMR::AliasBuilder::getVeryRefinedCallAliasSets(TR::ResolvedMethodSymbol * method
 void
 OMR::AliasBuilder::createAliasInfo()
    {
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    addressShadowSymRefs().pack();
    genericIntShadowSymRefs().pack();
@@ -180,8 +179,8 @@ OMR::AliasBuilder::createAliasInfo()
 void
 OMR::AliasBuilder::setCatchLocalUseSymRefs()
    {
-   catchLocalUseSymRefs().init(symRefTab()->getNumSymRefs(), trMemory());
-   notOsrCatchLocalUseSymRefs().init(symRefTab()->getNumSymRefs(), trMemory());
+   catchLocalUseSymRefs().init(symRefTab()->getNumSymRefs(), comp()->trMemory());
+   notOsrCatchLocalUseSymRefs().init(symRefTab()->getNumSymRefs(), comp()->trMemory());
 
    vcount_t visitCount = comp()->incVisitCount();
 
@@ -238,7 +237,7 @@ OMR::AliasBuilder::gatherLocalUseInfo(TR::Block * block, TR_BitVector & storeVec
          *predBitVector = storeVector;
          }
 
-      TR_Pair<TR::Block, TR_BitVector> *pair = new (trStackMemory()) TR_Pair<TR::Block, TR_BitVector> (toBlock(edge->getTo()), predBitVector);
+      TR_Pair<TR::Block, TR_BitVector> *pair = new (comp()->trStackMemory()) TR_Pair<TR::Block, TR_BitVector> (toBlock(edge->getTo()), predBitVector);
       seenBlockInfos->add(pair);
       }
    }
@@ -247,9 +246,9 @@ void
 OMR::AliasBuilder::gatherLocalUseInfo(TR::Block * catchBlock, bool isOSRCatch)
    {
    vcount_t visitCount = comp()->getVisitCount();
-   TR_ScratchList<TR_Pair<TR::Block, TR_BitVector> > seenBlockInfos(trMemory());
+   TR_ScratchList<TR_Pair<TR::Block, TR_BitVector> > seenBlockInfos(comp()->trMemory());
 
-   TR_Pair<TR::Block, TR_BitVector> *p = new (trStackMemory()) TR_Pair<TR::Block, TR_BitVector> (catchBlock, NULL);
+   TR_Pair<TR::Block, TR_BitVector> *p = new (comp()->trStackMemory()) TR_Pair<TR::Block, TR_BitVector> (catchBlock, NULL);
    seenBlockInfos.add(p);
    while (!seenBlockInfos.isEmpty())
       {

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -38,7 +38,6 @@ public:
       : _methodSymbol(resolvedMethodSym),
         _method(m),
         _compilation(comp),
-        _trMemory(comp->trMemory()),
         _maxByteCodeIndex(m->maxBytecodeIndex())
       { }
 
@@ -80,7 +79,6 @@ public:
       };
 
    TR::Compilation *comp()                const       { return _compilation; }
-   TR_Memory *trMemory()                   const       { return _trMemory; }
    virtual TR::ResolvedMethodSymbol *methodSymbol() const   { return _methodSymbol; }
    ResolvedMethod          *method()       const       { return _method; }
 
@@ -108,7 +106,6 @@ protected:
    TR::ResolvedMethodSymbol * _methodSymbol;
    ResolvedMethod          * _method;
    TR::Compilation        * _compilation;
-   TR_Memory               * _trMemory;
    int32_t             const _maxByteCodeIndex;
 
 

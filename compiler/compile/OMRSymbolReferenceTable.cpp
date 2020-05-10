@@ -91,7 +91,6 @@ class TR_OpaqueMethodBlock;
 OMR::SymbolReferenceTable::SymbolReferenceTable(size_t sizeHint, TR::Compilation *comp) :
      baseArray(comp->trMemory(), sizeHint + TR_numRuntimeHelpers),
      aliasBuilder(self(), sizeHint, comp),
-     _trMemory(comp->trMemory()),
      _fe(comp->fe()),
      _compilation(comp),
      _genericIntShadowSymbol(0),
@@ -143,8 +142,8 @@ OMR::SymbolReferenceTable::findOrCreateContiguousArraySizeSymbolRef()
 
       // Size field is 32-bits on ALL header shapes.
       //
-      sym = TR::Symbol::createShadow(trHeapMemory(), TR::Int32);
-      element(contiguousArraySizeSymbol) = new (trHeapMemory()) TR::SymbolReference(self(), contiguousArraySizeSymbol, sym);
+      sym = TR::Symbol::createShadow(comp()->trHeapMemory(), TR::Int32);
+      element(contiguousArraySizeSymbol) = new (comp()->trHeapMemory()) TR::SymbolReference(self(), contiguousArraySizeSymbol, sym);
       element(contiguousArraySizeSymbol)->setOffset(fe()->getOffsetOfContiguousArraySizeField());
       }
    return element(contiguousArraySizeSymbol);
@@ -156,12 +155,12 @@ OMR::SymbolReferenceTable::findOrCreateVftSymbolRef()
    {
    if (!element(vftSymbol))
       {
-      TR::Symbol * sym = TR::Symbol::createShadow(trHeapMemory(), TR::Address);
+      TR::Symbol * sym = TR::Symbol::createShadow(comp()->trHeapMemory(), TR::Address);
       sym->setClassObject();
       if (!TR::Compiler->cls.classObjectsMayBeCollected())
          sym->setNotCollected();
 
-      element(vftSymbol) = new (trHeapMemory()) TR::SymbolReference(self(), vftSymbol, sym);
+      element(vftSymbol) = new (comp()->trHeapMemory()) TR::SymbolReference(self(), vftSymbol, sym);
       element(vftSymbol)->setOffset(TR::Compiler->om.offsetOfObjectVftField());
       }
    return element(vftSymbol);
@@ -187,12 +186,12 @@ OMR::SymbolReferenceTable::findOrCreateVtableEntrySymbolRef(TR::ResolvedMethodSy
       if ((symRef->getOffset() == vtableSlot))
          return symRef;
 
-   TR::Symbol * sym = TR::Symbol::createShadow(trHeapMemory(), TR::Address);
+   TR::Symbol * sym = TR::Symbol::createShadow(comp()->trHeapMemory(), TR::Address);
 
    if (!TR::Compiler->cls.classObjectsMayBeCollected())
       sym->setNotCollected();
 
-   symRef = new (trHeapMemory()) TR::SymbolReference(self(), sym, vtableSlot);
+   symRef = new (comp()->trHeapMemory()) TR::SymbolReference(self(), sym, vtableSlot);
    symRef->setOwningMethodIndex(index);
    _vtableEntrySymbolRefs.add(symRef);
 
@@ -205,8 +204,8 @@ OMR::SymbolReferenceTable::findOrCreateIndexableSizeSymbolRef()
    {
    if (!element(indexableSizeSymbol))
       {
-      TR::Symbol * sym = TR::Symbol::createShadow(trHeapMemory(), TR::Int32);
-      element(indexableSizeSymbol) = new (trHeapMemory()) TR::SymbolReference(self(), indexableSizeSymbol, sym);
+      TR::Symbol * sym = TR::Symbol::createShadow(comp()->trHeapMemory(), TR::Int32);
+      element(indexableSizeSymbol) = new (comp()->trHeapMemory()) TR::SymbolReference(self(), indexableSizeSymbol, sym);
       element(indexableSizeSymbol)->setOffset(fe()->getOffsetOfIndexableSizeField());
       }
    return element(indexableSizeSymbol);
@@ -316,9 +315,9 @@ OMR::SymbolReferenceTable::findOrCreateExcpSymbolRef()
    {
    if (!element(excpSymbol))
       {
-      TR::Symbol * sym = TR::RegisterMappedSymbol::createMethodMetaDataSymbol(trHeapMemory(), "ExceptionMeta");
+      TR::Symbol * sym = TR::RegisterMappedSymbol::createMethodMetaDataSymbol(comp()->trHeapMemory(), "ExceptionMeta");
       sym->setDataType(TR::Address);
-      element(excpSymbol) = new (trHeapMemory()) TR::SymbolReference(self(), excpSymbol, sym);
+      element(excpSymbol) = new (comp()->trHeapMemory()) TR::SymbolReference(self(), excpSymbol, sym);
       element(excpSymbol)->setOffset(TR::Compiler->vm.thisThreadGetPendingExceptionOffset());
 
       // We can't let the load/store of the exception symbol swing down
@@ -334,10 +333,10 @@ OMR::SymbolReferenceTable::findOrCreateOSRReturnAddressSymbolRef()
    {
    if (!element(osrReturnAddressSymbol))
       {
-      TR::Symbol * sym = TR::RegisterMappedSymbol::createMethodMetaDataSymbol(trHeapMemory(), "osrReturnAddress");
+      TR::Symbol * sym = TR::RegisterMappedSymbol::createMethodMetaDataSymbol(comp()->trHeapMemory(), "osrReturnAddress");
       sym->setDataType(TR::Address);
       sym->setNotCollected();
-      element(osrReturnAddressSymbol) = new (trHeapMemory()) TR::SymbolReference(self(), osrReturnAddressSymbol, sym);
+      element(osrReturnAddressSymbol) = new (comp()->trHeapMemory()) TR::SymbolReference(self(), osrReturnAddressSymbol, sym);
       element(osrReturnAddressSymbol)->setOffset(TR::Compiler->vm.thisThreadGetOSRReturnAddressOffset(comp()));
 
       // We can't let the load/store of the exception symbol swing down
@@ -365,10 +364,10 @@ OMR::SymbolReferenceTable::findOrCreateArrayletShadowSymbolRef(TR::DataType type
    int32_t index = getArrayletShadowIndex(TR::Address);
    if (!baseArray.element(index))
       {
-      TR::Symbol * sym = TR::Symbol::createShadow(trHeapMemory(),TR::Address);
+      TR::Symbol * sym = TR::Symbol::createShadow(comp()->trHeapMemory(),TR::Address);
       sym->setArrayletShadowSymbol();
       sym->setNotCollected();
-      TR::SymbolReference *symRef = new (trHeapMemory()) TR::SymbolReference(self(), index, sym);
+      TR::SymbolReference *symRef = new (comp()->trHeapMemory()) TR::SymbolReference(self(), index, sym);
       baseArray.element(index) = symRef;
       symRef->setCanGCandReturn();
       baseArray.element(index)->setCPIndex(-1);
@@ -385,9 +384,9 @@ OMR::SymbolReferenceTable::findOrCreateArrayShadowSymbolRef(TR::DataType type, T
    int32_t index = getArrayShadowIndex(type);
    if (!baseArray.element(index))
       {
-      TR::Symbol * sym = TR::Symbol::createShadow(trHeapMemory(),type);
+      TR::Symbol * sym = TR::Symbol::createShadow(comp()->trHeapMemory(),type);
       sym->setArrayShadowSymbol();
-      baseArray.element(index) = new (trHeapMemory()) TR::SymbolReference(self(), index, sym);
+      baseArray.element(index) = new (comp()->trHeapMemory()) TR::SymbolReference(self(), index, sym);
       baseArray.element(index)->setCPIndex(-1);
       aliasBuilder.arrayElementSymRefs().set(index);
       }
@@ -402,9 +401,9 @@ OMR::SymbolReferenceTable::findOrCreateArrayShadowSymbolRef(TR::DataType type, T
    int32_t index = getArrayShadowIndex(type);
    if (!baseArray.element(index))
       {
-      TR::Symbol * sym = TR::Symbol::createShadow(trHeapMemory(),type, size);
+      TR::Symbol * sym = TR::Symbol::createShadow(comp()->trHeapMemory(),type, size);
       sym->setArrayShadowSymbol();
-      baseArray.element(index) = new (trHeapMemory()) TR::SymbolReference(self(), index, sym);
+      baseArray.element(index) = new (comp()->trHeapMemory()) TR::SymbolReference(self(), index, sym);
       baseArray.element(index)->setCPIndex(-1);
       baseArray.element(index)->setReallySharesSymbol();
       aliasBuilder.arrayElementSymRefs().set(index);
@@ -448,7 +447,7 @@ OMR::SymbolReferenceTable::findOrCreateImmutableArrayShadowSymbolRef(TR::DataTyp
    TR::SymbolReference * symRef = findOrCreateArrayShadowSymbolRef(elementType);
    symRef->setReallySharesSymbol();
 
-   TR::SymbolReference *newRef = new (trHeapMemory()) TR::SymbolReference(self(), (TR::Symbol *) symRef->getSymbol());
+   TR::SymbolReference *newRef = new (comp()->trHeapMemory()) TR::SymbolReference(self(), (TR::Symbol *) symRef->getSymbol());
    newRef->setReallySharesSymbol();
    newRef->setCPIndex(-1);
 
@@ -489,7 +488,7 @@ OMR::SymbolReferenceTable::createRefinedArrayShadowSymbolRef(
    const bool trace=false;
    sym->setArrayShadowSymbol();
 
-   TR::SymbolReference *newRef = new (trHeapMemory()) TR::SymbolReference(self(), sym);
+   TR::SymbolReference *newRef = new (comp()->trHeapMemory()) TR::SymbolReference(self(), sym);
    newRef->setReallySharesSymbol();
 
    int32_t index = newRef->getReferenceNumber();
@@ -533,11 +532,11 @@ OMR::SymbolReferenceTable::findOrCreateRecompilationCounterSymbolRef(void *count
    {
    if (!element(recompilationCounterSymbol))
       {
-      TR::StaticSymbol * sym = TR::StaticSymbol::create(trHeapMemory(),TR::Int32);
+      TR::StaticSymbol * sym = TR::StaticSymbol::create(comp()->trHeapMemory(),TR::Int32);
       sym->setStaticAddress(counterAddress);
       sym->setRecompilationCounter();
       sym->setNotDataAddress();
-      element(recompilationCounterSymbol) = new (trHeapMemory()) TR::SymbolReference(self(), recompilationCounterSymbol, sym);
+      element(recompilationCounterSymbol) = new (comp()->trHeapMemory()) TR::SymbolReference(self(), recompilationCounterSymbol, sym);
       }
    return element(recompilationCounterSymbol);
    }
@@ -548,10 +547,10 @@ OMR::SymbolReferenceTable::findOrCreateArrayCopySymbol()
    {
    if (!element(arrayCopySymbol))
       {
-      TR::MethodSymbol * sym = TR::MethodSymbol::create(trHeapMemory(),TR_Helper);
+      TR::MethodSymbol * sym = TR::MethodSymbol::create(comp()->trHeapMemory(),TR_Helper);
       sym->setHelper();
 
-      element(arrayCopySymbol) = new (trHeapMemory()) TR::SymbolReference(self(), arrayCopySymbol, sym);
+      element(arrayCopySymbol) = new (comp()->trHeapMemory()) TR::SymbolReference(self(), arrayCopySymbol, sym);
       }
    return element(arrayCopySymbol);
    }
@@ -562,10 +561,10 @@ OMR::SymbolReferenceTable::findOrCreateArraySetSymbol()
    {
    if (!element(arraySetSymbol))
       {
-      TR::MethodSymbol * sym = TR::MethodSymbol::create(trHeapMemory(),TR_Helper);
+      TR::MethodSymbol * sym = TR::MethodSymbol::create(comp()->trHeapMemory(),TR_Helper);
       sym->setHelper();
 
-      element(arraySetSymbol) = new (trHeapMemory()) TR::SymbolReference(self(), arraySetSymbol, sym);
+      element(arraySetSymbol) = new (comp()->trHeapMemory()) TR::SymbolReference(self(), arraySetSymbol, sym);
       }
    return element(arraySetSymbol);
    }
@@ -575,10 +574,10 @@ OMR::SymbolReferenceTable::findOrCreatePrefetchSymbol()
    {
    if (!element(prefetchSymbol))
       {
-      TR::MethodSymbol * sym = TR::MethodSymbol::create(trHeapMemory(),TR_Helper);
+      TR::MethodSymbol * sym = TR::MethodSymbol::create(comp()->trHeapMemory(),TR_Helper);
       sym->setHelper();
 
-      element(prefetchSymbol) = new (trHeapMemory()) TR::SymbolReference(self(), prefetchSymbol, sym);
+      element(prefetchSymbol) = new (comp()->trHeapMemory()) TR::SymbolReference(self(), prefetchSymbol, sym);
       }
    return element(prefetchSymbol);
    }
@@ -588,10 +587,10 @@ OMR::SymbolReferenceTable::findOrCreateArrayTranslateSymbol()
    {
    if (!element(arrayTranslateSymbol))
       {
-      TR::MethodSymbol * sym = TR::MethodSymbol::create(trHeapMemory(),TR_Helper);
+      TR::MethodSymbol * sym = TR::MethodSymbol::create(comp()->trHeapMemory(),TR_Helper);
       sym->setHelper();
 
-      element(arrayTranslateSymbol) = new (trHeapMemory()) TR::SymbolReference(self(), arrayTranslateSymbol, sym);
+      element(arrayTranslateSymbol) = new (comp()->trHeapMemory()) TR::SymbolReference(self(), arrayTranslateSymbol, sym);
       }
    return element(arrayTranslateSymbol);
    }
@@ -601,10 +600,10 @@ OMR::SymbolReferenceTable::findOrCreateArrayTranslateAndTestSymbol()
    {
    if (!element(arrayTranslateAndTestSymbol))
       {
-      TR::MethodSymbol * sym = TR::MethodSymbol::create(trHeapMemory(),TR_Helper);
+      TR::MethodSymbol * sym = TR::MethodSymbol::create(comp()->trHeapMemory(),TR_Helper);
       sym->setHelper();
 
-      element(arrayTranslateAndTestSymbol) = new (trHeapMemory()) TR::SymbolReference(self(), arrayTranslateAndTestSymbol, sym);
+      element(arrayTranslateAndTestSymbol) = new (comp()->trHeapMemory()) TR::SymbolReference(self(), arrayTranslateAndTestSymbol, sym);
       }
    return element(arrayTranslateAndTestSymbol);
    }
@@ -614,10 +613,10 @@ OMR::SymbolReferenceTable::findOrCreatelong2StringSymbol()
    {
    if (!element(long2StringSymbol))
       {
-      TR::MethodSymbol * sym = TR::MethodSymbol::create(trHeapMemory(),TR_Helper);
+      TR::MethodSymbol * sym = TR::MethodSymbol::create(comp()->trHeapMemory(),TR_Helper);
       sym->setHelper();
 
-      element(long2StringSymbol) = new (trHeapMemory()) TR::SymbolReference(self(), long2StringSymbol, sym);
+      element(long2StringSymbol) = new (comp()->trHeapMemory()) TR::SymbolReference(self(), long2StringSymbol, sym);
       }
    return element(long2StringSymbol);
    }
@@ -628,10 +627,10 @@ OMR::SymbolReferenceTable::findOrCreatebitOpMemSymbol()
    {
    if (!element(bitOpMemSymbol))
       {
-      TR::MethodSymbol * sym = TR::MethodSymbol::create(trHeapMemory(),TR_Helper);
+      TR::MethodSymbol * sym = TR::MethodSymbol::create(comp()->trHeapMemory(),TR_Helper);
       sym->setHelper();
 
-      element(bitOpMemSymbol) = new (trHeapMemory()) TR::SymbolReference(self(), bitOpMemSymbol, sym);
+      element(bitOpMemSymbol) = new (comp()->trHeapMemory()) TR::SymbolReference(self(), bitOpMemSymbol, sym);
       }
    return element(bitOpMemSymbol);
    }
@@ -641,10 +640,10 @@ OMR::SymbolReferenceTable::findOrCreateSinglePrecisionSQRTSymbol()
    {
    if (!element(singlePrecisionSQRTSymbol))
       {
-      TR::MethodSymbol * sym = TR::MethodSymbol::create(trHeapMemory(),TR_Helper);
+      TR::MethodSymbol * sym = TR::MethodSymbol::create(comp()->trHeapMemory(),TR_Helper);
       sym->setHelper();
 
-      element(singlePrecisionSQRTSymbol) = new (trHeapMemory()) TR::SymbolReference(self(), singlePrecisionSQRTSymbol, sym);
+      element(singlePrecisionSQRTSymbol) = new (comp()->trHeapMemory()) TR::SymbolReference(self(), singlePrecisionSQRTSymbol, sym);
       }
    return element(singlePrecisionSQRTSymbol);
    }
@@ -654,10 +653,10 @@ OMR::SymbolReferenceTable::findOrCreateArrayCmpSymbol()
    {
    if (!element(arrayCmpSymbol))
       {
-      TR::MethodSymbol * sym = TR::MethodSymbol::create(trHeapMemory(),TR_Helper);
+      TR::MethodSymbol * sym = TR::MethodSymbol::create(comp()->trHeapMemory(),TR_Helper);
       sym->setHelper();
 
-      element(arrayCmpSymbol) = new (trHeapMemory()) TR::SymbolReference(self(), arrayCmpSymbol, sym);
+      element(arrayCmpSymbol) = new (comp()->trHeapMemory()) TR::SymbolReference(self(), arrayCmpSymbol, sym);
       }
    return element(arrayCmpSymbol);
    }
@@ -667,10 +666,10 @@ OMR::SymbolReferenceTable::findOrCreateCurrentTimeMaxPrecisionSymbol()
    {
    if (!element(currentTimeMaxPrecisionSymbol))
       {
-      TR::MethodSymbol * sym = TR::MethodSymbol::create(trHeapMemory(),TR_Helper);
+      TR::MethodSymbol * sym = TR::MethodSymbol::create(comp()->trHeapMemory(),TR_Helper);
       sym->setHelper();
 
-      element(currentTimeMaxPrecisionSymbol) = new (trHeapMemory()) TR::SymbolReference(self(), currentTimeMaxPrecisionSymbol, sym);
+      element(currentTimeMaxPrecisionSymbol) = new (comp()->trHeapMemory()) TR::SymbolReference(self(), currentTimeMaxPrecisionSymbol, sym);
       }
    return element(currentTimeMaxPrecisionSymbol);
    }
@@ -680,16 +679,16 @@ OMR::SymbolReferenceTable::findOrCreateCurrentTimeMaxPrecisionSymbol()
 TR::SymbolReference *
 OMR::SymbolReferenceTable::createKnownStaticDataSymbolRef(void *dataAddress, TR::DataType type)
    {
-   TR::StaticSymbol * sym = TR::StaticSymbol::create(trHeapMemory(),type);
+   TR::StaticSymbol * sym = TR::StaticSymbol::create(comp()->trHeapMemory(),type);
    sym->setStaticAddress(dataAddress);
    sym->setNotCollected();
-   return new (trHeapMemory()) TR::SymbolReference(self(), sym);
+   return new (comp()->trHeapMemory()) TR::SymbolReference(self(), sym);
    }
 
 TR::SymbolReference *
 OMR::SymbolReferenceTable::createKnownStaticDataSymbolRef(void *dataAddress, TR::DataType type, TR::KnownObjectTable::Index knownObjectIndex)
    {
-   TR::StaticSymbol * sym = TR::StaticSymbol::create(trHeapMemory(),type);
+   TR::StaticSymbol * sym = TR::StaticSymbol::create(comp()->trHeapMemory(),type);
    sym->setStaticAddress(dataAddress);
    sym->setNotCollected();
    return TR::SymbolReference::create(self(), sym, knownObjectIndex);
@@ -701,10 +700,10 @@ OMR::SymbolReferenceTable::createKnownStaticReferenceSymbolRef(void *dataAddress
    char *name = "<known-static-reference>";
    if (knownObjectIndex != TR::KnownObjectTable::UNKNOWN)
       {
-      name = (char*)trMemory()->allocateMemory(25, heapAlloc);
+      name = (char*)comp()->trMemory()->allocateMemory(25, heapAlloc);
       sprintf(name, "<known-obj%d>", knownObjectIndex);
       }
-   TR::StaticSymbol * sym = TR::StaticSymbol::createNamed(trHeapMemory(), TR::Address, dataAddress,name);
+   TR::StaticSymbol * sym = TR::StaticSymbol::createNamed(comp()->trHeapMemory(), TR::Address, dataAddress,name);
    return TR::SymbolReference::create(self(), sym, knownObjectIndex);
    }
 
@@ -715,9 +714,9 @@ OMR::SymbolReferenceTable::createIsOverriddenSymbolRef(TR::ResolvedMethodSymbol 
    mcount_t index = calleeSymbol->getResolvedMethodIndex();
    TR::SymbolReference * symRef;
 
-   TR::StaticSymbol * sym = TR::StaticSymbol::create(trHeapMemory(),TR::Address);
+   TR::StaticSymbol * sym = TR::StaticSymbol::create(comp()->trHeapMemory(),TR::Address);
    sym->setStaticAddress(calleeSymbol->getResolvedMethod()->addressContainingIsOverriddenBit());
-   symRef = new (trHeapMemory()) TR::SymbolReference(self(), sym, index, -1);
+   symRef = new (comp()->trHeapMemory()) TR::SymbolReference(self(), sym, index, -1);
 
    aliasBuilder.addressStaticSymRefs().set(symRef->getReferenceNumber()); // add the symRef to the statics list to get correct aliasing info
    symRef->setOverriddenBitAddress();
@@ -731,14 +730,14 @@ OMR::SymbolReferenceTable::createRuntimeHelper(TR_RuntimeHelper index,
                                                bool             canGCandExcept,
                                                bool             preservesAllRegisters)
    {
-   TR::MethodSymbol * methodSymbol = TR::MethodSymbol::create(trHeapMemory(),runtimeHelperLinkage(index));
+   TR::MethodSymbol * methodSymbol = TR::MethodSymbol::create(comp()->trHeapMemory(),runtimeHelperLinkage(index));
    methodSymbol->setHelper();
    methodSymbol->setMethodAddress(runtimeHelperValue(index));
 
    if (preservesAllRegisters && !debug("noPreserveHelperRegisters"))
       methodSymbol->setPreservesAllRegisters();
 
-   TR::SymbolReference * sr = baseArray.element(index) = new (trHeapMemory()) TR::SymbolReference(self(), index, methodSymbol);
+   TR::SymbolReference * sr = baseArray.element(index) = new (comp()->trHeapMemory()) TR::SymbolReference(self(), index, methodSymbol);
 
    if (canGCandReturn)
       sr->setCanGCandReturn();
@@ -766,10 +765,10 @@ OMR::SymbolReferenceTable::findOrCreateCodeGenInlinedHelper(CommonNonhelperSymbo
    {
    if (!element(index))
       {
-      TR::MethodSymbol * sym = TR::MethodSymbol::create(trHeapMemory(),TR_None);
+      TR::MethodSymbol * sym = TR::MethodSymbol::create(comp()->trHeapMemory(),TR_None);
       sym->setHelper();
       sym->setIsInlinedByCG();
-      element(index) = new (trHeapMemory()) TR::SymbolReference(self(), index, sym);
+      element(index) = new (comp()->trHeapMemory()) TR::SymbolReference(self(), index, sym);
       }
    return element(index);
    }
@@ -880,7 +879,7 @@ OMR::SymbolReferenceTable::findOrCreateResolveCheckSymbolRef(TR::ResolvedMethodS
       // reference for aliasing purposes.
       //
       TR::SymbolReference *symRef = findOrCreateNullCheckSymbolRef(owningMethodSymbol);
-      element(resolveCheckSymbol) = new (trHeapMemory()) TR::SymbolReference(self(), resolveCheckSymbol, symRef->getSymbol());
+      element(resolveCheckSymbol) = new (comp()->trHeapMemory()) TR::SymbolReference(self(), resolveCheckSymbol, symRef->getSymbol());
       }
    return element(resolveCheckSymbol);
    }
@@ -940,10 +939,10 @@ OMR::SymbolReferenceTable::methodSymRefFromName(TR::ResolvedMethodSymbol * ownin
    {
    // Check _methodsBySignature to see if we've already created a symref for this one
    //
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    int32_t fullSignatureLength = strlen(className) + 1 + strlen(methodName) + strlen(methodSignature);
-   char *fullSignature = (char*)trMemory()->allocateMemory(1 + fullSignatureLength, stackAlloc);
+   char *fullSignature = (char*)comp()->trMemory()->allocateMemory(1 + fullSignatureLength, stackAlloc);
    sprintf(fullSignature, "%s.%s%s", className, methodName, methodSignature);
    TR_ASSERT(strlen(fullSignature) == fullSignatureLength, "Computed fullSignatureLength must match actual length of fullSignature");
    CS2::HashIndex hashIndex = 0;
@@ -1043,10 +1042,10 @@ OMR::SymbolReferenceTable::findOrCreateSymRefWithKnownObject(TR::SymbolReference
    TR_BitVector *bucket = _knownObjectSymrefsByObjectIndex[knownObjectIndex];
    if (!bucket)
       {
-      bucket = new (trHeapMemory()) TR_BitVector(baseArray.size(), trMemory(), heapAlloc, growable, TR_MemoryBase::SymbolReference);
+      bucket = new (comp()->trHeapMemory()) TR_BitVector(baseArray.size(), comp()->trMemory(), heapAlloc, growable, TR_MemoryBase::SymbolReference);
       _knownObjectSymrefsByObjectIndex[knownObjectIndex] = bucket;
       }
-   TR::SymbolReference *result = new (trHeapMemory()) TR::SymbolReference(self(), *originalSymRef, 0, knownObjectIndex);
+   TR::SymbolReference *result = new (comp()->trHeapMemory()) TR::SymbolReference(self(), *originalSymRef, 0, knownObjectIndex);
    bucket->set(result->getReferenceNumber());
 
    // If the known object symref is created for an immutable array shadow, it should be aliased to other array shadows as well
@@ -1070,10 +1069,10 @@ OMR::SymbolReferenceTable::createTempSymRefWithKnownObject(TR::Symbol *symbol, m
    TR_BitVector *bucket = _knownObjectSymrefsByObjectIndex[knownObjectIndex];
    if (!bucket)
       {
-      bucket = new (trHeapMemory()) TR_BitVector(baseArray.size(), trMemory(), heapAlloc, growable, TR_MemoryBase::SymbolReference);
+      bucket = new (comp()->trHeapMemory()) TR_BitVector(baseArray.size(), comp()->trMemory(), heapAlloc, growable, TR_MemoryBase::SymbolReference);
       _knownObjectSymrefsByObjectIndex[knownObjectIndex] = bucket;
       }
-   TR::SymbolReference * symRef = new (trHeapMemory()) TR::SymbolReference(self(), symbol, owningMethodIndex, slot, 0 /*unresolvedIndex*/, knownObjectIndex);
+   TR::SymbolReference * symRef = new (comp()->trHeapMemory()) TR::SymbolReference(self(), symbol, owningMethodIndex, slot, 0 /*unresolvedIndex*/, knownObjectIndex);
    bucket->set(symRef->getReferenceNumber());
    return symRef;
    }
@@ -1130,7 +1129,7 @@ void OMR::SymbolReferenceTable::markBlockAsCold()
 char *
 OMR::SymbolReferenceTable::strdup(const char *arg)
    {
-   char *result = (char*)trMemory()->allocateMemory(1+strlen(arg), heapAlloc, TR_MemoryBase::SymbolReferenceTable);
+   char *result = (char*)comp()->trMemory()->allocateMemory(1+strlen(arg), heapAlloc, TR_MemoryBase::SymbolReferenceTable);
    strcpy(result, arg);
    return result;
    }
@@ -1139,7 +1138,7 @@ TR::Symbol *
 OMR::SymbolReferenceTable::findOrCreateGenericIntShadowSymbol()
    {
    if (!_genericIntShadowSymbol)
-      _genericIntShadowSymbol = TR::Symbol::createShadow(trHeapMemory(),TR::Int32);
+      _genericIntShadowSymbol = TR::Symbol::createShadow(comp()->trHeapMemory(),TR::Int32);
 
    return _genericIntShadowSymbol;
    }
@@ -1154,7 +1153,7 @@ OMR::SymbolReferenceTable::findOrCreateGenericIntShadowSymbolReference(intptr_t 
 TR::SymbolReference *
 OMR::SymbolReferenceTable::createGenericIntShadowSymbolReference(intptr_t offset, bool allocateUseDefBitVector)
    {
-   TR::SymbolReference * symRef = new (trHeapMemory()) TR::SymbolReference(self(), findOrCreateGenericIntShadowSymbol(), comp()->getMethodSymbol()->getResolvedMethodIndex(), -1);
+   TR::SymbolReference * symRef = new (comp()->trHeapMemory()) TR::SymbolReference(self(), findOrCreateGenericIntShadowSymbol(), comp()->getMethodSymbol()->getResolvedMethodIndex(), -1);
    symRef->setOffset(offset);
    symRef->setReallySharesSymbol();
    aliasBuilder.intShadowSymRefs().set(symRef->getReferenceNumber());
@@ -1171,7 +1170,7 @@ OMR::SymbolReferenceTable::createGenericIntShadowSymbolReference(intptr_t offset
 TR::SymbolReference *
 OMR::SymbolReferenceTable::findOrCreateGenericIntArrayShadowSymbolReference(intptr_t offset)
    {
-   TR::SymbolReference * symRef = new (trHeapMemory()) TR::SymbolReference(self(), findOrCreateGenericIntShadowSymbol(), comp()->getMethodSymbol()->getResolvedMethodIndex(), -1);
+   TR::SymbolReference * symRef = new (comp()->trHeapMemory()) TR::SymbolReference(self(), findOrCreateGenericIntShadowSymbol(), comp()->getMethodSymbol()->getResolvedMethodIndex(), -1);
    symRef->setOffset(offset);
    symRef->setReallySharesSymbol();
    aliasBuilder.intShadowSymRefs().set(symRef->getReferenceNumber());
@@ -1183,7 +1182,7 @@ OMR::SymbolReferenceTable::findOrCreateGenericIntArrayShadowSymbolReference(intp
 TR::SymbolReference *
 OMR::SymbolReferenceTable::findOrCreateGenericIntNonArrayShadowSymbolReference(intptr_t offset)
    {
-   TR::SymbolReference * symRef = new (trHeapMemory()) TR::SymbolReference(self(), findOrCreateGenericIntShadowSymbol(), comp()->getMethodSymbol()->getResolvedMethodIndex(), -1);
+   TR::SymbolReference * symRef = new (comp()->trHeapMemory()) TR::SymbolReference(self(), findOrCreateGenericIntShadowSymbol(), comp()->getMethodSymbol()->getResolvedMethodIndex(), -1);
    symRef->setOffset(offset);
    symRef->setReallySharesSymbol();
    aliasBuilder.intShadowSymRefs().set(symRef->getReferenceNumber());
@@ -1221,11 +1220,11 @@ OMR::SymbolReferenceTable::findOrCreateGCRPatchPointSymbolRef()
    {
    if (!element(gcrPatchPointSymbol))
       {
-      TR::StaticSymbol * sym = TR::StaticSymbol::create(trHeapMemory(),TR::Int8); // Is this 32 bit?
+      TR::StaticSymbol * sym = TR::StaticSymbol::create(comp()->trHeapMemory(),TR::Int8); // Is this 32 bit?
       sym->setStaticAddress(0);
       sym->setGCRPatchPoint(); // set the flag
       sym->setNotDataAddress();
-      element(gcrPatchPointSymbol) = new (trHeapMemory()) TR::SymbolReference(self(), gcrPatchPointSymbol, sym);
+      element(gcrPatchPointSymbol) = new (comp()->trHeapMemory()) TR::SymbolReference(self(), gcrPatchPointSymbol, sym);
       }
    return element(gcrPatchPointSymbol);
    }
@@ -1236,11 +1235,11 @@ OMR::SymbolReferenceTable::findOrCreateStartPCSymbolRef()
    {
    if (!element(startPCSymbol))
       {
-      TR::StaticSymbol * sym = TR::StaticSymbol::create(trHeapMemory(),TR::Int32);
+      TR::StaticSymbol * sym = TR::StaticSymbol::create(comp()->trHeapMemory(),TR::Int32);
       sym->setStaticAddress(0);
       sym->setStartPC();
       sym->setNotDataAddress();
-      element(startPCSymbol) = new (trHeapMemory()) TR::SymbolReference(self(), startPCSymbol, sym);
+      element(startPCSymbol) = new (comp()->trHeapMemory()) TR::SymbolReference(self(), startPCSymbol, sym);
       }
    return element(startPCSymbol);
    }
@@ -1251,7 +1250,7 @@ OMR::SymbolReferenceTable::findOrCreateCounterAddressSymbolRef()
    {
    if (!element(counterAddressSymbol))
       {
-      TR::StaticSymbol * sym = TR::StaticSymbol::create(trHeapMemory(),TR::Address);
+      TR::StaticSymbol * sym = TR::StaticSymbol::create(comp()->trHeapMemory(),TR::Address);
 
 #ifdef J9_PROJECT_SPECIFIC
 #ifdef TR_HOST_S390
@@ -1265,7 +1264,7 @@ OMR::SymbolReferenceTable::findOrCreateCounterAddressSymbolRef()
       sym->setNotCollected();
       sym->setRecompilationCounter();
       sym->setNotDataAddress();
-      element(counterAddressSymbol) = new (trHeapMemory()) TR::SymbolReference(self(), counterAddressSymbol, sym);
+      element(counterAddressSymbol) = new (comp()->trHeapMemory()) TR::SymbolReference(self(), counterAddressSymbol, sym);
       }
    return element(counterAddressSymbol);
    }
@@ -1381,10 +1380,10 @@ OMR::SymbolReferenceTable::findOrCreateCPSymbol(
          }
       }
 
-   sym = TR::StaticSymbol::create(trHeapMemory(),dataType);
+   sym = TR::StaticSymbol::create(comp()->trHeapMemory(),dataType);
    int32_t unresolvedIndex = resolved ? 0 : _numUnresolvedSymbols++;
 
-   symRef = new (trHeapMemory()) TR::SymbolReference(self(), sym, owningMethodSymbol->getResolvedMethodIndex(), cpIndex, unresolvedIndex, knownObjectIndex);
+   symRef = new (comp()->trHeapMemory()) TR::SymbolReference(self(), sym, owningMethodSymbol->getResolvedMethodIndex(), cpIndex, unresolvedIndex, knownObjectIndex);
 
    if (resolved)
       sym->setStaticAddress(dataAddress);
@@ -1463,7 +1462,7 @@ OMR::SymbolReferenceTable::findOrCreateMethodSymbol(
    bool canGCandExcept = true;
    if (resolvedMethod)
       {
-      TR::ResolvedMethodSymbol *resSym = TR::ResolvedMethodSymbol::create(trHeapMemory(),resolvedMethod,comp());
+      TR::ResolvedMethodSymbol *resSym = TR::ResolvedMethodSymbol::create(comp()->trHeapMemory(),resolvedMethod,comp());
       sym = resSym;
 #ifdef J9_PROJECT_SPECIFIC
       canGCandReturn = !(resSym->canDirectNativeCall() || resSym->getRecognizedMethod()==TR::java_lang_System_arraycopy);
@@ -1475,14 +1474,14 @@ OMR::SymbolReferenceTable::findOrCreateMethodSymbol(
 #ifdef J9_PROJECT_SPECIFIC
       TR_J9VMBase *fej9 = (TR_J9VMBase *)(fe());
       unresolvedIndex = _numUnresolvedSymbols++;
-      sym = TR::MethodSymbol::create(trHeapMemory(),TR_Private,fej9->createMethod(trMemory(),owningMethod->containingClass(),cpIndex));
+      sym = TR::MethodSymbol::create(comp()->trHeapMemory(),TR_Private,fej9->createMethod(comp()->trMemory(),owningMethod->containingClass(),cpIndex));
 #else
       TR_ASSERT(0, "expecting a resolved method");
 #endif
       }
    sym->setMethodKind(callKind);
 
-   symRef = new (trHeapMemory()) TR::SymbolReference(self(), sym, owningMethodIndex, cpIndex, unresolvedIndex);
+   symRef = new (comp()->trHeapMemory()) TR::SymbolReference(self(), sym, owningMethodIndex, cpIndex, unresolvedIndex);
    if (canGCandReturn)
       symRef->setCanGCandReturn();
    if (canGCandExcept)
@@ -1606,8 +1605,8 @@ OMR::SymbolReferenceTable::findOrCreateAutoSymbolImpl(TR::ResolvedMethodSymbol *
 
       if (isInternalPointer)
          {
-         sym = size ? TR::AutomaticSymbol::createInternalPointer(trHeapMemory(), type, size, comp()->fe()) :
-                      TR::AutomaticSymbol::createInternalPointer(trHeapMemory(), type);
+         sym = size ? TR::AutomaticSymbol::createInternalPointer(comp()->trHeapMemory(), type, size, comp()->fe()) :
+                      TR::AutomaticSymbol::createInternalPointer(comp()->trHeapMemory(), type);
          _numInternalPointers++;
          if (_numInternalPointers > comp()->maxInternalPointers())
             {
@@ -1616,8 +1615,8 @@ OMR::SymbolReferenceTable::findOrCreateAutoSymbolImpl(TR::ResolvedMethodSymbol *
          }
       else
          {
-         sym = size ? TR::AutomaticSymbol::create(trHeapMemory(),type,size) :
-                      TR::AutomaticSymbol::create(trHeapMemory(),type);
+         sym = size ? TR::AutomaticSymbol::create(comp()->trHeapMemory(),type,size) :
+                      TR::AutomaticSymbol::create(comp()->trHeapMemory(),type);
          }
 
       sym->setSlotSharedByRefAndNonRef(slotSharedbyRefAndNonRef);
@@ -1641,7 +1640,7 @@ OMR::SymbolReferenceTable::findOrCreateAutoSymbolImpl(TR::ResolvedMethodSymbol *
          }
 
       if (knownObjectIndex == TR::KnownObjectTable::UNKNOWN)
-         symRef = new (trHeapMemory()) TR::SymbolReference(self(), sym, owningMethodIndex, slot);
+         symRef = new (comp()->trHeapMemory()) TR::SymbolReference(self(), sym, owningMethodIndex, slot);
       else
          symRef = createTempSymRefWithKnownObject(sym, owningMethodIndex, slot, knownObjectIndex);
 
@@ -1726,11 +1725,11 @@ TR::ParameterSymbol *
 OMR::SymbolReferenceTable::createParameterSymbol(
    TR::ResolvedMethodSymbol * owningMethodSymbol, int32_t slot, TR::DataType type, TR::KnownObjectTable::Index knownObjectIndex)
    {
-   TR::ParameterSymbol * sym = TR::ParameterSymbol::create(trHeapMemory(),type,slot);
+   TR::ParameterSymbol * sym = TR::ParameterSymbol::create(comp()->trHeapMemory(),type,slot);
 
    TR::SymbolReference *symRef = NULL;
    if (knownObjectIndex == TR::KnownObjectTable::UNKNOWN)
-      symRef = new (trHeapMemory()) TR::SymbolReference(self(), sym, owningMethodSymbol->getResolvedMethodIndex(), slot);
+      symRef = new (comp()->trHeapMemory()) TR::SymbolReference(self(), sym, owningMethodSymbol->getResolvedMethodIndex(), slot);
    else
       symRef = createTempSymRefWithKnownObject(sym, owningMethodSymbol->getResolvedMethodIndex(), slot, knownObjectIndex);
 
@@ -1783,10 +1782,10 @@ OMR::SymbolReferenceTable::findOrCreatePendingPushTemporary(
    }
 
 TR::SymbolReference *
-OMR::SymbolReferenceTable::createNamedStatic(TR::ResolvedMethodSymbol *owningMethodSymbol, TR::DataType type, const char *name) 
+OMR::SymbolReferenceTable::createNamedStatic(TR::ResolvedMethodSymbol *owningMethodSymbol, TR::DataType type, const char *name)
    {
-   TR::StaticSymbol * sym = TR::StaticSymbol::createNamed(trHeapMemory(),type, name);
-   return new (trHeapMemory()) TR::SymbolReference(self(),sym,owningMethodSymbol->getResolvedMethodIndex(),owningMethodSymbol->incTempIndex(fe()));
+   TR::StaticSymbol * sym = TR::StaticSymbol::createNamed(comp()->trHeapMemory(),type, name);
+   return new (comp()->trHeapMemory()) TR::SymbolReference(self(),sym,owningMethodSymbol->getResolvedMethodIndex(),owningMethodSymbol->incTempIndex(fe()));
    }
 
 TR::SymbolReference *
@@ -1796,10 +1795,10 @@ OMR::SymbolReferenceTable::createLocalObject(int32_t objectSize, TR::ResolvedMet
    TR_ResolvedMethod * method            = owningMethodSymbol->getResolvedMethod();
    mcount_t            owningMethodIndex = owningMethodSymbol->getResolvedMethodIndex();
 
-   TR::AutomaticSymbol  * sym             = TR::AutomaticSymbol::createLocalObject(trHeapMemory(), TR::New, classSymRef, TR::Aggregate, objectSize, fe());
+   TR::AutomaticSymbol  * sym             = TR::AutomaticSymbol::createLocalObject(comp()->trHeapMemory(), TR::New, classSymRef, TR::Aggregate, objectSize, fe());
    sym->setBehaveLikeNonTemp();
    owningMethodSymbol->addAutomatic(sym);
-   TR::SymbolReference *symRef = new (trHeapMemory()) TR::SymbolReference(self(), sym, owningMethodIndex, slot);
+   TR::SymbolReference *symRef = new (comp()->trHeapMemory()) TR::SymbolReference(self(), sym, owningMethodIndex, slot);
    owningMethodSymbol->getAutoSymRefs(slot).add(symRef);
    return symRef;
    }
@@ -1811,10 +1810,10 @@ OMR::SymbolReferenceTable::createLocalAddrArray(int32_t objectSize, TR::Resolved
    TR_ResolvedMethod * method            = owningMethodSymbol->getResolvedMethod();
    mcount_t            owningMethodIndex = owningMethodSymbol->getResolvedMethodIndex();
 
-   TR::AutomaticSymbol  * sym             = TR::AutomaticSymbol::createLocalObject(trHeapMemory(),TR::anewarray, classSymRef, TR::Aggregate, objectSize, fe());
+   TR::AutomaticSymbol  * sym             = TR::AutomaticSymbol::createLocalObject(comp()->trHeapMemory(),TR::anewarray, classSymRef, TR::Aggregate, objectSize, fe());
    sym->setBehaveLikeNonTemp();
    owningMethodSymbol->addAutomatic(sym);
-   TR::SymbolReference *symRef = new (trHeapMemory()) TR::SymbolReference(self(), sym, owningMethodIndex, slot);
+   TR::SymbolReference *symRef = new (comp()->trHeapMemory()) TR::SymbolReference(self(), sym, owningMethodIndex, slot);
    owningMethodSymbol->getAutoSymRefs(slot).add(symRef);
    return symRef;
    }
@@ -1826,11 +1825,11 @@ OMR::SymbolReferenceTable::createLocalPrimArray(int32_t objectSize, TR::Resolved
    TR_ResolvedMethod * method            = owningMethodSymbol->getResolvedMethod();
    mcount_t            owningMethodIndex = owningMethodSymbol->getResolvedMethodIndex();
 
-   TR::AutomaticSymbol  * sym             = TR::AutomaticSymbol::createLocalObject(trHeapMemory(), arrayType, TR::Aggregate, objectSize, fe());
+   TR::AutomaticSymbol  * sym             = TR::AutomaticSymbol::createLocalObject(comp()->trHeapMemory(), arrayType, TR::Aggregate, objectSize, fe());
    sym->setBehaveLikeNonTemp();
    sym->setNotCollected();
    owningMethodSymbol->addAutomatic(sym);
-   TR::SymbolReference *symRef = new (trHeapMemory()) TR::SymbolReference(self(), sym, owningMethodIndex, slot);
+   TR::SymbolReference *symRef = new (comp()->trHeapMemory()) TR::SymbolReference(self(), sym, owningMethodIndex, slot);
    owningMethodSymbol->getAutoSymRefs(slot).add(symRef);
    return symRef;
    }
@@ -1850,9 +1849,9 @@ OMR::SymbolReferenceTable::findOrCreateCounterSymRef(char *name, TR::DataType d,
 
    // No match
    //
-   TR::StaticSymbol * sym = TR::StaticSymbol::createNamed(trHeapMemory(), d,address,name);
+   TR::StaticSymbol * sym = TR::StaticSymbol::createNamed(comp()->trHeapMemory(), d,address,name);
    sym->setNotDataAddress();
-   result = new (trHeapMemory()) TR::SymbolReference(self(),sym);
+   result = new (comp()->trHeapMemory()) TR::SymbolReference(self(),sym);
    _debugCounterSymbolRefs.add(result);
    return result;
    }
@@ -1861,7 +1860,7 @@ OMR::SymbolReferenceTable::findOrCreateCounterSymRef(char *name, TR::DataType d,
 TR::SymbolReference *
 OMR::SymbolReferenceTable::createSymbolReference(TR::Symbol *sym, intptr_t offset)
    {
-   TR::SymbolReference *ref = new (trHeapMemory()) TR::SymbolReference(self(), sym, offset);
+   TR::SymbolReference *ref = new (comp()->trHeapMemory()) TR::SymbolReference(self(), sym, offset);
    ref->setSymbol(sym);
    return ref;
    }
@@ -2007,9 +2006,9 @@ OMR::SymbolReferenceTable::findOrCreateJProfileValuePlaceHolderSymbolRef()
    {
    if (!element(jProfileValueSymbol))
       {
-      TR::MethodSymbol * sym = TR::MethodSymbol::create(trHeapMemory(),TR_None);
+      TR::MethodSymbol * sym = TR::MethodSymbol::create(comp()->trHeapMemory(),TR_None);
       sym->setHelper();
-      element(jProfileValueSymbol) = new (trHeapMemory()) TR::SymbolReference(self(), jProfileValueSymbol, sym);
+      element(jProfileValueSymbol) = new (comp()->trHeapMemory()) TR::SymbolReference(self(), jProfileValueSymbol, sym);
       }
    return element(jProfileValueSymbol);
    }
@@ -2019,11 +2018,11 @@ OMR::SymbolReferenceTable::findOrCreateJProfileValuePlaceHolderWithNullCHKSymbol
    {
    if (!element(jProfileValueWithNullCHKSymbol))
       {
-      TR::MethodSymbol * sym = TR::MethodSymbol::create(trHeapMemory(),TR_None);
+      TR::MethodSymbol * sym = TR::MethodSymbol::create(comp()->trHeapMemory(),TR_None);
       sym->setHelper();
-      element(jProfileValueWithNullCHKSymbol) = new (trHeapMemory()) TR::SymbolReference(self(), jProfileValueWithNullCHKSymbol, sym);
+      element(jProfileValueWithNullCHKSymbol) = new (comp()->trHeapMemory()) TR::SymbolReference(self(), jProfileValueWithNullCHKSymbol, sym);
       }
-   return element(jProfileValueWithNullCHKSymbol); 
+   return element(jProfileValueWithNullCHKSymbol);
    }
 
 TR::SymbolReference *
@@ -2031,9 +2030,9 @@ OMR::SymbolReferenceTable::findOrCreatePotentialOSRPointHelperSymbolRef()
    {
    if (!element(potentialOSRPointHelperSymbol))
       {
-      TR::MethodSymbol * sym = TR::MethodSymbol::create(trHeapMemory(), TR_None);
+      TR::MethodSymbol * sym = TR::MethodSymbol::create(comp()->trHeapMemory(), TR_None);
       sym->setHelper();
-      TR::SymbolReference* symRef = new (trHeapMemory()) TR::SymbolReference(self(), potentialOSRPointHelperSymbol, sym);
+      TR::SymbolReference* symRef = new (comp()->trHeapMemory()) TR::SymbolReference(self(), potentialOSRPointHelperSymbol, sym);
       element(potentialOSRPointHelperSymbol) = symRef;
       }
    return element(potentialOSRPointHelperSymbol);
@@ -2044,9 +2043,9 @@ OMR::SymbolReferenceTable::findOrCreateOSRFearPointHelperSymbolRef()
    {
    if (!element(osrFearPointHelperSymbol))
       {
-      TR::MethodSymbol * sym = TR::MethodSymbol::create(trHeapMemory(), TR_None);
+      TR::MethodSymbol * sym = TR::MethodSymbol::create(comp()->trHeapMemory(), TR_None);
       sym->setHelper();
-      TR::SymbolReference* symRef = new (trHeapMemory()) TR::SymbolReference(self(), osrFearPointHelperSymbol, sym);
+      TR::SymbolReference* symRef = new (comp()->trHeapMemory()) TR::SymbolReference(self(), osrFearPointHelperSymbol, sym);
       element(osrFearPointHelperSymbol) = symRef;
       }
    return element(osrFearPointHelperSymbol);
@@ -2057,9 +2056,9 @@ OMR::SymbolReferenceTable::findOrCreateEAEscapeHelperSymbolRef()
    {
    if (!element(eaEscapeHelperSymbol))
       {
-      TR::MethodSymbol* sym = TR::MethodSymbol::create(trHeapMemory(), TR_None);
+      TR::MethodSymbol* sym = TR::MethodSymbol::create(comp()->trHeapMemory(), TR_None);
       sym->setHelper();
-      TR::SymbolReference* symRef = new (trHeapMemory()) TR::SymbolReference(self(), eaEscapeHelperSymbol, sym);
+      TR::SymbolReference* symRef = new (comp()->trHeapMemory()) TR::SymbolReference(self(), eaEscapeHelperSymbol, sym);
       element(eaEscapeHelperSymbol) = symRef;
       }
    return element(eaEscapeHelperSymbol);

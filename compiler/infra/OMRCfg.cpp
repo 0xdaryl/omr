@@ -781,7 +781,7 @@ bool OMR::CFG::removeEdge(TR::CFGEdge *edge)
    TR::CFGNode *from = edge->getFrom();
    TR::CFGNode *to = edge->getTo();
 
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    _mightHaveUnreachableBlocks = true;
 
@@ -813,7 +813,7 @@ bool OMR::CFG::removeEdge(TR::CFGEdge *edge)
    if (comp()->getOption(TR_TraceAddAndRemoveEdge))
       traceMsg(comp(), "\nRemoving edge %d-->%d (depth %d):\n", from->getNumber(), to->getNumber(), _removeEdgeNestingDepth);
 
-   TR_ScratchList<TR::CFGNode> nodesToBeRemoved(trMemory());
+   TR_ScratchList<TR::CFGNode> nodesToBeRemoved(comp()->trMemory());
    bool doWalk = false;
    TR_BitVector *blocksVisited = NULL;
    OrphanType orphan = unreachableOrphan(self(), from, to);
@@ -829,7 +829,7 @@ bool OMR::CFG::removeEdge(TR::CFGEdge *edge)
             traceMsg(comp(), "\nAdding node %d to nodesToBeRemoved from %d\n", to->getNumber(), from->getNumber());
 
          nodesToBeRemoved.add(to);
-         blocksVisited = new (trStackMemory()) TR_BitVector(getNextNodeNumber(), trMemory(), stackAlloc);
+         blocksVisited = new (comp()->trStackMemory()) TR_BitVector(getNextNodeNumber(), comp()->trMemory(), stackAlloc);
          blocksWereRemoved = true;
          doWalk = true;
          }
@@ -854,7 +854,7 @@ bool OMR::CFG::removeEdge(TR::CFGEdge *edge)
 
    if (doWalk)
       {
-      TR_Queue<TR::CFGNode> nodeq(trMemory());
+      TR_Queue<TR::CFGNode> nodeq(comp()->trMemory());
       nodeq.enqueue(to);
       blocksVisited->empty();
       do
@@ -1129,14 +1129,14 @@ OMR::CFG::removeUnreachableBlocks()
       return;
 
    _removingUnreachableBlocks = true;
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    // Find all reachable blocks then remove then rest
    //
    TR_BitVector reachableBlocks(getNumberOfNodes(), comp()->trMemory(), stackAlloc, growable);
    findReachableBlocks(&reachableBlocks);
 
-   TR_Stack<TR::CFGNode*> unreachableNodes(trMemory(), 8, false, stackAlloc);
+   TR_Stack<TR::CFGNode*> unreachableNodes(comp()->trMemory(), 8, false, stackAlloc);
    TR::CFGNode *node = getFirstNode();
    for (; node; node = node->getNext())
       {
@@ -1298,9 +1298,9 @@ int32_t OMR::CFG::compareExceptionSuccessors(TR::CFGNode *node1, TR::CFGNode *no
    // bit vectors to be used to calculate the correct answer
    //
    int32_t numberOfNodes = comp()->getFlowGraph()->getNextNodeNumber();
-   TR_BitVector *firstSucc = new (trStackMemory()) TR_BitVector(numberOfNodes, trMemory(), stackAlloc);
-   TR_BitVector *secondSucc = new (trStackMemory()) TR_BitVector(numberOfNodes, trMemory(), stackAlloc);
-   TR_BitVector *comparison = new (trStackMemory()) TR_BitVector(numberOfNodes, trMemory(), stackAlloc);
+   TR_BitVector *firstSucc = new (comp()->trStackMemory()) TR_BitVector(numberOfNodes, comp()->trMemory(), stackAlloc);
+   TR_BitVector *secondSucc = new (comp()->trStackMemory()) TR_BitVector(numberOfNodes, comp()->trMemory(), stackAlloc);
+   TR_BitVector *comparison = new (comp()->trStackMemory()) TR_BitVector(numberOfNodes, comp()->trMemory(), stackAlloc);
    int32_t result = -1;
 
    for (auto nextEdge = node1->getExceptionSuccessors().begin(); nextEdge != node1->getExceptionSuccessors().end(); ++nextEdge)
@@ -1361,7 +1361,7 @@ TR::Block * *
 OMR::CFG::createArrayOfBlocks(TR_AllocationKind allocKind)
    {
    int32_t numberOfBlocks = getNextNodeNumber();
-   TR::Block ** a = (TR::Block **) trMemory()->allocateMemory(numberOfBlocks * sizeof(TR::Block *), allocKind);
+   TR::Block ** a = (TR::Block **) comp()->trMemory()->allocateMemory(numberOfBlocks * sizeof(TR::Block *), allocKind);
    memset(a, 0, numberOfBlocks * sizeof(TR::Block *));
    for (TR::CFGNode * n = getFirstNode(); n; n = n->getNext())
       a[n->getNumber()] = toBlock(n);
@@ -1561,15 +1561,15 @@ int32_t OMR::CFG::createTraversalOrder(bool forward, TR_AllocationKind allocatio
    /*
     * This is allocated before entering the new stack memory region so that the caller can allocate it on its stack scope if desired.
     */
-   TR::CFGNode **traversalOrder = (TR::CFGNode **) trMemory()->allocateMemory(numberOfBlocks * sizeof(TR::CFGNode *), allocationKind, TR_MemoryBase::UnknownType);
+   TR::CFGNode **traversalOrder = (TR::CFGNode **) comp()->trMemory()->allocateMemory(numberOfBlocks * sizeof(TR::CFGNode *), allocationKind, TR_MemoryBase::UnknownType);
 
    memset(traversalOrder, 0, numberOfBlocks * sizeof(TR::CFGNode *));
    int32_t traversalInsertPosition = numberOfBlocks;
 
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
-   TR_Stack<TR::CFGNode *> blockStack(trMemory(), numberOfBlocks, false, stackAlloc);
-   TR_Stack<TR_CFGIterator*> iteratorStack(trMemory(), numberOfBlocks, false, stackAlloc);
-   TR_BitVector *blocksBeingVisited = new (trStackMemory()) TR_BitVector(numberOfBlocks, trMemory(), stackAlloc);
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
+   TR_Stack<TR::CFGNode *> blockStack(comp()->trMemory(), numberOfBlocks, false, stackAlloc);
+   TR_Stack<TR_CFGIterator*> iteratorStack(comp()->trMemory(), numberOfBlocks, false, stackAlloc);
+   TR_BitVector *blocksBeingVisited = new (comp()->trStackMemory()) TR_BitVector(numberOfBlocks, comp()->trMemory(), stackAlloc);
 
    // put either entry or exit in the stack to begin with
    TR::CFGNode *firstBlock;
@@ -1577,12 +1577,12 @@ int32_t OMR::CFG::createTraversalOrder(bool forward, TR_AllocationKind allocatio
    if (DERIVE_BACKWARD_FROM_FORWARD || forward)
       {
       firstBlock = getStart();
-      blockIter = new (trStackMemory()) TR_SuccessorIterator(firstBlock);
+      blockIter = new (comp()->trStackMemory()) TR_SuccessorIterator(firstBlock);
       }
    else
       {
       firstBlock = getEnd();
-      blockIter = new (trStackMemory()) TR_PredecessorIterator(firstBlock);
+      blockIter = new (comp()->trStackMemory()) TR_PredecessorIterator(firstBlock);
       }
 
    blockIter->getFirst();
@@ -1630,16 +1630,16 @@ int32_t OMR::CFG::createTraversalOrder(bool forward, TR_AllocationKind allocatio
             // create the right kind of iterator for it and push it onto iteratorStack
             TR_CFGIterator *blockIter;
             if (DERIVE_BACKWARD_FROM_FORWARD || forward)
-               blockIter = new (trStackMemory()) TR_SuccessorIterator(nextBlock);
+               blockIter = new (comp()->trStackMemory()) TR_SuccessorIterator(nextBlock);
             else
-               blockIter = new (trStackMemory()) TR_PredecessorIterator(nextBlock);
+               blockIter = new (comp()->trStackMemory()) TR_PredecessorIterator(nextBlock);
             blockIter->getFirst();
             iteratorStack.push(blockIter);
 
             foundUnvisitedBlock = true;
             break;
             }
-   else if (blocksBeingVisited->get(nextBlock->getNumber()))
+         else if (blocksBeingVisited->get(nextBlock->getNumber()))
             {
             if (_compilation->getOption(TR_TraceBFGeneration))
                 dumpOptDetails(comp(), "\nFound backedge from %d to %d", edge->getFrom()->getNumber(), edge->getTo()->getNumber());
@@ -1662,7 +1662,7 @@ int32_t OMR::CFG::createTraversalOrder(bool forward, TR_AllocationKind allocatio
             blockStack.push(fallThroughBlock);
             blocksBeingVisited->set(fallThroughBlock->getNumber());
 
-            TR_CFGIterator *blockIter = new (trStackMemory()) TR_SuccessorIterator(fallThroughBlock);
+            TR_CFGIterator *blockIter = new (comp()->trStackMemory()) TR_SuccessorIterator(fallThroughBlock);
             blockIter->getFirst();
             iteratorStack.push(blockIter);
             foundUnvisitedBlock = true;
@@ -1773,7 +1773,7 @@ void
 OMR::CFG::propagateColdInfo(bool generateFrequencies)
    {
    vcount_t visitCount = comp()->incVisitCount();
-   TR_Queue<TR::Block> queue(trMemory());
+   TR_Queue<TR::Block> queue(comp()->trMemory());
    unsigned coldBlocks=0;
    bool  noPropagateSuperCold = false;
    bool  allBlocksAreSuperCold = true;
@@ -2504,11 +2504,11 @@ OMR::CFG::getAvgFrequency()
 void
 OMR::CFG::walkStructure(TR_RegionStructure *region)
    {
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
 
    bool _foundIllegalStructure = false;
    int32_t numBlocks = comp()->getFlowGraph()->getNextNodeNumber();
-   TR_BitVector *_seenNodes = new (trStackMemory()) TR_BitVector(numBlocks, trMemory(), stackAlloc, notGrowable);
+   TR_BitVector *_seenNodes = new (comp()->trStackMemory()) TR_BitVector(numBlocks, comp()->trMemory(), stackAlloc, notGrowable);
 
    TR_StructureSubGraphNode *start = region->getEntry();
 
@@ -2532,12 +2532,12 @@ OMR::CFG::walkStructure(TR_RegionStructure *region)
       }
 
    int numRegions = getNextNodeNumber();
-   int32_t *_regionFrequencies = (int32_t *)trMemory()->allocateStackMemory(numRegions * sizeof(int32_t));
+   int32_t *_regionFrequencies = (int32_t *)comp()->trMemory()->allocateStackMemory(numRegions * sizeof(int32_t));
    for (int32_t k = 0; k< numRegions; k++) _regionFrequencies[k] = INITIAL_BLOCK_FREQUENCY_FACTOR;
 
    // Walk reverse post-order
    //
-   TR_ScratchList<TR::CFGNode> stack(trMemory());
+   TR_ScratchList<TR::CFGNode> stack(comp()->trMemory());
    stack.add(start);
 
    while (!stack.isEmpty() && !_foundIllegalStructure)
@@ -2562,8 +2562,8 @@ OMR::CFG::walkStructure(TR_RegionStructure *region)
          if (_compilation->getOption(TR_TraceBFGeneration))
             dumpOptDetails(comp(),"\tSet %d as seen\n", node->getNumber());
 
-         List<TR::CFGEdge> rEdges(trMemory());
-         List<TR::Block> rBlocks(trMemory());
+         List<TR::CFGEdge> rEdges(comp()->trMemory());
+         List<TR::Block> rBlocks(comp()->trMemory());
          regionStr->collectExitBlocks(&rBlocks, &rEdges);
 
          int32_t parentFrequency = _regionFrequencies[node->getNumber()];
@@ -2738,7 +2738,7 @@ OMR::CFG::setBlockAndEdgeFrequenciesBasedOnStructure()
       propagateFrequencyInfoFrom(getStructure());
 
       {
-      TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+      TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
       if (_compilation->getOption(TR_TraceBFGeneration))
          dumpOptDetails(comp(),"\nsetBlockAndEdgeFrequenciesBasedOnStructure: Computing region weight factors based on CFG structure, num regions=%d...\n",comp()->getFlowGraph()->getNextNodeNumber());
 
@@ -3142,7 +3142,7 @@ void OMR::CFG::resetFrequencies()
    {
    int32_t edgeIndex  = 0;
    int32_t numBlocks = getNextNodeNumber();
-   TR_BitVector *nodesToBeReset = new (trStackMemory()) TR_BitVector(numBlocks, trMemory(), stackAlloc, notGrowable);
+   TR_BitVector *nodesToBeReset = new (comp()->trStackMemory()) TR_BitVector(numBlocks, comp()->trMemory(), stackAlloc, notGrowable);
    nodesToBeReset->setAll(numBlocks);
    _maxFrequency = -1;
    _maxEdgeFrequency = -1;
@@ -3183,8 +3183,8 @@ void OMR::CFG::resetFrequencies()
 
 void OMR::CFG::normalizeFrequencies(TR_BitVector *nodesToBeNormalized)
    {
-   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
-   TR_Array<TR::CFGEdge *> * edgesArray = new(trStackMemory())TR_Array<TR::CFGEdge *>(trMemory(),_numEdges,true,stackAlloc);
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
+   TR_Array<TR::CFGEdge *> * edgesArray = new(comp()->trStackMemory())TR_Array<TR::CFGEdge *>(comp()->trMemory(),_numEdges,true,stackAlloc);
    normalizeNodeFrequencies(nodesToBeNormalized,edgesArray);
    if(edgesArray->isEmpty())
        {
@@ -3209,8 +3209,8 @@ void OMR::CFG::normalizeFrequencies(TR_BitVector *nodesToBeNormalized)
 void
 OMR::CFG::findReachableBlocks(TR_BitVector *result)
    {
-   TR_ScratchList<TR::CFGEdge> edgesToBeRemoved(trMemory());
-   TR_Stack<TR::CFGNode *> stack(trMemory(), 8, false, stackAlloc);
+   TR_ScratchList<TR::CFGEdge> edgesToBeRemoved(comp()->trMemory());
+   TR_Stack<TR::CFGNode *> stack(comp()->trMemory(), 8, false, stackAlloc);
    stack.push(getStart());
    while (!stack.isEmpty())
       {

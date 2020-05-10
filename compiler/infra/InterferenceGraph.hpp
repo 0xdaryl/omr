@@ -72,16 +72,11 @@ class TR_InterferenceGraph : public TR_IGBase
 
    TR::Compilation * comp() {return _compilation;}
 
-   TR_Memory *               trMemory()                    { return _trMemory; }
-   TR_StackMemory            trStackMemory()               { return _trMemory; }
-   TR_HeapMemory             trHeapMemory()                { return _trMemory; }
-
    void partitionNodesIntoDegreeSets(CS2::ABitVector<TR::Allocator> &workingSet,
                                      CS2::ABitVector<TR::Allocator> &colourableDegreeSet,
                                      CS2::ABitVector<TR::Allocator> &notColourableDegreeSet);
 
    TR::Compilation *_compilation;
-   TR_Memory *_trMemory;
 
    public:
 
@@ -89,7 +84,6 @@ class TR_InterferenceGraph : public TR_IGBase
       _compilation(comp),
       _nodeTable(NULL),
       _nodeStack(NULL),
-      _trMemory(comp->trMemory()),
       TR_IGBase() {}
 
    TR_InterferenceGraph(TR::Compilation *comp, int32_t estimatedNodes = 32);

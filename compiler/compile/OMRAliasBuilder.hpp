@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -68,9 +68,6 @@ public:
 
    TR::SymbolReferenceTable *symRefTab() { return _symRefTab; }
    TR::Compilation *comp() { return _compilation; }
-   TR_Memory *trMemory() { return _trMemory; }
-   TR_StackMemory trStackMemory() { return _trMemory; }
-   TR_HeapMemory trHeapMemory() { return _trMemory; }
 
    TR_BitVector & addressShadowSymRefs() { return _addressShadowSymRefs; }
    TR_BitVector & intShadowSymRefs() { return _intShadowSymRefs; }
@@ -139,7 +136,6 @@ public:
 protected:
 
    TR::Compilation *_compilation;
-   TR_Memory *_trMemory;
 
    TR::SymbolReferenceTable *_symRefTab;
 

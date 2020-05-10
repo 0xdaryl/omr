@@ -283,7 +283,7 @@ OMR::SymbolReference::getName(TR_Debug *debug)
 TR::SymbolReference *
 OMR::SymbolReference::create(TR::SymbolReferenceTable *symRefTab, TR::Symbol *sym, TR::KnownObjectTable::Index koi)
    {
-   TR::SymbolReference *result = new (symRefTab->trHeapMemory()) TR::SymbolReference(symRefTab, sym);
+   TR::SymbolReference *result = new (symRefTab->comp()->trHeapMemory()) TR::SymbolReference(symRefTab, sym);
    result->_knownObjectIndex = koi;
    return result;
    }
