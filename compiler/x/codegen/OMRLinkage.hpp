@@ -373,7 +373,7 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
       switch(reg->getKind())
          {
          case TR_GPR:
-            return OMR::X86::Linkage::getTargetFromComp().is64Bit() ? TR_MovDataTypes::Int8 : Int4;
+            return OMR::X86::Linkage::getTargetFromComp().is64Bit() ? Int8 : Int4;
          case TR_FPR:
             return Float8;
          default:
