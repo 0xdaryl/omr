@@ -430,14 +430,14 @@ OMR::Z::CodeGenerator::CodeGenerator()
    bool enableBranchPreload = comp->getOption(TR_EnableBranchPreload);
    bool disableBranchPreload = comp->getOption(TR_DisableBranchPreload);
 
-   if (enableBranchPreload || (!disableBranchPreload && comp->isOptServer() && self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_ZEC12)))
+   if (enableBranchPreload || (!disableBranchPreload && comp->isOptServer() && comp->target().cpu.isAtLeast(OMR_PROCESSOR_S390_ZEC12)))
       self()->setEnableBranchPreload();
    else
       self()->setDisableBranchPreload();
 
    static bool bpp = (feGetEnv("TR_BPRP")!=NULL);
 
-   if ((enableBranchPreload && bpp) || (bpp && !disableBranchPreload && comp->isOptServer() && self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_ZEC12)))
+   if ((enableBranchPreload && bpp) || (bpp && !disableBranchPreload && comp->isOptServer() && comp->target().cpu.isAtLeast(OMR_PROCESSOR_S390_ZEC12)))
       self()->setEnableBranchPreloadForCalls();
    else
       self()->setDisableBranchPreloadForCalls();
@@ -495,7 +495,7 @@ OMR::Z::CodeGenerator::CodeGenerator()
    self()->setSupportsSearchCharString(); // CISC Transformation into SRSTU loop - only on z9.
    self()->setSupportsTranslateAndTestCharString(); // CISC Transformation into TRTE loop - only on z6.
 
-   if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10))
+   if (comp->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10))
       {
       self()->setSupportsTranslateAndTestCharString();
 
@@ -514,7 +514,7 @@ OMR::Z::CodeGenerator::CodeGenerator()
       comp->setOption(TR_DisableTraps);
       }
 
-   if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z196))
+   if (comp->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z196))
       {
       self()->setSupportsAtomicLoadAndAdd();
       }
@@ -525,17 +525,17 @@ OMR::Z::CodeGenerator::CodeGenerator()
       comp->setOption(TR_DisableMaxMinOptimization);
       }
 
-   if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_ZEC12))
+   if (comp->target().cpu.isAtLeast(OMR_PROCESSOR_S390_ZEC12))
       {
       self()->setSupportsZonedDFPConversions();
-      if (self()->comp()->target().cpu.supportsFeature(OMR_FEATURE_S390_TE) && !comp->getOption(TR_DisableTM))
+      if (comp->target().cpu.supportsFeature(OMR_FEATURE_S390_TE) && !comp->getOption(TR_DisableTM))
          self()->setSupportsTM();
       }
 
-   if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z13) && !comp->getOption(TR_DisableArch11PackedToDFP))
+   if (comp->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z13) && !comp->getOption(TR_DisableArch11PackedToDFP))
       self()->setSupportsFastPackedDFPConversions();
 
-   if (!self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z14))
+   if (!comp->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z14))
       {
       comp->setOption(TR_DisableVectorBCD);
       }
@@ -3931,7 +3931,7 @@ OMR::Z::CodeGenerator::createLinkage(TR_LinkageConventions lc)
         // no private linkage, fall through to system
 
       case TR_System:
-         if (self()->comp()->target().isLinux())
+         if (comp->target().isLinux())
             linkage = new (self()->trHeapMemory()) TR::S390zLinuxSystemLinkage(self());
          else
             linkage = new (self()->trHeapMemory()) TR::S390zOSSystemLinkage(self());

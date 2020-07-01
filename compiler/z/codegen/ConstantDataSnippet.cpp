@@ -95,7 +95,7 @@ TR::S390ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
          {
          AOTcgDiag3(comp, "add relocation (%d) cursor=%x symbolReference=%x\n", reloType, cursor, getSymbolReference());
          TR::SymbolReference *reloSymRef= (reloType==TR_ClassAddress)?getNode()->getSymbolReference():getSymbolReference();
-         if (cg()->comp()->getOption(TR_UseSymbolValidationManager))
+         if (comp->getOption(TR_UseSymbolValidationManager))
             {
             TR_ASSERT_FATAL(getDataAs8Bytes(), "Static Sym can not be NULL");
 
@@ -164,7 +164,7 @@ TR::S390ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
 
       case TR_HelperAddress:
          AOTcgDiag1(comp, "add TR_AbsoluteHelperAddress cursor=%x\n", cursor);
-         if (cg()->comp()->target().is64Bit())
+         if (comp->target().is64Bit())
             {
             cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *) *((uint64_t*) cursor), TR_AbsoluteHelperAddress, cg()),
                                 __FILE__, __LINE__, getNode());
@@ -179,7 +179,7 @@ TR::S390ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
       case TR_AbsoluteMethodAddress:
       case TR_BodyInfoAddress:
          AOTcgDiag2(comp, "add relocation (%d) cursor=%x\n", reloType, cursor);
-         if (cg()->comp()->target().is64Bit())
+         if (comp->target().is64Bit())
             {
             cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *) *((uint64_t*) cursor),
                   (TR_ExternalRelocationTargetKind) reloType, cg()),
@@ -206,7 +206,7 @@ TR::S390ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
          // intentional fall through
       case TR_ClassPointer:
          AOTcgDiag2(comp, "add relocation (%d) cursor=%x\n", reloType, cursor);
-         if (cg()->comp()->getOption(TR_UseSymbolValidationManager))
+         if (comp->getOption(TR_UseSymbolValidationManager))
             {
             TR_ASSERT_FATAL(getDataAs8Bytes(), "Static Sym can not be NULL");
             cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor,
@@ -226,7 +226,7 @@ TR::S390ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
             uint8_t * targetAdress2 = NULL;
             if (getNode()->getOpCodeValue() != TR::aconst)
                {
-               if (cg()->comp()->target().is64Bit())
+               if (comp->target().is64Bit())
                   targetAdress2 = (uint8_t *) *((uint64_t*) cursor);
                else
                   targetAdress2 = (uint8_t *) *((uintptr_t*) cursor);
@@ -238,13 +238,13 @@ TR::S390ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
 
       case TR_DebugCounter:
          {
-         TR::DebugCounterBase *counter = cg()->comp()->getCounterFromStaticAddress(getNode()->getSymbolReference());
+         TR::DebugCounterBase *counter = comp->getCounterFromStaticAddress(getNode()->getSymbolReference());
          if (counter == NULL)
             {
-            cg()->comp()->failCompilation<TR::CompilationException>("Could not generate relocation for debug counter in OMR::X86::MemoryReference::addMetaDataForCodeAddress\n");
+            comp->failCompilation<TR::CompilationException>("Could not generate relocation for debug counter in OMR::X86::MemoryReference::addMetaDataForCodeAddress\n");
             }
          AOTcgDiag3(comp, "add relocation (%d) cursor=%x counter=%x\n", reloType, cursor, counter);
-         TR::DebugCounter::generateRelocation(cg()->comp(),
+         TR::DebugCounter::generateRelocation(comp,
                                               cursor,
                                               getNode(),
                                               counter);

@@ -232,7 +232,7 @@ genNullTestForCompressedPointers(TR::Node *node, TR::CodeGenerator *cg, TR::Regi
    {
    TR::Compilation *comp = cg->comp();
    bool hasCompressedPointers = false;
-   if (cg->comp()->target().is64Bit() &&
+   if (comp->target().is64Bit() &&
          comp->useCompressedPointers() &&
          node->containsCompressionSequence()  /* &&
          !node->isNonZero() */ )
@@ -326,7 +326,7 @@ laddHelper64(TR::Node * node, TR::CodeGenerator * cg)
    TR::Node *curTreeNode = cg->getCurrentEvaluationTreeTop()->getNode();
    bool bumpedRefCount = false;
 
-   bool isCompressionSequence = cg->comp()->target().is64Bit() &&
+   bool isCompressionSequence = comp->target().is64Bit() &&
            comp->useCompressedPointers() &&
            node->containsCompressionSequence();
 
@@ -548,7 +548,7 @@ generic32BitAddEvaluator(TR::Node * node, TR::CodeGenerator * cg)
       bool useAHIK = false;
 
       // If negative or large enough range we must use LAY. LA has more restrictions.
-      bool useLA = cg->comp()->target().is64Bit() && node->isNonNegative()
+      bool useLA = comp->target().is64Bit() && node->isNonNegative()
          && ((value < MAXLONGDISP && value > MINLONGDISP) || (value >= 0 && value <= MAXDISP));
 
       TR::Register * childTargetReg = cg->evaluate(firstChild);
@@ -569,7 +569,7 @@ generic32BitAddEvaluator(TR::Node * node, TR::CodeGenerator * cg)
          useLA = false;
          }
 
-      if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z196))
+      if (comp->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z196))
          {
          if (!canClobberReg && (value >= MIN_IMMEDIATE_VAL && value <= MAX_IMMEDIATE_VAL))
             {
@@ -1677,7 +1677,7 @@ genericRotateAndInsertHelper(TR::Node * node, TR::CodeGenerator * cg)
          switch (secondChild->getDataType())
             {
             case TR::Address:
-               TR_ASSERT( cg->comp()->target().is32Bit(),"genericRotateAndInsertHelper: unexpected data type");
+               TR_ASSERT( comp->target().is32Bit(),"genericRotateAndInsertHelper: unexpected data type");
             case TR::Int64:
                value = (uint64_t) secondChild->getLongInt();
                break;
@@ -1770,13 +1770,13 @@ genericRotateAndInsertHelper(TR::Node * node, TR::CodeGenerator * cg)
                   generateRRInstruction(cg, TR::InstOpCode::XR, node, targetReg, targetReg);
                   }
                }
-            else if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z196) && !node->getType().isInt64())
+            else if (comp->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z196) && !node->getType().isInt64())
                {
                generateRIEInstruction(cg, TR::InstOpCode::RISBLG, node, targetReg, sourceReg, msBit, 0x80 + lsBit, shiftAmnt);
                }
             else
                {
-               auto mnemonic = cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_ZEC12) ? TR::InstOpCode::RISBGN : TR::InstOpCode::RISBG;
+               auto mnemonic = comp->target().cpu.isAtLeast(OMR_PROCESSOR_S390_ZEC12) ? TR::InstOpCode::RISBGN : TR::InstOpCode::RISBG;
 
                generateRIEInstruction(cg, mnemonic, node, targetReg, sourceReg, msBit, 0x80 + lsBit, shiftAmnt);
                }
@@ -1802,11 +1802,11 @@ genericRotateAndInsertHelper(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::tryToReplaceShiftLandWithRotateInstruction(TR::Node * node, TR::CodeGenerator * cg, int32_t shiftAmount, bool isSignedShift)
    {
-   if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10))
+   TR::Compilation *comp = cg->comp();
+   if (comp->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10))
       {
       TR::Node * firstChild = node->getFirstChild();
       TR::Node * secondChild = node->getSecondChild();
-      TR::Compilation *comp = cg->comp();
 
       // Given the right cases, transform land into RISBG as it may be better than discrete pair of ands
       if (node->getOpCodeValue() == TR::land && secondChild->getOpCode().isLoadConst())
@@ -1894,7 +1894,7 @@ OMR::Z::TreeEvaluator::tryToReplaceShiftLandWithRotateInstruction(TR::Node * nod
             //    half and bottom half of the register), then it's better to use RISBG.
             //    This is because there are no NI** instructions allowing us to specify bits in
             //    the top half and bottom half of the register to zero out.
-               
+
             if (firstChild->getReferenceCount() > 1 || lZeros > 31 || tZeros > 31
                 || (lZeros > 0 && tZeros > 0))
                {
@@ -1948,7 +1948,7 @@ OMR::Z::TreeEvaluator::tryToReplaceShiftLandWithRotateInstruction(TR::Node * nod
             TR::Register * sourceReg = cg->evaluate(firstChild);
 
             // if possible then use the instruction that doesn't set the CC as it's faster
-            TR::InstOpCode::Mnemonic opCode = cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_ZEC12) ? TR::InstOpCode::RISBGN : TR::InstOpCode::RISBG;
+            TR::InstOpCode::Mnemonic opCode = comp->target().cpu.isAtLeast(OMR_PROCESSOR_S390_ZEC12) ? TR::InstOpCode::RISBGN : TR::InstOpCode::RISBG;
 
             // If the shift amount is zero, this instruction sets the rotation factor to 0 and sets the zero bit(0x80).
             // So it's effectively zeroing out every bit except the inclusive range of lsBit to msBit.
@@ -1977,7 +1977,7 @@ OMR::Z::TreeEvaluator::tryToReplaceShiftLandWithRotateInstruction(TR::Node * nod
                   }
                }
             else if (shiftAmount > 0)
-               {                  
+               {
                rangeEnd = lsBit - shiftAmount;
                if (msBit - shiftAmount < 0)
                   {
@@ -2024,7 +2024,7 @@ lsubHelper64(TR::Node * node, TR::CodeGenerator * cg)
    TR::Node *curTreeNode = cg->getCurrentEvaluationTreeTop()->getNode();
 
    bool isCompressionSequence = false;
-   if (cg->comp()->target().is64Bit() &&
+   if (comp->target().is64Bit() &&
          comp->useCompressedPointers() &&
          node->containsCompressionSequence())
       isCompressionSequence = true;

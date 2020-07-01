@@ -363,7 +363,7 @@ TR::S390zLinuxSystemLinkage::setParameterLinkageRegisterIndex(TR::ResolvedMethod
                {
                lri = numFPRArgs;
                }
-            
+
             numFPRArgs++;
             break;
             }
@@ -467,7 +467,7 @@ TR::S390zLinuxSystemLinkage::callNativeFunction(TR::Node * callNode,
       case TR::lcall:
       case TR::lcalli:
          {
-         if (cg()->comp()->target().is64Bit())
+         if (comp()->target().is64Bit())
             {
             returnRegister = deps->searchPostConditionRegister(getIntegerReturnRegister());
             }
@@ -558,7 +558,7 @@ TR::S390zLinuxSystemLinkage::initParamOffset(TR::ResolvedMethodSymbol * method, 
       switch (parmCursor->getDataType())
          {
          case TR::Int64:
-            if(cg()->comp()->target().is32Bit())
+            if(comp()->target().is32Bit())
                {
                //make sure that we can fit the entire value in registers, not half in registers half on the stack
                if((numIntegerArgs + 2) <= getNumIntegerArgumentRegisters())
@@ -605,7 +605,7 @@ TR::S390zLinuxSystemLinkage::initParamOffset(TR::ResolvedMethodSymbol * method, 
                   {
                   if (numIntegerArgs < getNumIntegerArgumentRegisters())
                      {
-                     numIntegerArgs += (cg()->comp()->target().is64Bit()) ? 1 : 2;
+                     numIntegerArgs += (comp()->target().is64Bit()) ? 1 : 2;
                      }
                   }
             break;
@@ -654,7 +654,7 @@ TR::S390zLinuxSystemLinkage::initParamOffset(TR::ResolvedMethodSymbol * method, 
          parmCursor->setParameterOffset(parmCursor->getParameterOffset() + gprSize - parmCursor->getSize());
          }
 
-      if (cg()->comp()->target().is64Bit() && parmCursor->getType().isAddress() && (parmCursor->getSize()==4))
+      if (comp()->target().is64Bit() && parmCursor->getType().isAddress() && (parmCursor->getSize()==4))
          {
          // This is a 31-bit pointer parameter. It's real location is +4 bytes from the start of the
          // 8-byte parm slot. Since ptr31 parms are passed as 64-bit values, the prologue code has the
@@ -675,8 +675,8 @@ TR::S390zLinuxSystemLinkage::initParamOffset(TR::ResolvedMethodSymbol * method, 
 int32_t
 TR::S390zLinuxSystemLinkage::getRegisterSaveOffset(TR::RealRegister::RegNum srcReg)
    {
-   int32_t gpr2Offset = cg()->comp()->target().is64Bit() ? 16 : 8;
-   int32_t fpr0Offset = cg()->comp()->target().is64Bit() ? 128 : 64;
+   int32_t gpr2Offset = comp()->target().is64Bit() ? 16 : 8;
+   int32_t fpr0Offset = comp()->target().is64Bit() ? 128 : 64;
    switch(srcReg)
       {
       case TR::RealRegister::FPR0: return fpr0Offset;

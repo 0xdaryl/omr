@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -130,7 +130,7 @@ TR::Register *inlineTrtEvaluator(
    TR::Register *r1Reg = cg->allocateRegister();
    TR::Register *r2Reg = cg->allocateRegister();
 
-   if (packR2 && !cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10))
+   if (packR2 && !comp->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10))
       {
       generateRRInstruction(cg, TR::InstOpCode::XR, node, r2Reg, r2Reg);
       }
@@ -158,7 +158,7 @@ TR::Register *inlineTrtEvaluator(
       cg->decReferenceCount(lengthNode);
       }
 
-   if ((opCode == TR::InstOpCode::TRTR) && (cg->comp()->target().is32Bit()))
+   if ((opCode == TR::InstOpCode::TRTR) && (comp->target().is32Bit()))
       {
       TR::MemoryReference *r1BitClearRef = generateS390MemoryReference(r1Reg, 0, cg);
       TR::Instruction *cursor = generateRXInstruction(cg, TR::InstOpCode::LA, node, r1Reg, r1BitClearRef);
@@ -169,11 +169,11 @@ TR::Register *inlineTrtEvaluator(
       {
       TR::Register *conditionCodeReg = getConditionCode(node, cg);
 
-      if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_ZEC12))
+      if (comp->target().cpu.isAtLeast(OMR_PROCESSOR_S390_ZEC12))
          {
          generateRIEInstruction(cg, TR::InstOpCode::RISBGN, node,  conditionCodeReg, r2Reg, 48, 55, 8);
          }
-      else if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10))
+      else if (comp->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10))
          {
          generateRIEInstruction(cg, TR::InstOpCode::RISBG, node,  conditionCodeReg, r2Reg, 48, 55, 8);
          }

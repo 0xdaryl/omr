@@ -329,7 +329,7 @@ TR::S390zOSSystemLinkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSym
                {
                lri = numFPRArgs;
                }
-            
+
             // On 64-bit XPLINK floating point arguments leave "holes" in the GPR linkage registers, but not vice versa
             numGPRArgs++;
             numFPRArgs++;
@@ -352,7 +352,7 @@ TR::S390zOSSystemLinkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSym
                {
                lri = numVRFArgs;
                }
-            
+
             // On 64-bit XPLINK floating point arguments leave "holes" in the GPR linkage registers, but not vice versa
             numGPRArgs++;
             numVRFArgs++;
@@ -550,7 +550,7 @@ TR::S390zOSSystemLinkage::generateInstructionsForCall(TR::Node * callNode, TR::R
     //             a) disp is an offset in the environment (aka ADA) containing the
     //                function descriptor body (i.e. not pointer to function descriptor)
     TR_XPLinkCallTypes callType;
-    
+
     TR::Register* aeReg = deps->searchPostConditionRegister(getENVPointerRegister());
     TR::Register* epReg = deps->searchPostConditionRegister(getEntryPointRegister());
     TR::Register* raReg = deps->searchPostConditionRegister(getReturnAddressRegister());
@@ -636,15 +636,15 @@ TR::S390zOSSystemLinkage::genCallNOPAndDescriptor(TR::Instruction* cursor, TR::N
    if (comp()->target().is32Bit())
       {
       // The XPLINK Call Descriptor is created only on 31-bit targets when:
-      // 
+      //
       // 1. The call site is so far removed from the Entry Point Marker of the function that its offset cannot be contained
       // in the space available in the call NOP descriptor following the call site.
-      // 
+      //
       // 2. The call contains a return value or parameters that are passed in registers or in ways incompatible with non-
       // XPLINK code.
-      // 
+      //
       // The XPLINK Call Descriptor has the following format:
-      // 
+      //
       //                                        0x01                               0x02                               0x03
       // 0x00 +----------------------------------+----------------------------------+----------------------------------+----------------------------------+
       //      | Signed offset, in bytes, to Entry Point Marker (if it exists)                                                                             |
@@ -689,7 +689,7 @@ TR::S390zOSSystemLinkage::generateCallDescriptorValue(TR::Node* callNode)
    {
    uint32_t result = 0;
 
-   if (cg()->comp()->target().is32Bit())
+   if (comp()->target().is32Bit())
       {
       uint32_t returnValueAdjust = 0;
 
@@ -1362,9 +1362,9 @@ TR::S390zOSSystemLinkage::XPLINKFunctionDescriptorSnippet::emitSnippetBody()
    getSnippetLabel()->setCodeLocation(cursor);
 
    // Update the method symbol address to point to the function descriptor
-   cg()->comp()->getMethodSymbol()->setMethodAddress(cursor);
+   comp()->getMethodSymbol()->setMethodAddress(cursor);
 
-   if (cg()->comp()->target().is32Bit())
+   if (comp()->target().is32Bit())
       {
       // Address of function's environment
       *reinterpret_cast<uint32_t*>(cursor) = 0;
