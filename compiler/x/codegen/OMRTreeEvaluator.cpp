@@ -197,7 +197,7 @@ TR::Instruction *OMR::X86::TreeEvaluator::insertLoadConstant(TR::Node           
    bool is64Bit = false;
 
    int opsRow = type;
-   if (cg->comp()->target().is64Bit())
+   if (comp->target().is64Bit())
       {
       if (type == TR_RematerializableAddress)
          {
@@ -425,7 +425,7 @@ OMR::X86::TreeEvaluator::insertLoadMemory(
       };
 
    TR_X86OpCodes opCode = ops[type];
-   if (cg->comp()->target().is64Bit())
+   if (comp->target().is64Bit())
       {
       if (type == TR_RematerializableAddress)
          {
@@ -497,7 +497,7 @@ void OMR::X86::TreeEvaluator::padUnresolvedDataReferences(
 
    TR::Compilation *comp = cg->comp();
    uint8_t padBytes = 0;
-   if (cg->comp()->target().is32Bit())
+   if (comp->target().is32Bit())
       padBytes = 2; // needs at least 2 bytes as we are patching 8 bytes at a time
    else
       {
@@ -944,7 +944,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerStoreEvaluator(TR::Node *node, TR:
            valueChild->getOpCodeValue() == TR::l2b))
          {
          valueChild = valueChild->getFirstChild();
-         if (cg->comp()->target().is64Bit())
+         if (comp->target().is64Bit())
             translatedReg = cg->evaluate(valueChild);
          else
             translatedReg = cg->evaluate(valueChild)->getLowOrder();
@@ -1038,7 +1038,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerStoreEvaluator(TR::Node *node, TR:
                   case TR::Address:
                        {
                      if (node && node->getOpCode().hasSymbolReference() && node->getSymbol() && node->getSymbol()->isClassObject())
-                        (TR::Compiler->om.generateCompressedObjectHeaders() || cg->comp()->target().is32Bit()) ? type = TR_RematerializableInt : type = TR_RematerializableLong;
+                        (TR::Compiler->om.generateCompressedObjectHeaders() || comp->target().is32Bit()) ? type = TR_RematerializableInt : type = TR_RematerializableLong;
                      else
                         type = TR_RematerializableAddress;
 
@@ -3257,7 +3257,7 @@ TR::Register *OMR::X86::TreeEvaluator::generateLEAForLoadAddr(TR::Node *node,
        TR_RematerializableTypes type;
 
        if (node && node->getOpCode().hasSymbolReference() && node->getSymbol() && node->getSymbol()->isClassObject())
-          (TR::Compiler->om.generateCompressedObjectHeaders() || cg->comp()->target().is32Bit()) ? type = TR_RematerializableInt : type = TR_RematerializableLong;
+          (TR::Compiler->om.generateCompressedObjectHeaders() || comp->target().is32Bit()) ? type = TR_RematerializableInt : type = TR_RematerializableLong;
        else
           type = TR_RematerializableAddress;
 
@@ -3328,7 +3328,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerRegLoadEvaluator(TR::Node *node, T
    // Everything that can put a value in a global reg (iRegStore, method parameters)
    // zeroes out the upper bits.
    //
-   if (cg->comp()->target().is64Bit() && node->getOpCodeValue()==TR::iRegLoad && performTransformation(comp, "TREE EVALUATION: setUpperBitsAreZero on iRegLoad %s\n", cg->getDebug()->getName(node)))
+   if (comp->target().is64Bit() && node->getOpCodeValue()==TR::iRegLoad && performTransformation(comp, "TREE EVALUATION: setUpperBitsAreZero on iRegLoad %s\n", cg->getDebug()->getName(node)))
       globalReg->setUpperBitsAreZero();
 
    return globalReg;

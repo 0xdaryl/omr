@@ -1580,7 +1580,7 @@ OMR::X86::MemoryReference::generateBinaryEncoding(
 
             if (label != NULL)
                {
-               if (cg->comp()->target().is64Bit())
+               if (comp->target().is64Bit())
                   {
                   // This cast is ok because we only need the low 32 bits of the address
                   // *(int32_t *)cursor = -(int32_t)(intptr_t)(cursor+4);

@@ -103,8 +103,8 @@ int32_t memoryBarrierRequired(
 
    static char *mbou = feGetEnv("TR_MemoryBarriersOnUnresolved");
 
-   TR_ASSERT_FATAL(cg->comp()->compileRelocatableCode() || cg->comp()->isOutOfProcessCompilation() || cg->comp()->target().cpu.requiresLFence() == cg->getX86ProcessorInfo().requiresLFENCE(), "requiresLFence() failed\n");
-   
+   TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->target().cpu.requiresLFence() == cg->getX86ProcessorInfo().requiresLFENCE(), "requiresLFence() failed\n");
+
    // Unresolved references are assumed to be volatile until they can be proven otherwise.
    // The memory barrier will be removed by PicBuilder when the reference is resolved and
    // proven to be non-volatile.
@@ -122,7 +122,7 @@ int32_t memoryBarrierRequired(
             else
                barrier |= kMemoryFence;
          }
-         else if (cg->comp()->target().cpu.requiresLFence())
+         else if (comp->target().cpu.requiresLFence())
             barrier |= kLoadFence;
          }
       else
@@ -135,7 +135,7 @@ int32_t memoryBarrierRequired(
             else
                barrier |= kMemoryFence;
          }
-         else if (op.usesTarget() && cg->comp()->target().cpu.requiresLFence())
+         else if (op.usesTarget() && comp->target().cpu.requiresLFence())
             barrier |= kLoadFence;
          }
       }
@@ -143,10 +143,10 @@ int32_t memoryBarrierRequired(
    static char *disableExplicitFences = feGetEnv("TR_DisableExplicitFences");
    if (barrier)
       {
-      TR_ASSERT_FATAL(cg->comp()->compileRelocatableCode() || cg->comp()->isOutOfProcessCompilation() || cg->comp()->target().cpu.supportsLFence() == cg->getX86ProcessorInfo().supportsLFence(), "supportsLFence() failed\n");
-      TR_ASSERT_FATAL(cg->comp()->compileRelocatableCode() || cg->comp()->isOutOfProcessCompilation() || cg->comp()->target().cpu.supportsMFence() == cg->getX86ProcessorInfo().supportsMFence(), "supportsMFence() failed\n");
-      if ((!cg->comp()->target().cpu.supportsLFence() ||
-           !cg->comp()->target().cpu.supportsMFence()) || disableExplicitFences)
+      TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->target().cpu.supportsLFence() == cg->getX86ProcessorInfo().supportsLFence(), "supportsLFence() failed\n");
+      TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->target().cpu.supportsMFence() == cg->getX86ProcessorInfo().supportsMFence(), "supportsMFence() failed\n");
+      if ((!comp->target().cpu.supportsLFence() ||
+           !comp->target().cpu.supportsMFence()) || disableExplicitFences)
          {
          if (op.supportsLockPrefix())
             barrier |= LockPrefix;
@@ -861,6 +861,7 @@ uint8_t *TR::X86VirtualGuardNOPInstruction::generateBinaryEncoding()
 void
 TR::X86ImmInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
    {
+   TR::Compilation *comp = cg()->comp();
 
    if (getOpCode().hasIntImmediate())
       {
@@ -886,14 +887,14 @@ TR::X86ImmInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
                break;
             case TR_MethodPointer:
                if (getNode() && getNode()->getInlinedSiteIndex() == -1 &&
-                  (void *)(uintptr_t) getSourceImmediate() == cg()->comp()->getCurrentMethod()->resolvedMethodAddress())
+                  (void *)(uintptr_t) getSourceImmediate() == comp->getCurrentMethod()->resolvedMethodAddress())
                   setReloKind(TR_RamMethod);
                // intentional fall-through
             case TR_RamMethod:
                symbolKind = TR::SymbolType::typeMethod;
                // intentional fall-through
             case TR_ClassPointer:
-               if (cg()->comp()->getOption(TR_UseSymbolValidationManager))
+               if (comp->getOption(TR_UseSymbolValidationManager))
                   {
                   cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor,
                                                                                             (uint8_t *)(uintptr_t)getSourceImmediate(),
@@ -922,7 +923,7 @@ TR::X86ImmInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
             }
          }
 
-      if (std::find(cg()->comp()->getStaticHCRPICSites()->begin(), cg()->comp()->getStaticHCRPICSites()->end(), this) != cg()->comp()->getStaticHCRPICSites()->end())
+      if (std::find(comp->getStaticHCRPICSites()->begin(), comp->getStaticHCRPICSites()->end(), this) != comp->getStaticHCRPICSites()->end())
          {
          cg()->jitAdd32BitPicToPatchOnClassRedefinition(((void *)(uintptr_t) getSourceImmediateAsAddress()), (void *) cursor);
          }
@@ -997,7 +998,8 @@ TR::X86ImmSnippetInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
 
    if (getOpCode().hasIntImmediate())
       {
-      if (std::find(cg()->comp()->getStaticHCRPICSites()->begin(), cg()->comp()->getStaticHCRPICSites()->end(), this) != cg()->comp()->getStaticHCRPICSites()->end())
+      TR::Compilation *comp = cg()->comp();
+      if (std::find(comp->getStaticHCRPICSites()->begin(), comp->getStaticHCRPICSites()->end(), this) != comp->getStaticHCRPICSites()->end())
          {
          cg()->jitAdd32BitPicToPatchOnClassRedefinition(((void *)(uintptr_t) getSourceImmediateAsAddress()), (void *) cursor);
          }
@@ -1139,7 +1141,7 @@ TR::X86ImmSymInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
             {
             if (cg()->needClassAndMethodPointerRelocations())
                {
-               if (cg()->comp()->getOption(TR_UseSymbolValidationManager))
+               if (comp->getOption(TR_UseSymbolValidationManager))
                   {
                   cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor,
                                                                                             (uint8_t *)(uintptr_t)getSourceImmediate(),
@@ -1222,7 +1224,7 @@ uint8_t* TR::X86ImmSymInstruction::generateOperand(uint8_t* cursor)
          {
          intptr_t targetAddress = (int32_t)getSourceImmediate();
 
-         if (cg()->comp()->target().is64Bit() && cg()->hasCodeCacheSwitched() && getOpCodeValue() == CALLImm4)
+         if (comp->target().is64Bit() && cg()->hasCodeCacheSwitched() && getOpCodeValue() == CALLImm4)
             {
             cg()->redoTrampolineReservationIfNecessary(this, getSymbolReference());
             }
@@ -1269,7 +1271,7 @@ uint8_t* TR::X86ImmSymInstruction::generateOperand(uint8_t* cursor)
                //
                TR::MethodSymbol *methodSym = sym->getMethodSymbol();
 
-               if (self()->cg()->comp()->target().is64Bit())
+               if (comp->target().is64Bit())
                   {
                   // Obtain the actual target of this call instruction.
                   //
@@ -1308,7 +1310,7 @@ uint8_t* TR::X86ImmSymInstruction::generateOperand(uint8_t* cursor)
                   {
                   // we need to reserve trampoline in all cases, since methods can get recompiled
                   // and we might need one in the future.
-                  if (cg()->comp()->target().is64Bit())
+                  if (comp->target().is64Bit())
                      cg()->fe()->reserveTrampolineIfNecessary(comp, getSymbolReference(), true);
 
                   if (isTrampolineRequired)
@@ -1317,7 +1319,7 @@ uint8_t* TR::X86ImmSymInstruction::generateOperand(uint8_t* cursor)
                      }
                   }
 
-               TR_ASSERT_FATAL(cg()->comp()->target().cpu.isTargetWithinRIPRange(targetAddress, nextInstructionAddress),
+               TR_ASSERT_FATAL(comp->target().cpu.isTargetWithinRIPRange(targetAddress, nextInstructionAddress),
                                "Direct call target must be reachable directly");
                }
             }
@@ -1335,11 +1337,11 @@ uint8_t* TR::X86ImmSymInstruction::generateOperand(uint8_t* cursor)
                {
                if (sym->isStatic())
                   {
-                  *(intptr_t *)cursor = (intptr_t)TR::Compiler->cls.persistentClassPointerFromClassPointer(cg()->comp(), (TR_OpaqueClassBlock*)sym->getStaticSymbol()->getStaticAddress());
+                  *(intptr_t *)cursor = (intptr_t)TR::Compiler->cls.persistentClassPointerFromClassPointer(comp, (TR_OpaqueClassBlock*)sym->getStaticSymbol()->getStaticAddress());
                   }
                else
                   {
-                  *(int32_t *)cursor = (int32_t)TR::Compiler->cls.persistentClassPointerFromClassPointer(cg()->comp(), (TR_OpaqueClassBlock*)(uintptr_t)getSourceImmediate());
+                  *(int32_t *)cursor = (int32_t)TR::Compiler->cls.persistentClassPointerFromClassPointer(comp, (TR_OpaqueClassBlock*)(uintptr_t)getSourceImmediate());
                   }
                }
             }
@@ -1391,13 +1393,15 @@ int32_t TR::X86RegInstruction::estimateBinaryLength(int32_t currentEstimate)
 OMR::X86::EnlargementResult
 TR::X86RegInstruction::enlarge(int32_t requestedEnlargementSize, int32_t maxEnlargementSize, bool allowPartialEnlargement)
    {
+   TR::Compilation *comp = cg()->comp();
+
    static char *disableRexExpansion = feGetEnv("TR_DisableREXInstructionExpansion");
-   if (disableRexExpansion || cg()->comp()->getOption(TR_DisableZealousCodegenOpts))
+   if (disableRexExpansion || comp->getOption(TR_DisableZealousCodegenOpts))
       return OMR::X86::EnlargementResult(0, 0);
 
-   TR_ASSERT_FATAL(cg()->comp()->compileRelocatableCode() || cg()->comp()->isOutOfProcessCompilation() || cg()->comp()->target().cpu.supportsAVX() == cg()->getX86ProcessorInfo().supportsAVX(), "supportsAVX() failed\n");
+   TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->target().cpu.supportsAVX() == cg()->getX86ProcessorInfo().supportsAVX(), "supportsAVX() failed\n");
 
-   if (getOpCode().info().supportsAVX() && cg()->comp()->target().cpu.supportsAVX())
+   if (getOpCode().info().supportsAVX() && comp->target().cpu.supportsAVX())
       return OMR::X86::EnlargementResult(0, 0); // REX expansion isn't allowed for AVX instructions
 
    if ((maxEnlargementSize < requestedEnlargementSize && !allowPartialEnlargement) || requestedEnlargementSize < 1)
@@ -1405,7 +1409,6 @@ TR::X86RegInstruction::enlarge(int32_t requestedEnlargementSize, int32_t maxEnla
 
    int32_t enlargementSize = std::min(requestedEnlargementSize, maxEnlargementSize);
 
-   TR::Compilation *comp = cg()->comp();
    if (comp->target().is64Bit()
       && !getOpCode().info().hasMandatoryPrefix()
       && performTransformation(comp, "O^O Enlarging instruction %p by %d bytes by repeating the REX prefix\n", this, enlargementSize))
@@ -1548,14 +1551,14 @@ TR::X86RegImmInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
 
          case TR_MethodPointer:
             if (getNode() && getNode()->getInlinedSiteIndex() == -1 &&
-               (void *)(uintptr_t) getSourceImmediate() == cg()->comp()->getCurrentMethod()->resolvedMethodAddress())
+               (void *)(uintptr_t) getSourceImmediate() == comp->getCurrentMethod()->resolvedMethodAddress())
                setReloKind(TR_RamMethod);
             // intentional fall-through
          case TR_RamMethod:
             symbolKind = TR::SymbolType::typeMethod;
             // intentional fall-through
          case TR_ClassPointer:
-            if (cg()->comp()->getOption(TR_UseSymbolValidationManager))
+            if (comp->getOption(TR_UseSymbolValidationManager))
                {
                cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor,
                                                                                          (uint8_t *)(uintptr_t)getSourceImmediate(),
@@ -1679,8 +1682,8 @@ TR::X86RegImmSymInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
                 //udeshs: this should be temporary??
             TR_ASSERT(!(getSymbolReference()->isUnresolved() && !symbol->isClassObject()), "expecting a resolved symbol for this instruction class!\n");
 
-            *(int32_t *)cursor = (int32_t)TR::Compiler->cls.persistentClassPointerFromClassPointer(cg()->comp(), (TR_OpaqueClassBlock*)(uintptr_t)getSourceImmediate());
-            if (cg()->comp()->getOption(TR_UseSymbolValidationManager))
+            *(int32_t *)cursor = (int32_t)TR::Compiler->cls.persistentClassPointerFromClassPointer(comp, (TR_OpaqueClassBlock*)(uintptr_t)getSourceImmediate());
+            if (comp->getOption(TR_UseSymbolValidationManager))
                {
                cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor,
                                                                                          (uint8_t *)(uintptr_t)getSourceImmediate(),
@@ -1718,12 +1721,12 @@ TR::X86RegImmSymInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
          break;
       case TR_MethodPointer:
          if (getNode() && getNode()->getInlinedSiteIndex() == -1 &&
-            (void *)(uintptr_t) getSourceImmediate() == cg()->comp()->getCurrentMethod()->resolvedMethodAddress())
+            (void *)(uintptr_t) getSourceImmediate() == comp->getCurrentMethod()->resolvedMethodAddress())
             setReloKind(TR_RamMethod);
          symbolKind = TR::SymbolType::typeMethod;
          // intentional fall-through
       case TR_ClassPointer:
-         if (cg()->comp()->getOption(TR_UseSymbolValidationManager))
+         if (comp->getOption(TR_UseSymbolValidationManager))
             {
             cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor,
                                                                                       (uint8_t *)(uintptr_t)getSourceImmediate(),
@@ -1744,12 +1747,12 @@ TR::X86RegImmSymInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
          break;
       case TR_DebugCounter:
          {
-         TR::DebugCounterBase *counter = cg()->comp()->getCounterFromStaticAddress(getSymbolReference());
+         TR::DebugCounterBase *counter = comp->getCounterFromStaticAddress(getSymbolReference());
          if (counter == NULL)
             {
-            cg()->comp()->failCompilation<TR::CompilationException>("Could not generate relocation for debug counter in TR::X86RegImmSymInstruction::addMetaDataForCodeAddress\n");
+            comp->failCompilation<TR::CompilationException>("Could not generate relocation for debug counter in TR::X86RegImmSymInstruction::addMetaDataForCodeAddress\n");
             }
-         TR::DebugCounter::generateRelocation(cg()->comp(),
+         TR::DebugCounter::generateRelocation(comp,
                                               cursor,
                                               getNode(),
                                               counter);
@@ -1793,7 +1796,8 @@ void TR::X86RegRegImmInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
 
    if (getOpCode().hasIntImmediate())
       {
-      if (std::find(cg()->comp()->getStaticHCRPICSites()->begin(), cg()->comp()->getStaticHCRPICSites()->end(), this) != cg()->comp()->getStaticHCRPICSites()->end())
+      TR::Compilation *comp = cg()->comp();
+      if (std::find(comp->getStaticHCRPICSites()->begin(), comp->getStaticHCRPICSites()->end(), this) != comp->getStaticHCRPICSites()->end())
          {
          cg()->jitAdd32BitPicToPatchOnClassRedefinition(((void *)(uintptr_t) getSourceImmediateAsAddress()), (void *) cursor);
          }
@@ -1975,7 +1979,7 @@ TR::X86MemImmInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
       if (_reloKind == TR_ClassAddress && cg()->needClassAndMethodPointerRelocations())
          {
          TR_ASSERT(getNode(), "node expected to be non-NULL here");
-         if (cg()->comp()->getOption(TR_UseSymbolValidationManager))
+         if (comp->getOption(TR_UseSymbolValidationManager))
             {
             cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor,
                                                                                       (uint8_t *)(uintptr_t)getSourceImmediate(),
@@ -2136,8 +2140,8 @@ TR::X86MemImmSymInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
       TR_ASSERT(getNode(), "No node where expected!");
       if (cg()->needClassAndMethodPointerRelocations())
          {
-         *(int32_t *)cursor = (int32_t)TR::Compiler->cls.persistentClassPointerFromClassPointer(cg()->comp(), (TR_OpaqueClassBlock*)(uintptr_t)getSourceImmediate());
-         if (cg()->comp()->getOption(TR_UseSymbolValidationManager))
+         *(int32_t *)cursor = (int32_t)TR::Compiler->cls.persistentClassPointerFromClassPointer(comp, (TR_OpaqueClassBlock*)(uintptr_t)getSourceImmediate());
+         if (comp->getOption(TR_UseSymbolValidationManager))
             {
             cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor,
                                                                                       (uint8_t *)(uintptr_t)getSourceImmediate(),
@@ -2217,7 +2221,8 @@ void TR::X86MemRegImmInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
    {
    if (getOpCode().hasIntImmediate())
       {
-      if (std::find(cg()->comp()->getStaticHCRPICSites()->begin(), cg()->comp()->getStaticHCRPICSites()->end(), this) != cg()->comp()->getStaticHCRPICSites()->end())
+      TR::Compilation *comp = cg()->comp();
+      if (std::find(comp->getStaticHCRPICSites()->begin(), comp->getStaticHCRPICSites()->end(), this) != comp->getStaticHCRPICSites()->end())
          {
          cg()->jitAdd32BitPicToPatchOnClassRedefinition(((void *)(uintptr_t) getSourceImmediateAsAddress()), (void *) cursor);
          }
@@ -2391,7 +2396,8 @@ void TR::X86RegMemImmInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
    {
    if (getOpCode().hasIntImmediate())
       {
-      if (std::find(cg()->comp()->getStaticHCRPICSites()->begin(), cg()->comp()->getStaticHCRPICSites()->end(), this) != cg()->comp()->getStaticHCRPICSites()->end())
+      TR::Compilation *comp = cg()->comp();
+      if (std::find(comp->getStaticHCRPICSites()->begin(), comp->getStaticHCRPICSites()->end(), this) != comp->getStaticHCRPICSites()->end())
          {
          cg()->jitAdd32BitPicToPatchOnClassRedefinition(((void *)(uintptr_t) getSourceImmediateAsAddress()), (void *) cursor);
          }
@@ -2671,7 +2677,7 @@ TR::AMD64RegImm64Instruction::addMetaDataForCodeAddress(uint8_t *cursor)
             case TR_ClassAddress:
                {
                TR_ASSERT(getNode(), "node assumed to be non-NULL here");
-               if (cg()->comp()->getOption(TR_UseSymbolValidationManager))
+               if (comp->getOption(TR_UseSymbolValidationManager))
                   {
                   cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor,
                                                                                             (uint8_t *)getSourceImmediate(),
@@ -2695,14 +2701,14 @@ TR::AMD64RegImm64Instruction::addMetaDataForCodeAddress(uint8_t *cursor)
 
             case TR_MethodPointer:
                if (getNode() && getNode()->getInlinedSiteIndex() == -1 &&
-                  (void *) getSourceImmediate() == cg()->comp()->getCurrentMethod()->resolvedMethodAddress())
+                  (void *) getSourceImmediate() == comp->getCurrentMethod()->resolvedMethodAddress())
                   setReloKind(TR_RamMethod);
                // intentional fall-through
             case TR_RamMethod:
                symbolKind = TR::SymbolType::typeMethod;
                // intentional fall-through
             case TR_ClassPointer:
-               if (cg()->comp()->getOption(TR_UseSymbolValidationManager))
+               if (comp->getOption(TR_UseSymbolValidationManager))
                   {
                   cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor,
                                                                                             (uint8_t *)getSourceImmediate(),
@@ -2842,7 +2848,7 @@ TR::AMD64RegImm64SymInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
             }
          case TR_NativeMethodAbsolute:
             {
-            if (cg()->comp()->getOption(TR_EmitRelocatableELFFile))
+            if (comp->getOption(TR_EmitRelocatableELFFile))
                {
                TR_ResolvedMethod *target = getSymbolReference()->getSymbol()->castToResolvedMethodSymbol()->getResolvedMethod();
                cg()->addStaticRelocation(TR::StaticRelocation(cursor, target->externalName(cg()->trMemory()), TR::StaticRelocationSize::word64, TR::StaticRelocationType::Absolute));
@@ -2852,12 +2858,12 @@ TR::AMD64RegImm64SymInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
 
          case TR_DebugCounter:
             {
-            TR::DebugCounterBase *counter = cg()->comp()->getCounterFromStaticAddress(getSymbolReference());
+            TR::DebugCounterBase *counter = comp->getCounterFromStaticAddress(getSymbolReference());
             if (counter == NULL)
                {
-               cg()->comp()->failCompilation<TR::CompilationException>("Could not generate relocation for debug counter in TR::AMD64RegImm64SymInstruction::addMetaDataForCodeAddress\n");
+               comp->failCompilation<TR::CompilationException>("Could not generate relocation for debug counter in TR::AMD64RegImm64SymInstruction::addMetaDataForCodeAddress\n");
                }
-            TR::DebugCounter::generateRelocation(cg()->comp(),
+            TR::DebugCounter::generateRelocation(comp,
                                                  cursor,
                                                  getNode(),
                                                  counter);

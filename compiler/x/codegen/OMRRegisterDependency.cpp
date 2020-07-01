@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -61,14 +61,15 @@
 
 static void generateRegcopyDebugCounter(TR::CodeGenerator *cg, const char *category)
    {
-   if (!cg->comp()->getOptions()->enableDebugCounters())
+   TR::Compilation *comp = cg->comp();
+   if (!comp->getOptions()->enableDebugCounters())
       return;
    TR::TreeTop *tt = cg->getCurrentEvaluationTreeTop();
-   const char *fullName = TR::DebugCounter::debugCounterName(cg->comp(),
+   const char *fullName = TR::DebugCounter::debugCounterName(comp,
       "regcopy/cg.genRegDepConditions/%s/(%s)/%s/block_%d",
       category,
-      cg->comp()->signature(),
-      cg->comp()->getHotnessName(cg->comp()->getMethodHotness()),
+      comp->signature(),
+      comp->getHotnessName(comp->getMethodHotness()),
       tt->getEnclosingBlock()->getNumber());
    TR::Instruction *cursor = cg->lastInstructionBeforeCurrentEvaluationTreeTop();
    cg->generateDebugCounter(cursor, fullName, 1, TR::DebugCounter::Undetermined);

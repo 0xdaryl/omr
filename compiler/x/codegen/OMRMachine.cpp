@@ -2267,7 +2267,7 @@ void OMR::X86::Machine::disassociateUnspilledBackingStorage()
             self()->cg()->freeSpill(location, size, virtReg->isSpilledToSecondHalf()? 4:0);
             virtReg->setBackingStorage(NULL);
 
-            traceMsg(self()->cg()->comp(), "disassociating backing storage %p from assigned virtual %p\n", location, virtReg);
+            traceMsg(comp, "disassociating backing storage %p from assigned virtual %p\n", location, virtReg);
             }
          }
       }

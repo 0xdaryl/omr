@@ -142,11 +142,13 @@ TR::X86HelperCallSnippet::addMetaDataForLoadAddrArg(
 
 uint8_t *TR::X86HelperCallSnippet::genHelperCall(uint8_t *buffer)
    {
+   TR::Compilation *comp = cg()->comp();
+
    // add esp, _stackPointerAdjustment
    //
    if (_stackPointerAdjustment < -128 || _stackPointerAdjustment > 127)
       {
-      if (cg()->comp()->target().is64Bit())
+      if (comp->target().is64Bit())
          {
          *buffer++ = 0x48; // Rex
          }
@@ -157,7 +159,7 @@ uint8_t *TR::X86HelperCallSnippet::genHelperCall(uint8_t *buffer)
       }
    else if (_stackPointerAdjustment != 0)
       {
-      if (cg()->comp()->target().is64Bit())
+      if (comp->target().is64Bit())
          {
          *buffer++ = 0x48; // Rex
          }
@@ -169,7 +171,7 @@ uint8_t *TR::X86HelperCallSnippet::genHelperCall(uint8_t *buffer)
    if (_callNode)
       {
       if(!debug("amd64unimplemented"))
-         TR_ASSERT(cg()->comp()->target().is32Bit(), "AMD64 genHelperCall with _callNode not yet implemented");
+         TR_ASSERT(comp->target().is32Bit(), "AMD64 genHelperCall with _callNode not yet implemented");
       int32_t i = 0;
 
       if (_offset != -1)
@@ -266,7 +268,7 @@ uint8_t *TR::X86HelperCallSnippet::genHelperCall(uint8_t *buffer)
 
    // Insert alignment padding if the instruction might be patched dynamically.
    //
-   if (_alignCallDisplacementForPatching && cg()->comp()->target().isSMP())
+   if (_alignCallDisplacementForPatching && comp->target().isSMP())
       {
       uintptr_t mod = (uintptr_t)(buffer) % cg()->getInstructionPatchAlignmentBoundary();
       mod = cg()->getInstructionPatchAlignmentBoundary() - mod;
@@ -298,7 +300,7 @@ uint8_t *TR::X86HelperCallSnippet::genHelperCall(uint8_t *buffer)
    //
    if (_stackPointerAdjustment < -128 || _stackPointerAdjustment > 127)
       {
-      if (cg()->comp()->target().is64Bit())
+      if (comp->target().is64Bit())
          {
          *buffer++ = 0x48; // Rex
          }
@@ -309,7 +311,7 @@ uint8_t *TR::X86HelperCallSnippet::genHelperCall(uint8_t *buffer)
       }
    else if (_stackPointerAdjustment != 0)
       {
-      if (cg()->comp()->target().is64Bit())
+      if (comp->target().is64Bit())
          {
          *buffer++ = 0x48; // Rex
          }

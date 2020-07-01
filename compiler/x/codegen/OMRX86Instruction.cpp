@@ -262,7 +262,6 @@ void TR::X86LabelInstruction::addPostDepsToOutlinedInstructionsBranch()
 
 void TR::X86LabelInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned)
    {
-   TR::Compilation *comp = cg()->comp();
    if (getNeedToClearFPStack())
       {
       cg()->machine()->popEntireStack();
@@ -1457,93 +1456,95 @@ void padUnresolvedReferenceInstruction(TR::Instruction *instr, TR::MemoryReferen
 
 void insertUnresolvedReferenceInstructionMemoryBarrier(TR::CodeGenerator *cg, int32_t barrier, TR::Instruction *inst, TR::MemoryReference *mr, TR::Register *srcReg, TR::MemoryReference *anotherMr)
    {
-      TR_X86OpCode fenceOp;
-      bool is5ByteFence = false;
+   TR::Compilation *comp = cg->comp();
 
-      TR_ASSERT_FATAL(cg->comp()->compileRelocatableCode() || cg->comp()->isOutOfProcessCompilation() || cg->comp()->target().cpu.requiresLFence() == cg->getX86ProcessorInfo().requiresLFENCE(), "requiresLFence() failed\n");
+   TR_X86OpCode fenceOp;
+   bool is5ByteFence = false;
 
-      if (barrier & LockOR)
-         {
-         fenceOp.setOpCodeValue(LOR4MemImms);
-         is5ByteFence = true;
-         }
-      else if ((barrier & kMemoryFence) == kMemoryFence)
-         fenceOp.setOpCodeValue(MFENCE);
-      else if ((barrier & kLoadFence) && cg->comp()->target().cpu.requiresLFence())
-         fenceOp.setOpCodeValue(LFENCE);
-      else if (barrier & kStoreFence)
-         fenceOp.setOpCodeValue(SFENCE);
-      else
-         TR_ASSERT(false, "No valid memory barrier has been found. \n");
+   TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->target().cpu.requiresLFence() == cg->getX86ProcessorInfo().requiresLFENCE(), "requiresLFence() failed\n");
 
-      TR::Instruction *padInst = NULL;
-      TR::Instruction *fenceInst = NULL;
-      TR::Instruction *lockPrefix = NULL;
+   if (barrier & LockOR)
+      {
+      fenceOp.setOpCodeValue(LOR4MemImms);
+      is5ByteFence = true;
+      }
+   else if ((barrier & kMemoryFence) == kMemoryFence)
+      fenceOp.setOpCodeValue(MFENCE);
+   else if ((barrier & kLoadFence) && comp->target().cpu.requiresLFence())
+      fenceOp.setOpCodeValue(LFENCE);
+   else if (barrier & kStoreFence)
+      fenceOp.setOpCodeValue(SFENCE);
+   else
+      TR_ASSERT(false, "No valid memory barrier has been found. \n");
 
-      if (is5ByteFence)
-         {
-         //generate LOCK OR dword ptr [esp], 0
-         padInst = generateAlignmentInstruction(inst, 8, cg);
-         TR::RealRegister *espReal = cg->machine()->getRealRegister(TR::RealRegister::esp);
-         TR::MemoryReference *espMemRef = generateX86MemoryReference(espReal, 0, cg);
-         fenceInst = new (cg->trHeapMemory()) TR::X86MemImmInstruction(padInst, fenceOp.getOpCodeValue(), espMemRef, 0, cg);
-         }
-      else
-         {
-         //generate memory fence
-         padInst = generateAlignmentInstruction(inst, 4, cg);
-         fenceInst = new (cg->trHeapMemory()) TR::Instruction(fenceOp.getOpCodeValue(), padInst, cg);
-         }
+   TR::Instruction *padInst = NULL;
+   TR::Instruction *fenceInst = NULL;
+   TR::Instruction *lockPrefix = NULL;
 
-      TR::LabelSymbol *doneLabel  = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-      TR::Register *baseReg = mr->getBaseRegister();
-      TR::Register *indexReg = mr->getIndexRegister();
-      TR::Register *addressReg = NULL;
+   if (is5ByteFence)
+      {
+      //generate LOCK OR dword ptr [esp], 0
+      padInst = generateAlignmentInstruction(inst, 8, cg);
+      TR::RealRegister *espReal = cg->machine()->getRealRegister(TR::RealRegister::esp);
+      TR::MemoryReference *espMemRef = generateX86MemoryReference(espReal, 0, cg);
+      fenceInst = new (cg->trHeapMemory()) TR::X86MemImmInstruction(padInst, fenceOp.getOpCodeValue(), espMemRef, 0, cg);
+      }
+   else
+      {
+      //generate memory fence
+      padInst = generateAlignmentInstruction(inst, 4, cg);
+      fenceInst = new (cg->trHeapMemory()) TR::Instruction(fenceOp.getOpCodeValue(), padInst, cg);
+      }
 
-      if (cg->comp()->target().is64Bit())
-         addressReg = mr->getAddressRegister();
+   TR::LabelSymbol *doneLabel  = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::Register *baseReg = mr->getBaseRegister();
+   TR::Register *indexReg = mr->getIndexRegister();
+   TR::Register *addressReg = NULL;
+
+   if (comp->target().is64Bit())
+      addressReg = mr->getAddressRegister();
 
 
-      TR::RegisterDependencyConditions  *deps = NULL;
+   TR::RegisterDependencyConditions  *deps = NULL;
 
-      deps = generateRegisterDependencyConditions((uint8_t)0, 7, cg);
+   deps = generateRegisterDependencyConditions((uint8_t)0, 7, cg);
 
-      if (baseReg)
-         if (baseReg->getKind()!=TR_X87)
-            deps->addPostCondition(baseReg, TR::RealRegister::NoReg, cg);
+   if (baseReg)
+      if (baseReg->getKind()!=TR_X87)
+         deps->addPostCondition(baseReg, TR::RealRegister::NoReg, cg);
 
-      if (indexReg)
-         if (indexReg->getKind()!=TR_X87)
-            deps->addPostCondition(indexReg, TR::RealRegister::NoReg, cg);
+   if (indexReg)
+      if (indexReg->getKind()!=TR_X87)
+         deps->addPostCondition(indexReg, TR::RealRegister::NoReg, cg);
 
-      if (srcReg)
-         if (srcReg->getKind()!=TR_X87)
-            deps->addPostCondition(srcReg, TR::RealRegister::NoReg, cg);
+   if (srcReg)
+      if (srcReg->getKind()!=TR_X87)
+         deps->addPostCondition(srcReg, TR::RealRegister::NoReg, cg);
 
-      if (addressReg)
-         if (addressReg->getKind()!=TR_X87)
-            deps->addPostCondition(addressReg, TR::RealRegister::NoReg, cg);
+   if (addressReg)
+      if (addressReg->getKind()!=TR_X87)
+         deps->addPostCondition(addressReg, TR::RealRegister::NoReg, cg);
 
-      if (anotherMr)
-         {
-         addressReg = NULL;
-         baseReg = anotherMr->getBaseRegister();
-         indexReg = anotherMr->getIndexRegister();
-         if (cg->comp()->target().is64Bit())
-            addressReg = anotherMr->getAddressRegister();
+   if (anotherMr)
+      {
+      addressReg = NULL;
+      baseReg = anotherMr->getBaseRegister();
+      indexReg = anotherMr->getIndexRegister();
+      if (comp->target().is64Bit())
+         addressReg = anotherMr->getAddressRegister();
 
-         if (baseReg && baseReg->getKind() != TR_X87)
-            deps->addPostCondition(baseReg, TR::RealRegister::NoReg, cg);
-         if (indexReg && indexReg->getKind() != TR_X87)
-            deps->addPostCondition(indexReg, TR::RealRegister::NoReg, cg);
-         if (addressReg && addressReg->getKind() != TR_X87)
-            deps->addPostCondition(addressReg, TR::RealRegister::NoReg, cg);
-         }
+      if (baseReg && baseReg->getKind() != TR_X87)
+         deps->addPostCondition(baseReg, TR::RealRegister::NoReg, cg);
+      if (indexReg && indexReg->getKind() != TR_X87)
+         deps->addPostCondition(indexReg, TR::RealRegister::NoReg, cg);
+      if (addressReg && addressReg->getKind() != TR_X87)
+         deps->addPostCondition(addressReg, TR::RealRegister::NoReg, cg);
+      }
 
-      deps->stopAddingConditions();
+   deps->stopAddingConditions();
 
-      if (deps)
-         generateLabelInstruction(fenceInst, LABEL, doneLabel, deps, cg);
+   if (deps)
+      generateLabelInstruction(fenceInst, LABEL, doneLabel, deps, cg);
 
    }
 
@@ -4236,7 +4237,6 @@ generateConditionalJumpInstruction(
    TR::CodeGenerator *cg,
    bool              needsVMThreadRegister)
    {
-   TR::Compilation *comp = cg->comp();
    TR::X86LabelInstruction  * inst;
    TR::LabelSymbol           * destinationLabel = ifNode->getBranchDestination()->getNode()->getLabel();
 

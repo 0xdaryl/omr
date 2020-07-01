@@ -969,7 +969,7 @@ void OMR::X86::TreeEvaluator::compareIntegersForEquality(TR::Node *node, TR::Cod
       //
       TR::Node *firstChild = node->getFirstChild();
 
-      if (cg->comp()->target().is64Bit() && TR::Compiler->om.generateCompressedObjectHeaders())
+      if (comp->target().is64Bit() && TR::Compiler->om.generateCompressedObjectHeaders())
          {
          if (   (firstChild->getOpCode().isLoadIndirect()
                  && firstChild->getSymbolReference() == comp->getSymRefTab()->findVftSymbolRef())
@@ -1231,7 +1231,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerReturnEvaluator(TR::Node *node, TR
 
    if (comp->getMethodSymbol()->getLinkageConvention() == TR_Private)
       {
-      if (cg->comp()->target().is64Bit())
+      if (comp->target().is64Bit())
          {
          TR_ReturnInfo returnInfo;
          switch (node->getDataType())
@@ -2333,7 +2333,7 @@ static bool virtualGuardHelper(TR::Node *node, TR::CodeGenerator *cg)
 
    // Guards patched when the threads are stopped have no issues with multithreaded patching.
    // therefore alignment is not required
-   if (cg->comp()->target().isSMP() && !node->isStopTheWorldGuard())
+   if (comp->target().isSMP() && !node->isStopTheWorldGuard())
       {
       // the compiler is now capable of generating a train of vgnops all looking to patch the
       // same point with different constraints. alignment is required before the delegated patch

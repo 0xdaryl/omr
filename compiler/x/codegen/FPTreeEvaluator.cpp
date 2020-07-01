@@ -513,7 +513,7 @@ TR::Register *OMR::X86::TreeEvaluator::fpReturnEvaluator(TR::Node *node, TR::Cod
    TR_ASSERT(returnRegister, "Return node's child should evaluate to a register");
    TR::Compilation *comp = cg->comp();
 
-   if (cg->comp()->target().is32Bit() &&
+   if (comp->target().is32Bit() &&
        !cg->useSSEForDoublePrecision() &&
        returnRegister->getKind() == TR_FPR)
       {
@@ -787,7 +787,7 @@ TR::Register *OMR::X86::TreeEvaluator::fpRemEvaluator(TR::Node *node, TR::CodeGe
       TR::Node *divisor = node->getSecondChild();
       TR::Node *dividend = node->getFirstChild();
 
-      if (cg->comp()->target().is64Bit())
+      if (comp->target().is64Bit())
          {
          // TODO: We should do this for IA32 eventually
          TR::SymbolReference *helperSymRef = cg->symRefTab()->findOrCreateRuntimeHelper(nodeIsDouble ? TR_AMD64doubleRemainder : TR_AMD64floatRemainder, false, false, false);
@@ -1022,7 +1022,7 @@ TR::Register *OMR::X86::TreeEvaluator::i2dEvaluator(TR::Node *node, TR::CodeGene
 TR::Register *OMR::X86::TreeEvaluator::fpConvertToInt(TR::Node *node, TR::SymbolReference *helperSymRef, TR::CodeGenerator *cg)
    {
    TR::Compilation *comp = cg->comp();
-   TR_ASSERT(cg->comp()->target().is32Bit(), "AMD64 has enableSSE set, so it doesn't use this logic");
+   TR_ASSERT(comp->target().is32Bit(), "AMD64 has enableSSE set, so it doesn't use this logic");
 
    TR::Node     *child     = node->getFirstChild();
    TR::Register *accReg    = 0;
@@ -1040,14 +1040,14 @@ TR::Register *OMR::X86::TreeEvaluator::fpConvertToInt(TR::Node *node, TR::Symbol
    startLabel->setStartInternalControlFlow();
    reStartLabel->setEndInternalControlFlow();
 
-   TR_ASSERT_FATAL(cg->comp()->compileRelocatableCode() || cg->comp()->isOutOfProcessCompilation() || cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE) == cg->getX86ProcessorInfo().supportsSSE(), "supportsSSE() failed\n");
-   TR_ASSERT_FATAL(cg->comp()->compileRelocatableCode() || cg->comp()->isOutOfProcessCompilation() || cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE2) == cg->getX86ProcessorInfo().supportsSSE2(), "supportsSSE2() failed\n");
+   TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE) == cg->getX86ProcessorInfo().supportsSSE(), "supportsSSE() failed\n");
+   TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE2) == cg->getX86ProcessorInfo().supportsSSE2(), "supportsSSE2() failed\n");
 
    bool optimizeF2IWithSSE = ( node->getOpCodeValue() == TR::f2i &&
-                               cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE) );
+                               comp->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE) );
 
    bool optimizeD2IWithSSE2 = ( node->getOpCodeValue() == TR::d2i &&
-                                cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE2) );
+                                comp->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE2) );
 
    if (!optimizeF2IWithSSE && !optimizeD2IWithSSE2)
       {
@@ -1187,7 +1187,7 @@ TR::Register *OMR::X86::TreeEvaluator::fpConvertToInt(TR::Node *node, TR::Symbol
 TR::Register *OMR::X86::TreeEvaluator::fpConvertToLong(TR::Node *node, TR::SymbolReference *helperSymRef, TR::CodeGenerator *cg)
    {
    TR::Compilation *comp = cg->comp();
-   TR_ASSERT(cg->comp()->target().is32Bit(), "AMD64 doesn't use this logic");
+   TR_ASSERT(comp->target().is32Bit(), "AMD64 doesn't use this logic");
 
    TR::Node *child = node->getFirstChild();
 
