@@ -350,7 +350,7 @@ static TR::Register *fconstHandler(TR::Node *node, TR::CodeGenerator *cg, float 
    TR::Compilation *comp = cg->comp();
 
 
-   if (cg->comp()->target().is64Bit())
+   if (comp->target().is64Bit())
       {
       offset = cg->findOrCreateFloatConstant(&value, TR::Float, NULL, NULL, NULL, NULL);
       if (offset != PTOC_FULL_INDEX)
@@ -371,15 +371,15 @@ static TR::Register *fconstHandler(TR::Node *node, TR::CodeGenerator *cg, float 
          }
       }
 
-   if (cg->comp()->target().is32Bit() || offset==PTOC_FULL_INDEX)
+   if (comp->target().is32Bit() || offset==PTOC_FULL_INDEX)
       {
       srcRegister = cg->allocateRegister();
-      if (cg->comp()->target().is64Bit())
+      if (comp->target().is64Bit())
          tempReg = cg->allocateRegister();
       fixedSeqMemAccess(cg, node, 0, q, trgRegister, srcRegister, TR::InstOpCode::lfs, 4, NULL, tempReg);
       cg->findOrCreateFloatConstant(&value, TR::Float, q[0], q[1], q[2], q[3]);
       cg->stopUsingRegister(srcRegister);
-      if (cg->comp()->target().is64Bit())
+      if (comp->target().is64Bit())
          cg->stopUsingRegister(tempReg);
       }
    node->setRegister(trgRegister);
@@ -427,7 +427,7 @@ TR::Register *OMR::Power::TreeEvaluator::dconstEvaluator(TR::Node *node, TR::Cod
    TR::Instruction *q[4];
    int32_t            offset;
 
-   if (cg->comp()->target().is64Bit())
+   if (comp->target().is64Bit())
       {
       offset = cg->findOrCreateFloatConstant(&value, TR::Double, NULL, NULL, NULL, NULL);
       if (offset != PTOC_FULL_INDEX)
@@ -457,14 +457,14 @@ TR::Register *OMR::Power::TreeEvaluator::dconstEvaluator(TR::Node *node, TR::Cod
          }
       }
 
-   if (cg->comp()->target().is32Bit() || offset==PTOC_FULL_INDEX)
+   if (comp->target().is32Bit() || offset==PTOC_FULL_INDEX)
       {
       srcRegister = cg->allocateRegister(TR_GPR);
-      if (cg->comp()->target().is64Bit())
+      if (comp->target().is64Bit())
          tempReg = cg->allocateRegister(TR_GPR);
       fixedSeqMemAccess(cg, node, 0, q, trgRegister, srcRegister, opcode, 8, NULL, tempReg);
       cg->stopUsingRegister(srcRegister);
-      if (cg->comp()->target().is64Bit())
+      if (comp->target().is64Bit())
          cg->stopUsingRegister(tempReg);
       cg->findOrCreateFloatConstant(&value, TR::Double, q[0], q[1], q[2], q[3]);
       }
@@ -498,8 +498,8 @@ TR::Register *OMR::Power::TreeEvaluator::dloadHelper(TR::Node *node, TR::CodeGen
    {
    TR::Compilation *comp = cg->comp();
    TR::MemoryReference *tempMR;
-   bool needSync= node->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP();
-   if (cg->comp()->target().is32Bit() && needSync && !cg->is64BitProcessor())
+   bool needSync= node->getSymbolReference()->getSymbol()->isSyncVolatile() && comp->target().isSMP();
+   if (comp->target().is32Bit() && needSync && !cg->is64BitProcessor())
       {
       TR::Register *addrReg = cg->allocateRegister();
       TR::SymbolReference *vrlRef = comp->getSymRefTab()->findOrCreateVolatileReadDoubleSymbolRef(comp->getMethodSymbol());
@@ -977,9 +977,9 @@ TR::Register* OMR::Power::TreeEvaluator::dstoreEvaluator(TR::Node *node, TR::Cod
 
 
    TR::Register *valueReg = cg->evaluate(child);
-   bool needSync= node->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP();
+   bool needSync= node->getSymbolReference()->getSymbol()->isSyncVolatile() && comp->target().isSMP();
    TR::MemoryReference *tempMR;
-   if (cg->comp()->target().is32Bit() && needSync && !cg->is64BitProcessor())
+   if (comp->target().is32Bit() && needSync && !cg->is64BitProcessor())
       {
       TR::Register *addrReg = cg->allocateRegister();
       TR::SymbolReference    *vrlRef = comp->getSymRefTab()->findOrCreateVolatileWriteDoubleSymbolRef(comp->getMethodSymbol());

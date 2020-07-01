@@ -832,7 +832,7 @@ TR::Register *lsub64Evaluator(TR::Node *node, TR::CodeGenerator *cg)
    cg->decReferenceCount(secondChild);
    return trgReg;
    }
- 
+
 TR::Register *OMR::Power::TreeEvaluator::lsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    if (cg->comp()->target().is64Bit())
@@ -1188,7 +1188,6 @@ OMR::Power::TreeEvaluator::dualMulHelper32(TR::Node * node, TR::Node * lmulNode,
 TR::Register *
 OMR::Power::TreeEvaluator::dualMulEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   TR::Compilation * comp = cg->comp();
    bool needsUnsignedHighMulOnly = (node->getOpCodeValue() == TR::lumulh) && !node->isDualCyclic();
    TR_ASSERT((node->getOpCodeValue() == TR::lumulh) || (node->getOpCodeValue() == TR::lmul), "Unexpected operator. Expected lumulh or lmul.");
    TR_ASSERT(node->isDualCyclic() || needsUnsignedHighMulOnly, "Should be either calculating cyclic dual or just the high part of the lmul.");
@@ -1209,8 +1208,8 @@ OMR::Power::TreeEvaluator::dualMulEvaluator(TR::Node * node, TR::CodeGenerator *
       }
    else
       {
-	  TR::Node *lmulNode;
-	  TR::Node *lumulhNode;
+      TR::Node *lmulNode;
+      TR::Node *lumulhNode;
       if (!needsUnsignedHighMulOnly)
          {
          diagnostic("Found lmul/lumulh for node = %p\n", node);
@@ -1836,7 +1835,6 @@ static TR::Register *signedLongDivisionOrRemainderAnalyser(TR::Node *node, TR::C
 // also handles iudiv
 TR::Register *OMR::Power::TreeEvaluator::idivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::Compilation * comp = cg->comp();
    TR::Register *trgReg;
    TR::Node     *firstChild      = node->getFirstChild();
    TR::Node     *secondChild     = node->getSecondChild();
@@ -1918,7 +1916,6 @@ static TR::Register *ldiv64Evaluator(TR::Node *node, TR::CodeGenerator *cg)
    TR::Node     *secondChild     = node->getSecondChild();
    TR::Register *dividendReg     = cg->evaluate(firstChild);
    uint64_t    divisor = 0;
-   TR::Compilation * comp = cg->comp();
 
    TR_ASSERT(node->getOpCodeValue() != TR::ludiv, "TR::ludiv is not impelemented yet for 64-bit target\n");
 
@@ -2154,7 +2151,7 @@ TR::Register *OMR::Power::TreeEvaluator::iremEvaluator(TR::Node *node, TR::CodeG
          {
          TR::Register *divisorReg = cg->evaluate(secondChild);
          trgReg = cg->allocateRegister();
-         if(cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9))
+         if(comp->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9))
             {
             generateTrg1Src2Instruction(cg, TR::InstOpCode::modsw, node, trgReg, dividendReg, divisorReg);
             }
@@ -2210,7 +2207,7 @@ TR::Register *OMR::Power::TreeEvaluator::iremEvaluator(TR::Node *node, TR::CodeG
             generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, doneLabel, condReg);
             cg->stopUsingRegister(condReg);
             }
-         if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9))
+         if (comp->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9))
             {
             generateTrg1Src2Instruction(cg, TR::InstOpCode::modsw, node, trgReg, dividendReg, divisorReg);
             }
@@ -2250,7 +2247,7 @@ TR::Register *lrem64Evaluator(TR::Node *node, TR::CodeGenerator *cg)
          {
          TR::Register *divisorReg = cg->evaluate(secondChild);
          trgReg = cg->allocateRegister();
-         if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9))
+         if (comp->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9))
             {
             generateTrg1Src2Instruction(cg, TR::InstOpCode::modsd, node, trgReg, dividendReg, divisorReg);
             }
@@ -2306,7 +2303,7 @@ TR::Register *lrem64Evaluator(TR::Node *node, TR::CodeGenerator *cg)
             generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, doneLabel, condReg);
             cg->stopUsingRegister(condReg);
             }
-         if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9))
+         if (comp->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9))
             {
             generateTrg1Src2Instruction(cg, TR::InstOpCode::modsd, node, trgReg, dividendReg, divisorReg);
             }

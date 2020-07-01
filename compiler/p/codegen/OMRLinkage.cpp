@@ -105,12 +105,13 @@ TR::Instruction *OMR::Power::Linkage::saveArguments(TR::Instruction *cursor, boo
    #define  REAL_REGISTER(ri)  machine->getRealRegister(ri)
    #define  REGNUM(ri)         ((TR::RealRegister::RegNum)(ri))
    const TR::PPCLinkageProperties& properties = self()->getProperties();
+   TR::Compilation *comp = self()->comp();
    TR::Machine *machine = self()->machine();
    TR::RealRegister      *stackPtr   = self()->cg()->getStackPointerRegister();
-   TR::ResolvedMethodSymbol    *bodySymbol = self()->comp()->getJittedMethodSymbol();
+   TR::ResolvedMethodSymbol    *bodySymbol = comp->getJittedMethodSymbol();
    ListIterator<TR::ParameterSymbol>   paramIterator(&parmList);
    TR::ParameterSymbol      *paramCursor;
-   TR::Node                 *firstNode = self()->comp()->getStartTree()->getNode();
+   TR::Node                 *firstNode = comp->getStartTree()->getNode();
    TR_BitVector             freeScratchable;
    int32_t                  busyMoves[3][64];
    int32_t                  busyIndex = 0, i1;
@@ -138,7 +139,7 @@ TR::Instruction *OMR::Power::Linkage::saveArguments(TR::Instruction *cursor, boo
          {
          TR::DataType type = paramCursor->getType();
          TR::RealRegister::RegNum regNum;
-         bool twoRegs = (self()->comp()->target().is32Bit() && type.isInt64() && lri < properties.getNumIntArgRegs()-1);
+         bool twoRegs = (comp->target().is32Bit() && type.isInt64() && lri < properties.getNumIntArgRegs()-1);
 
          if (!type.isFloatingPoint())
             {
@@ -172,7 +173,7 @@ TR::Instruction *OMR::Power::Linkage::saveArguments(TR::Instruction *cursor, boo
          if (!paramCursor->isReferencedParameter() && !paramCursor->isParmHasToBeOnStack()) continue;
 
          TR::RealRegister::RegNum regNum;
-         bool twoRegs = (self()->comp()->target().is32Bit() && type.isInt64() && lri < properties.getNumIntArgRegs()-1);
+         bool twoRegs = (comp->target().is32Bit() && type.isInt64() && lri < properties.getNumIntArgRegs()-1);
 
          if (type.isFloatingPoint())
             regNum = properties.getFloatArgumentRegister(lri);
@@ -262,7 +263,7 @@ TR::Instruction *OMR::Power::Linkage::saveArguments(TR::Instruction *cursor, boo
                   }
                }
 
-            if (self()->comp()->target().is32Bit() && type.isInt64())
+            if (comp->target().is32Bit() && type.isInt64())
                {
                int32_t aiLow = paramCursor->getAssignedLowGlobalRegisterIndex();
 
@@ -339,7 +340,7 @@ TR::Instruction *OMR::Power::Linkage::saveArguments(TR::Instruction *cursor, boo
                   {
                   busyMoves[0][busyIndex] = offset;
                   busyMoves[1][busyIndex] = ai;
-                  if (self()->comp()->target().is64Bit())
+                  if (comp->target().is64Bit())
                      busyMoves[2][busyIndex] = 2;
                   else
                      busyMoves[2][busyIndex] = 1;
@@ -347,7 +348,7 @@ TR::Instruction *OMR::Power::Linkage::saveArguments(TR::Instruction *cursor, boo
                   }
                break;
             case TR::Int64:
-               if (self()->comp()->target().is64Bit())
+               if (comp->target().is64Bit())
                   {
                   if (freeScratchable.isSet(ai))
                      {
@@ -501,12 +502,13 @@ TR::Instruction *OMR::Power::Linkage::loadUpArguments(TR::Instruction *cursor)
       // would be better to use a different linkage for this purpose
       return cursor;
 
+   TR::Compilation *comp = self()->comp();
    TR::Machine *machine = self()->machine();
    TR::RealRegister      *stackPtr   = self()->cg()->getStackPointerRegister();
-   TR::ResolvedMethodSymbol      *bodySymbol = self()->comp()->getJittedMethodSymbol();
+   TR::ResolvedMethodSymbol      *bodySymbol = comp->getJittedMethodSymbol();
    ListIterator<TR::ParameterSymbol>   paramIterator(&(bodySymbol->getParameterList()));
    TR::ParameterSymbol      *paramCursor = paramIterator.getFirst();
-   TR::Node                 *firstNode = self()->comp()->getStartTree()->getNode();
+   TR::Node                 *firstNode = comp->getStartTree()->getNode();
    int32_t                  numIntArgs = 0, numFloatArgs = 0;
    const TR::PPCLinkageProperties& properties = self()->getProperties();
 
@@ -547,7 +549,7 @@ TR::Instruction *OMR::Power::Linkage::loadUpArguments(TR::Instruction *cursor)
                   numIntArgs<properties.getNumIntArgRegs())
                {
                argRegister = machine->getRealRegister(properties.getIntegerArgumentRegister(numIntArgs));
-               if (self()->comp()->target().is64Bit())
+               if (comp->target().is64Bit())
                   cursor = generateTrg1MemInstruction(self()->cg(), TR::InstOpCode::ld, firstNode, argRegister,
                         new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, 8, self()->cg()), cursor);
                else
@@ -562,7 +564,7 @@ TR::Instruction *OMR::Power::Linkage::loadUpArguments(TR::Instruction *cursor)
                      }
                   }
                }
-            if (self()->comp()->target().is64Bit())
+            if (comp->target().is64Bit())
                numIntArgs++;
             else
                numIntArgs+=2;
@@ -600,12 +602,13 @@ TR::Instruction *OMR::Power::Linkage::loadUpArguments(TR::Instruction *cursor)
 
 TR::Instruction *OMR::Power::Linkage::flushArguments(TR::Instruction *cursor)
    {
+   TR::Compilation *comp = self()->comp();
    TR::Machine *machine = self()->machine();
    TR::RealRegister      *stackPtr   = self()->cg()->getStackPointerRegister();
-   TR::ResolvedMethodSymbol      *bodySymbol = self()->comp()->getJittedMethodSymbol();
+   TR::ResolvedMethodSymbol      *bodySymbol = comp->getJittedMethodSymbol();
    ListIterator<TR::ParameterSymbol>   paramIterator(&(bodySymbol->getParameterList()));
    TR::ParameterSymbol      *paramCursor = paramIterator.getFirst();
-   TR::Node                 *firstNode = self()->comp()->getStartTree()->getNode();
+   TR::Node                 *firstNode = comp->getStartTree()->getNode();
    int32_t                  numIntArgs = 0, numFloatArgs = 0;
    const TR::PPCLinkageProperties& properties = self()->getProperties();
 
@@ -649,7 +652,7 @@ TR::Instruction *OMR::Power::Linkage::flushArguments(TR::Instruction *cursor)
                   numIntArgs<properties.getNumIntArgRegs())
                {
                argRegister = machine->getRealRegister(properties.getIntegerArgumentRegister(numIntArgs));
-               if (self()->comp()->target().is64Bit())
+               if (comp->target().is64Bit())
                   cursor = generateMemSrc1Instruction(self()->cg(),TR::InstOpCode::Op_st, firstNode,
                         new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, 8, self()->cg()),
                         argRegister, cursor);
@@ -667,7 +670,7 @@ TR::Instruction *OMR::Power::Linkage::flushArguments(TR::Instruction *cursor)
                      }
                   }
                }
-            if (self()->comp()->target().is64Bit())
+            if (comp->target().is64Bit())
                numIntArgs++;
             else
                numIntArgs+=2;
@@ -735,9 +738,9 @@ TR::Register *OMR::Power::Linkage::pushAddressArg(TR::Node *child)
       else
          {
          if (child->isMethodPointerConstant())
-            loadAddressConstant(self()->cg(), self()->cg()->comp()->compileRelocatableCode(), child, child->getAddress(), pushRegister, NULL, false, TR_RamMethodSequence);
+            loadAddressConstant(self()->cg(), self()->comp()->compileRelocatableCode(), child, child->getAddress(), pushRegister, NULL, false, TR_RamMethodSequence);
          else
-            loadAddressConstant(self()->cg(), self()->cg()->comp()->compileRelocatableCode(), child, child->getAddress(), pushRegister);
+            loadAddressConstant(self()->cg(), self()->comp()->compileRelocatableCode(), child, child->getAddress(), pushRegister);
          }
       child->setRegister(pushRegister);
       }

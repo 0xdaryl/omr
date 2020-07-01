@@ -216,6 +216,7 @@ TR::RealRegister *OMR::Power::Machine::findBestFreeRegister(TR::Instruction *cur
                                                         bool considerUnlatched,
                                                         TR::Register      *virtualReg)
    {
+   TR::Compilation *comp = self()->cg()->comp();
    uint32_t         preference = (virtualReg==NULL)?0:virtualReg->getAssociation();
    uint64_t         interference = 0;
    int first, maskI;
@@ -279,7 +280,7 @@ TR::RealRegister *OMR::Power::Machine::findBestFreeRegister(TR::Instruction *cur
    // For FPR/VSR/VRF
    if (rk == TR_FPR || rk == TR_VSX_SCALAR || rk == TR_VSX_VECTOR || rk == TR_VRF)
       {
-      int rollingAllocator = !(self()->cg()->comp()->target().cpu.is(OMR_PROCESSOR_PPC_P8));
+      int rollingAllocator = !(comp->target().cpu.is(OMR_PROCESSOR_PPC_P8));
 
       // Find the best in the used FPR set so far
       int i, idx;
@@ -395,7 +396,7 @@ TR::RealRegister *OMR::Power::Machine::findBestFreeRegister(TR::Instruction *cur
          iNew = interference & currentReg;
 
          //Inject interference for last four assignments to prevent write-after-write dependancy in same p6 dispatch group.
-         if(rk == TR_GPR && (self()->cg()->comp()->target().cpu.is(OMR_PROCESSOR_PPC_P6)))
+         if(rk == TR_GPR && (comp->target().cpu.is(OMR_PROCESSOR_PPC_P6)))
             {
             if (_lastGPRAssigned != -1)
                iNew |= currentReg & _lastGPRAssigned;
@@ -421,7 +422,7 @@ TR::RealRegister *OMR::Power::Machine::findBestFreeRegister(TR::Instruction *cur
             }
          }
       //Track the last four registers used for use in above interference injection.
-      if ((rk == TR_GPR) && (freeRegister != NULL) && (self()->cg()->comp()->target().cpu.is(OMR_PROCESSOR_PPC_P6)))
+      if ((rk == TR_GPR) && (freeRegister != NULL) && (comp->target().cpu.is(OMR_PROCESSOR_PPC_P6)))
          {
          _4thLastGPRAssigned = _3rdLastGPRAssigned;
          _3rdLastGPRAssigned = _2ndLastGPRAssigned;
@@ -576,7 +577,7 @@ TR::RealRegister *OMR::Power::Machine::freeBestRegister(TR::Instruction     *cur
       {
       // XXX: Reusing backing stores here is causing the virtual being spilled to be clobbered
       case TR_GPR:
-         if (false /*!cg()->comp()->getOption(TR_DisableOOL) && (cg()->isOutOfLineColdPath() || cg()->isOutOfLineHotPath()) &&
+         if (false /*!comp->getOption(TR_DisableOOL) && (cg()->isOutOfLineColdPath() || cg()->isOutOfLineHotPath()) &&
                 virtReg->getBackingStorage()*/)
             {
             location = virtReg->getBackingStorage();
@@ -618,7 +619,7 @@ TR::RealRegister *OMR::Power::Machine::freeBestRegister(TR::Instruction     *cur
             }
          break;
       case TR_FPR:
-         if (false /*!cg()->comp()->getOption(TR_DisableOOL) && (cg()->isOutOfLineColdPath() || cg()->isOutOfLineHotPath()) &&
+         if (false /*!comp->getOption(TR_DisableOOL) && (cg()->isOutOfLineColdPath() || cg()->isOutOfLineHotPath()) &&
                 virtReg->getBackingStorage()*/)
             {
             location = virtReg->getBackingStorage();
@@ -674,7 +675,7 @@ TR::RealRegister *OMR::Power::Machine::freeBestRegister(TR::Instruction     *cur
             }
          break;
       case TR_CCR:
-         if (false /*!cg()->comp()->getOption(TR_DisableOOL) && (cg()->isOutOfLineColdPath() || cg()->isOutOfLineHotPath()) &&
+         if (false /*!comp->getOption(TR_DisableOOL) && (cg()->isOutOfLineColdPath() || cg()->isOutOfLineHotPath()) &&
                 virtReg->getBackingStorage()*/)
             {
             location = virtReg->getBackingStorage();
@@ -837,7 +838,7 @@ TR::RealRegister *OMR::Power::Machine::freeBestRegister(TR::Instruction     *cur
          // Until stack frame is 16-byte aligned, we cannot use VMX load/store here
          // So, we use VSX load/store instead as a work-around
 
-         TR_ASSERT(self()->cg()->comp()->target().cpu.supportsFeature(OMR_FEATURE_PPC_HAS_VSX), "VSX support not enabled");
+         TR_ASSERT(comp->target().cpu.supportsFeature(OMR_FEATURE_PPC_HAS_VSX), "VSX support not enabled");
 
          tempIndexRegister = self()->findBestFreeRegister(currentInstruction, TR_GPR);
          if (tempIndexRegister  == NULL)
@@ -1081,7 +1082,7 @@ TR::RealRegister *OMR::Power::Machine::reverseSpillState(TR::Instruction      *c
          // Until stack frame is 16-byte aligned, we cannot use VMX load/store here
          // So, we use VSX load/store instead as a work-around
 
-         TR_ASSERT(self()->cg()->comp()->target().cpu.supportsFeature(OMR_FEATURE_PPC_HAS_VSX), "VSX support not enabled");
+         TR_ASSERT(comp->target().cpu.supportsFeature(OMR_FEATURE_PPC_HAS_VSX), "VSX support not enabled");
 
          tempIndexRegister  = self()->findBestFreeRegister(currentInstruction, TR_GPR);
          if (tempIndexRegister  == NULL)

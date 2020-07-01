@@ -1035,8 +1035,8 @@ void TR::PPCConditionalBranchInstruction::expandIntoFarBranch()
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), getLabelSymbol(), "Cannot expand conditional branch without a label");
 
-   if (comp()->getOption(TR_TraceCG))
-      traceMsg(comp(), "Expanding conditional branch instruction %p into a far branch\n", self());
+   if (cg()->comp()->getOption(TR_TraceCG))
+      traceMsg(cg()->comp(), "Expanding conditional branch instruction %p into a far branch\n", self());
 
    TR::InstOpCode::Mnemonic newOpCode;
    bool wasLinkForm = reversedConditionalBranchOpCode(getOpCodeValue(), &newOpCode);
@@ -1152,6 +1152,7 @@ void TR::PPCAdminInstruction::fillBinaryEncodingFields(uint32_t *cursor)
 void
 TR::PPCImmInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
    {
+   TR::Compilation *comp = cg()->comp();
 
    if (needsAOTRelocation())
       {
@@ -1161,12 +1162,12 @@ TR::PPCImmInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
                cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *)getSymbolReference(), TR_AbsoluteHelperAddress, cg()), __FILE__, __LINE__, getNode());
                break;
             case TR_RamMethod:
-               if (comp()->getOption(TR_UseSymbolValidationManager))
+               if (comp->getOption(TR_UseSymbolValidationManager))
                   {
                   cg()->addExternalRelocation(
-                     new (comp()->trHeapMemory()) TR::ExternalRelocation(
+                     new (comp->trHeapMemory()) TR::ExternalRelocation(
                         cursor,
-                        (uint8_t *)comp()->getJittedMethodSymbol()->getResolvedMethod()->resolvedMethodAddress(),
+                        (uint8_t *)comp->getJittedMethodSymbol()->getResolvedMethod()->resolvedMethodAddress(),
                         (uint8_t *)TR::SymbolType::typeMethod,
                         TR_SymbolFromManager,
                         cg()),
@@ -1187,7 +1188,6 @@ TR::PPCImmInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
             }
       }
 
-   TR::Compilation *comp = cg()->comp();
    if (std::find(comp->getStaticPICSites()->begin(), comp->getStaticPICSites()->end(), this) != comp->getStaticPICSites()->end())
       {
       // none-HCR: low-tag to invalidate -- BE or LE is relevant

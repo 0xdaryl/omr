@@ -200,7 +200,7 @@ OMR::Power::MemoryReference::MemoryReference(TR::Node *rootLoadOrStore, uint32_t
          }
       }
 
-   if (cg->comp()->target().is32Bit() || !symbol->isConstObjectRef())
+   if (comp->target().is32Bit() || !symbol->isConstObjectRef())
       self()->addToOffset(rootLoadOrStore, ref->getOffset(), cg);
    if (self()->getUnresolvedSnippet() != NULL)
       self()->adjustForResolution(cg);
@@ -346,7 +346,7 @@ void OMR::Power::MemoryReference::addToOffset(TR::Node * node, intptr_t amount, 
             }
          else
             {
-            if (cg->comp()->target().is64Bit() && (upper<LOWER_IMMED || upper>UPPER_IMMED))
+            if (comp->target().is64Bit() && (upper<LOWER_IMMED || upper>UPPER_IMMED))
                {
                TR::Register *tempReg = cg->allocateRegister();
                loadActualConstant(cg, node, upper<<16, tempReg);
@@ -522,7 +522,9 @@ static bool isLoadConstAndShift(TR::Node *subTree, TR::CodeGenerator *cg)
 
 void OMR::Power::MemoryReference::populateMemoryReference(TR::Node *subTree, TR::CodeGenerator *cg)
    {
-   if (cg->comp()->useCompressedPointers())
+   TR::Compilation *comp = cg->comp();
+
+   if (comp->useCompressedPointers())
       {
       if (subTree->getOpCodeValue() == TR::l2a && subTree->getReferenceCount() == 1 && subTree->getRegister() == NULL)
          {
@@ -534,7 +536,7 @@ void OMR::Power::MemoryReference::populateMemoryReference(TR::Node *subTree, TR:
    // Skip sign extension if the offset is known to be >= 0; this is only safe to do if the child is the result of a load, otherwise the upper 32 bits may be undefined
    if (subTree->getOpCodeValue() == TR::i2l && subTree->isNonNegative() && subTree->getFirstChild()->getOpCode().isLoadVar() && subTree->getReferenceCount() == 1 && subTree->getRegister() == NULL)
       {
-      if (performTransformation(cg->comp(), "O^O PPC Evaluator: Skip unecessary sign extension on index [%p].\n", subTree))
+      if (performTransformation(comp, "O^O PPC Evaluator: Skip unecessary sign extension on index [%p].\n", subTree))
          {
          static bool dontSkipIndexSignExt = feGetEnv("TR_dontSkipIndexSignExt") != NULL;
          if (!dontSkipIndexSignExt)
@@ -568,7 +570,7 @@ void OMR::Power::MemoryReference::populateMemoryReference(TR::Node *subTree, TR:
          if (integerChild->getOpCode().isLoadConst())
             {
             self()->populateMemoryReference(addressChild, cg);
-            if (cg->comp()->target().is64Bit())
+            if (comp->target().is64Bit())
                {
                intptr_t amount = (integerChild->getOpCodeValue() == TR::iconst) ?
                                    integerChild->getInt() :
@@ -580,7 +582,7 @@ void OMR::Power::MemoryReference::populateMemoryReference(TR::Node *subTree, TR:
             cg->decReferenceCount(integerChild);
             }
          else if (integerChild->getEvaluationPriority(cg)>addressChild->getEvaluationPriority(cg) &&
-                  !(subTree->getOpCode().isArrayRef() && cg->comp()->target().cpu.is(OMR_PROCESSOR_PPC_P6)))
+                  !(subTree->getOpCode().isArrayRef() && comp->target().cpu.is(OMR_PROCESSOR_PPC_P6)))
             {
             self()->populateMemoryReference(integerChild, cg);
             self()->populateMemoryReference(addressChild, cg);
@@ -594,7 +596,7 @@ void OMR::Power::MemoryReference::populateMemoryReference(TR::Node *subTree, TR:
          }
       else if (isLoadConstAndShift(subTree, cg))
          {
-         if (cg->comp()->target().is64Bit())
+         if (comp->target().is64Bit())
             { // 64-bit
             intptr_t amount = (subTree->getSecondChild()->getOpCodeValue() == TR::iconst) ?
                                 subTree->getSecondChild()->getInt() :
@@ -621,7 +623,7 @@ void OMR::Power::MemoryReference::populateMemoryReference(TR::Node *subTree, TR:
          cg->decReferenceCount(subTree->getFirstChild());
          cg->decReferenceCount(subTree->getSecondChild());
          }
-      else if ((subTree->getOpCodeValue() == TR::loadaddr) && !cg->comp()->compileRelocatableCode())
+      else if ((subTree->getOpCodeValue() == TR::loadaddr) && !comp->compileRelocatableCode())
          {
          TR::SymbolReference *ref = subTree->getSymbolReference();
          TR::Symbol *symbol = ref->getSymbol();
@@ -662,7 +664,7 @@ void OMR::Power::MemoryReference::populateMemoryReference(TR::Node *subTree, TR:
                _baseNode = NULL;
                }
             }
-         if (cg->comp()->target().is32Bit() || !symbol->isConstObjectRef())
+         if (comp->target().is32Bit() || !symbol->isConstObjectRef())
             self()->addToOffset(subTree, subTree->getSymbolReference()->getOffset(), cg);
          // TODO: aliasing sets?
          cg->decReferenceCount(subTree); // need to decrement ref count because
@@ -698,7 +700,7 @@ void OMR::Power::MemoryReference::consolidateRegisters(TR::Register *srcReg, TR:
    TR::Register *tempTargetRegister;
    TR::Compilation *comp = cg->comp();
 
-       TR::Node *tempNode = (srcTree==NULL)?cg->getAppendInstruction()->getNode():srcTree;
+   TR::Node *tempNode = (srcTree==NULL)?cg->getAppendInstruction()->getNode():srcTree;
 
    if (self()->getUnresolvedSnippet() != NULL)
       {
@@ -1255,7 +1257,7 @@ TR::Instruction *OMR::Power::MemoryReference::expandInstruction(TR::Instruction 
          }
       else
          {
-         if (cg->comp()->compileRelocatableCode() && symbol->isStatic() && symbol->isClassObject())
+         if (comp->compileRelocatableCode() && symbol->isStatic() && symbol->isClassObject())
             {
             prevInstruction = generateLabelInstruction(cg, TR::InstOpCode::label, node, generateLabelSymbol(cg), prevInstruction);
 
@@ -1428,7 +1430,7 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
    bool isStaticField = isStatic && (ref->getCPIndex() > 0) && !symbol->isClassObject();
    bool isClass = isStatic && symbol->isClassObject();
    bool isPicSite = isClass;
-   if (isPicSite && !cg->comp()->compileRelocatableCode()
+   if (isPicSite && !comp->compileRelocatableCode()
        && cg->wantToPatchClassPointer((TR_OpaqueClassBlock*)symbol->getStaticSymbol()->getStaticAddress(), node))
       {
       TR_ASSERT(!comp->getOption(TR_AOT), "HCR: AOT is currently no supported");
@@ -1438,7 +1440,7 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
       return;
       }
 
-   bool useUnresSnippetToAvoidRelo = cg->comp()->compileRelocatableCode();
+   bool useUnresSnippetToAvoidRelo = comp->compileRelocatableCode();
    if (useUnresSnippetToAvoidRelo)
       {
       // The unresolved snippet can't handle fabricated symrefs, so we'll have
@@ -1453,18 +1455,18 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
          useUnresSnippetToAvoidRelo = false;
       }
 
-   if (cg->comp()->target().is64Bit())
+   if (comp->target().is64Bit())
       {
       TR::Node *topNode = cg->getCurrentEvaluationTreeTop()->getNode();
       TR::UnresolvedDataSnippet *snippet = NULL;
       int32_t tocIndex = symbol->getStaticSymbol()->getTOCIndex();
- 
+
       /* don't want to trash node prematurely by the code for handling other symbols */
       TR::Node *nodeForSymbol = node;
       if (!nodeForSymbol)
          nodeForSymbol = cg->getCurrentEvaluationTreeTop()->getNode();
 
-      if (symbol->isDebugCounter() && cg->comp()->compileRelocatableCode())
+      if (symbol->isDebugCounter() && comp->compileRelocatableCode())
          {
          TR::Register *reg = _baseRegister = cg->allocateRegister();
          loadAddressConstant(cg, true, nodeForSymbol, 1, reg, NULL, false, TR_DebugCounter);
