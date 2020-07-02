@@ -24,6 +24,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "env/Region.hpp"
+#include "env/StackMemoryRegion.hpp"
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"
 #include "compile/Compilation.hpp"
@@ -76,9 +78,9 @@ class TR_InterferenceGraph : public TR_IGBase
    TR_StackMemory            trStackMemory()               { return _trMemory; }
    TR_HeapMemory             trHeapMemory()                { return _trMemory; }
 
-   void partitionNodesIntoDegreeSets(CS2::ABitVector<TR::Allocator> &workingSet,
-                                     CS2::ABitVector<TR::Allocator> &colourableDegreeSet,
-                                     CS2::ABitVector<TR::Allocator> &notColourableDegreeSet);
+   void partitionNodesIntoDegreeSets(CS2::ABitVector<TR::Region> &workingSet,
+                                     CS2::ABitVector<TR::Region> &colourableDegreeSet,
+                                     CS2::ABitVector<TR::Region> &notColourableDegreeSet);
 
    TR::Compilation *_compilation;
    TR_Memory *_trMemory;

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -23,6 +23,7 @@
 
 #include <stdint.h>
 #include <string.h>
+#include "env/Region.hpp"
 #include "env/StackMemoryRegion.hpp"
 #include "compile/Compilation.hpp"
 #include "cs2/bitvectr.h"
@@ -225,12 +226,12 @@ void TR_InterferenceGraph::virtualRemoveNodeFromIG(TR_IGNode *igNode)
 // Partition the nodes identified by the 'workingSet' bit vector into sets
 // based on their degree.
 //
-void TR_InterferenceGraph::partitionNodesIntoDegreeSets(CS2::ABitVector<TR::Allocator> &workingSet,
-                                                        CS2::ABitVector<TR::Allocator> &colourableDegreeSet,
-                                                        CS2::ABitVector<TR::Allocator> &notColourableDegreeSet)
+void TR_InterferenceGraph::partitionNodesIntoDegreeSets(CS2::ABitVector<TR::Region> &workingSet,
+                                                        CS2::ABitVector<TR::Region> &colourableDegreeSet,
+                                                        CS2::ABitVector<TR::Region> &notColourableDegreeSet)
    {
    int32_t               i;
-   CS2::ABitVector<TR::Allocator>::Cursor bvc(workingSet);
+   CS2::ABitVector<TR::Region>::Cursor bvc(workingSet);
 
    TR_ASSERT(getNumColours() > 0,
           "can't partition without knowing the number of available colours\n");
@@ -344,11 +345,11 @@ bool TR_InterferenceGraph::simplify()
 
    if (getNumNodes()==0) return true;
 
-   CS2::ABitVector<TR::Allocator> workingSet(comp()->allocator());
+   CS2::ABitVector<TR::Region> workingSet(trMemory()->currentStackRegion());
    workingSet.SetAll(getNumNodes());
 
-   CS2::ABitVector<TR::Allocator> colourableDegreeSet(comp()->allocator());
-   CS2::ABitVector<TR::Allocator> notColourableDegreeSet(comp()->allocator());
+   CS2::ABitVector<TR::Region> colourableDegreeSet(trMemory()->currentStackRegion());
+   CS2::ABitVector<TR::Region> notColourableDegreeSet(trMemory()->currentStackRegion());;
    colourableDegreeSet.GrowTo(getNumNodes());
    notColourableDegreeSet.GrowTo(getNumNodes());
 
@@ -369,7 +370,7 @@ bool TR_InterferenceGraph::simplify()
       //
       if (!colourableDegreeSet.IsZero())
          {
-         CS2::ABitVector<TR::Allocator>::Cursor colourableCursor(colourableDegreeSet);
+         CS2::ABitVector<TR::Region>::Cursor colourableCursor(colourableDegreeSet);
 
          for(colourableCursor.SetToFirstOne(); colourableCursor.Valid(); colourableCursor.SetToNextOne())
             {
@@ -397,7 +398,7 @@ bool TR_InterferenceGraph::simplify()
       TR_ASSERT(!notColourableDegreeSet.IsZero(),
              "not colourable set must contain at least one member\n");
 
-      CS2::ABitVector<TR::Allocator>::Cursor notColourableCursor(notColourableDegreeSet);
+      CS2::ABitVector<TR::Region>::Cursor notColourableCursor(notColourableDegreeSet);
       if (!notColourableDegreeSet.IsZero())
          {
          // Choose the node from this degree set with the largest degree
@@ -435,8 +436,8 @@ bool TR_InterferenceGraph::select()
    TR_IGNode            *igNode;
    TR_BitVectorIterator  bvi;
 
-   CS2::ABitVector<TR::Allocator> availableColours(comp()->allocator());
-   CS2::ABitVector<TR::Allocator> assignedColours(comp()->allocator());
+   CS2::ABitVector<TR::Region> availableColours(trMemory()->currentStackRegion());
+   CS2::ABitVector<TR::Region> assignedColours(trMemory()->currentStackRegion());
    availableColours.GrowTo(getNumColours());
    assignedColours.GrowTo(getNumColours());
 
@@ -493,7 +494,7 @@ bool TR_InterferenceGraph::select()
          }
       }
 
-  setNumberOfColoursUsedToColour(assignedColours.PopulationCount());
+   setNumberOfColoursUsedToColour(assignedColours.PopulationCount());
    return true;
    }
 
