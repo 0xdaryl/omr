@@ -113,9 +113,11 @@ public:
 
    void deallocate(void * allocation, size_t = 0) throw();
 
+   void *reallocate(const size_t newsize, void *ptr, size_t size);
+
    static void reset(TR::Region& targetRegion, TR::Region& prototypeRegion)
       {
-      targetRegion.~Region(); 
+      targetRegion.~Region();
       new (&targetRegion) TR::Region(prototypeRegion);
       }
 

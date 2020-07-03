@@ -95,6 +95,15 @@ Region::deallocate(void * allocation, size_t) throw()
    {
    }
 
+void *
+Region::reallocate(const size_t newsize, void *ptr, size_t size)
+   {
+   if (newsize<=size) return ptr;
+   void *ret = allocate(newsize);
+   memcpy(ret, ptr, size);
+   return ret;
+   }
+
 size_t
 Region::round(size_t bytes)
    {
