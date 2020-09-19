@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -57,6 +57,10 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::X86::CodeGenerator
    public:
 
    CodeGenerator();
+
+   CodeGenerator(TR::Compilation *comp);
+
+   void dmInitialize();
 
    virtual TR::Register *longClobberEvaluate(TR::Node *node);
 

@@ -180,6 +180,10 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
 
    CodeGenerator();
 
+   CodeGenerator(TR::Compilation *comp);
+
+   void dmInitialize();
+
    TR::Linkage *createLinkage(TR_LinkageConventions lc);
 
    static bool supportsTransientPrefetch();
@@ -619,15 +623,15 @@ class TR_PPCScratchRegisterManager : public TR_ScratchRegisterManager
       TR::Register *sourceReg,
       int32_t value,
       TR::CodeGenerator *cg);
-                   
+
    void mulConstant(
       TR::Node *,
       TR::Register *trgReg,
       TR::Register *sourceReg,
       int64_t value,
       TR::CodeGenerator *cg);
-   
-   
+
+
    TR::Register *addConstantToLong(
       TR::Node * node,
       TR::Register *srcReg,
@@ -642,7 +646,7 @@ class TR_PPCScratchRegisterManager : public TR_ScratchRegisterManager
       int32_t valHigh,
       int32_t valLow,
       TR::CodeGenerator *cg);
-   
+
    TR::Register *addConstantToInteger(
       TR::Node * node,
       TR::Register *srcReg,
