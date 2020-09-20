@@ -95,13 +95,13 @@ void OMR::X86::AMD64::CodeGenerator::dmInitialize()
 
    // Common X86 initialization
    //
-   cg->initialize(comp);
+   cg->initializeX86(comp);
 
    cg->initLinkageToGlobalRegisterMap();
 
    cg->setRealVMThreadRegister(cg->machine()->getRealRegister(TR::RealRegister::ebp));
 
-   // GRA-related initialization is done after calling initialize() so we can
+   // GRA-related initialization is done after calling initializeX86() so we can
    // use such things as getNumberOfGlobal[FG]PRs().
 
    _globalGPRsPreservedAcrossCalls.init(cg->getNumberOfGlobalRegisters(), cg->trMemory());
@@ -173,13 +173,13 @@ OMR::X86::AMD64::CodeGenerator::CodeGenerator() :
 
    // Common X86 initialization
    //
-   self()->initialize(self()->comp());
+   self()->initializeX86(self()->comp());
 
    self()->initLinkageToGlobalRegisterMap();
 
    self()->setRealVMThreadRegister(self()->machine()->getRealRegister(TR::RealRegister::ebp));
 
-   // GRA-related initialization is done after calling initialize() so we can
+   // GRA-related initialization is done after calling initializeX86() so we can
    // use such things as getNumberOfGlobal[FG]PRs().
 
    _globalGPRsPreservedAcrossCalls.init(self()->getNumberOfGlobalRegisters(), self()->trMemory());

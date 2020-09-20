@@ -204,7 +204,7 @@ void TR_X86ProcessorInfo::initialize(TR::CodeGenerator *cg)
 
 
 void
-OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
+OMR::X86::CodeGenerator::initializeX86(TR::Compilation *comp)
    {
 
    bool supportsSSE2 = false;

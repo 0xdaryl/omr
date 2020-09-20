@@ -74,7 +74,7 @@ OMR::X86::I386::CodeGenerator::dmInitialize()
 
    // Common X86 initialization
    //
-   cg->initialize( comp );
+   cg->initializeX86(comp);
 
    cg->setUsesRegisterPairsForLongs();
 
@@ -139,7 +139,7 @@ OMR::X86::I386::CodeGenerator::CodeGenerator() :
    {
    // Common X86 initialization
    //
-   self()->initialize( self()->comp() );
+   self()->initializeX86(self()->comp());
 
    self()->setUsesRegisterPairsForLongs();
 
