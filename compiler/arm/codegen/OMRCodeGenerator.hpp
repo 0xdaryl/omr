@@ -112,12 +112,15 @@ class CodeGenerator;
 class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    {
 
-   public:
+protected:
 
-   CodeGenerator(); /* @@ */
-   CodeGenerator(TR::Compilation * comp);
+   CodeGenerator(TR::Compilation *comp);
 
    void dmInitialize();
+
+public:
+
+   CodeGenerator();
 
    TR::Linkage *createLinkage(TR_LinkageConventions lc);
 

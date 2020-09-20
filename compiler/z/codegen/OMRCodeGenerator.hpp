@@ -259,9 +259,13 @@ public:
 
    void lowerTreesPropagateBlockToNode(TR::Node *node);
 
+protected:
+
    CodeGenerator(TR::Compilation *comp);
 
    void dmInitialize();
+
+public:
 
    CodeGenerator();
 

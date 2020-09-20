@@ -172,7 +172,7 @@ class CodeGenerator;
 class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    {
 
-   public:
+public:
 
    List<TR_BackingStore> * conversionBuffer;
    ListIterator<TR_BackingStore> * conversionBufferIt;
@@ -180,9 +180,13 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
 
    CodeGenerator();
 
+protected:
+
    CodeGenerator(TR::Compilation *comp);
 
    void dmInitialize();
+
+public:
 
    TR::Linkage *createLinkage(TR_LinkageConventions lc);
 
@@ -565,7 +569,6 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
       DummyLastFlag
       };
 
-   void initialize();
 
    TR_BitVector *computeCallInfoBitVector();
 

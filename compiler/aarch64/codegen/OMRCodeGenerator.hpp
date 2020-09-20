@@ -150,13 +150,15 @@ namespace ARM64
 class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    {
 
-   public:
-
-   CodeGenerator();
+protected:
 
    CodeGenerator(TR::Compilation *comp);
 
    void dmInitialize();
+
+public:
+
+   CodeGenerator();
 
    /**
     * @brief AArch64 hook to begin instruction selection

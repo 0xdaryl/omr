@@ -54,13 +54,15 @@ namespace I386
 class OMR_EXTENSIBLE CodeGenerator : public OMR::X86::CodeGenerator
    {
 
-   public:
-
-   CodeGenerator();
+protected:
 
    CodeGenerator(TR::Compilation *comp);
 
    void dmInitialize();
+
+public:
+
+   CodeGenerator();
 
    virtual TR::Register *longClobberEvaluate(TR::Node *node);
 

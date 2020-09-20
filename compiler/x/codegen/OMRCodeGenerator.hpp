@@ -675,7 +675,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
     */
    bool directCallRequiresTrampoline(intptr_t targetAddress, intptr_t sourceAddress);
 
-   protected:
+protected:
 
    CodeGenerator(TR::Compilation *comp);
 
