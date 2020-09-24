@@ -76,6 +76,8 @@ public:
 
    bool internalPointerSupportImplemented() { return true; }
 
+   void createObjectFormat();
+
    protected:
 
    TR_BitVector _globalGPRsPreservedAcrossCalls;

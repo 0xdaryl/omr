@@ -98,6 +98,7 @@ namespace TR { class Instruction; }
 namespace TR { class LabelSymbol; }
 namespace TR { class Linkage; }
 namespace TR { class MemoryReference; }
+namespace TR { class ObjectFormat; }
 namespace TR { class RealRegister; }
 namespace TR { class Recompilation; }
 namespace TR { class Register; }
@@ -1417,6 +1418,26 @@ public:
     */
    void redoTrampolineReservationIfNecessary(TR::Instruction *callInstr, TR::SymbolReference *instructionSymRef);
 
+   /**
+    * @brief
+    *    Create the object format for this compilation.  If the code generator
+    *    does not support the use of object formats then this function does nothing.
+    */
+   void createObjectFormat() { return; }
+
+   /**
+    * @return TR::ObjectFormat created for this CodeGenerator
+    */
+   TR::ObjectFormat *getObjFmt() { return _objectFormat; }
+
+protected:
+   /**
+    * @brief Sets an ObjectFormat.  Available to CodeGenerator classes only.
+    */
+   void setObjFmt(TR::ObjectFormat *of) { _objectFormat = of; }
+
+public:
+
    // --------------------------------------------------------------------------
 
    bool constantAddressesCanChangeSize(TR::Node *node);
@@ -1997,6 +2018,12 @@ public:
    TR_Stack<TR::Node *> _stackOfArtificiallyInflatedNodes;
 
    CS2::HashTable<TR::Symbol*, TR::DataType, TR::Allocator> _symbolDataTypeMap;
+
+   /**
+    * The binary object format to generate code for in this compilation
+    */
+   TR::ObjectFormat *_objectFormat;
+
    };
 
 }

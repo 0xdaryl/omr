@@ -43,6 +43,7 @@
 #include "il/Node_inlines.hpp"
 #include "infra/Assert.hpp"
 #include "infra/BitVector.hpp"
+#include "objectfmt/JitCodeObjectFormat.hpp"
 #include "x/codegen/X86Ops.hpp"
 
 
@@ -296,4 +297,13 @@ bool
 OMR::X86::AMD64::CodeGenerator::opCodeIsNoOpOnThisPlatform(TR::ILOpCode &opCode)
    {
    return (opCode.getOpCodeValue() == TR::iu2l) ? true : false;
+   }
+
+void
+OMR::X86::AMD64::CodeGenerator::createObjectFormat()
+   {
+   // Default implementation is JitCodeObjectFormat unless overridden by an
+   // architecture or project
+   //
+   self()->setObjFmt(new (self()->trHeapMemory()) TR::JitCodeObjectFormat());
    }
