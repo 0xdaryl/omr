@@ -67,6 +67,8 @@
 #include "infra/Bit.hpp"
 #include "infra/List.hpp"
 #include "infra/CfgEdge.hpp"
+#include "objectfmt/FunctionCallData.hpp"
+#include "objectfmt/ObjectFormat.hpp"
 #include "ras/Debug.hpp"
 #include "ras/DebugCounter.hpp"
 #include "runtime/Runtime.hpp"
@@ -2371,7 +2373,10 @@ TR::Register *OMR::X86::TreeEvaluator::arraytranslateEvaluator(TR::Node *node, T
       dependencies->addPostCondition(termCharReg, TR::RealRegister::edx, cg);
       }
    dependencies->stopAddingConditions();
-   generateHelperCallInstruction(node, helper, dependencies, cg);
+
+   TR::FunctionCallData data(helper, node, dependencies, cg);
+   cg->getObjFmt()->emitGlobalFunctionCall(data);
+
    cg->stopUsingRegister(dummy1);
    cg->stopUsingRegister(dummy2);
    cg->stopUsingRegister(dummy3);
