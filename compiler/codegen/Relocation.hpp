@@ -560,6 +560,60 @@ class LabelTable32BitRelocation : public TR::LabelRelocation
    virtual void apply(TR::CodeGenerator *codeGen);
    };
 
+
+/**
+ * @class CompiledMethodEntryRelative32BitRelocation
+ *
+ * @brief Relocation for updating some memory location with the relative
+ *        32-bit displacement between the compiled method entry address
+ *        and some implementation-dependent reference point.
+ */
+class CompiledMethodEntryRelative32BitRelocation : public TR::Relocation
+   {
+public:
+
+   /**
+    * @param[in] updateLocation : absolute memory address to apply the relocation to
+    */
+   CompiledMethodEntryRelative32BitRelocation(uint8_t *updateLocation) :
+      TR::Relocation(updateLocation) {}
+
+   /**
+    * @brief Apply the relocation at the address returned from \c getUpdateLocation()
+    *
+    * @param[in] cg : \c TR::CodeGenerator object
+    */
+   virtual void apply(TR::CodeGenerator *cg);
+
+   };
+
+
+/**
+ * @class CompiledMethodEntryAbsoluteRelocation
+ *
+ * @brief Relocation for updating some location with the absolute address
+ *        of the method entry to use when dispatched from compiled methods
+ */
+class CompiledMethodEntryAbsoluteRelocation : public TR::Relocation
+   {
+public:
+
+   /**
+    * @param[in] updateLocation : absolute memory address to apply the relocation to
+    */
+   CompiledMethodEntryAbsoluteRelocation(uint8_t *updateLocation) :
+      TR::Relocation(updateLocation) {}
+
+   /**
+    * @brief Apply the relocation at the address returned from \c getUpdateLocation()
+    *
+    * @param[in] cg : \c TR::CodeGenerator object
+    */
+   virtual void apply(TR::CodeGenerator *cg);
+
+   };
+
+
 }
 
 typedef TR::RelocationDebugInfo TR_RelocationDebugInfo;

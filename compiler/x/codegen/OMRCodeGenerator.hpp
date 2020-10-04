@@ -540,6 +540,8 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
 
    void apply32BitLabelRelativeRelocation(int32_t * cursor, TR::LabelSymbol *);
 
+   void apply32BitCompiledMethodEntryRelativeRelocation(int32_t *cursor);
+
    bool isAddressScaleIndexSupported(int32_t scale) { if (scale <= 8) return true; return false; }
 
    void addMetaDataForBranchTableAddress(uint8_t *target, TR::Node *caseNode, TR::X86MemTableInstruction *jmpTableInstruction);

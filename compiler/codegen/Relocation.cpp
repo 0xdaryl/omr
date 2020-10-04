@@ -582,3 +582,18 @@ void TR::LabelTable32BitRelocation::apply(TR::CodeGenerator *codeGen)
    {
    codeGen->apply32BitLabelTableRelocation((int32_t *)getUpdateLocation(), getLabel());
    }
+
+void
+TR::CompiledMethodEntryRelative32BitRelocation::apply(TR::CodeGenerator *cg)
+   {
+   AOTcgDiag1(cg->comp(), "TR::CompiledMethodEntryRelative32BitRelocation::apply cursor=" POINTER_PRINTF_FORMAT "\n", getUpdateLocation());
+   cg->apply32BitCompiledMethodEntryRelativeRelocation((int32_t *)getUpdateLocation());
+   }
+
+void
+TR::CompiledMethodEntryAbsoluteRelocation::apply(TR::CodeGenerator *cg)
+   {
+   intptr_t startPC = cg->getLinkage()->entryPointFromCompiledMethod();
+   *(reinterpret_cast<intptr_t *>(getUpdateLocation())) = startPC;
+   }
+

@@ -1277,23 +1277,25 @@ TR::Register *OMR::CodeGenerator::allocateSinglePrecisionRegister(TR_RegisterKin
 void OMR::CodeGenerator::apply8BitLabelRelativeRelocation(int32_t * cursor, TR::LabelSymbol * label)
    { *(int8_t *)cursor += (int8_t)(intptr_t)label->getCodeLocation(); }
 void OMR::CodeGenerator::apply12BitLabelRelativeRelocation(int32_t * cursor, TR::LabelSymbol * label, bool isCheckDisp)
-   { TR_ASSERT(0, "unexpected call to OMR::CodeGenerator::apply12BitLabelRelativeRelocation"); }
+   { TR_UNIMPLEMENTED(); }
 void OMR::CodeGenerator::apply16BitLabelRelativeRelocation(int32_t * cursor, TR::LabelSymbol * label)
    { *(int16_t *)cursor += (int16_t)(intptr_t)label->getCodeLocation(); }
 void OMR::CodeGenerator::apply16BitLabelRelativeRelocation(int32_t * cursor, TR::LabelSymbol * label,int8_t d, bool isInstrOffset)
    { *(int16_t *)cursor += (int16_t)(intptr_t)label->getCodeLocation(); }
 void OMR::CodeGenerator::apply24BitLabelRelativeRelocation(int32_t * cursor, TR::LabelSymbol *)
-   { TR_ASSERT(0, "unexpected call to OMR::CodeGenerator::apply24BitLabelRelativeRelocation"); }
+   { TR_UNIMPLEMENTED(); }
 void OMR::CodeGenerator::apply16BitLoadLabelRelativeRelocation(TR::Instruction *, TR::LabelSymbol *, TR::LabelSymbol *, int32_t)
-   { TR_ASSERT(0, "unexpected call to OMR::CodeGenerator::apply16BitLoadLabelRelativeRelocation"); }
+   { TR_UNIMPLEMENTED(); }
 void OMR::CodeGenerator::apply32BitLoadLabelRelativeRelocation(TR::Instruction *, TR::LabelSymbol *, TR::LabelSymbol *, int32_t)
-   { TR_ASSERT(0, "unexpected call to OMR::CodeGenerator::apply32BitLoadLabelRelativeRelocation"); }
+   { TR_UNIMPLEMENTED(); }
 void OMR::CodeGenerator::apply64BitLoadLabelRelativeRelocation(TR::Instruction *, TR::LabelSymbol *)
-   { TR_ASSERT(0, "unexpected call to OMR::CodeGenerator::apply64BitLoadLabelRelativeRelocation"); }
+   { TR_UNIMPLEMENTED(); }
 void OMR::CodeGenerator::apply32BitLabelRelativeRelocation(int32_t * cursor, TR::LabelSymbol *)
-   { TR_ASSERT(0, "unexpected call to OMR::CodeGenerator::apply32BitLabelRelativeRelocation"); }
+   { TR_UNIMPLEMENTED(); }
 void OMR::CodeGenerator::apply32BitLabelTableRelocation(int32_t * cursor, TR::LabelSymbol *)
-   { TR_ASSERT(0, "unexpected call to OMR::CodeGenerator::apply32BitLabelTableRelocation"); }
+   { TR_UNIMPLEMENTED(); }
+void OMR::CodeGenerator::apply32BitCompiledMethodEntryRelativeRelocation(int32_t *cursor)
+   { TR_UNIMPLEMENTED(); }
 
 void OMR::CodeGenerator::addSnippet(TR::Snippet *s)
    {

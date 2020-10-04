@@ -1151,6 +1151,21 @@ public:
    void apply64BitLoadLabelRelativeRelocation(TR::Instruction *, TR::LabelSymbol *);
    void apply32BitLabelRelativeRelocation(int32_t * cursor, TR::LabelSymbol *);
    void apply32BitLabelTableRelocation(int32_t * cursor, TR::LabelSymbol *);
+
+   /**
+    * @brief Calculate and store the 32-bit displacement between the compiled method
+    *        entry point of the current method and an implementation-dependent
+    *        reference point.
+    *
+    * @details
+    *    The reference point is implementation-dependent.  For example, on some implementations
+    *    it may be relative to the address returned by \c TR::Relocation::getUpdateLocation() .
+    *    On other architectures, some data may be stored at the address returned by
+    *    \c TR::Relocation::getUpdateLocation() to use in the calculation.
+    *
+    * @param[in] cursor : the memory location to write the 32-bit displacement
+    */
+   void apply32BitCompiledMethodEntryRelativeRelocation(int32_t *cursor);
    bool supportsMergingGuards();
 
 

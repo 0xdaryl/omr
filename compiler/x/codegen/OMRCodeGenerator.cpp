@@ -2380,6 +2380,11 @@ void OMR::X86::CodeGenerator::apply32BitLabelRelativeRelocation(int32_t * cursor
    *cursor += ((uintptr_t)label->getCodeLocation());
    }
 
+void OMR::X86::CodeGenerator::apply32BitCompiledMethodEntryRelativeRelocation(int32_t *cursor)
+   {
+   intptr_t startPC = self()->getLinkage()->entryPointFromCompiledMethod();
+   *cursor += ((uintptr_t)startPC);
+   }
 
 // Returns either the disp32 to a helper method from the start of the following
 // instruction or the disp32 to a trampoline that can reach the helper.
