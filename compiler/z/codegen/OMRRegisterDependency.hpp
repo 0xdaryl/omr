@@ -116,7 +116,6 @@ class TR_S390RegisterDependencyGroup
       _dependencies[index].setRegister(vr);
       _dependencies[index].assignFlags(flag);
       _dependencies[index].setRealRegister(rr);
-      if (vr) vr->setDependencySet(true);
       }
 
    TR::Register *searchForRegister(TR::Register* vr, uint8_t flag, uint32_t numberOfRegisters, TR::CodeGenerator *cg)
