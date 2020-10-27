@@ -42,6 +42,7 @@
 #include "codegen/RealRegister.hpp"
 #include "codegen/Register.hpp"
 #include "codegen/RegisterConstants.hpp"
+#include "codegen/RegisterDependencyGroup.hpp"
 #include "codegen/RegisterDependencyStruct.hpp"
 #include "env/TRMemory.hpp"
 #include "infra/Assert.hpp"
@@ -56,120 +57,8 @@ template <typename ListKind> class List;
 
 typedef uint16_t depsize_t;
 
-class TR_X86RegisterDependencyGroup
-   {
-   bool _mayNeedToPopFPRegisters;
-   bool _needToClearFPStack;
-   TR::RegisterDependency  _dependencies[NUM_DEFAULT_DEPENDENCIES];
+typedef TR::RegisterDependencyGroup TR_X86RegisterDependencyGroup;
 
-   TR_ALLOC_WITHOUT_NEW(TR_Memory::RegisterDependencyGroup)
-
-   // Use TR_X86RegisterDependencyGroup::create to allocate an object of this type
-   //
-   void * operator new(size_t s, int32_t numDependencies, TR_Memory * m)
-      {
-      TR_ASSERT(numDependencies > 0, "operator new called with numDependencies == 0");
-      if (numDependencies > NUM_DEFAULT_DEPENDENCIES)
-         {
-         s += (numDependencies-NUM_DEFAULT_DEPENDENCIES)*sizeof(TR::RegisterDependency);
-         }
-      return m->allocateHeapMemory(s);
-      }
-
-   void operator delete(void *p, int32_t numDependencies, TR_Memory * m)
-      {
-	  m->freeMemory(p, TR_AllocationKind::heapAlloc);
-      }
-
-   public:
-
-   TR_X86RegisterDependencyGroup() {_mayNeedToPopFPRegisters = false; _needToClearFPStack = false;}
-
-   static TR_X86RegisterDependencyGroup * create(int32_t numDependencies, TR_Memory * m)
-      {
-      return numDependencies ? new (numDependencies, m) TR_X86RegisterDependencyGroup : 0;
-      }
-
-   TR::RegisterDependency  *getRegisterDependency(uint32_t index)
-      {
-      return &_dependencies[index];
-      }
-
-   void setDependencyInfo(uint32_t                        index,
-                          TR::Register                   *vr,
-                          TR::RealRegister::RegNum        rr,
-                          TR::CodeGenerator              *cg,
-                          uint8_t                         flag = UsesDependentRegister,
-                          bool                            isAssocRegDependency = false);
-
-
-   TR::RegisterDependency *findDependency(TR::Register *vr, uint32_t stop)
-      {
-      TR::RegisterDependency *result = NULL;
-      for (uint32_t i=0; !result && (i < stop); i++)
-         if (_dependencies[i].getRegister() == vr)
-            result = _dependencies+i;
-      return result;
-      }
-
-   TR::RegisterDependency *findDependency(TR::RealRegister::RegNum rr, uint32_t stop)
-      {
-      TR::RegisterDependency *result = NULL;
-      for (uint32_t i=0; !result && (i < stop); i++)
-         if (_dependencies[i].getRealRegister() == rr)
-            result = _dependencies+i;
-      return result;
-      }
-
-   void assignRegisters(TR::Instruction   *currentInstruction,
-                        TR_RegisterKinds  kindsToBeAssigned,
-                        uint32_t          numberOfRegisters,
-                        TR::CodeGenerator *cg);
-
-   void assignFPRegisters(TR::Instruction   *currentInstruction,
-                          TR_RegisterKinds  kindsToBeAssigned,
-                          uint32_t          numberOfRegisters,
-                          TR::CodeGenerator *cg);
-
-
-   void orderGlobalRegsOnFPStack(TR::Instruction    *cursor,
-                                 TR_RegisterKinds   kindsToBeAssigned,
-                                 uint32_t           numberOfRegisters,
-                                 List<TR::Register> *poppedRegisters,
-                                 TR::CodeGenerator  *cg);
-
-
-   void blockRegisters(uint32_t numberOfRegisters)
-      {
-      for (uint32_t i = 0; i < numberOfRegisters; i++)
-         {
-         if (_dependencies[i].getRegister())
-            {
-            _dependencies[i].getRegister()->block();
-            }
-         }
-      }
-
-   void unblockRegisters(uint32_t numberOfRegisters)
-      {
-      for (uint32_t i = 0; i < numberOfRegisters; i++)
-         {
-         if (_dependencies[i].getRegister())
-            {
-            _dependencies[i].getRegister()->unblock();
-            }
-         }
-      }
-
-   void setMayNeedToPopFPRegisters(bool b) {_mayNeedToPopFPRegisters = b;}
-   bool getMayNeedToPopFPRegisters() {return _mayNeedToPopFPRegisters;}
-
-   void setNeedToClearFPStack(bool b) {_needToClearFPStack = b;}
-   bool getNeedToClearFPStack() {return _needToClearFPStack;}
-
-   void blockRealDependencyRegisters(uint32_t numberOfRegisters, TR::CodeGenerator *cg);
-   void unblockRealDependencyRegisters(uint32_t numberOfRegisters, TR::CodeGenerator *cg);
-   };
 
 namespace OMR
 {
@@ -177,15 +66,15 @@ namespace X86
 {
 class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
    {
-   TR_X86RegisterDependencyGroup *_preConditions;
-   TR_X86RegisterDependencyGroup *_postConditions;
+   TR::RegisterDependencyGroup *_preConditions;
+   TR::RegisterDependencyGroup *_postConditions;
    uint32_t  _numPreConditions;
    uint32_t  _addCursorForPre;
    uint32_t  _numPostConditions;
    uint32_t  _addCursorForPost;
 
-   uint32_t unionDependencies(TR_X86RegisterDependencyGroup *deps, uint32_t cursor, TR::Register *vr, TR::RealRegister::RegNum rr, TR::CodeGenerator *cg, uint8_t flag, bool isAssocRegDependency);
-   uint32_t unionRealDependencies(TR_X86RegisterDependencyGroup *deps, uint32_t cursor, TR::Register *vr, TR::RealRegister::RegNum rr, TR::CodeGenerator *cg, uint8_t flag, bool isAssocRegDependency);
+   uint32_t unionDependencies(TR::RegisterDependencyGroup *deps, uint32_t cursor, TR::Register *vr, TR::RealRegister::RegNum rr, TR::CodeGenerator *cg, uint8_t flag, bool isAssocRegDependency);
+   uint32_t unionRealDependencies(TR::RegisterDependencyGroup *deps, uint32_t cursor, TR::Register *vr, TR::RealRegister::RegNum rr, TR::CodeGenerator *cg, uint8_t flag, bool isAssocRegDependency);
 
    public:
 
@@ -201,8 +90,8 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
       {}
 
    RegisterDependencyConditions(uint32_t numPreConds, uint32_t numPostConds, TR_Memory * m)
-      : _preConditions(TR_X86RegisterDependencyGroup::create(numPreConds, m)),
-        _postConditions(TR_X86RegisterDependencyGroup::create(numPostConds, m)),
+      : _preConditions(TR::RegisterDependencyGroup::create(numPreConds, m)),
+        _postConditions(TR::RegisterDependencyGroup::create(numPostConds, m)),
         _numPreConditions(numPreConds),
         _addCursorForPre(0),
         _numPostConditions(numPostConds),
@@ -215,7 +104,7 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
 
    TR::RegisterDependencyConditions  *clone(TR::CodeGenerator *cg, uint32_t additionalRegDeps = 0);
 
-   TR_X86RegisterDependencyGroup *getPreConditions()  {return _preConditions;}
+   TR::RegisterDependencyGroup *getPreConditions()  {return _preConditions;}
 
    void setMayNeedToPopFPRegisters(bool b)
       {
@@ -242,7 +131,7 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
       {
       if (_preConditions == NULL)
          {
-         _preConditions = TR_X86RegisterDependencyGroup::create(n, m);
+         _preConditions = TR::RegisterDependencyGroup::create(n, m);
          }
       return (_numPreConditions = n);
       }
@@ -252,7 +141,7 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
       {
       if (_postConditions == NULL)
          {
-         _postConditions = TR_X86RegisterDependencyGroup::create(n, m);
+         _postConditions = TR::RegisterDependencyGroup::create(n, m);
          }
       return (_numPostConditions = n);
       }
@@ -291,7 +180,7 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
          _addCursorForPre = newCursor;
       }
 
-   TR_X86RegisterDependencyGroup *getPostConditions() {return _postConditions;}
+   TR::RegisterDependencyGroup *getPostConditions() {return _postConditions;}
 
    void addPostCondition(TR::Register              *vr,
                          TR::RealRegister::RegNum   rr,
@@ -433,10 +322,10 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
    uint32_t numReferencedGPRegisters(TR::CodeGenerator *);
    uint32_t numReferencedFPRegisters(TR::CodeGenerator *);
    void printFullRegisterDependencyInfo(FILE *pOutFile);
-   void printDependencyConditions(TR_X86RegisterDependencyGroup *conditions,
-                                  uint32_t                       numConditions,
-                                  char                           *prefix,
-                                  FILE                           *pOutFile);
+   void printDependencyConditions(TR::RegisterDependencyGroup *conditions,
+                                  uint32_t                     numConditions,
+                                  char                        *prefix,
+                                  FILE                        *pOutFile);
 #endif
 
    };

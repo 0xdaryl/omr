@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -30,6 +30,7 @@
 #include "codegen/Register.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterDependency.hpp"
+#include "codegen/RegisterDependencyGroup.hpp"
 #include "codegen/RegisterDependencyStruct.hpp"
 #include "compile/Compilation.hpp"
 #include "env/ObjectModel.hpp"
@@ -167,7 +168,7 @@ void OMR::X86::Instruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned)
          // Next loop through and set up the new associations (both on the machine
          // and by associating the virtual registers with their real dependencies)
          //
-         TR_X86RegisterDependencyGroup *depGroup = self()->getDependencyConditions()->getPostConditions();
+         TR::RegisterDependencyGroup *depGroup = self()->getDependencyConditions()->getPostConditions();
          for (int j = 0; j < self()->getDependencyConditions()->getNumPostConditions(); ++j)
             {
             TR::RegisterDependency  *dep = depGroup->getRegisterDependency(j);
@@ -264,7 +265,7 @@ void OMR::X86::Instruction::clobberRegsForRematerialisation()
       // instruction that kills the rematerialisable range of a register.
       //
       TR::ClobberingInstruction *clob = NULL;
-      TR_X86RegisterDependencyGroup *post = self()->getDependencyConditions()->getPostConditions();
+      TR::RegisterDependencyGroup *post = self()->getDependencyConditions()->getPostConditions();
       for (uint32_t i = 0; i < self()->getDependencyConditions()->getNumPostConditions(); i++)
          {
          TR::Register *reg = post->getRegisterDependency(i)->getRegister();

@@ -37,6 +37,7 @@
 #include "codegen/Register.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterDependency.hpp"
+#include "codegen/RegisterDependencyGroup.hpp"
 #include "codegen/RegisterDependencyStruct.hpp"
 #include "codegen/RegisterPair.hpp"
 #include "compile/Compilation.hpp"
@@ -637,7 +638,7 @@ TR::Register *OMR::X86::Linkage::findReturnRegisterFromDependencies(TR::Node    
                                                                bool                                 isDirect)
    {
    TR::Register *returnRegister = NULL;
-   TR_X86RegisterDependencyGroup *postConditions = dependencies->getPostConditions();
+   TR::RegisterDependencyGroup *postConditions = dependencies->getPostConditions();
    switch (callNode->getDataType())
       {
       case TR::Int32:

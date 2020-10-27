@@ -32,6 +32,7 @@
 #include "codegen/RealRegister.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterDependency.hpp"
+#include "codegen/RegisterDependencyGroup.hpp"
 #include "codegen/RegisterDependencyStruct.hpp"
 #include "codegen/Snippet.hpp"
 #include "compile/Compilation.hpp"
@@ -218,9 +219,9 @@ TR_Debug::printPrefix(TR::FILE *pOutFile, TR::Instruction  *instr)
 
 void
 TR_Debug::printDependencyConditions(
-   TR_X86RegisterDependencyGroup *conditions,
-   uint8_t                         numConditions,
-   char                           *prefix,
+   TR::RegisterDependencyGroup *conditions,
+   uint8_t                      numConditions,
+   char                        *prefix,
    TR::FILE *pOutFile)
    {
    char buf[32];
@@ -300,11 +301,11 @@ TR_Debug::printFullRegisterDependencyInfo(TR::FILE *pOutFile, TR::RegisterDepend
    }
 
 void
-TR_Debug::dumpDependencyGroup(TR::FILE *                         pOutFile,
-                              TR_X86RegisterDependencyGroup *group,
-                              int32_t                         numConditions,
-                              char                           *prefix,
-                              bool                            omitNullDependencies)
+TR_Debug::dumpDependencyGroup(TR::FILE *                   pOutFile,
+                              TR::RegisterDependencyGroup *group,
+                              int32_t                      numConditions,
+                              char                        *prefix,
+                              bool                         omitNullDependencies)
    {
    TR::RealRegister::RegNum r;
    TR::Register *virtReg;

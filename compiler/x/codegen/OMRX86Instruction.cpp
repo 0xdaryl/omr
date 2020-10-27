@@ -31,6 +31,7 @@
 #include "codegen/Register.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterDependency.hpp"
+#include "codegen/RegisterDependencyGroup.hpp"
 #include "codegen/RegisterDependencyStruct.hpp"
 #include "codegen/RegisterRematerializationInfo.hpp"
 #include "codegen/Relocation.hpp"
@@ -242,7 +243,7 @@ void TR::X86LabelInstruction::addPostDepsToOutlinedInstructionsBranch()
 
    _outlinedInstructionBranch->setDependencyConditions(mergeDeps);
 
-   TR_X86RegisterDependencyGroup *depGroup = mergeDeps->getPostConditions();
+   TR::RegisterDependencyGroup *depGroup = mergeDeps->getPostConditions();
    for (int32_t i=0; i<mergeDeps->getNumPostConditions(); i++)
       {
       // Bump the use count on all cloned dependencies.
