@@ -41,6 +41,7 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/p/codegen/OMRPeephole.cpp \
     $(JIT_OMR_DIRTY_DIR)/p/codegen/OMRRealRegister.cpp \
     $(JIT_OMR_DIRTY_DIR)/p/codegen/OMRRegisterDependency.cpp \
+    $(JIT_OMR_DIRTY_DIR)/p/codegen/OMRRegisterDependencyGroup.cpp \
     $(JIT_OMR_DIRTY_DIR)/p/codegen/OMRSnippet.cpp \
     $(JIT_OMR_DIRTY_DIR)/p/codegen/PPCTableOfConstants.cpp \
     $(JIT_OMR_DIRTY_DIR)/p/codegen/OMRTreeEvaluator.cpp \

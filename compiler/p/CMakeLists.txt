@@ -44,6 +44,7 @@ compiler_library(p
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRPeephole.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRRealRegister.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRRegisterDependency.cpp
+	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRRegisterDependencyGroup.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRSnippet.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/PPCTableOfConstants.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRTreeEvaluator.cpp
