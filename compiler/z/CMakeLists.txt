@@ -43,6 +43,7 @@ compiler_library(z
 	${CMAKE_CURRENT_LIST_DIR}/codegen/S390OutOfLineCodeSection.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRPeephole.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRRegisterDependency.cpp
+	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRRegisterDependencyGroup.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRSnippet.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/S390Snippets.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/TranslateEvaluator.cpp

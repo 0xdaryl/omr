@@ -43,6 +43,7 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/z/codegen/S390OutOfLineCodeSection.cpp \
     $(JIT_OMR_DIRTY_DIR)/z/codegen/OMRPeephole.cpp \
     $(JIT_OMR_DIRTY_DIR)/z/codegen/OMRRegisterDependency.cpp \
+    $(JIT_OMR_DIRTY_DIR)/z/codegen/OMRRegisterDependencyGroup.cpp \
     $(JIT_OMR_DIRTY_DIR)/z/codegen/OMRSnippet.cpp \
     $(JIT_OMR_DIRTY_DIR)/z/codegen/S390Snippets.cpp \
     $(JIT_OMR_DIRTY_DIR)/z/codegen/TranslateEvaluator.cpp \
