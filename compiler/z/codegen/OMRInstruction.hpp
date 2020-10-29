@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -49,7 +49,6 @@ namespace OMR { typedef OMR::Z::Instruction InstructionConnector; }
 
 class TR_Debug;
 namespace TR { class S390ImmInstruction; }
-class TR_S390RegisterDependencyGroup;
 namespace TR { class CodeGenerator; }
 namespace TR { class Instruction; }
 namespace TR { class MemoryReference; }

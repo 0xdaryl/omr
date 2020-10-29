@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -46,11 +46,11 @@ class RegisterDependencyConditions : public OMR::RegisterDependencyConditionsCon
    RegisterDependencyConditions(RegisterDependencyConditions * conds_1, RegisterDependencyConditions * conds_2, TR::CodeGenerator *cg) :
       OMR::RegisterDependencyConditionsConnector(conds_1, conds_2, cg) {}
 
-   RegisterDependencyConditions(TR_S390RegisterDependencyGroup *_preConditions,
-         TR_S390RegisterDependencyGroup *_postConditions,
-            uint16_t numPreConds, uint16_t numPostConds,
-            TR::CodeGenerator *cg) :
-            OMR::RegisterDependencyConditionsConnector(_preConditions, _postConditions, numPreConds, numPostConds, cg) {}
+   RegisterDependencyConditions(TR::RegisterDependencyGroup *_preConditions,
+         TR::RegisterDependencyGroup *_postConditions,
+         uint16_t numPreConds, uint16_t numPostConds,
+         TR::CodeGenerator *cg) :
+         OMR::RegisterDependencyConditionsConnector(_preConditions, _postConditions, numPreConds, numPostConds, cg) {}
 
    RegisterDependencyConditions(uint16_t numPreConds, uint16_t numPostConds, TR::CodeGenerator *cg) :
       OMR::RegisterDependencyConditionsConnector(numPreConds, numPostConds, cg) {}

@@ -43,6 +43,7 @@ namespace OMR { typedef OMR::Z::RegisterDependencyConditions RegisterDependencyC
 #include "codegen/RealRegister.hpp"
 #include "codegen/Register.hpp"
 #include "codegen/RegisterConstants.hpp"
+#include "codegen/RegisterDependencyGroup.hpp"
 #include "codegen/RegisterDependencyStruct.hpp"
 #include "compile/Compilation.hpp"
 #include "env/TRMemory.hpp"
@@ -59,139 +60,8 @@ template <typename ListKind> class List;
 #define RefsAndDefsDependentRegister  (ReferencesDependentRegister | DefinesDependentRegister)
 
 #define NUM_VM_THREAD_REG_DEPS 1
-#define NUM_DEFAULT_DEPENDENCIES 1
 
-class TR_S390RegisterDependencyGroup
-   {
-   int8_t _numUses;
-   TR::RegisterDependency _dependencies[NUM_DEFAULT_DEPENDENCIES];
-
-   public:
-   TR_ALLOC_WITHOUT_NEW(TR_Memory::RegisterDependencyGroup)
-
-   TR_S390RegisterDependencyGroup() : _numUses(0) {}
-
-
-   // use TR_S390RegisterDependencyGroup::create to allocate an object of this type
-
-   void * operator new(size_t s, int32_t numDependencies, TR_Memory * m)
-      {
-      TR_ASSERT(numDependencies > 0, "operator new called with numDependencies == 0");
-      if (numDependencies > NUM_DEFAULT_DEPENDENCIES)
-         {
-         s += (numDependencies-NUM_DEFAULT_DEPENDENCIES)*sizeof(TR::RegisterDependency);
-         }
-      return m->allocateHeapMemory(s, TR_MemoryBase::RegisterDependencyGroup);
-      }
-
-   static TR_S390RegisterDependencyGroup * create(int32_t numDependencies, TR_Memory * m)
-      {
-      return numDependencies ? new (numDependencies, m) TR_S390RegisterDependencyGroup : 0;
-      }
-   TR::RegisterDependency *getRegisterDependency(uint32_t index)
-      {
-      return &_dependencies[index];
-      }
-
-   void clearDependencyInfo(uint32_t index)
-      {
-      _dependencies[index].setRegister(NULL);
-      _dependencies[index].assignFlags(0);
-      _dependencies[index].setRealRegister(TR::RealRegister::NoReg);
-      }
-
-   void setDependencyInfo(uint32_t                                  index,
-                          TR::Register                              *vr,
-                          TR::RealRegister::RegDep                  rr,
-                          uint8_t                                   flag)
-     {
-     setDependencyInfo(index, vr, static_cast<TR::RealRegister::RegNum>(rr), flag);
-     }
-
-   void setDependencyInfo(uint32_t                                  index,
-                          TR::Register                              *vr,
-                          TR::RealRegister::RegNum                  rr,
-                          uint8_t                                   flag)
-      {
-      _dependencies[index].setRegister(vr);
-      _dependencies[index].assignFlags(flag);
-      _dependencies[index].setRealRegister(rr);
-      }
-
-   TR::Register *searchForRegister(TR::Register* vr, uint8_t flag, uint32_t numberOfRegisters, TR::CodeGenerator *cg)
-      {
-      for (int32_t i=0; i<numberOfRegisters; i++)
-         {
-         if (_dependencies[i].getRegister() == vr && (_dependencies[i].getFlags() & flag))
-            return _dependencies[i].getRegister();
-         }
-      return NULL;
-      }
-
-   TR::Register *searchForRegister(TR::RealRegister::RegNum rr, uint8_t flag, uint32_t numberOfRegisters, TR::CodeGenerator *cg)
-      {
-      for (int32_t i=0; i<numberOfRegisters; i++)
-         {
-         if (_dependencies[i].getRealRegister() == rr && (_dependencies[i].getFlags() & flag))
-            return _dependencies[i].getRegister();
-         }
-      return NULL;
-      }
-
-   int32_t searchForRegisterPos(TR::Register* vr, uint8_t flag, uint32_t numberOfRegisters, TR::CodeGenerator *cg)
-      {
-      for (int32_t i=0; i<numberOfRegisters; i++)
-         {
-         if (_dependencies[i].getRegister() == vr && (_dependencies[i].getFlags() & flag))
-            return i;
-         }
-      return -1;
-      }
-
-   uint32_t genBitMapOfAssignableGPRs(TR::CodeGenerator *cg, uint32_t numberOfRegisters);
-
-   void setRealRegisterForDependency(int32_t index, TR::RealRegister::RegNum regNum)
-      {
-      _dependencies[index].setRealRegister(regNum);
-      }
-
-   void assignRegisters(TR::Instruction  *currentInstruction,
-                        TR_RegisterKinds kindToBeAssigned,
-                        uint32_t         numberOfRegisters,
-                        TR::CodeGenerator *cg);
-
-   void blockRegisters(uint32_t numberOfRegisters, TR::CodeGenerator *cg)
-      {
-      for (uint32_t i = 0; i < numberOfRegisters; i++)
-         {
-         if (_dependencies[i].getRegister())
-           _dependencies[i].getRegister()->block();
-         }
-      }
-
-   void unblockRegisters(uint32_t numberOfRegisters, TR::CodeGenerator *cg)
-      {
-      for (uint32_t i = 0; i < numberOfRegisters; i++)
-         {
-         if (_dependencies[i].getRegister())
-           _dependencies[i].getRegister()->unblock();
-         }
-      }
-
-   void stopUsingDepRegs(uint32_t numberOfRegisters, TR::Register *ret1, TR::Register *ret2, TR::CodeGenerator *cg)
-      {
-      for (uint32_t i = 0; i < numberOfRegisters; i++)
-         {
-         TR::Register *depReg = _dependencies[i].getRegister();
-         if (depReg != ret1 && depReg != ret2)
-            cg->stopUsingRegister(depReg);
-         }
-      }
-
-   int8_t getNumUses() {return _numUses;}
-   void incNumUses(int8_t n=1) { _numUses+=n;}
-
-   };
+typedef TR::RegisterDependencyGroup TR_S390RegisterDependencyGroup;
 
 namespace OMR
 {
@@ -200,14 +70,14 @@ namespace Z
 
 class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
    {
-   TR_S390RegisterDependencyGroup *_preConditions;
-   TR_S390RegisterDependencyGroup *_postConditions;
-   uint16_t                         _numPreConditions;
-   uint16_t                         _addCursorForPre;
-   uint16_t                         _numPostConditions;
-   uint16_t                         _addCursorForPost;
-   bool                            _isUsed;
-   TR::CodeGenerator               *_cg;
+   TR::RegisterDependencyGroup *_preConditions;
+   TR::RegisterDependencyGroup *_postConditions;
+   uint16_t                     _numPreConditions;
+   uint16_t                     _addCursorForPre;
+   uint16_t                     _numPostConditions;
+   uint16_t                     _addCursorForPost;
+   bool                         _isUsed;
+   TR::CodeGenerator           *_cg;
 
    public:
 
@@ -227,9 +97,9 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
                                         TR::RegisterDependencyConditions * conds_2,
                                         TR::CodeGenerator *cg);
 
-   RegisterDependencyConditions(TR_S390RegisterDependencyGroup *_preConditions,
-				       TR_S390RegisterDependencyGroup *_postConditions,
-				       uint16_t numPreConds, uint16_t numPostConds, TR::CodeGenerator *cg)
+   RegisterDependencyConditions(TR::RegisterDependencyGroup *_preConditions,
+				TR::RegisterDependencyGroup *_postConditions,
+				uint16_t numPreConds, uint16_t numPostConds, TR::CodeGenerator *cg)
       : _preConditions(_preConditions),
         _postConditions(_postConditions),
         _numPreConditions(numPreConds),
@@ -255,8 +125,8 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
    //register post dependency.  Do not need for pre because they are so
    //infrequent.
    RegisterDependencyConditions(uint16_t numPreConds, uint16_t numPostConds, TR::CodeGenerator *cg)
-      : _preConditions(TR_S390RegisterDependencyGroup::create(numPreConds, cg->trMemory())),
-        _postConditions(TR_S390RegisterDependencyGroup::create(numPostConds + NUM_VM_THREAD_REG_DEPS, cg->trMemory())),
+      : _preConditions(TR::RegisterDependencyGroup::create(numPreConds, cg->trMemory())),
+        _postConditions(TR::RegisterDependencyGroup::create(numPostConds + NUM_VM_THREAD_REG_DEPS, cg->trMemory())),
         _numPreConditions(numPreConds),
         _addCursorForPre(0),
         _numPostConditions(numPostConds + NUM_VM_THREAD_REG_DEPS),
@@ -287,7 +157,7 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
    void setIsUsed() {_isUsed=true;}
    void resetIsUsed() {_isUsed=false;}
 
-   TR_S390RegisterDependencyGroup *getPreConditions()  {return _preConditions;}
+   TR::RegisterDependencyGroup *getPreConditions()  {return _preConditions;}
 
    void unionNoRegPostCondition(TR::Register *reg, TR::CodeGenerator *cg)
       {
@@ -300,7 +170,7 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
       {
       if (_preConditions == NULL)
          {
-         _preConditions = new (n,m) TR_S390RegisterDependencyGroup;
+         _preConditions = TR::RegisterDependencyGroup::create(n, m);
 	 for(int32_t i=0;i<n;i++)
 	    {
 	    _preConditions->clearDependencyInfo(i);
@@ -315,7 +185,7 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
       {
       if (_postConditions == NULL)
          {
-         _postConditions = new (n,m) TR_S390RegisterDependencyGroup;
+         _postConditions = TR::RegisterDependencyGroup::create(n, m);
 	 for(int32_t i=0;i<n;i++)
 	    {
 	    _postConditions->clearDependencyInfo(i);
@@ -365,7 +235,7 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
       _preConditions->setDependencyInfo(_addCursorForPre++, vr, rr, flag);
       }
 
-   TR_S390RegisterDependencyGroup *getPostConditions() {return _postConditions;}
+   TR::RegisterDependencyGroup *getPostConditions() {return _postConditions;}
 
    void addAssignAnyPostCondOnMemRef(TR::MemoryReference* memRef)
       {
@@ -501,15 +371,15 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
    void createRegisterAssociationDirective(TR::Instruction *instruction, TR::CodeGenerator *cg);
 
    /**
-    * @brief Inquires whether a register dependency exists within a given \c TR_S390RegisterDependencyGroup
+    * @brief Inquires whether a register dependency exists within a given \c TR::RegisterDependencyGroup
     *
-    * @param[in] \a regDepArr : the \c TR_S390RegisterDependencyGroup to check
+    * @param[in] \a regDepArr : the \c TR::RegisterDependencyGroup to check
     * @param[in] \a regDep : the \c TR::RegisterDependency to check for inclusion
     * @param[in] \a numberOfRegisters : the number of registers in the dependency group to check
     *
     * @return \c true if the register dependency is found; \c false otherwise
     */
-   bool doesConditionExist( TR_S390RegisterDependencyGroup * regDepArr, TR::RegisterDependency *regDep, uint32_t numberOfRegisters );
+   bool doesConditionExist( TR::RegisterDependencyGroup * regDepArr, TR::RegisterDependency *regDep, uint32_t numberOfRegisters );
 
    /**
     * @brief Inquires whether a given register dependency exists within the preconditions

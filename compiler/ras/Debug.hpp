@@ -317,7 +317,6 @@ namespace TR { class S390JNICallDataSnippet; }
 
 namespace TR { class S390StackCheckFailureSnippet; }
 namespace TR { class S390HeapAllocSnippet; }
-class TR_S390RegisterDependencyGroup;
 namespace TR { class S390RRSInstruction; }
 namespace TR { class S390RIEInstruction; }
 namespace TR { class S390RISInstruction; }
@@ -635,7 +634,7 @@ public:
    void print(TR::FILE *, TR::ARMHelperCallSnippet *);
 #endif
 #if defined(TR_TARGET_S390)
-   virtual void printRegisterDependencies(TR::FILE *pOutFile, TR_S390RegisterDependencyGroup *rgd, int numberOfRegisters);
+   virtual void printRegisterDependencies(TR::FILE *pOutFile, TR::RegisterDependencyGroup *rgd, int numberOfRegisters);
    const char * getName(TR::RealRegister *, TR_RegisterSizes size = TR_WordReg);
 #endif
 #if defined(TR_TARGET_ARM64)
