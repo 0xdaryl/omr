@@ -360,7 +360,7 @@ generateS390CompareAndBranchInstruction(TR::CodeGenerator * cg,
 
    return returnInstruction;
    }
-   
+
 /**
  * Generate a compare and a branch instruction.  if z10 is available, this will
  * attempt to generate a COMPARE AND BRANCH instruction, otherwise the a
@@ -588,57 +588,6 @@ generateRRRInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::
    return new (INSN_HEAP) TR::S390RRRInstruction(op, n, treg, sreg, sreg2, cg);
    }
 
-/**
- * Iterate through conds1 and conds2, checking for a specific merge conflict:
- * This function returns true if two dependency conditions exist with the same real register but different virtual registers
- * If this function returns true, it can optionally output the two conflicting register dependency objects.
- * Otherwise, this function returns false.
- * Optionally, the caller can limit the search for conflicts containing only one type of real register.
- */
-bool CheckForRegisterDependencyConditionsRealRegisterMergeConflict( TR_S390RegisterDependencyGroup * conds1,
-                                                                    int conds1_addCursor,
-                                                                    TR_S390RegisterDependencyGroup * conds2,
-                                                                    int conds2_addCursor,
-                                                                    TR::RegisterDependency ** conflict1,
-                                                                    TR::RegisterDependency ** conflict2,
-                                                                    TR::CodeGenerator *cg,
-                                                                    TR::RealRegister::RegNum checkForThisRealRegister = TR::RealRegister::NoReg)
-   {
-   for( int i = 0; i < conds1_addCursor; i++ )
-      {
-      TR::RealRegister::RegNum conds1_real = conds1->getRegisterDependency( i )->getRealRegister();
-
-      if(( checkForThisRealRegister != TR::RealRegister::NoReg ) && ( conds1_real != checkForThisRealRegister ))
-         {
-         continue;
-         }
-
-      for( int j = 0; j < conds2_addCursor; j++ )
-         {
-         TR::RealRegister::RegNum conds2_real = conds2->getRegisterDependency( j )->getRealRegister();
-
-         if(( checkForThisRealRegister != TR::RealRegister::NoReg ) && ( conds2_real != checkForThisRealRegister ))
-            {
-            continue;
-            }
-
-         if(( conds1_real == conds2_real ) &&
-             ( conds1->getRegisterDependency(i)->getRegister() != conds2->getRegisterDependency(j)->getRegister() ))
-            {
-            // Conflict found
-            if( conflict1 && conflict2 )
-               {
-               *conflict1 = conds1->getRegisterDependency( i );
-               *conflict2 = conds2->getRegisterDependency( j );
-               }
-
-            return true;
-            }
-         }
-      }
-
-   return false;
-   }
 
 TR::Instruction *
 generateRXInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * treg, TR::MemoryReference * mf,
@@ -3041,13 +2990,13 @@ generateReplicateNodeInVectorReg(TR::Node * node, TR::CodeGenerator *cg, TR::Reg
  * \brief
  *    Shift the source register to the left and put its selected bits into the target register
  *    and clear the rest of target register's bits.
- * 
+ *
  * \note
  *    In this API, we try to follow the restrictions which can be applied to all paths. The restrictions include:
  *    1. If targetRegister and sourceRegister designate the same reg, it will first shift and then the selected bits of the shifted value are inserted
  *       into the corresponding bits of the unshifted register contents.
  *    2. The shift direction of sourceRegister cannot be negative(right) direction. So shiftAmount cannot be negative.
- *    3. toBit must be larger or equal to fromBit in the API. 
+ *    3. toBit must be larger or equal to fromBit in the API.
  *    4. Considering restrictions above, we can conclude the following value restrictions for the parameters:
  *       1) fromBit <= toBit    2) 0 <= fromBit <= 0b00111111 = 63     3) 0 <= toBit <= 0b00111111 = 63      4) shiftAmount >= 0
 */
@@ -3073,9 +3022,9 @@ void generateShiftThenKeepSelected64Bit(TR::Node * node, TR::CodeGenerator *cg,
  * \brief
  *    Shift the source register to the left and put its selected bits into the target register
  *    and clear the rest of target register's bits.
- * 
+ *
  * \note
- *    The usage of this API will be the same as the 64-bit version. 
+ *    The usage of this API will be the same as the 64-bit version.
  *    The API's corresponding value restrictions are:
  *       1) fromBit <= toBit    2) 0 <= fromBit <= 0b00011110 = 31     3) 0 <= toBit <= 0b00011111 = 31      4) shiftAmount >= 0
 */
@@ -3225,7 +3174,7 @@ template TR::Instruction * generateS390CompareAndBranchInstruction<int64_t>(
                     bool needsCC = true,
                     bool targetIsFarAndCold = false,
                     TR::Instruction        *preced = 0,
-                    TR::RegisterDependencyConditions *cond = 0); 
+                    TR::RegisterDependencyConditions *cond = 0);
 
 TR::Instruction*
 generateAlignmentNopInstruction(TR::CodeGenerator *cg, TR::Node *node, uint32_t alignment, TR::Instruction *preced)
