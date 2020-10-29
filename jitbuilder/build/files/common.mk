@@ -212,6 +212,7 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/codegen/OMRInstruction.cpp \
     $(JIT_OMR_DIRTY_DIR)/codegen/ELFGenerator.cpp \
     $(JIT_OMR_DIRTY_DIR)/codegen/OMRELFRelocationResolver.cpp \
+    $(JIT_OMR_DIRTY_DIR)/codegen/OMRRegisterDependencyGroup.cpp \
     $(JIT_OMR_DIRTY_DIR)/env/FEBase.cpp \
     $(JIT_OMR_DIRTY_DIR)/env/JitConfig.cpp \
     $(JIT_OMR_DIRTY_DIR)/control/CompilationController.cpp \
