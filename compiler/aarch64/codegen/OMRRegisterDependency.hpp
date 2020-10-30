@@ -40,6 +40,7 @@ namespace OMR { typedef OMR::ARM64::RegisterDependencyConditions RegisterDepende
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/RealRegister.hpp"
 #include "codegen/Register.hpp"
+#include "codegen/OMRRegisterDependencyGroup.hpp"
 #include "env/TRMemory.hpp"
 #include "infra/Assert.hpp"
 
@@ -47,162 +48,6 @@ namespace TR { class Instruction; }
 namespace TR { class Node; }
 namespace TR { class RegisterDependencyConditions; }
 
-#define NUM_DEFAULT_DEPENDENCIES 1
-
-class TR_ARM64RegisterDependencyGroup
-   {
-   TR::RegisterDependency _dependencies[NUM_DEFAULT_DEPENDENCIES];
-
-   public:
-
-   TR_ALLOC_WITHOUT_NEW(TR_Memory::RegisterDependencyGroup)
-
-   /**
-    * @brief Constructor
-    */
-   TR_ARM64RegisterDependencyGroup() {}
-
-   /**
-    * @brief new operator
-    * @param[in] s : size
-    * @param[in] m : memory
-    */
-   void * operator new(size_t s, TR_Memory * m) {return m->allocateHeapMemory(s);}
-
-   /**
-    * @brief new operator
-    * @param[in] s : size
-    * @param[in] numberDependencies : # of dependencies
-    * @param[in] m : memory
-    */
-   // Use TR_ARM64RegisterDependencyGroup::create to allocate an object of this type
-   void * operator new(size_t s, int32_t numDependencies, TR_Memory * m)
-      {
-      TR_ASSERT(numDependencies > 0, "operator new called with numDependencies == 0");
-      if (numDependencies > NUM_DEFAULT_DEPENDENCIES)
-         {
-         s += (numDependencies-NUM_DEFAULT_DEPENDENCIES)*sizeof(TR::RegisterDependency);
-         }
-      return m->allocateHeapMemory(s);
-      }
-
-   /**
-    * @brief Creates register dependency group
-    * @param[in] numberDependencies : # of dependencies
-    * @param[in] m : memory
-    */
-   static TR_ARM64RegisterDependencyGroup * create(int32_t numDependencies, TR_Memory * m)
-      {
-      return numDependencies ? new (numDependencies, m) TR_ARM64RegisterDependencyGroup : 0;
-      }
-
-   /**
-    * @brief Gets the register dependency
-    * @param[in] index : index
-    */
-   TR::RegisterDependency *getRegisterDependency(uint32_t index)
-      {
-      return &_dependencies[index];
-      }
-
-   /**
-    * @brief Sets the register dependency
-    * @param[in] index : index
-    * @param[in] vr : virtual register
-    * @param[in] rr : real register number
-    * @param[in] flag : flag
-    */
-   void setDependencyInfo(uint32_t index,
-                          TR::Register *vr,
-                          TR::RealRegister::RegNum rr,
-                          uint8_t flag)
-      {
-      _dependencies[index].setRegister(vr);
-      _dependencies[index].assignFlags(flag);
-      _dependencies[index].setRealRegister(rr);
-      }
-
-   /**
-    * @brief Searches for a register
-    * @param[in] rr : real register number
-    * @param[in] numberOfRegisters : # of registers
-    * @return register when found, NULL when not found
-    */
-   TR::Register *searchForRegister(TR::RealRegister::RegNum rr, uint32_t numberOfRegisters)
-      {
-      for (uint32_t i=0; i<numberOfRegisters; i++)
-         {
-         if (_dependencies[i].getRealRegister() == rr)
-            return _dependencies[i].getRegister();
-         }
-      return NULL;
-      }
-
-   /**
-    * @brief Assigns registers
-    * @param[in] currentInstruction : current instruction
-    * @param[in] kindToBeAssigned : kind of register to be assigned
-    * @param[in] numberOfRegisters : # of registers
-    * @param[in] cg : code generator
-    */
-   void assignRegisters(TR::Instruction *currentInstruction,
-                        TR_RegisterKinds kindToBeAssigned,
-                        uint32_t numberOfRegisters,
-                        TR::CodeGenerator *cg);
-
-   /**
-    * @brief Blocks registers
-    * @param[in] numberOfRegisters : # of registers
-    */
-   void blockRegisters(uint32_t numberOfRegisters)
-      {
-      for (uint32_t i = 0; i < numberOfRegisters; i++)
-         {
-         if (_dependencies[i].getRegister())
-            _dependencies[i].getRegister()->block();
-         }
-      }
-
-   /**
-    * @brief Unblocks registers
-    * @param[in] numberOfRegisters : # of registers
-    */
-   void unblockRegisters(uint32_t numberOfRegisters)
-      {
-      for (uint32_t i = 0; i < numberOfRegisters; i++)
-         {
-         if (_dependencies[i].getRegister())
-            _dependencies[i].getRegister()->unblock();
-         }
-      }
-
-   template<class It>
-   void stopUsingDepRegs(uint32_t numberOfRegisters, It skipRegsBegin, It skipRegsEnd, TR::CodeGenerator *cg)
-      {
-      for (uint32_t i = 0; i < numberOfRegisters; i++)
-         {
-         TR::Register *depReg = _dependencies[i].getRegister();
-         if (depReg && (std::find(skipRegsBegin, skipRegsEnd, depReg) == skipRegsEnd))
-            cg->stopUsingRegister(depReg);
-         }
-      }
-
-   /**
-    * @brief Kills registers held by this dependency group
-    * @param[in] numberOfRegisters : # of registers
-    * @param[in] returnRegister    : register which is not killed
-    * @param[in] cg                : CodeGenerator
-    */
-   void stopUsingDepRegs(uint32_t numberOfRegisters, TR::Register *returnRegister, TR::CodeGenerator *cg)
-      {
-      for (uint32_t i = 0; i < numberOfRegisters; i++)
-         {
-         TR::Register *depReg = _dependencies[i].getRegister();
-         if (depReg && (depReg != returnRegister))
-            cg->stopUsingRegister(depReg);
-         }
-      }
-   };
 
 namespace OMR
 {
@@ -210,8 +55,8 @@ namespace ARM64
 {
 class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
    {
-   TR_ARM64RegisterDependencyGroup *_preConditions;
-   TR_ARM64RegisterDependencyGroup *_postConditions;
+   TR::RegisterDependencyGroup *_preConditions;
+   TR::RegisterDependencyGroup *_postConditions;
    uint16_t _numPreConditions;
    uint16_t _addCursorForPre;
    uint16_t _numPostConditions;
@@ -240,8 +85,8 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
     * @param[in] m : memory
     */
    RegisterDependencyConditions(uint16_t numPreConds, uint16_t numPostConds, TR_Memory * m)
-      : _preConditions(TR_ARM64RegisterDependencyGroup::create(numPreConds, m)),
-        _postConditions(TR_ARM64RegisterDependencyGroup::create(numPostConds, m)),
+      : _preConditions(TR::RegisterDependencyGroup::create(numPreConds, m)),
+        _postConditions(TR::RegisterDependencyGroup::create(numPostConds, m)),
         _numPreConditions(numPreConds),
         _addCursorForPre(0),
         _numPostConditions(numPostConds),
@@ -306,7 +151,7 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
       {
       if (_preConditions == NULL)
          {
-         _preConditions = TR_ARM64RegisterDependencyGroup::create(n, m);
+         _preConditions = TR::RegisterDependencyGroup::create(n, m);
          }
       if (_addCursorForPre > n)
          {
@@ -331,7 +176,7 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
       {
       if (_postConditions == NULL)
          {
-         _postConditions = TR_ARM64RegisterDependencyGroup::create(n, m);
+         _postConditions = TR::RegisterDependencyGroup::create(n, m);
          }
       if (_addCursorForPost > n)
          {
@@ -368,7 +213,7 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
     * @brief Gets pre-conditions
     * @return pre-conditions
     */
-   TR_ARM64RegisterDependencyGroup *getPreConditions()  {return _preConditions;}
+   TR::RegisterDependencyGroup *getPreConditions()  {return _preConditions;}
 
    /**
     * @brief Adds to pre-conditions
@@ -388,7 +233,7 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
     * @brief Gets post-conditions
     * @return post-conditions
     */
-   TR_ARM64RegisterDependencyGroup *getPostConditions() {return _postConditions;}
+   TR::RegisterDependencyGroup *getPostConditions() {return _postConditions;}
 
    /**
     * @brief Adds to post-conditions

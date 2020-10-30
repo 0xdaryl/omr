@@ -37,6 +37,7 @@
 #include "codegen/Register.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterDependency.hpp"
+#include "codegen/RegisterDependencyGroup.hpp"
 #include "codegen/RegisterDependencyStruct.hpp"
 #include "codegen/Relocation.hpp"
 #include "codegen/Snippet.hpp"
@@ -1085,7 +1086,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1Src1ImmInstruction *instr)
             done = true;
             trfprintf(pOutFile, "sxt%cw \t", (imms == 7) ? 'b' : 'h');
             print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
-            print(pOutFile, instr->getSource1Register(), TR_WordReg); 
+            print(pOutFile, instr->getSource1Register(), TR_WordReg);
             }
          }
       }
@@ -1524,7 +1525,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::RegisterDependencyConditions *conditions
 void
 TR_Debug::printAssocRegDirective(TR::FILE *pOutFile, TR::Instruction *instr)
    {
-   TR_ARM64RegisterDependencyGroup * depGroup = instr->getDependencyConditions()->getPostConditions();
+   TR::RegisterDependencyGroup * depGroup = instr->getDependencyConditions()->getPostConditions();
 
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s", getOpCodeName(&instr->getOpCode()));
