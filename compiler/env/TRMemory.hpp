@@ -287,7 +287,6 @@ public:
       ARMMemoryArgument,
       ARMOperand,
       ARMFloatConstant,
-      ARMRegisterDependencyGroup,
       ARMRegisterDependencyConditions,
       ARMConstant,
       ARMConstantDataSnippet,

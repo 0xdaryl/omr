@@ -140,7 +140,6 @@ const char * objectName[] =
    "ARMMemoryArgument",
    "ARMOperand",
    "ARMFloatConstant",
-   "ARMRegisterDependencyGroup",
    "ARMRegisterDependencyConditions",
    "ARMConstant",
    "ARMConstantDataSnippet",

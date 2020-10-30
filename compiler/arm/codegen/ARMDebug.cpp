@@ -32,6 +32,7 @@ int jitDebugARM;
 #include "codegen/Linkage.hpp"
 #include "codegen/Linkage_inlines.hpp"
 #include "codegen/Machine.hpp"
+#include "codegen/RegisterDependencyGroup.hpp"
 #include "codegen/Snippet.hpp"
 #include "codegen/StackCheckFailureSnippet.hpp"
 #include "compile/Compilation.hpp"
@@ -256,11 +257,11 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Instruction * instr)
    }
 
 void
-TR_Debug::dumpDependencyGroup(TR::FILE *                        pOutFile,
-                              TR_ARMRegisterDependencyGroup *group,
-                              int32_t                        numConditions,
-                              char                          *prefix,
-                              bool                           omitNullDependencies)
+TR_Debug::dumpDependencyGroup(TR::FILE *                   pOutFile,
+                              TR::RegisterDependencyGroup *group,
+                              int32_t                      numConditions,
+                              char                        *prefix,
+                              bool                         omitNullDependencies)
    {
    int32_t i;
    bool    foundDep = false;
