@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1134,13 +1134,13 @@ static TR::SymbolReference * createSymRefForNode(TR::Compilation *comp, TR::Reso
       {
       bool isInternalPointer = false;
       if ((value->hasPinningArrayPointer() &&
-            value->computeIsInternalPointer()) ||
+            value->computeIsInternalPointer(comp)) ||
                (value->getOpCode().isLoadVarDirect() &&
                   value->getSymbolReference()->getSymbol()->isAuto() &&
                   value->getSymbolReference()->getSymbol()->castToAutoSymbol()->isInternalPointer()))
          isInternalPointer = true;
       
-      if (value->isNotCollected() && dataType == TR::Address)
+      if (value->isNotCollected(comp) && dataType == TR::Address)
          {
          symRef = comp->getSymRefTab()->createTemporary(methodSymbol, dataType, false, 
 #ifdef J9_PROJECT_SPECIFIC
@@ -1153,7 +1153,7 @@ static TR::SymbolReference * createSymRefForNode(TR::Compilation *comp, TR::Reso
       if (isInternalPointer)
          {
          symRef = comp->getSymRefTab()->createTemporary(methodSymbol, TR::Address, true, 0);
-         if (value->isNotCollected())
+         if (value->isNotCollected(comp))
             symRef->getSymbol()->setNotCollected();
          else if (value->getOpCode().isArrayRef())
             value->setIsInternalPointer(true);
@@ -1226,7 +1226,7 @@ static TR::SymbolReference * createSymRefForNode(TR::Compilation *comp, TR::Reso
                          methodSymbol->incTempIndex(comp->fe()));
 
 
-      if (value->isNotCollected())
+      if (value->isNotCollected(comp))
          symRef->getSymbol()->setNotCollected();
       }
 
@@ -1237,7 +1237,7 @@ static TR::SymbolReference * createSymRefForNode(TR::Compilation *comp, TR::Reso
                                                       value->getType().isBCD() ? value->getSize() :
 #endif
                                                       0);
-      if (value->getType() == TR::Address && value->isNotCollected())
+      if (value->getType() == TR::Address && value->isNotCollected(comp))
          symRef->getSymbol()->setNotCollected();
       }
    return symRef;

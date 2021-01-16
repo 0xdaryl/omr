@@ -532,9 +532,9 @@ public:
 
    bool                   dontEliminateStores(bool isForLocalDeadStore = false);
 
-   bool                   isNotCollected();
-   bool                   computeIsInternalPointer();
-   bool                   computeIsCollectedReference();
+   bool                   isNotCollected(TR::Compilation *comp);
+   bool                   computeIsInternalPointer(TR::Compilation *comp);
+   bool                   computeIsCollectedReference(TR::Compilation *comp);
 
    bool                   addressPointsAtObject();
 
@@ -1908,7 +1908,7 @@ protected:
 // Private functionality.
 private:
    TR::Node * getExtendedChild(int32_t c);
-   TR_YesNoMaybe computeIsCollectedReferenceImpl(TR::NodeChecklist &processedNodesCollected, TR::NodeChecklist &processedNodesNotCollected);
+   TR_YesNoMaybe computeIsCollectedReferenceImpl(TR::NodeChecklist &processedNodesCollected, TR::NodeChecklist &processedNodesNotCollected, TR::Compilation *comp);
 
    friend class ::TR_DebugExt;
    friend class TR::NodePool;

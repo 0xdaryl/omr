@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -2335,15 +2335,17 @@ OMR::Node::dontEliminateStores(bool isForLocalDeadStore)
 
 
 bool
-OMR::Node::isNotCollected()
+OMR::Node::isNotCollected(TR::Compilation *comp)
    {
-   return !self()->computeIsCollectedReference();
+   return !self()->computeIsCollectedReference(comp);
    }
 
 
 /**
  * \brief
  *    Check if the node is an internal pointer.
+ *
+ * \param[in] comp : \c TR::Compilation object
  *
  * \return
  *    Return true if the node is an internal pointer, false otherwise.
@@ -2353,15 +2355,17 @@ OMR::Node::isNotCollected()
  *    i.e. aiadd, aladd. Suppport for other opcodes can be added if necessary.
  */
 bool
-OMR::Node::computeIsInternalPointer()
+OMR::Node::computeIsInternalPointer(TR::Compilation *comp)
    {
    TR_ASSERT(self()->getOpCode().hasPinningArrayPointer(), "Opcode %s is not supported, node is " POINTER_PRINTF_FORMAT, self()->getOpCode().getName(), self());
-   return self()->computeIsCollectedReference();
+   return self()->computeIsCollectedReference(comp);
    }
 
 /**
  * \brief
  *    Check if the node is collected.
+ *
+ * \param[in] comp : \c TR::Compilation object
  *
  * \return
  *    Return true if the node is collected, false otherwise.
@@ -2371,12 +2375,11 @@ OMR::Node::computeIsInternalPointer()
  *    from something collected, i.e. anything that is collected reference or internal pointer.
  */
 bool
-OMR::Node::computeIsCollectedReference()
+OMR::Node::computeIsCollectedReference(TR::Compilation *comp)
    {
-   TR::Compilation * comp = TR::comp();
    TR::NodeChecklist processedNodesCollected(comp);
    TR::NodeChecklist processedNodesNotCollected(comp);
-   return (self()->computeIsCollectedReferenceImpl(processedNodesCollected, processedNodesNotCollected) != TR_no);
+   return (self()->computeIsCollectedReferenceImpl(processedNodesCollected, processedNodesNotCollected, comp) != TR_no);
    }
 
 static TR_YesNoMaybe
@@ -2402,7 +2405,7 @@ recordProcessedNodeResult(TR::Node *node, TR_YesNoMaybe collectedness, TR::NodeC
    }
 
 TR_YesNoMaybe
-OMR::Node::computeIsCollectedReferenceImpl(TR::NodeChecklist &processedNodesCollected, TR::NodeChecklist &processedNodesNotCollected)
+OMR::Node::computeIsCollectedReferenceImpl(TR::NodeChecklist &processedNodesCollected, TR::NodeChecklist &processedNodesNotCollected, TR::Compilation *comp)
    {
    TR::Node *curNode = self();
    TR::Node *receiverNode = curNode;
@@ -2452,10 +2455,10 @@ OMR::Node::computeIsCollectedReferenceImpl(TR::NodeChecklist &processedNodesColl
 
       if (op.isSelect())
          {
-         TR_YesNoMaybe secondChildResult = curNode->getSecondChild()->computeIsCollectedReferenceImpl(processedNodesCollected, processedNodesNotCollected);
+         TR_YesNoMaybe secondChildResult = curNode->getSecondChild()->computeIsCollectedReferenceImpl(processedNodesCollected, processedNodesNotCollected, comp);
          if (TR_maybe == secondChildResult)
             {
-            TR_YesNoMaybe thirdChildResult = curNode->getThirdChild()->computeIsCollectedReferenceImpl(processedNodesCollected, processedNodesNotCollected);
+            TR_YesNoMaybe thirdChildResult = curNode->getThirdChild()->computeIsCollectedReferenceImpl(processedNodesCollected, processedNodesNotCollected, comp);
             return recordProcessedNodeResult(receiverNode, thirdChildResult, processedNodesCollected, processedNodesNotCollected);
             }
          else
@@ -2470,7 +2473,7 @@ OMR::Node::computeIsCollectedReferenceImpl(TR::NodeChecklist &processedNodesColl
          TR::Symbol *symbol = curNode->getSymbolReference()->getSymbol();
          // isCollectedReference() responds false to generic int shadows because their type
          // is int. However, address type generic int shadows refer to collected slots.
-         if (opValue == TR::aloadi && symbol == TR::comp()->getSymRefTab()->findGenericIntShadowSymbol())
+         if (opValue == TR::aloadi && symbol == comp->getSymRefTab()->findGenericIntShadowSymbol())
             return recordProcessedNodeResult(receiverNode, TR_yes, processedNodesCollected, processedNodesNotCollected);
          else
             return recordProcessedNodeResult(receiverNode, (symbol->isCollectedReference() ? TR_yes : TR_no),
@@ -3794,7 +3797,7 @@ OMR::Node::createStoresForVar(TR::SymbolReference * &nodeRef, TR::TreeTop *inser
       {
       nodeRef = comp->getSymRefTab()->createTemporary(comp->getMethodSymbol(), self()->getDataType(), false);
 
-      if (self()->isNotCollected())
+      if (self()->isNotCollected(comp))
          nodeRef->getSymbol()->setNotCollected();
       TR::Node* storeNode = TR::Node::createStore(nodeRef, self());
       storeTree = TR::TreeTop::create(comp, storeNode);
@@ -3809,7 +3812,7 @@ OMR::Node::createStoresForVar(TR::SymbolReference * &nodeRef, TR::TreeTop *inser
 
    bool isInternalPointer = false;
    if ((self()->hasPinningArrayPointer() &&
-        self()->computeIsInternalPointer()) ||
+        self()->computeIsInternalPointer(comp)) ||
        (self()->getOpCode().isLoadVarDirect() &&
         self()->getSymbolReference()->getSymbol()->isAuto() &&
         self()->getSymbolReference()->getSymbol()->castToAutoSymbol()->isInternalPointer()))
@@ -3817,7 +3820,7 @@ OMR::Node::createStoresForVar(TR::SymbolReference * &nodeRef, TR::TreeTop *inser
 
    bool storesNeedToBeCreated = true;
 
-   if (self()->isNotCollected())
+   if (self()->isNotCollected(comp))
       {
       nodeRef = comp->getSymRefTab()->createTemporary(comp->getMethodSymbol(), TR::Address);
       nodeRef->getSymbol()->setNotCollected();
@@ -3888,7 +3891,7 @@ OMR::Node::createStoresForVar(TR::SymbolReference * &nodeRef, TR::TreeTop *inser
       TR::Node* storeNode = TR::Node::createStore(nodeRef, self());
 
       if (self()->hasPinningArrayPointer() &&
-          self()->computeIsInternalPointer())
+          self()->computeIsInternalPointer(comp))
          self()->setIsInternalPointer(true);
 
       TR::Node *child = NULL;
