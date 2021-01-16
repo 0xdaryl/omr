@@ -2357,6 +2357,11 @@ OMR::Node::isNotCollected(TR::Compilation *comp)
 bool
 OMR::Node::computeIsInternalPointer(TR::Compilation *comp)
    {
+   if (!comp->cg()->supportsInternalPointers())
+      {
+      return false;
+      }
+
    TR_ASSERT(self()->getOpCode().hasPinningArrayPointer(), "Opcode %s is not supported, node is " POINTER_PRINTF_FORMAT, self()->getOpCode().getName(), self());
    return self()->computeIsCollectedReference(comp);
    }
