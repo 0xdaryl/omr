@@ -1000,8 +1000,7 @@ typedef TRMemoryAllocator<heapAlloc, 12, 28> TRCS2MemoryAllocator;
 
 namespace TR
    {
-   typedef CS2::heap_allocator< 65536, 12, TRCS2MemoryAllocator > ThreadLocalAllocator;
-   typedef CS2::shared_allocator < ThreadLocalAllocator > Allocator;
+   typedef CS2::heap_allocator< 65536, 12, TRCS2MemoryAllocator > Allocator;
 
    /*
     * some common CS2 datatypes

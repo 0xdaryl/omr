@@ -220,7 +220,6 @@ OMR::Compilation::Compilation(
    _method(compilee),
    _arenaAllocator(TR::Allocator(self()->allocator("Arena"))),
    _aliasRegion(heapMemoryRegion),
-   _allocatorName(NULL),
    _ilGenerator(0),
    _ilValidator(NULL),
    _optimizer(0),

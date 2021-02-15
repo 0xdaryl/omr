@@ -276,6 +276,11 @@ namespace CS2 {
 
       return npointer;
     }
+
+    // Enable automatic conversion into a form compatible with C++ standard library containers
+    template <typename T>
+    operator TR::typed_allocator<T, heap_allocator>() { return TR::typed_allocator<T, heap_allocator>(*this); }
+
   };
 
   template <class base_allocator>
