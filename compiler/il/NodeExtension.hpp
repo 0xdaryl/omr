@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -24,12 +24,11 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "env/Region.hpp"
 #include "env/TRMemory.hpp"
 
 #define NUM_DEFAULT_ELEMS 1
 #define NUM_DEFAULT_NODECHILDREN 2
-
-typedef TR_ArenaAllocator TR_NodeExtAllocator;
 
 namespace TR
 {
@@ -44,22 +43,22 @@ namespace TR
 class NodeExtension
     {
 public:
-    NodeExtension(TR_NodeExtAllocator & alloc) :
+    NodeExtension(TR::Region & alloc) :
        _allocator(alloc) {};
 
-    void * operator new (size_t s, uint16_t arrayElems, TR_NodeExtAllocator & m)
+    void * operator new (size_t s, uint16_t arrayElems, TR::Region & m)
        {
        s += (arrayElems - NUM_DEFAULT_ELEMS) * sizeof(uintptr_t);
        return m.allocate(s);
        }
 
-    void   operator delete(void * ptr, uint16_t arrayElems, TR_NodeExtAllocator & m)
+    void   operator delete(void * ptr, uint16_t arrayElems, TR::Region & m)
        {
        size_t size = sizeof(NodeExtension) + (arrayElems - NUM_DEFAULT_ELEMS) * sizeof(uintptr_t);
        return m.deallocate(ptr, size);
        }
 
-    void   operator delete(void * ptr, size_t s, TR_NodeExtAllocator & m)
+    void   operator delete(void * ptr, size_t s, TR::Region & m)
        {
        m.deallocate(ptr,s);
        };
@@ -83,7 +82,7 @@ public:
        }
 
   private:
-      TR_NodeExtAllocator & _allocator;
+      TR::Region & _allocator;
       uintptr_t _data[NUM_DEFAULT_ELEMS];
     };
 
