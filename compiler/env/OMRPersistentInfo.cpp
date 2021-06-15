@@ -20,6 +20,7 @@
  *******************************************************************************/
 
 #include "env/PersistentInfo.hpp"
+#include "ras/DebugCounter.hpp"
 
 TR::PersistentInfo *
 OMR::PersistentInfo::self()
