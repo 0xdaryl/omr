@@ -248,6 +248,22 @@ public:
    };
 
 
-namespace TR { typedef class TR_InlinerBase Inliner; }
+namespace TR
+{
+
+class Inliner : public TR_InlinerBase
+   {
+public:
+
+   /**
+    * @param[in] optimizer: the \c TR::Optimizer object
+    * @param[in] opt: the \c TR::Optimization object
+    */
+   Inliner(TR::Optimizer *optimizer, TR::Optimization *opt) :
+      TR_InlinerBase(optimizer, opt) {}
+   }
+
+}
+
 
 #endif
