@@ -248,6 +248,6 @@ public:
    };
 
 
-namespace TR { typedef Inliner TR_InlinerBase; }
+namespace TR { typedef class TR_InlinerBase Inliner; }
 
 #endif

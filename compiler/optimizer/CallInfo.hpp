@@ -59,7 +59,7 @@ namespace TR { class TreeTop; }
 class TR_CallSite;
 struct TR_VirtualGuardSelection;
 
-namespace TR { typedef Inliner TR_InlinerBase; }
+namespace TR { typedef class TR_InlinerBase Inliner; }
 
 class TR_CallStack : public TR_Link<TR_CallStack>
    {
