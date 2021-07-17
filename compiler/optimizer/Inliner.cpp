@@ -237,12 +237,12 @@ TR_TrivialInliner::optDetailString() const throw()
 
 
 //---------------------------------------------------------------------
-// TR_InlinerBase
+// OMR::Inliner
 //---------------------------------------------------------------------
 
 
 
-TR_InlinerBase::TR_InlinerBase(TR::Optimizer * optimizer, TR::Optimization *optimization)
+OMR::Inliner::Inliner(TR::Optimizer * optimizer, TR::Optimization *optimization)
    : TR_HasRandomGenerator(optimizer->comp()),
      _visitCount(optimizer->comp()->incVisitCount()),
      _inliningAsWeWalk(false),
@@ -285,7 +285,7 @@ TR_InlinerBase::TR_InlinerBase(TR::Optimizer * optimizer, TR::Optimization *opti
    }
 
 void
-TR_InlinerBase::setSizeThreshold(uint32_t size)
+OMR::Inliner::setSizeThreshold(uint32_t size)
    {
    // This method is used to increase the threshold when inlining from places other than the Inliner. ex escape analysis, value prop, etc.
 
@@ -301,7 +301,7 @@ OMR_InlinerPolicy::determineInliningHeuristic(TR::ResolvedMethodSymbol *callerSy
    }
 
 void
-TR_InlinerBase::setInlineThresholds(TR::ResolvedMethodSymbol *callerSymbol)
+OMR::Inliner::setInlineThresholds(TR::ResolvedMethodSymbol *callerSymbol)
    {
    int32_t size = getPolicy()->getInitialBytecodeSize(callerSymbol, comp());
 
@@ -381,7 +381,7 @@ TR_InlinerBase::setInlineThresholds(TR::ResolvedMethodSymbol *callerSymbol)
       {
       _nodeCountThreshold = (uint32_t)randomInt(32000);
       _methodByteCodeSizeThreshold = comp()->convertNonDeterministicInput( _methodByteCodeSizeThreshold, 500, randomGenerator(), 0);
-      traceMsg(comp(),"\nTR_Randomize Enabled||TR_InlinerBase::inlineCallTarget, SeedValue:%d", comp()->getOptions()->getRandomSeed());
+      traceMsg(comp(),"\nTR_Randomize Enabled||OMR::Inliner::inlineCallTarget, SeedValue:%d", comp()->getOptions()->getRandomSeed());
       }
 
 
@@ -405,7 +405,7 @@ TR_InlinerBase::setInlineThresholds(TR::ResolvedMethodSymbol *callerSymbol)
  *    corresponding changes to the CFG.
  */
 void
-TR_InlinerBase::linkOSRCodeBlocks()
+OMR::Inliner::linkOSRCodeBlocks()
    {
    TR_OSRCompilationData* compData = comp()->getOSRCompilationData();
    const TR_Array<TR_OSRMethodData *>& methodDataArray = compData->getOSRMethodDataArray();
@@ -444,7 +444,7 @@ TR_InlinerBase::linkOSRCodeBlocks()
    }
 
 void
-TR_InlinerBase::performInlining(TR::ResolvedMethodSymbol * callerSymbol)
+OMR::Inliner::performInlining(TR::ResolvedMethodSymbol * callerSymbol)
    {
    TR::StackMemoryRegion stackMemoryRegion(*trMemory());
 
@@ -469,7 +469,7 @@ TR_InlinerBase::performInlining(TR::ResolvedMethodSymbol * callerSymbol)
    }
 
 void
-TR_InlinerBase::cleanup(TR::ResolvedMethodSymbol * callerSymbol, bool inlinedSite)
+OMR::Inliner::cleanup(TR::ResolvedMethodSymbol * callerSymbol, bool inlinedSite)
    {
    comp()->resetInlineDepth();
 
@@ -499,7 +499,7 @@ OMR_InlinerPolicy::mustBeInlinedEvenInDebug(TR_ResolvedMethod * calleeMethod, TR
    }
 
 bool
-TR_InlinerBase::alwaysWorthInlining(TR_ResolvedMethod * calleeMethod, TR::Node *callNode)
+OMR::Inliner::alwaysWorthInlining(TR_ResolvedMethod * calleeMethod, TR::Node *callNode)
    {
    return getPolicy()->alwaysWorthInlining(calleeMethod, callNode);
    }
@@ -512,7 +512,7 @@ OMR_InlinerPolicy::alwaysWorthInlining(TR_ResolvedMethod * calleeMethod, TR::Nod
 
 
 bool
-TR_InlinerBase::exceedsSizeThreshold(TR_CallSite *callsite, int bytecodeSize, TR::Block * block, TR_ByteCodeInfo & bcInfo,
+OMR::Inliner::exceedsSizeThreshold(TR_CallSite *callsite, int bytecodeSize, TR::Block * block, TR_ByteCodeInfo & bcInfo,
       int32_t numLocals, TR_ResolvedMethod * callerResolvedMethod, TR_ResolvedMethod * calleeResolvedMethod,
       TR::Node *callNode, bool allConsts)
    {
@@ -678,7 +678,7 @@ TR_InlinerBase::exceedsSizeThreshold(TR_CallSite *callsite, int bytecodeSize, TR
    }
 
 void
-TR_InlinerBase::createParmMap(TR::ResolvedMethodSymbol *calleeSymbol, TR_LinkHead<TR_ParameterMapping> &map)
+OMR::Inliner::createParmMap(TR::ResolvedMethodSymbol *calleeSymbol, TR_LinkHead<TR_ParameterMapping> &map)
    {
    ListIterator<TR::ParameterSymbol> parms(&calleeSymbol->getParameterList());
 
@@ -694,7 +694,7 @@ TR_InlinerBase::createParmMap(TR::ResolvedMethodSymbol *calleeSymbol, TR_LinkHea
 
 
 bool
-TR_InlinerBase::inlineRecognizedMethod(TR::RecognizedMethod method)
+OMR::Inliner::inlineRecognizedMethod(TR::RecognizedMethod method)
    {
    return getPolicy()->inlineRecognizedMethod(method);
    }
@@ -1179,7 +1179,7 @@ TR_InlineCall::inlineCall(TR::TreeTop * callNodeTreeTop, TR_OpaqueClassBlock * t
 //---------------------------------------------------------------------
 
 TR_DumbInliner::TR_DumbInliner(TR::Optimizer * optimizer, TR::Optimization *optimization, uint32_t initialSize, uint32_t dumbReductionIncrement)
-   : TR_InlinerBase(optimizer, optimization),
+   : TR::Inliner(optimizer, optimization),
      _initialSize(initialSize),
      _dumbReductionIncrement(dumbReductionIncrement)
    {
@@ -1356,7 +1356,7 @@ TR_DumbInliner::analyzeCallSite(
    }
 
 //---------------------------------------------------------------------
-// TR_InlinerBase inlineCallTarget
+// OMR::Inliner inlineCallTarget
 //---------------------------------------------------------------------
 
 static TR::TreeTop * cloneAndReplaceCallNodeReference(TR::TreeTop *, TR::Node *, TR::Node *, TR::TreeTop *, TR::Compilation *);
@@ -1373,7 +1373,7 @@ static TR::Node *findPotentialDecompilationPoint(TR::ResolvedMethodSymbol *calle
    }
 
 void
-TR_InlinerBase::cloneChildren(TR::Node * to, TR::Node * from, uint32_t fromStartIndex)
+OMR::Inliner::cloneChildren(TR::Node * to, TR::Node * from, uint32_t fromStartIndex)
    {
    for (uint32_t i = fromStartIndex, j = 0; i < from->getNumChildren(); ++i, ++j)
       {
@@ -1402,7 +1402,7 @@ TR_InlinerBase::cloneChildren(TR::Node * to, TR::Node * from, uint32_t fromStart
  * removes the callNode from callerSymbol
 */
 void
-TR_InlinerBase::replaceCallNode(
+OMR::Inliner::replaceCallNode(
    TR::ResolvedMethodSymbol * callerSymbol, TR::Node * resultNode, rcount_t originalCallNodeReferenceCount,
    TR::TreeTop * callNodeTreeTop, TR::Node * parent, TR::Node * callNode)
    {
@@ -1429,7 +1429,7 @@ TR_InlinerBase::replaceCallNode(
  * replacementNode
  */
 void
-TR_InlinerBase::replaceCallNodeReferences(
+OMR::Inliner::replaceCallNodeReferences(
    TR::Node * node, TR::Node * parent, uint32_t childIndex,
    TR::Node * callNode, TR::Node * replacementNode, rcount_t & numberOfReferencesToFind, TR::NodeChecklist &visitedNodes)
    {
@@ -1464,7 +1464,7 @@ TR_InlinerBase::replaceCallNodeReferences(
    }
 
 TR::Node *
-TR_InlinerBase::createVirtualGuard(
+OMR::Inliner::createVirtualGuard(
    TR::Node * callNode, TR::ResolvedMethodSymbol * calleeSymbol, TR::TreeTop * destination,
    int16_t calleeIndex, TR_OpaqueClassBlock * thisClass, bool favourVftCompareGuard, TR_VirtualGuardSelection *guard)
    {
@@ -1561,7 +1561,7 @@ static bool blocksHaveSameStartingByteCodeInfo(TR::Block *aBlock, TR::Block *bBl
  * Root function for privatized inliner argument rematerialization - this handles calculating remat
  * safety and performing the remat.
  */
-void TR_InlinerBase::rematerializeCallArguments(TR_TransformInlinedFunction & tif,
+void OMR::Inliner::rematerializeCallArguments(TR_TransformInlinedFunction & tif,
    TR_VirtualGuardSelection *guard, TR::Node *callNode, TR::Block *block1, TR::TreeTop *rematPoint)
    {
    debugTrace(tracer(), "privatizedInlinerArg - consider arguments for rematerialization for guard [%p] of call node [n%dn]", guard, callNode->getGlobalIndex());
@@ -1711,7 +1711,7 @@ void TR_InlinerBase::rematerializeCallArguments(TR_TransformInlinedFunction & ti
    }
 
 void
-TR_InlinerBase::addAdditionalGuard(TR::Node *callNode, TR::ResolvedMethodSymbol * calleeSymbol, TR_OpaqueClassBlock * thisClass, TR::Block *prevBlock, TR::Block *inlinedBody, TR::Block *slowPath, TR_VirtualGuardKind kind, TR_VirtualGuardTestType type, bool favourVFTCompare, TR::CFG *callerCFG)
+OMR::Inliner::addAdditionalGuard(TR::Node *callNode, TR::ResolvedMethodSymbol * calleeSymbol, TR_OpaqueClassBlock * thisClass, TR::Block *prevBlock, TR::Block *inlinedBody, TR::Block *slowPath, TR_VirtualGuardKind kind, TR_VirtualGuardTestType type, bool favourVFTCompare, TR::CFG *callerCFG)
    {
    TR::Block *guardBlock = TR::Block::createEmptyBlock(callNode, comp(), prevBlock->getFrequency());
       callerCFG->addNode(guardBlock);
@@ -1732,7 +1732,7 @@ TR_InlinerBase::addAdditionalGuard(TR::Node *callNode, TR::ResolvedMethodSymbol 
    }
 
 TR::TreeTop *
-TR_InlinerBase::addGuardForVirtual(
+OMR::Inliner::addGuardForVirtual(
    TR::ResolvedMethodSymbol * callerSymbol,
    TR::ResolvedMethodSymbol * calleeSymbol,
    TR::TreeTop * callNodeTreeTop,
@@ -2048,7 +2048,7 @@ TR_InlinerBase::addGuardForVirtual(
    }
 
 
-bool TR_InlinerBase::heuristicForUsingOSR(TR::Node *callNode, TR::ResolvedMethodSymbol *calleeSymbol, TR::ResolvedMethodSymbol *callerSymbol, bool isIndirectCall)
+bool OMR::Inliner::heuristicForUsingOSR(TR::Node *callNode, TR::ResolvedMethodSymbol *calleeSymbol, TR::ResolvedMethodSymbol *callerSymbol, bool isIndirectCall)
    {
    static const char *disallowNestedOSR = feGetEnv("TR_DisallowNestedOSR");
 
@@ -2228,7 +2228,7 @@ bool rematerializeConstant(TR::Node *node, TR::Compilation *comp)
 TR_ParameterToArgumentMapper::TR_ParameterToArgumentMapper(
    TR::ResolvedMethodSymbol * callerSymbol, TR::ResolvedMethodSymbol * calleeSymbol, TR::Node * callNode, TR_PrexArgInfo *argInfo,
    List<TR::SymbolReference> & temps, List<TR::SymbolReference> & availableTemps, List<TR::SymbolReference> & availableTemps2,
-   TR_InlinerBase *inliner)
+   TR::Inliner *inliner)
    : _callerSymbol(callerSymbol),
      _calleeSymbol(calleeSymbol),
      _callNode(callNode),
@@ -3696,7 +3696,7 @@ TR::TreeTop * TR_TransformInlinedFunction::findSimpleCallReference(TR::TreeTop *
    return 0;
    }
 
-bool TR_CallSite::findCallSiteTarget (TR_CallStack *callStack, TR_InlinerBase* inliner)
+bool TR_CallSite::findCallSiteTarget (TR_CallStack *callStack, TR::Inliner* inliner)
    {
    TR_ASSERT(0, "TR_CallSite::findCallSiteTarget is not implemented in %s", name());
    return false;
@@ -3709,7 +3709,7 @@ TR_ResolvedMethod* TR_IndirectCallSite::getResolvedMethod (TR_OpaqueClassBlock* 
    }
 
 
-TR_ResolvedMethod* TR_IndirectCallSite::findSingleJittedImplementer (TR_InlinerBase *inliner)
+TR_ResolvedMethod* TR_IndirectCallSite::findSingleJittedImplementer (TR::Inliner *inliner)
    {
    return inliner->getUtil()->findSingleJittedImplementer(this);
    }
@@ -3739,7 +3739,7 @@ TR_OpaqueClassBlock* TR_IndirectCallSite::getClassFromArgInfo()
    return _ecsPrexArgInfo->get(0)->getClass();
    }
 
-bool TR_IndirectCallSite::tryToRefineReceiverClassBasedOnResolvedTypeArgInfo(TR_InlinerBase* inliner)
+bool TR_IndirectCallSite::tryToRefineReceiverClassBasedOnResolvedTypeArgInfo(TR::Inliner* inliner)
    {
    if (hasResolvedTypeArgInfo())
       {
@@ -3762,7 +3762,7 @@ bool TR_IndirectCallSite::tryToRefineReceiverClassBasedOnResolvedTypeArgInfo(TR_
    return false;
    }
 
-bool TR_IndirectCallSite::findCallTargetUsingArgumentPreexistence(TR_InlinerBase* inliner)
+bool TR_IndirectCallSite::findCallTargetUsingArgumentPreexistence(TR::Inliner* inliner)
    {
    TR_OpaqueClassBlock* klass = extractAndLogClassArgument(inliner);
 
@@ -3806,7 +3806,7 @@ bool TR_IndirectCallSite::findCallTargetUsingArgumentPreexistence(TR_InlinerBase
    }
 
 
-bool TR_IndirectCallSite::addTargetIfMethodIsNotOverriden (TR_InlinerBase* inliner)
+bool TR_IndirectCallSite::addTargetIfMethodIsNotOverriden (TR::Inliner* inliner)
    {
 
    if (_initialCalleeMethod && !_initialCalleeMethod->virtualMethodIsOverridden())
@@ -3833,7 +3833,7 @@ bool TR_IndirectCallSite::addTargetIfMethodIsNotOverriden (TR_InlinerBase* inlin
    }
 
 bool
-TR_IndirectCallSite::addTargetIfMethodIsNotOverridenInReceiversHierarchy (TR_InlinerBase* inliner)
+TR_IndirectCallSite::addTargetIfMethodIsNotOverridenInReceiversHierarchy (TR::Inliner* inliner)
    {
    return inliner->getUtil()->addTargetIfMethodIsNotOverridenInReceiversHierarchy(this);
    }
@@ -3858,12 +3858,12 @@ OMR_InlinerUtil::addTargetIfThereIsSingleImplementer (TR_IndirectCallSite *calls
    }
 
 bool
-TR_IndirectCallSite::addTargetIfThereIsSingleImplementer (TR_InlinerBase* inliner)
+TR_IndirectCallSite::addTargetIfThereIsSingleImplementer (TR::Inliner* inliner)
    {
    return inliner->getUtil()->addTargetIfThereIsSingleImplementer(this);
    }
 
-bool TR_IndirectCallSite::findCallSiteTarget (TR_CallStack *callStack, TR_InlinerBase* inliner)
+bool TR_IndirectCallSite::findCallSiteTarget (TR_CallStack *callStack, TR::Inliner* inliner)
    {
    if (addTargetIfMethodIsNotOverriden(inliner) ||
        addTargetIfMethodIsNotOverridenInReceiversHierarchy(inliner) ||
@@ -3876,7 +3876,7 @@ bool TR_IndirectCallSite::findCallSiteTarget (TR_CallStack *callStack, TR_Inline
    return false;
    }
 
-TR_OpaqueClassBlock * TR_IndirectCallSite::extractAndLogClassArgument (TR_InlinerBase* inliner)
+TR_OpaqueClassBlock * TR_IndirectCallSite::extractAndLogClassArgument (TR::Inliner* inliner)
    {
    if (inliner->tracer()->heuristicLevel())
       {
@@ -3889,7 +3889,7 @@ TR_OpaqueClassBlock * TR_IndirectCallSite::extractAndLogClassArgument (TR_Inline
    }
 
 
-bool TR_DirectCallSite::findCallSiteTarget (TR_CallStack* callStack, TR_InlinerBase* inliner)
+bool TR_DirectCallSite::findCallSiteTarget (TR_CallStack* callStack, TR::Inliner* inliner)
    {
 
   if (inliner->getPolicy()->replaceSoftwareCheckWithHardwareCheck(_initialCalleeMethod))
@@ -3932,7 +3932,7 @@ void OMR_InlinerUtil::collectCalleeMethodClassInfo(TR_ResolvedMethod *calleeMeth
    return;
    }
 
-void TR_InlinerBase::getSymbolAndFindInlineTargets(TR_CallStack *callStack, TR_CallSite *callsite, bool findNewTargets)
+void OMR::Inliner::getSymbolAndFindInlineTargets(TR_CallStack *callStack, TR_CallSite *callsite, bool findNewTargets)
    {
    TR_InlinerDelimiter delimiter(tracer(),"getSymbolAndFindInlineTargets");
 
@@ -4076,7 +4076,7 @@ bool OMR_InlinerPolicy::shouldRemoveDifferingTargets(TR::Node *callNode)
    return !callNode->getOpCode().isCallIndirect();
    }
 
-void TR_InlinerBase::applyPolicyToTargets(TR_CallStack *callStack, TR_CallSite *callsite)
+void OMR::Inliner::applyPolicyToTargets(TR_CallStack *callStack, TR_CallSite *callsite)
    {
    for (int32_t i=0; i<callsite->numTargets(); i++)
       {
@@ -4258,7 +4258,7 @@ void TR_InlinerBase::applyPolicyToTargets(TR_CallStack *callStack, TR_CallSite *
    }
 
 //return true if the call is dominated hot call
-bool TR_InlinerBase::callMustBeInlinedRegardlessOfSize(TR_CallSite *callsite)
+bool OMR::Inliner::callMustBeInlinedRegardlessOfSize(TR_CallSite *callsite)
    {
 
    return false;
@@ -4332,7 +4332,7 @@ static void traceRequestToCSI (TR::Compilation* comp, TR_CallSite* callsite)
 
    }
 
-TR_CallSite* TR_InlinerBase::findAndUpdateCallSiteInGraph(TR_CallStack *callStack,TR_ByteCodeInfo &bcInfo, TR::TreeTop *tt, TR::Node *parent, TR::Node *callNode, TR_CallTarget *calltarget)
+TR_CallSite* OMR::Inliner::findAndUpdateCallSiteInGraph(TR_CallStack *callStack,TR_ByteCodeInfo &bcInfo, TR::TreeTop *tt, TR::Node *parent, TR::Node *callNode, TR_CallTarget *calltarget)
    {
    if (calltarget->_myCallees.isEmpty())
       {
@@ -4535,10 +4535,10 @@ TR_CallSite* TR_InlinerBase::findAndUpdateCallSiteInGraph(TR_CallStack *callStac
 
    }
 
-void TR_InlinerBase::inlineFromGraph(TR_CallStack *prevCallStack, TR_CallTarget *calltarget, TR_InnerPreexistenceInfo *innerPrexInfo)
+void OMR::Inliner::inlineFromGraph(TR_CallStack *prevCallStack, TR_CallTarget *calltarget, TR_InnerPreexistenceInfo *innerPrexInfo)
    {
    bool trace = comp()->trace(OMR::inlining);
-   TR_InlinerDelimiter delimiter(tracer(),"TR_InlinerBase::inlineFromGraph");
+   TR_InlinerDelimiter delimiter(tracer(),"OMR::Inliner::inlineFromGraph");
 
    TR::ResolvedMethodSymbol *callerSymbol = calltarget->_calleeSymbol;           // the current call target
 
@@ -4685,7 +4685,7 @@ static void updateCallersFlags(TR::ResolvedMethodSymbol* callerSymbol, TR::Resol
    }
 
 //decide whether to inline some small methods like unsafe and getClassAccessFlags
-bool TR_InlinerBase::tryToInlineTrivialMethod (TR_CallStack* callStack, TR_CallTarget* calltarget)
+bool OMR::Inliner::tryToInlineTrivialMethod (TR_CallStack* callStack, TR_CallTarget* calltarget)
    {
    return getPolicy()->tryToInlineTrivialMethod(callStack, calltarget);
    }
@@ -4697,7 +4697,7 @@ bool OMR_InlinerPolicy::tryToInlineTrivialMethod (TR_CallStack* callStack, TR_Ca
 
 //returns false when inlining fails
 //TODO: currently this method returns true in some cases when the inlining fails. This needs to be fixed
-bool TR_InlinerBase::inlineCallTarget2(TR_CallStack * callStack, TR_CallTarget *calltarget, TR::TreeTop** cursorTreeTop, bool inlinefromgraph, int32_t)
+bool OMR::Inliner::inlineCallTarget2(TR_CallStack * callStack, TR_CallTarget *calltarget, TR::TreeTop** cursorTreeTop, bool inlinefromgraph, int32_t)
    {
    TR_InlinerDelimiter delimiter(tracer(),"inlineCallTarget2");
    //printf("*****INLINERCALLSITE2: BEGIN for calltarget %p*****\n",calltarget);
@@ -5111,7 +5111,7 @@ bool TR_InlinerBase::inlineCallTarget2(TR_CallStack * callStack, TR_CallTarget *
       // later so that we can add to the outer guard as an inner assumption )
       //
       // FIXME: the following limitation can be removed if we fixup the trees correctly
-      // in TR_InlinerBase::inlineCallTarget don't do inner pre on HCRGuard
+      // in OMR::Inliner::inlineCallTarget don't do inner pre on HCRGuard
       if (!_disableInnerPrex && guard->_kind != TR_ProfiledGuard && guard->_kind != TR_HCRGuard /* && guard->_kind != TR_NoGuard */ && guard->_kind != TR_InnerGuard)
          {
          devirtualizedByInnerPreexistence =
@@ -5480,13 +5480,13 @@ bool TR_InlinerBase::inlineCallTarget2(TR_CallStack * callStack, TR_CallTarget *
    }
 
 bool
-TR_InlinerBase::forceVarInitInlining(TR_CallTarget *calltarget)
+OMR::Inliner::forceVarInitInlining(TR_CallTarget *calltarget)
    {
    return false;
    }
 
 bool
-TR_InlinerBase::forceCalcInlining(TR_CallTarget *calltarget)
+OMR::Inliner::forceCalcInlining(TR_CallTarget *calltarget)
    {
    return false;
    }
@@ -5498,7 +5498,7 @@ OMR_InlinerPolicy::callMustBeInlined(TR_CallTarget *calltarget)
    }
 
 bool
-TR_InlinerBase::forceInline(TR_CallTarget *calltarget)
+OMR::Inliner::forceInline(TR_CallTarget *calltarget)
    {
    if (getPolicy()->callMustBeInlined(calltarget) || callMustBeInlinedRegardlessOfSize(calltarget->_myCallSite))
       return true;
@@ -5694,7 +5694,7 @@ OMR_InlinerUtil::createPrexArgInfoForCallTarget(TR_VirtualGuardSelection *guard,
    }
 
 TR_CallTarget *
-TR_CallSite::addTarget(TR_Memory* mem, TR_InlinerBase *inliner, TR_VirtualGuardSelection *guard, TR_ResolvedMethod *implementer, TR_OpaqueClassBlock *receiverClass, TR_AllocationKind allocKind, float ratio)
+TR_CallSite::addTarget(TR_Memory* mem, TR::Inliner *inliner, TR_VirtualGuardSelection *guard, TR_ResolvedMethod *implementer, TR_OpaqueClassBlock *receiverClass, TR_AllocationKind allocKind, float ratio)
    {
    TR_PrexArgInfo *myPrexArgInfo = inliner->getUtil()->createPrexArgInfoForCallTarget(guard, implementer);
 

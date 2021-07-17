@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -44,7 +44,6 @@
 namespace TR { class CompilationFilters;}
 class TR_FrontEnd;
 class TR_InlineBlocks;
-class TR_InlinerBase;
 class TR_InlinerTracer;
 class TR_InnerPreexistenceInfo;
 class TR_PrexArgInfo;
@@ -52,6 +51,7 @@ class TR_ResolvedMethod;
 namespace TR { class AutomaticSymbol; }
 namespace TR { class Block; }
 namespace TR { class CFG; }
+namespace TR { class Inliner; }
 namespace TR { class Method; }
 namespace TR { class ResolvedMethodSymbol; }
 namespace TR { class SymbolReference; }
@@ -352,7 +352,7 @@ class TR_CallSite : public TR_Link<TR_CallSite>
          _mytargets[i] = ct;
          }
 
-      TR_CallTarget *         addTarget(TR_Memory* , TR_InlinerBase*, TR_VirtualGuardSelection *, TR_ResolvedMethod *, TR_OpaqueClassBlock *,TR_AllocationKind allocKind=stackAlloc,float ratio=1.0);
+      TR_CallTarget *         addTarget(TR_Memory* , TR::Inliner*, TR_VirtualGuardSelection *, TR_ResolvedMethod *, TR_OpaqueClassBlock *,TR_AllocationKind allocKind=stackAlloc,float ratio=1.0);
       bool                    addTarget0(TR_Memory*, TR_InlinerTracer *, TR_VirtualGuardSelection *, TR_ResolvedMethod *, TR_OpaqueClassBlock *,TR_AllocationKind allocKind=stackAlloc,float ratio=1.0);
       void                    addTarget(TR_CallTarget *target)
          {
@@ -409,7 +409,7 @@ class TR_CallSite : public TR_Link<TR_CallSite>
       TR_PrexArgInfo              *_ecsPrexArgInfo; // used by ECS and findInlineTargets to assist in choosing correct inline targets
 
       //new findInlineTargets API
-      virtual bool findCallSiteTarget (TR_CallStack *callStack, TR_InlinerBase* inliner);
+      virtual bool findCallSiteTarget (TR_CallStack *callStack, TR::Inliner* inliner);
 		virtual const char*  name () { return "TR_CallSite"; }
 
       static TR_CallSite*
@@ -448,7 +448,7 @@ class TR_DirectCallSite : public TR_CallSite
    {
    public:
       TR_CALLSITE_TR_ALLOC_AND_INHERIT_EMPTY_CONSTRUCTOR(TR_DirectCallSite, TR_CallSite)
-      virtual bool findCallSiteTarget (TR_CallStack *callStack, TR_InlinerBase* inliner);
+      virtual bool findCallSiteTarget (TR_CallStack *callStack, TR::Inliner* inliner);
       virtual const char*  name () { return "TR_DirectCallSite"; }
    };
 
@@ -457,23 +457,23 @@ class TR_IndirectCallSite : public TR_CallSite
 
    public:
       TR_CALLSITE_TR_ALLOC_AND_INHERIT_EMPTY_CONSTRUCTOR(TR_IndirectCallSite, TR_CallSite)
-      virtual bool findCallSiteTarget (TR_CallStack *callStack, TR_InlinerBase* inliner);
+      virtual bool findCallSiteTarget (TR_CallStack *callStack, TR::Inliner* inliner);
 		virtual const char*  name () { return "TR_IndirectCallSite"; }
-      virtual TR_ResolvedMethod* findSingleJittedImplementer (TR_InlinerBase* inliner);
+      virtual TR_ResolvedMethod* findSingleJittedImplementer (TR::Inliner* inliner);
 
    protected:
       bool hasFixedTypeArgInfo();
       bool hasResolvedTypeArgInfo();
       TR_OpaqueClassBlock* getClassFromArgInfo();
-      bool tryToRefineReceiverClassBasedOnResolvedTypeArgInfo(TR_InlinerBase* inliner);
+      bool tryToRefineReceiverClassBasedOnResolvedTypeArgInfo(TR::Inliner* inliner);
 
-      virtual bool findCallTargetUsingArgumentPreexistence(TR_InlinerBase* inliner);
+      virtual bool findCallTargetUsingArgumentPreexistence(TR::Inliner* inliner);
       virtual TR_ResolvedMethod* getResolvedMethod (TR_OpaqueClassBlock* klass);
-      TR_OpaqueClassBlock * extractAndLogClassArgument(TR_InlinerBase* inliner);
+      TR_OpaqueClassBlock * extractAndLogClassArgument(TR::Inliner* inliner);
 		//capabilities
-		bool addTargetIfMethodIsNotOverriden (TR_InlinerBase* inliner);
-		bool addTargetIfMethodIsNotOverridenInReceiversHierarchy (TR_InlinerBase* inliner);
-		bool addTargetIfThereIsSingleImplementer(TR_InlinerBase* inliner);
+		bool addTargetIfMethodIsNotOverriden (TR::Inliner* inliner);
+		bool addTargetIfMethodIsNotOverridenInReceiversHierarchy (TR::Inliner* inliner);
+		bool addTargetIfThereIsSingleImplementer(TR::Inliner* inliner);
 
       virtual TR_OpaqueClassBlock* getClassFromMethod ()
          {

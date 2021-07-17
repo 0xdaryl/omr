@@ -50,6 +50,7 @@
 #include "infra/List.hpp"
 #include "infra/Random.hpp"
 #include "optimizer/InlinerFailureReason.hpp"
+#include "optimizer/OMRInliner.hpp"
 #include "optimizer/Optimization.hpp"
 #include "optimizer/OptimizationManager.hpp"
 #include "optimizer/Optimizer.hpp"
@@ -110,7 +111,7 @@ class TR_InlinerTracer : public TR_LogTracer
       TR_PersistentMemory * trPersistentMemory(){ return _trMemory->trPersistentMemory(); }
 
       // determine the tracing level
-      bool partialLevel() 
+      bool partialLevel()
          {
          static const bool enableTracePartialInlining = feGetEnv("TR_EnableTracePartialInlining") != NULL;
          return enableTracePartialInlining;
@@ -261,168 +262,8 @@ struct TR_VirtualGuardSelection
       }
    };
 
-class TR_InlinerBase: public TR_HasRandomGenerator
-   {
-   protected:
-      virtual bool supportsMultipleTargetInlining () { return false ; }
 
-   public:
-      vcount_t getVisitCount() { return _visitCount;}
-
-      void setPolicy(OMR_InlinerPolicy *policy){ _policy = policy; }
-      void setUtil(OMR_InlinerUtil *util){ _util = util; }
-      OMR_InlinerPolicy *getPolicy(){ TR_ASSERT(_policy != NULL, "inliner policy must be set"); return _policy; }
-      OMR_InlinerUtil *getUtil(){ TR_ASSERT(_util != NULL, "inliner util must be set"); return _util; }
-
-      bool allowBiggerMethods() { return comp()->isServerInlining(); }
-
-
-      bool isEDODisableInlinedProfilingInfo () {return _EDODisableInlinedProfilingInfo; }
-
-      void setInlineThresholds(TR::ResolvedMethodSymbol *callerSymbol);
-
-      void performInlining(TR::ResolvedMethodSymbol *);
-
-      int32_t getCurrentNumberOfNodes() { return _currentNumberOfNodes; }
-      int32_t getMaxInliningCallSites() { return _maxInliningCallSites; }
-      int32_t getNumAsyncChecks() { return _numAsyncChecks; }
-      int32_t getNodeCountThreshold() { return _nodeCountThreshold;}
-      int32_t getMaxRecursiveCallByteCodeSizeEstimate() { return _maxRecursiveCallByteCodeSizeEstimate;}
-      void incCurrentNumberOfNodes(int32_t i) { _currentNumberOfNodes+=i; }
-
-      bool inlineVirtuals()                     { return _flags.testAny(InlineVirtuals); }
-      void setInlineVirtuals(bool b)            { _flags.set(InlineVirtuals, b); }
-      bool inlineSynchronized()                 { return _flags.testAny(InlineSynchronized); }
-      void setInlineSynchronized(bool b)        { _flags.set(InlineSynchronized, b); }
-      bool firstPass()                          { return _flags.testAny(FirstPass); }
-      void setFirstPass(bool b=true)            { _flags.set(FirstPass, b); }
-      uint32_t getSizeThreshold()               { return _methodByteCodeSizeThreshold; }
-      void     setSizeThreshold(uint32_t size);
-      virtual bool inlineRecognizedMethod(TR::RecognizedMethod method);
-
-
-      void createParmMap(TR::ResolvedMethodSymbol *calleeSymbol, TR_LinkHead<TR_ParameterMapping> &map);
-
-      TR::Compilation * comp()                   { return _optimizer->comp();}
-      TR_Memory * trMemory()                    { return _trMemory; }
-      TR_StackMemory trStackMemory()            { return _trMemory; }
-      TR_HeapMemory  trHeapMemory()             { return _trMemory; }
-      TR_PersistentMemory * trPersistentMemory(){ return _trMemory->trPersistentMemory(); }
-      TR_FrontEnd    * fe()                     { return _optimizer->comp()->fe(); }
-
-
-      TR::Optimizer * getOptimizer()         { return _optimizer; }
-
-
-      TR_InlinerTracer* tracer()                 { return _tracer; }
-
-      void setStoreToCachedPrivateStatic(TR::Node *node) { _storeToCachedPrivateStatic = node; }
-      TR::Node *getStoreToCachedPrivateStatic() { return _storeToCachedPrivateStatic; }
-      bool alwaysWorthInlining(TR_ResolvedMethod * calleeMethod, TR::Node *callNode);
-
-      void getSymbolAndFindInlineTargets(TR_CallStack *, TR_CallSite *, bool findNewTargets=true);
-
-      void applyPolicyToTargets(TR_CallStack *, TR_CallSite *);
-      bool callMustBeInlinedRegardlessOfSize(TR_CallSite *callsite);
-
-      bool forceInline(TR_CallTarget *calltarget);
-      bool forceVarInitInlining(TR_CallTarget *calltarget);
-      bool forceCalcInlining(TR_CallTarget *calltarget);
-
-   protected:
-
-      TR_InlinerBase(TR::Optimizer *, TR::Optimization *);
-
-      TR_PrexArgInfo* buildPrexArgInfoForOutermostMethod(TR::ResolvedMethodSymbol* methodSymbol);
-      bool inlineCallTarget(TR_CallStack *,TR_CallTarget *calltarget, bool inlinefromgraph, TR_PrexArgInfo *argInfo = 0, TR::TreeTop** cursorTreeTop = NULL);
-      bool inlineCallTarget2(TR_CallStack *, TR_CallTarget *calltarget, TR::TreeTop** cursorTreeTop, bool inlinefromgraph, int32_t);
-
-      //inlineCallTarget2 methods
-      bool tryToInlineTrivialMethod (TR_CallStack* callStack, TR_CallTarget* calltarget);
-
-      bool tryToGenerateILForMethod (TR::ResolvedMethodSymbol* calleeSymbol, TR::ResolvedMethodSymbol* callerSymbol, TR_CallTarget* calltarget);
-
-      void inlineFromGraph(TR_CallStack *, TR_CallTarget *calltarget, TR_InnerPreexistenceInfo *);
-      TR_CallSite* findAndUpdateCallSiteInGraph(TR_CallStack *callStack, TR_ByteCodeInfo &bcInfo, TR::TreeTop *tt, TR::Node *parent, TR::Node *callNode, TR_CallTarget *calltarget);
-
-      void initializeControlFlowInfo(TR_CallStack *,TR::ResolvedMethodSymbol *);
-
-      void cleanup(TR::ResolvedMethodSymbol *, bool);
-
-
-      int checkInlineableWithoutInitialCalleeSymbol(TR_CallSite* callsite, TR::Compilation* comp);
-
-      void getBorderFrequencies(int32_t &hotBorderFrequency, int32_t &coldBorderFrequency, TR_ResolvedMethod * calleeResolvedMethod, TR::Node *callNode);
-      int32_t scaleSizeBasedOnBlockFrequency(int32_t bytecodeSize, int32_t frequency, int32_t borderFrequency, TR_ResolvedMethod * calleeResolvedMethod, TR::Node *callNode, int32_t coldBorderFrequency = 0); // not virtual because we want base class always calling base version of this
-      virtual bool exceedsSizeThreshold(TR_CallSite *callSite, int bytecodeSize, TR::Block * callNodeBlock, TR_ByteCodeInfo & bcInfo,  int32_t numLocals=0, TR_ResolvedMethod * caller = 0, TR_ResolvedMethod * calleeResolvedMethod = 0, TR::Node * callNode = 0, bool allConsts = false);
-      virtual bool inlineCallTargets(TR::ResolvedMethodSymbol *, TR_CallStack *, TR_InnerPreexistenceInfo *info)
-         {
-         TR_ASSERT(0, "invalid call to TR_InlinerBase::inlineCallTargets");
-         return false;
-         }
-      TR::TreeTop * addGuardForVirtual(TR::ResolvedMethodSymbol *, TR::ResolvedMethodSymbol *, TR::TreeTop *, TR::Node *,
-                                      TR_OpaqueClassBlock *, TR::TreeTop *, TR::TreeTop *, TR::TreeTop *, TR_TransformInlinedFunction&,
-                                      List<TR::SymbolReference> &, TR_VirtualGuardSelection *, TR::TreeTop **, TR_CallTarget *calltarget=0);
-
-      void addAdditionalGuard(TR::Node *callNode, TR::ResolvedMethodSymbol * calleeSymbol, TR_OpaqueClassBlock *thisClass, TR::Block *prevBlock, TR::Block *inlinedBody, TR::Block *slowPath, TR_VirtualGuardKind kind, TR_VirtualGuardTestType type, bool favourVftCompare, TR::CFG *callerCFG);
-      void rematerializeCallArguments(TR_TransformInlinedFunction & tif,
-   TR_VirtualGuardSelection *guard, TR::Node *callNode, TR::Block *block1, TR::TreeTop *rematPoint);
-      void replaceCallNode(TR::ResolvedMethodSymbol *, TR::Node *, rcount_t, TR::TreeTop *, TR::Node *, TR::Node *);
-      void linkOSRCodeBlocks();
-      bool IsOSRFramesSizeUnderThreshold();
-      bool heuristicForUsingOSR(TR::Node *, TR::ResolvedMethodSymbol *, TR::ResolvedMethodSymbol *, bool);
-
-      TR::Node * createVirtualGuard(TR::Node *, TR::ResolvedMethodSymbol *, TR::TreeTop *, int16_t, TR_OpaqueClassBlock *, bool, TR_VirtualGuardSelection *);
-   private:
-
-      void replaceCallNodeReferences(TR::Node *, TR::Node *, uint32_t, TR::Node *, TR::Node *, rcount_t &, TR::NodeChecklist &visitedNodes);
-      void cloneChildren(TR::Node *, TR::Node *, uint32_t);
-
-   protected:
-      enum
-         {
-         //Available                 = 0x0001,
-         InlineVirtuals              = 0x0002,
-         InlineSynchronized          = 0x0004,
-         FirstPass                   = 0x0008,
-         lastDummyEnum
-         };
-
-      TR::Optimizer *       _optimizer;
-      TR_Memory *              _trMemory;
-      List<TR::SymbolReference> _availableTemps;
-      List<TR::SymbolReference> _availableBasicBlockTemps;
-      flags16_t                _flags;
-      vcount_t                 _visitCount;
-      bool                     _inliningAsWeWalk;
-      bool                     _EDODisableInlinedProfilingInfo;
-      bool                     _disableTailRecursion;
-      bool                     _disableInnerPrex;
-      bool                      _isInLoop;
-
-      int32_t                  _maxRecursiveCallByteCodeSizeEstimate;
-      int32_t                  _callerWeightLimit;
-      int32_t                  _methodByteCodeSizeThreshold;
-      int32_t                  _methodInColdBlockByteCodeSizeThreshold;
-      int32_t                  _methodInWarmBlockByteCodeSizeThreshold;
-      int32_t                  _nodeCountThreshold;
-      int32_t                  _maxInliningCallSites;
-
-      int32_t                  _numAsyncChecks;
-      bool                      _aggressivelyInlineInLoops;
-
-      int32_t                   _currentNumberOfNodes;
-
-      TR_LinkHead<TR_CallSite> _deadCallSites;
-
-      TR::Node *_storeToCachedPrivateStatic;
-
-      TR_InlinerTracer*         _tracer;
-      OMR_InlinerPolicy *_policy;
-      OMR_InlinerUtil*_util;
-   };
-
-class TR_DumbInliner : public TR_InlinerBase
+class TR_DumbInliner : public TR::Inliner
    {
    public:
       TR_DumbInliner(TR::Optimizer *, TR::Optimization *, uint32_t initialSize, uint32_t dumbReductionIncrement = 5);
@@ -484,7 +325,7 @@ class TR_ParameterToArgumentMapper
 
       TR_ParameterToArgumentMapper(TR::ResolvedMethodSymbol *, TR::ResolvedMethodSymbol *, TR::Node *, TR_PrexArgInfo *,
                                    List<TR::SymbolReference> &, List<TR::SymbolReference> &,
-                                   List<TR::SymbolReference> &, TR_InlinerBase *);
+                                   List<TR::SymbolReference> &, TR::Inliner *);
 
       void                  initialize(TR_CallStack *callStack);
       TR::Node *             map(TR::Node *, TR::ParameterSymbol *, bool);
@@ -521,24 +362,24 @@ class TR_ParameterToArgumentMapper
       List<TR::SymbolReference> &       _availableTemps;
       List<TR::SymbolReference> &       _availableTemps2;
       TR_InlinerTracer *               _tracer;
-      TR_InlinerBase *                 _inliner;
+      TR::Inliner *                 _inliner;
       TR_PrexArgInfo *                 _argInfo;
    };
 
 class OMR_InlinerHelper
    {
-   friend class TR_InlinerBase;
+   friend class TR::Inliner;
    public:
       TR_InlinerTracer * tracer()               { return _inliner->tracer(); }
-      TR_InlinerBase *inliner()                 { return _inliner; }
+      TR::Inliner *inliner()                 { return _inliner; }
    protected:
-      TR_InlinerBase * _inliner;
-      void setInliner(TR_InlinerBase *inliner) { _inliner = inliner; }
+      TR::Inliner * _inliner;
+      void setInliner(TR::Inliner *inliner) { _inliner = inliner; }
    };
 
 class OMR_InlinerUtil : public TR::OptimizationUtil, public OMR_InlinerHelper
    {
-   friend class TR_InlinerBase;
+   friend class TR::Inliner;
    public:
       OMR_InlinerUtil(TR::Compilation *comp);
       static TR::TreeTop * storeValueInATemp(TR::Compilation *comp, TR::Node *, TR::SymbolReference * &, TR::TreeTop *, TR::ResolvedMethodSymbol *, List<TR::SymbolReference> & tempList, List<TR::SymbolReference> & availableTemps, List<TR::SymbolReference> * moreTemps, bool behavesLikeTemp = true, TR::TreeTop ** newStoreValueATreeTop = NULL, bool isIndirect = false, int32_t offset = 0);
@@ -604,7 +445,7 @@ class OMR_InlinerUtil : public TR::OptimizationUtil, public OMR_InlinerHelper
 
 class OMR_InlinerPolicy : public TR::OptimizationPolicy, public OMR_InlinerHelper
    {
-   friend class TR_InlinerBase;
+   friend class TR::Inliner;
    public:
       OMR_InlinerPolicy(TR::Compilation *comp);
       virtual bool inlineRecognizedMethod(TR::RecognizedMethod method);
