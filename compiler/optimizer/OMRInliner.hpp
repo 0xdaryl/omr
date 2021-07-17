@@ -47,6 +47,8 @@ namespace TR { class Block; }
 namespace TR { class CFG; }
 namespace TR { class Compilation; }
 namespace TR { class Node; }
+namespace TR { class Optimizer; }
+namespace TR { class Optimization; }
 namespace TR { class ResolvedMethodSymbol; }
 namespace TR { class Symbol; }
 namespace TR { class SymbolReference; }
