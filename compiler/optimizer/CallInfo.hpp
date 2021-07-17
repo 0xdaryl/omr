@@ -44,6 +44,7 @@
 namespace TR { class CompilationFilters;}
 class TR_FrontEnd;
 class TR_InlineBlocks;
+class TR_InlinerBase;
 class TR_InlinerTracer;
 class TR_InnerPreexistenceInfo;
 class TR_PrexArgInfo;
@@ -51,13 +52,14 @@ class TR_ResolvedMethod;
 namespace TR { class AutomaticSymbol; }
 namespace TR { class Block; }
 namespace TR { class CFG; }
-namespace TR { class Inliner; }
 namespace TR { class Method; }
 namespace TR { class ResolvedMethodSymbol; }
 namespace TR { class SymbolReference; }
 namespace TR { class TreeTop; }
 class TR_CallSite;
 struct TR_VirtualGuardSelection;
+
+namespace TR { typedef Inliner TR_InlinerBase; }
 
 class TR_CallStack : public TR_Link<TR_CallStack>
    {
