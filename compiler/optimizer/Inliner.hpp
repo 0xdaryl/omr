@@ -263,7 +263,7 @@ struct TR_VirtualGuardSelection
    };
 
 
-class TR_DumbInliner : public TR::Inliner
+class TR_DumbInliner : public TR_InlinerBase
    {
    public:
       TR_DumbInliner(TR::Optimizer *, TR::Optimization *, uint32_t initialSize, uint32_t dumbReductionIncrement = 5);

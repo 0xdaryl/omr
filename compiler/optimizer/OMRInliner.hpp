@@ -232,9 +232,6 @@ class Inliner : public TR_HasRandomGenerator
 }
 
 
-typedef OMR::Inliner TR_InlinerBase;
-
-
 namespace TR
 {
 
@@ -244,7 +241,7 @@ public:
 
    /**
     * @param[in] optimizer: the \c TR::Optimizer object
-    * @param[in] optimization: the \c TR::Optimization object
+    * @param[in] opt: the \c TR::Optimization object
     */
    Inliner(TR::Optimizer *optimizer, TR::Optimization *opt) :
       OMR::InlinerConnector(optimizer, opt) {}
@@ -253,4 +250,17 @@ public:
 
 }
 
+
+class TR_InlinerBase : public TR::Inliner
+   {
+public:
+
+   /**
+    * @param[in] optimizer: the \c TR::Optimizer object
+    * @param[in] opt: the \c TR::Optimization object
+    */
+   TR_InlinerBase(TR::Optimizer *optimizer, TR::Optimization *opt) :
+      TR::Inliner(optimizer, opt) {}
+
+   };
 #endif
