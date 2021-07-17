@@ -261,7 +261,7 @@ public:
     */
    Inliner(TR::Optimizer *optimizer, TR::Optimization *opt) :
       TR_InlinerBase(optimizer, opt) {}
-   }
+   };
 
 }
 
