@@ -1360,6 +1360,9 @@ bool OMR::Compilation::incInlineDepth(TR_OpaqueMethodBlock *methodInfo, TR::Reso
 
    uint32_t callSiteIndex = _inlinedCallSites.add( TR_InlinedCallSiteInfo(methodInfo, bcInfo, method, callSymRef, directCall, aotMethodInfo) );
    _inlinedCallStack.push(callSiteIndex);
+
+if (self()->trace(OMR::inlining)) { traceMsg( self(), "ZZZZZ : incInlineDepth PUSH : argInfo=%p, method=%p, callSymRef=%p\n", argInfo,  method, callSymRef); }
+
    _inlinedCallArgInfoStack.push(argInfo);
 
    int16_t inlinedCallStackSize = self()->getInlineDepth();
@@ -1390,7 +1393,10 @@ void OMR::Compilation::decInlineDepth(bool removeInlinedCallSitesEntry)
          self()->getOSRCompilationData()->setOSRMethodDataArraySize(self()->getNumInlinedCallSites()+1);
          }
       }
-   _inlinedCallArgInfoStack.pop();
+
+   TR_PrexArgInfo *ai = _inlinedCallArgInfoStack.pop();
+
+if (self()->trace(OMR::inlining)) { traceMsg( self(), "ZZZZZ : decInlineDepth POP : argInfo=%p\n",ai); }
    _inlinedCallStack.pop();
 
    if ( self()->getInlineDepth() == _inlinedFramesAdded )

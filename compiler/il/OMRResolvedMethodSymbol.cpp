@@ -1264,7 +1264,9 @@ OMR::ResolvedMethodSymbol::genIL(TR_FrontEnd * fe, TR::Compilation * comp, TR::S
 
             if (optimizer)
                {
+if (comp->trace(OMR::inlining)) { traceMsg( comp, "ZZZZZ : OOOOO : about to optimize ilgen\n"); }
                optimizer->optimize();
+if (comp->trace(OMR::inlining)) { traceMsg( comp, "ZZZZZ : OOOOO : finished optimize ilgen\n"); }
                comp->setOptimizer(previousOptimizer);
                }
             else

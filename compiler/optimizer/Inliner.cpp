@@ -1152,6 +1152,8 @@ if (comp()->trace(OMR::inlining)) { traceMsg( comp(), "ZZZZZ : 1 : TR_CallSite::
       TR_PrexArgInfo *callerArgInfo = comp()->getCurrentInlinedCallArgInfo();
       calltarget->_prexArgInfo = getUtil()->computePrexInfo(calltarget, callerArgInfo);
 
+      if (comp()->trace(OMR::inlining)) { traceMsg( comp(), "ZZZZZ : 1 : compute calltarget->_prexArgInfo : calltarget=%p, argInfo=%p\n", calltarget, calltarget->_prexArgInfo); }
+
       // this is called on a case-by-case basis, and can get repeatedly called for recursive
       // methods triggering a loop.  Unfortunately the callStack is not pervasive
       // for all these seperate calls, so check the VM stack to prevent infinite inlining
@@ -4494,6 +4496,8 @@ if (comp()->trace(OMR::inlining)) { traceMsg( comp(), "ZZZZZ : UU : update initi
 
    bool shouldRemoveDifferingTargets = getPolicy()->shouldRemoveDifferingTargets(callNode);
 
+   if (comp()->trace(OMR::inlining)) { traceMsg( comp(), "ZZZZZ : UU : shouldRemoveDifferingTargets=%d for callsite %p\n", shouldRemoveDifferingTargets, callsite); }
+
    if (shouldRemoveDifferingTargets)
       {
       //find a matching target if there's any
@@ -4636,6 +4640,11 @@ void TR_InlinerBase::inlineFromGraph(TR_CallStack *prevCallStack, TR_CallTarget 
 
    TR_ScratchList<TR_CallTarget> targetsToInline(comp()->trMemory());
 
+if (comp()->trace(OMR::inlining)) {
+        char s[256];
+        snprintf(s, 256, "ZZZZZ : YYYYY : inlineFromGraph callTarget=%p, callerSymbol=%p\n", calltarget, callerSymbol);	
+	comp()->dumpMethodTrees(s, callerSymbol); }
+
 
    for (TR::TreeTop * tt = callerSymbol->getFirstTreeTop(); tt; tt = tt->getNextTreeTop())
       {
@@ -4693,6 +4702,7 @@ void TR_InlinerBase::inlineFromGraph(TR_CallStack *prevCallStack, TR_CallTarget 
                   TR_CallTarget *target = site->getTarget(i);
                   // Compute arg info for target to inline, and propagate caller's arg info into callee
                   target->_prexArgInfo = getUtil()->computePrexInfo(target, calltarget->_prexArgInfo);
+if (comp()->trace(OMR::inlining)) { traceMsg( comp(), "ZZZZZ : inlineFromGraph : compute target->_prexArgInfo : calltarget=%p, argInfo=%p\n", target, target->_prexArgInfo); }
                   targetsToInline.add(target);
                   }
                }
@@ -4856,6 +4866,9 @@ bool TR_InlinerBase::inlineCallTarget2(TR_CallStack * callStack, TR_CallTarget *
       calleeSymbol->setUnsynchronised();
       }
 
+if (comp()->trace(OMR::inlining)) { comp()->dumpMethodTrees("ZZZZZ calleeSymbol: before tryToGenerateILForMethod", calleeSymbol); }
+
+
    genILSucceeded = tryToGenerateILForMethod(calleeSymbol, callerSymbol, calltarget);
 
    if (wasSynchronized)
@@ -4910,9 +4923,14 @@ bool TR_InlinerBase::inlineCallTarget2(TR_CallStack * callStack, TR_CallTarget *
 
 
    // We have the trees now, we can check if each argument is invariant and clear the prex arg for the ones that are not
+if (comp()->trace(OMR::inlining)) { traceMsg( comp(), "ZZZZZ : OOOO : about to clearArgInfoForNonInvariantArguments\n"); }
    getUtil()->clearArgInfoForNonInvariantArguments(calltarget, tracer());
+if (comp()->trace(OMR::inlining)) { traceMsg( comp(), "ZZZZZ : OOOO : done clearArgInfoForNonInvariantArguments\n"); }
 
+if (comp()->trace(OMR::inlining)) { traceMsg( comp(), "ZZZZZ : OOOO : about to createInnterPrexInfo\n"); }
    TR_InnerPreexistenceInfo *innerPrexInfo = getUtil()->createInnerPrexInfo(comp(), calleeSymbol, callStack, callNodeTreeTop, callNode, guard->_kind);
+if (comp()->trace(OMR::inlining)) { traceMsg( comp(), "ZZZZZ : OOOO : done createInnerPrexInfo\n"); }
+
    if (calleeSymbol->mayHaveInlineableCall())
       {
       debugTrace(tracer(),"** Target %p symbol %p may have inlineable calls signature %s\n", calltarget, calleeSymbol, tracer()->traceSignature(calleeSymbol));
@@ -5650,9 +5668,7 @@ void TR_CallSite::removeTargets(TR_InlinerTracer *tracer, int index, TR_InlinerF
    {
    for (auto num = _mytargets.size() - index; num > 0; --num)
       {
-if (comp()->trace(OMR::inlining)) {
-   traceMsg( comp(), "ZZZZZ : 14 : removecalltarget\n");
-}
+if (comp()->trace(OMR::inlining)) { traceMsg( comp(), "ZZZZZ : 14 : removecalltarget\n"); }
       removecalltarget(index,tracer,reason);
       }
    }
