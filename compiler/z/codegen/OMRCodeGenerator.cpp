@@ -78,7 +78,6 @@
 #include "env/CompilerEnv.hpp"
 #include "env/IO.hpp"
 #include "env/Processors.hpp"
-#include "env/StackMemoryRegion.hpp"
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"
 #include "il/AliasSetInterface.hpp"
