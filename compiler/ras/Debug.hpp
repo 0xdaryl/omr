@@ -482,6 +482,16 @@ public:
    virtual const char * getName(TR::DataType);
    virtual const char * getName(TR_RawBCDSignCode);
    virtual const char * getName(TR::LabelSymbol *);
+
+   /**
+    * @brief Return char * name of given \c TR::SymbolReference
+    *
+    * @param[in] symRef : \c TR::SymbolReference
+    * @param[in] region : \c TR::Region from which to allocate memory to contain the name (if required).
+    *
+    * @return NULL terminated character string name of the \c TR::SymbolReference.
+    */
+   virtual const char * getName(TR::SymbolReference *symRef, TR::Region &region);
    virtual const char * getName(TR::SymbolReference *);
    virtual const char * getName(TR::Register *, TR_RegisterSizes = TR_WordReg);
    virtual const char * getRealRegisterName(uint32_t regNum);
