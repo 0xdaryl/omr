@@ -3941,9 +3941,8 @@ OMR::Node::createStoresForVar(TR::SymbolReference * &nodeRef, TR::TreeTop *inser
 // used for debugging purposes only
 // Note that for node with refCount > 1, printed node may NOT be the first referenced node despite not being marked with "==>"
 void
-OMR::Node::printFullSubtree()
+OMR::Node::printFullSubtree(TR::Compilation *comp, TR::Region &region)
    {
-   TR::Compilation *comp = TR::comp();
    TR_BitVector nodeChecklistBeforeDump(comp->getNodeCount(), comp->trMemory(), stackAlloc, notGrowable);
    comp->getDebug()->saveNodeChecklist(nodeChecklistBeforeDump);
    comp->getDebug()->clearNodeChecklist();

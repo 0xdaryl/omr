@@ -646,7 +646,13 @@ public:
 
    TR::TreeTop *          createStoresForVar(TR::SymbolReference * &nodeRef, TR::TreeTop *insertBefore, bool simpleRef = false);
 
-   void                   printFullSubtree();
+   /**
+    * @brief Print subtree beneath from this node.
+    *
+    * @param[in] comp : \c TR::Compilation object
+    * @param[in] region : \c TR::Region to satisfy any memory requests
+    */
+   void                   printFullSubtree(TR::Compilation *comp, TR::Region &region);
 
    const char *           getName(TR_Debug *);
 
