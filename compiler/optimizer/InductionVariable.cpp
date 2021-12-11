@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -7564,7 +7564,7 @@ void TR_IVTypeTransformer::changeIVTypeFromAddrToInt(TR_RegionStructure *natLoop
    if (trace())
       {
       traceMsg(cm, "Found astore\n");
-      astoreNode->printFullSubtree();
+      astoreNode->printFullSubtree(cm, cm->trMemory()->currentStackRegion());
       }
 
    // Need to ensure that the address is only updated once in the loop body
