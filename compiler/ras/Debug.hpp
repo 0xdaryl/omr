@@ -519,7 +519,23 @@ public:
    virtual void         print(TR::FILE *, uint8_t*, uint8_t*);
    virtual void         printIRTrees(TR::FILE *, const char *, TR::ResolvedMethodSymbol *);
    virtual void         printBlockOrders(TR::FILE *, const char *, TR::ResolvedMethodSymbol *);
-   virtual void         print(TR::FILE *, TR::CFG *);
+
+   /**
+    * @brief Print a CFG structure to a given output stream
+    *
+    * @param[in] pOutFile : output stream
+    * @param[in] cfg : \c TR::CFG object to print
+    * @param[in] memRegion : \c TR::Region to satisfy any memory requests
+    */
+   virtual void         print(TR::FILE *pOutFile, TR::CFG *cfg, TR::Region &memRegion);
+
+   /**
+    * @brief Print a CFG structure to a given output stream
+    *
+    * @param[in] pOutFile : output stream
+    * @param[in] cfg : \c TR::CFG object to print
+    */
+   virtual void         print(TR::FILE *pOutFile, TR::CFG *cfg);
    virtual void         print(TR::FILE *, TR_Structure * structure, uint32_t indentation);
    virtual void         print(TR::FILE *, TR_RegionAnalysis * structure, uint32_t indentation);
    virtual int32_t      print(TR::FILE *, TR::TreeTop *);
