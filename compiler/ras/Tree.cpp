@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -280,7 +280,14 @@ TR_Debug::printLoadConst(TR::Node *node, TR_PrettyPrinterString& output)
    }
 
 void
-TR_Debug::print(TR::FILE *pOutFile,  TR::CFG * cfg)
+TR_Debug::print(TR::FILE *pOutFile, TR::CFG *cfg)
+   {
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
+   print(pOutFile, cfg, stackMemoryRegion);
+   }
+
+void
+TR_Debug::print(TR::FILE *pOutFile, TR::CFG *cfg, TR::Region &memRegion)
    {
    if (pOutFile == NULL)
       return;
@@ -301,15 +308,9 @@ TR_Debug::print(TR::FILE *pOutFile,  TR::CFG * cfg)
          numNodes = index+1;
       }
 
-   void *stackMark = 0;
-   TR::CFGNode **array;
+   TR::CFGNode **array = reinterpret_cast<TR::CFGNode **>(memRegion.allocate(numNodes * sizeof(TR::CFGNode *)));
 
-   // From here, down, stack allocations will expire when the function returns
-   TR::StackMemoryRegion stackMemoryRegion(*cfg->comp()->trMemory());
-
-   array = (TR::CFGNode**)cfg->comp()->trMemory()->allocateStackMemory(numNodes*sizeof(TR::CFGNode*));
-
-   memset(array, 0, numNodes*sizeof(TR::CFGNode*));
+   memset(array, 0, numNodes * sizeof(TR::CFGNode *));
    index = numNodes;
 
    for (node = cfg->getFirstNode(); node; node = node->getNext())
@@ -321,8 +322,12 @@ TR_Debug::print(TR::FILE *pOutFile,  TR::CFG * cfg)
    trfprintf(pOutFile, "\n<cfg>\n");
 
    for (index = 0; index < numNodes; index++)
+      {
       if (array[index] != NULL)
+         {
          print(pOutFile, array[index], 6);
+         }
+      }
 
    if (cfg->getStructure())
       {
