@@ -695,11 +695,11 @@ TR_Debug::print(TR::FILE *pOutFile, TR::CFGNode *cfgNode, uint32_t indentation, 
    if (cfgNode->asBlock())
       print(pOutFile, toBlock(cfgNode), indentation, memRegion);
    else
-      print(pOutFile, toStructureSubGraphNode(cfgNode), indentation);
+      print(pOutFile, toStructureSubGraphNode(cfgNode), indentation, memRegion);
    }
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR_StructureSubGraphNode * node, uint32_t indentation)
+TR_Debug::print(TR::FILE *pOutFile, TR_StructureSubGraphNode *node, uint32_t indentation, TR::Region &memRegion)
    {
    print(pOutFile, node->getStructure(), indentation);
    }
