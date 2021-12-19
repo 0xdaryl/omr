@@ -730,7 +730,17 @@ public:
     * @param[in] memRegion : \c TR::Region to satisfy any memory requests
     */
    virtual void print(TR::FILE *pOutFile, TR::Block *block, uint32_t indentation, TR::Region &memRegion);
-   virtual void print(TR::FILE *, TR_RegionStructure * regionStructure, uint32_t indentation);
+
+   /**
+    * @brief Print a \c TR_RegionStructure to a given output stream
+    *
+    * @param[in] pOutFile : output stream
+    * @param[in] regionStructure : \c TR_RegionStructure object to print
+    * @param[in] indentation : number of spaces to indent
+    * @param[in] memRegion : \c TR::Region to satisfy any memory requests
+    */
+   virtual void print(TR::FILE *pOutFile, TR_RegionStructure *regionStructure, uint32_t indentation, TR::Region &memRegion);
+
    virtual void printSubGraph(TR::FILE *, TR_RegionStructure * regionStructure, uint32_t indentation);
    virtual void print(TR::FILE *, TR_InductionVariable * inductionVariable, uint32_t indentation);
    virtual void* dxMallocAndRead(uintptr_t size, void *remotePtr, bool dontAddToMap = false){return remotePtr;}

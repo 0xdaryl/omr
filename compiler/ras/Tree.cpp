@@ -412,11 +412,11 @@ TR_Debug::print(TR::FILE *pOutFile, TR_Structure *structure, uint32_t indentatio
    if (structure->asBlock())
       print(pOutFile, structure->asBlock(), indentation);
    else
-      print(pOutFile, structure->asRegion(), indentation);
+      print(pOutFile, structure->asRegion(), indentation, memRegion);
    }
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR_RegionStructure * regionStructure, uint32_t indentation)
+TR_Debug::print(TR::FILE *pOutFile, TR_RegionStructure *regionStructure, uint32_t indentation, TR::Region &memRegion)
    {
    if (pOutFile == NULL)
       return;
