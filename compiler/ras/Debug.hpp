@@ -681,7 +681,26 @@ public:
    virtual void printDestination(TR::TreeTop *, TR_PrettyPrinterString&);
    virtual void printNodeInfo(TR::FILE *, TR::Node *);
    virtual void printNodeInfo(TR::Node *, TR_PrettyPrinterString& output, bool);
-   virtual void print(TR::FILE *, TR::CFGNode *, uint32_t indentation);
+
+   /**
+    * @brief Print a \c TR::CFGNode to a given output stream
+    *
+    * @param[in] pOutFile : output stream
+    * @param[in] cfgNode : \c TR::CFGNode object to print
+    * @param[in] indentation : number of spaces to indent
+    */
+   virtual void print(TR::FILE *pOutFile, TR::CFGNode *cfgNode, uint32_t indentation);
+
+   /**
+    * @brief Print a \c TR::CFGNode to a given output stream
+    *
+    * @param[in] pOutFile : output stream
+    * @param[in] cfgNode : \c TR::CFGNode object to print
+    * @param[in] indentation : number of spaces to indent
+    * @param[in] memRegion : \c TR::Region to satisfy any memory requests
+    */
+   virtual void print(TR::FILE *pOutFile, TR::CFGNode *cfgNode, uint32_t indentation, TR::Region &memRegion);
+
    virtual void printNodesInEdgeListIterator(TR::FILE *, TR::CFGEdgeList &li, bool fromNode);
    virtual void print(TR::FILE *, TR::Block * block, uint32_t indentation);
    virtual void print(TR::FILE *, TR_RegionStructure * regionStructure, uint32_t indentation);
