@@ -389,7 +389,14 @@ TR_Debug::print(TR::FILE *outFile, TR_RegionAnalysis * regionAnalysis, uint32_t 
    }
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR_Structure * structure, uint32_t indentation)
+TR_Debug::print(TR::FILE *pOutFile, TR_Structure *structure, uint32_t indentation)
+   {
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
+   print(pOutFile, structure, indentation, stackMemoryRegion);
+   }
+
+void
+TR_Debug::print(TR::FILE *pOutFile, TR_Structure *structure, uint32_t indentation, TR::Region &memRegion)
    {
    if (structure->asBlock())
       print(pOutFile, structure->asBlock(), indentation);
