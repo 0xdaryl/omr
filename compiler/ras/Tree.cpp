@@ -704,7 +704,7 @@ void
 TR_Debug::print(TR::FILE *pOutFile, TR::CFGNode *cfgNode, uint32_t indentation, TR::Region &memRegion)
    {
    if (cfgNode->asBlock())
-      print(pOutFile, toBlock(cfgNode), indentation);
+      print(pOutFile, toBlock(cfgNode), indentation, memRegion);
    else
       print(pOutFile, toStructureSubGraphNode(cfgNode), indentation);
    }
@@ -738,7 +738,7 @@ TR_Debug::printNodesInEdgeListIterator(TR::FILE *pOutFile, TR::CFGEdgeList &li, 
    }
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR::Block * block, uint32_t indentation)
+TR_Debug::print(TR::FILE *pOutFile, TR::Block *block, uint32_t indentation, TR::Region &memRegion)
    {
    if (pOutFile == NULL)
       return;

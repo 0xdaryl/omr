@@ -702,7 +702,16 @@ public:
    virtual void print(TR::FILE *pOutFile, TR::CFGNode *cfgNode, uint32_t indentation, TR::Region &memRegion);
 
    virtual void printNodesInEdgeListIterator(TR::FILE *, TR::CFGEdgeList &li, bool fromNode);
-   virtual void print(TR::FILE *, TR::Block * block, uint32_t indentation);
+
+   /**
+    * @brief Print a \c TR::Block to a given output stream
+    *
+    * @param[in] pOutFile : output stream
+    * @param[in] block : \c TR::Block object to print
+    * @param[in] indentation : number of spaces to indent
+    * @param[in] memRegion : \c TR::Region to satisfy any memory requests
+    */
+   virtual void print(TR::FILE *pOutFile, TR::Block *block, uint32_t indentation, TR::Region &memRegion);
    virtual void print(TR::FILE *, TR_RegionStructure * regionStructure, uint32_t indentation);
    virtual void printSubGraph(TR::FILE *, TR_RegionStructure * regionStructure, uint32_t indentation);
    virtual void print(TR::FILE *, TR_InductionVariable * inductionVariable, uint32_t indentation);
