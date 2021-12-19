@@ -314,7 +314,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::CFG *cfg, TR::Region &memRegion)
       {
       if (array[index] != NULL)
          {
-         print(pOutFile, array[index], 6);
+         print(pOutFile, array[index], 6, memRegion);
          }
       }
 
@@ -683,7 +683,14 @@ TR_Debug::print(TR::FILE *pOutFile, TR_BlockStructure * blockStructure, uint32_t
    }
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR::CFGNode * cfgNode, uint32_t indentation)
+TR_Debug::print(TR::FILE *pOutFile, TR::CFGNode *cfgNode, uint32_t indentation)
+   {
+   TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
+   print(pOutFile, cfgNode, indentation, stackMemoryRegion);
+   }
+
+void
+TR_Debug::print(TR::FILE *pOutFile, TR::CFGNode *cfgNode, uint32_t indentation, TR::Region &memRegion)
    {
    if (cfgNode->asBlock())
       print(pOutFile, toBlock(cfgNode), indentation);
