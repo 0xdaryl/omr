@@ -856,7 +856,16 @@ public:
    void   findLogFile(const char *logFileName, TR::Options *cmdOptions, TR::Options **optionArray, int32_t arraySize, int32_t &index);
 
    void printPreds(TR::FILE *, TR::CFGNode *);
-   void printBaseInfo(TR::FILE *, TR_Structure * structure, uint32_t indentation);
+
+   /**
+    * @brief Print basic \c TR_Structure info to a given output stream
+    *
+    * @param[in] pOutFile : output stream
+    * @param[in] structure : \c TR_Structure object to print
+    * @param[in] indentation : number of spaces to indent
+    * @param[in] memRegion : \c TR::Region to satisfy any memory requests
+    */
+   void printBaseInfo(TR::FILE *pOutFile, TR_Structure *structure, uint32_t indentation, TR::Region &memRegion);
 
    /**
     * @brief Print a \c TR_BlockStructure to a given output stream
