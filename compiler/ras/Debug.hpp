@@ -750,7 +750,15 @@ public:
     */
    virtual void print(TR::FILE *pOutFile, TR_RegionStructure *regionStructure, uint32_t indentation, TR::Region &memRegion);
 
-   virtual void printSubGraph(TR::FILE *, TR_RegionStructure * regionStructure, uint32_t indentation);
+   /**
+    * @brief Print a \c TR_RegionStructure subgraph to a given output stream
+    *
+    * @param[in] pOutFile : output stream
+    * @param[in] regionStructure : \c TR_RegionStructure object to print subgraph
+    * @param[in] indentation : number of spaces to indent
+    * @param[in] memRegion : \c TR::Region to satisfy any memory requests
+    */
+   virtual void printSubGraph(TR::FILE *pOutFile, TR_RegionStructure *regionStructure, uint32_t indentation, TR::Region &memRegion);
 
    /**
     * @brief Print a \c TR_InductionVariable to a given output stream
