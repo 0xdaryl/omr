@@ -351,7 +351,7 @@ TR_Debug::print(TR::FILE *outFile, TR_RegionAnalysis *regionAnalysis, uint32_t i
       if (node._structure == NULL)
          continue;
 
-      printBaseInfo(outFile, node._structure, indentation);
+      printBaseInfo(outFile, node._structure, indentation, memRegion);
 
       // Dump successors
       trfprintf(outFile,
@@ -423,7 +423,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR_RegionStructure *regionStructure, uint32_
 
    TR_RegionStructure *versionedLoop = NULL;
    if (debug("fullStructure"))
-      printBaseInfo(pOutFile, regionStructure, indentation);
+      printBaseInfo(pOutFile, regionStructure, indentation, memRegion);
    else
       {
       // Do indentation and dump the address of this block
@@ -673,7 +673,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR_InductionVariable *inductionVariable, uin
 static const char *structNames[] = { "Blank", "Block", "Region" };
 
 void
-TR_Debug::printBaseInfo(TR::FILE *pOutFile, TR_Structure * structure, uint32_t indentation)
+TR_Debug::printBaseInfo(TR::FILE *pOutFile, TR_Structure *structure, uint32_t indentation, TR::Region &memRegion)
    {
    if (pOutFile == NULL)
       return;
@@ -695,7 +695,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR_BlockStructure *blockStructure, uint32_t 
    if (pOutFile == NULL)
       return;
 
-   printBaseInfo(pOutFile, blockStructure, indentation);
+   printBaseInfo(pOutFile, blockStructure, indentation, memRegion);
    if (blockStructure->getBlock()->getStructureOf() != blockStructure)
       trfprintf(pOutFile,"******* Block %d does not refer back to block structure\n", blockStructure->getBlock()->getNumber());
    }
