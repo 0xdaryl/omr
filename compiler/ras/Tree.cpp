@@ -459,7 +459,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR_RegionStructure *regionStructure, uint32_
    //
    for (TR_InductionVariable *v = regionStructure->getFirstInductionVariable(); v; v = v->getNext())
       {
-      print(pOutFile, v, indentation+3);
+      print(pOutFile, v, indentation+3, memRegion);
       }
 
    // Dump members
@@ -642,7 +642,7 @@ TR_Debug::printSubGraph(TR::FILE *pOutFile, TR_RegionStructure * regionStructure
    }
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR_InductionVariable * inductionVariable, uint32_t indentation)
+TR_Debug::print(TR::FILE *pOutFile, TR_InductionVariable *inductionVariable, uint32_t indentation, TR::Region &memRegion)
    {
    if (pOutFile == NULL)
       return;
