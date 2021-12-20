@@ -474,7 +474,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR_RegionStructure *regionStructure, uint32_
       }
 
    // Dump members
-   printSubGraph(pOutFile, regionStructure, indentation+3);
+   printSubGraph(pOutFile, regionStructure, indentation+3, memRegion);
    }
 
 void
@@ -512,7 +512,7 @@ TR_Debug::printPreds(TR::FILE *pOutFile, TR::CFGNode *node)
    }
 
 void
-TR_Debug::printSubGraph(TR::FILE *pOutFile, TR_RegionStructure * regionStructure, uint32_t indentation)
+TR_Debug::printSubGraph(TR::FILE *pOutFile, TR_RegionStructure *regionStructure, uint32_t indentation, TR::Region &memRegion)
    {
    if (pOutFile == NULL)
       return;
@@ -648,7 +648,7 @@ TR_Debug::printSubGraph(TR::FILE *pOutFile, TR_RegionStructure * regionStructure
    si.reset();
    for (node = si.getCurrent(); node != NULL; node = si.getNext())
       {
-      print(pOutFile, node->getStructure(), indentation);
+      print(pOutFile, node->getStructure(), indentation, memRegion);
       }
    }
 
