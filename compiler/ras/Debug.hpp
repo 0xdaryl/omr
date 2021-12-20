@@ -857,7 +857,16 @@ public:
 
    void printPreds(TR::FILE *, TR::CFGNode *);
    void printBaseInfo(TR::FILE *, TR_Structure * structure, uint32_t indentation);
-   void print(TR::FILE *, TR_BlockStructure * blockStructure, uint32_t indentation);
+
+   /**
+    * @brief Print a \c TR_BlockStructure to a given output stream
+    *
+    * @param[in] pOutFile : output stream
+    * @param[in] blockStructure : \c TR_BlockStructure object to print
+    * @param[in] indentation : number of spaces to indent
+    * @param[in] memRegion : \c TR::Region to satisfy any memory requests
+    */
+   void print(TR::FILE *pOutFile, TR_BlockStructure *blockStructure, uint32_t indentation, TR::Region &memRegion);
 
    /**
     * @brief Print a \c TR_StructureSubGraphNode to a given output stream

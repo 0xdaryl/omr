@@ -399,7 +399,7 @@ void
 TR_Debug::print(TR::FILE *pOutFile, TR_Structure *structure, uint32_t indentation, TR::Region &memRegion)
    {
    if (structure->asBlock())
-      print(pOutFile, structure->asBlock(), indentation);
+      print(pOutFile, structure->asBlock(), indentation, memRegion);
    else
       print(pOutFile, structure->asRegion(), indentation, memRegion);
    }
@@ -679,7 +679,7 @@ TR_Debug::printBaseInfo(TR::FILE *pOutFile, TR_Structure * structure, uint32_t i
    }
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR_BlockStructure * blockStructure, uint32_t indentation)
+TR_Debug::print(TR::FILE *pOutFile, TR_BlockStructure *blockStructure, uint32_t indentation, TR::Region &memRegion)
    {
    if (pOutFile == NULL)
       return;
