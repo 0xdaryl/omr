@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -755,6 +755,6 @@ void TR_RegionAnalysis::buildRegionSubGraph(TR_RegionStructure *region,
       {
       _compilation->getDebug()->print(_compilation->getOutFile(), region, 6);
       traceMsg(comp(), "   Structure after finding a region:\n");
-      _compilation->getDebug()->print(_compilation->getOutFile(), this, 6);
+      _compilation->getDebug()->print(_compilation->getOutFile(), this, 6, memRegion);
       }
    }
