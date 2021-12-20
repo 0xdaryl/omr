@@ -690,7 +690,7 @@ TR_Debug::printBaseInfo(TR::FILE *pOutFile, TR_Structure * structure, uint32_t i
    }
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR_BlockStructure * blockStructure, uint32_t indentation)
+TR_Debug::print(TR::FILE *pOutFile, TR_BlockStructure *blockStructure, uint32_t indentation, TR::Region &memRegion)
    {
    if (pOutFile == NULL)
       return;
