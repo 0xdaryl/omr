@@ -755,6 +755,6 @@ void TR_RegionAnalysis::buildRegionSubGraph(TR_RegionStructure *region,
       {
       _compilation->getDebug()->print(_compilation->getOutFile(), region, 6);
       traceMsg(comp(), "   Structure after finding a region:\n");
-      _compilation->getDebug()->print(_compilation->getOutFile(), this, 6);
+      _compilation->getDebug()->print(_compilation->getOutFile(), this, 6, memRegion);
       }
    }

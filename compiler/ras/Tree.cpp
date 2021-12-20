@@ -329,7 +329,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::CFG *cfg, TR::Region &memRegion)
    }
 
 void
-TR_Debug::print(TR::FILE *outFile, TR_RegionAnalysis * regionAnalysis, uint32_t indentation)
+TR_Debug::print(TR::FILE *outFile, TR_RegionAnalysis *regionAnalysis, uint32_t indentation, TR::Region &memRegion)
    {
    if (outFile == NULL)
       return;
