@@ -490,7 +490,24 @@ public:
    virtual const char * getName(TR::Node *);
    virtual const char * getName(TR::Symbol *);
    virtual const char * getName(TR::Instruction *);
-   virtual const char * getName(TR_Structure *);
+
+   /**
+    * @brief Return null-terminated char string name for given \c TR_Structure object.
+    *        The current \c TR::Compilation stack memory region will be used to allocate
+    *        memory for the string if required.
+    *
+    * @param[in] structure : \c TR_Structure object
+    */
+   virtual const char * getName(TR_Structure *structure);
+
+   /**
+    * @brief Return null-terminated char string name for given \c TR_Structure object.
+    *
+    * @param[in] structure : \c TR_Structure object
+    * @param[in] memRegion : \c TR::Region to allocate memory for the string if required
+    */
+   virtual const char * getName(TR_Structure *structure, TR::Region &memRegion);
+
    virtual const char * getName(TR::CFGNode *);
    virtual const char * getName(TR_ResolvedMethod *m) { return getName((void *) m, "(TR_ResolvedMethod*)", 0, false); }
    virtual const char * getName(TR_OpaqueClassBlock *c) { return getName((void *) c, "(TR_OpaqueClassBlock*)", 0, false); }
