@@ -1425,7 +1425,13 @@ TR_Debug::getName(TR_Structure *structure, TR::Region &memRegion)
    }
 
 const char *
-TR_Debug::getName(TR::Node * node)
+TR_Debug::getName(TR::Node *node)
+   {
+   return getName(node, comp()->trMemory()->currentStackRegion());
+   }
+
+const char *
+TR_Debug::getName(TR::Node *node, TR::Region &memRegion)
    {
    if (!node)
       return "(null)";

@@ -487,7 +487,24 @@ public:
    virtual const char * getRealRegisterName(uint32_t regNum);
    virtual const char * getGlobalRegisterName(TR_GlobalRegisterNumber regNum, TR_RegisterSizes size = TR_WordReg);
    virtual const char * getName(TR::Snippet *);
-   virtual const char * getName(TR::Node *);
+
+   /**
+    * @brief Return null-terminated char string name for given \c TR::Node object.
+    *        The current \c TR::Compilation stack memory region will be used to allocate
+    *        memory for the string if required.
+    *
+    * @param[in] node : \c TR::Node object
+    */
+   virtual const char * getName(TR::Node *node);
+
+   /**
+    * @brief Return null-terminated char string name for given \c TR::Node object.
+    *
+    * @param[in] node : \c TR::Node object
+    * @param[in] memRegion : \c TR::Region to allocate memory for the string if required
+    */
+   virtual const char * getName(TR::Node *node, TR::Region &memRegion);
+
    virtual const char * getName(TR::Symbol *);
    virtual const char * getName(TR::Instruction *);
 
