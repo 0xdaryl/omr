@@ -571,7 +571,24 @@ public:
    virtual const char * getName(void *, const char *, uint32_t, bool);
    virtual const char * getName(const char *s) { return s; }
    virtual const char * getName(const char *s, int32_t len) { return s; }
+
+   /**
+    * @brief Return null-terminated char string name for given VSS \c TR::AutomaticSymbol object.
+    *        The current \c TR::Compilation stack memory region will be used to allocate
+    *        memory for the string if required.
+    *
+    * @param[in] sym : \c TR::AutomaticSymbol object
+    */
    virtual const char * getVSSName(TR::AutomaticSymbol *sym);
+
+   /**
+    * @brief Return null-terminated char string name for given VSS \c TR::AutomaticSymbol object.
+    *
+    * @param[in] sym : \c TR::AutomaticSymbol object
+    * @param[in] memRegion : \c TR::Region to allocate memory for the string if required
+    */
+   virtual const char * getVSSName(TR::AutomaticSymbol *sym, TR::Region &memRegion);
+
    virtual const char * getWriteBarrierKindName(int32_t);
    virtual const char * getSpillKindName(uint8_t);
    virtual const char * getLinkageConventionName(uint8_t);
