@@ -522,7 +522,22 @@ public:
     */
    virtual const char * getName(TR::Symbol *sym, TR::Region &memRegion);
 
-   virtual const char * getName(TR::Instruction *);
+   /**
+    * @brief Return null-terminated char string name for given \c TR::Instruction  object.
+    *        The current \c TR::Compilation stack memory region will be used to allocate
+    *        memory for the string if required.
+    *
+    * @param[in] instr : \c TR::Instruction object
+    */
+   virtual const char * getName(TR::Instruction *instr);
+
+   /**
+    * @brief Return null-terminated char string name for given \c TR::Instruction object.
+    *
+    * @param[in] instr : \c TR::Instruction object
+    * @param[in] memRegion : \c TR::Region to allocate memory for the string if required
+    */
+   virtual const char * getName(TR::Instruction *instr, TR::Region &memRegion);
 
    /**
     * @brief Return null-terminated char string name for given \c TR_Structure object.
