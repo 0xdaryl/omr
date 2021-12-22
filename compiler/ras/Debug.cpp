@@ -1363,6 +1363,12 @@ TR_Debug::getName(void * address, const char * prefix, uint32_t nextNumber, bool
 const char *
 TR_Debug::getVSSName(TR::AutomaticSymbol *sym)
    {
+   return getVSSName(sym, comp()->trMemory()->currentStackRegion());
+   }
+
+const char *
+TR_Debug::getVSSName(TR::AutomaticSymbol *sym, TR::Region &memRegion)
+   {
    TR_ASSERT(_comp, "Required compilation object is NULL.\n");
    CS2::HashIndex hashIndex;
    if (_comp->getToStringMap().Locate((void *)sym, hashIndex))
