@@ -1352,7 +1352,13 @@ TR_Debug::getVSSName(TR::AutomaticSymbol *sym)
    }
 
 const char *
-TR_Debug::getName( TR::Symbol * sym)
+TR_Debug::getName(TR::Symbol *sym)
+   {
+   return getName(sym, comp()->trMemory()->currentStackRegion());
+   }
+
+const char *
+TR_Debug::getName(TR::Symbol *sym, TR::Region &memRegion)
    {
    if (sym == NULL)
       return "(null)";
