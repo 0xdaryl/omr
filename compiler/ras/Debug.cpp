@@ -1372,7 +1372,13 @@ TR_Debug::getName(TR::Symbol *sym, TR::Region &memRegion)
    }
 
 const char *
-TR_Debug::getName(TR::Instruction * instr)
+TR_Debug::getName(TR::Instruction *instr)
+   {
+   return getName(instr, comp()->trMemory()->currentStackRegion());
+   }
+
+const char *
+TR_Debug::getName(TR::Instruction *instr, TR::Region &memRegion)
    {
    TR_ASSERT(_comp, "Required compilation object is NULL.\n");
    uint32_t InstructionNumber = 0;
@@ -1389,7 +1395,6 @@ TR_Debug::getName(TR::Instruction * instr)
 
    TR_ASSERT(0, "each instruction should be associated with a unique number");
    return getName((void *) instr, "IN1_", 0, _comp->getAddressEnumerationOption(TR_EnumerateInstruction));
-
    }
 
 const char *
