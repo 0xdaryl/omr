@@ -505,7 +505,23 @@ public:
     */
    virtual const char * getName(TR::Node *node, TR::Region &memRegion);
 
-   virtual const char * getName(TR::Symbol *);
+   /**
+    * @brief Return null-terminated char string name for given \c TR::Symbol object.
+    *        The current \c TR::Compilation stack memory region will be used to allocate
+    *        memory for the string if required.
+    *
+    * @param[in] sym : \c TR::Symbol object
+    */
+   virtual const char * getName(TR::Symbol *sym);
+
+   /**
+    * @brief Return null-terminated char string name for given \c TR::Symbol object.
+    *
+    * @param[in] node : \c TR::Symbol object
+    * @param[in] memRegion : \c TR::Region to allocate memory for the string if required
+    */
+   virtual const char * getName(TR::Symbol *sym, TR::Region &memRegion);
+
    virtual const char * getName(TR::Instruction *);
 
    /**
