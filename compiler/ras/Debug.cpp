@@ -1314,38 +1314,39 @@ TR_Debug::print(TR::LabelSymbol * labelSymbol, TR_PrettyPrinterString& output)
    }
 
 const char *
-TR_Debug::getName(void * address, const char * prefix, uint32_t nextNumber, bool enumerate)
+TR_Debug::getName(void *address, const char *prefix, uint32_t nextNumber, bool enumerate, TR::Region &memRegion)
    {
-   TR_ASSERT(_comp, "Required compilation object is NULL.\n");
-   // Common getName facility
-
    if (enumerate)
       {
       if (!address)
          {
-         char *buf = (char *)_comp->trMemory()->allocateHeapMemory(20 + TR::Compiler->debug.pointerPrintfMaxLenInChars());
+         char *buf = reinterpret_cast<char *>(memRegion.allocate(20 + TR::Compiler->debug.pointerPrintfMaxLenInChars()));
          sprintf(buf, "%0*d", TR::Compiler->debug.hexAddressWidthInChars(), 0);
          return buf;
          }
 
       CS2::HashIndex hashIndex;
-      if (_comp->getToStringMap().Locate((void *)address, hashIndex))
+      if (comp()->getToStringMap().Locate((void *)address, hashIndex))
          {
-         return (const char*)_comp->getToStringMap().DataAt(hashIndex);
+         return reinterpret_cast<const char*>(comp()->getToStringMap().DataAt(hashIndex));
          }
       else
          {
-         char *buf = (char *)_comp->trMemory()->allocateHeapMemory(20 + TR::Compiler->debug.pointerPrintfMaxLenInChars());
+         /**
+          * Memory for names cached in a map for future reusability must be
+          * allocated at Compilation scope.
+          */
+         char *buf = reinterpret_cast<char *>(comp()->trMemory()->allocateHeapMemory(20 + TR::Compiler->debug.pointerPrintfMaxLenInChars()));
 
          uint8_t indentation = TR::Compiler->debug.hexAddressFieldWidthInChars() - 4;
          sprintf(buf, "%*s%04x", indentation, prefix, nextNumber);
-         _comp->getToStringMap().Add((void *)address, buf);
+         comp()->getToStringMap().Add((void *)address, buf);
          return buf;
          }
       }
 
-   char *buf = (char *)_comp->trMemory()->allocateHeapMemory(20 + TR::Compiler->debug.pointerPrintfMaxLenInChars());
-   if (_comp->getOption(TR_MaskAddresses))
+   char *buf = reinterpret_cast<char *>(memRegion.allocate(20 + TR::Compiler->debug.pointerPrintfMaxLenInChars()));
+   if (comp()->getOption(TR_MaskAddresses))
       {
       sprintf(buf, "%*s", TR::Compiler->debug.hexAddressFieldWidthInChars(), "*Masked*");
       return buf;
@@ -1377,7 +1378,7 @@ TR_Debug::getVSSName(TR::AutomaticSymbol *sym, TR::Region &memRegion)
       }
 
    TR_ASSERT( false, "could not find variable size symbol in the _comp->getToStringMap()");
-   return getName((void *) sym, TR_VSS_NAME, 0, false);
+   return getName(reinterpret_cast<void *>(sym), TR_VSS_NAME, 0, false, memRegion);
    }
 
 const char *
@@ -1397,7 +1398,7 @@ TR_Debug::getName(TR::Symbol *sym, TR::Region &memRegion)
    // TODO: Rewrite this more like the other getName functions.  Currently it
    // burns a lot of nextSymbolNumbers.
    //
-   return getName((void *) sym, "SYM_", _nextSymbolNumber++, _comp->getAddressEnumerationOption(TR_EnumerateSymbol));
+   return getName(reinterpret_cast<void *>(sym), "SYM_", _nextSymbolNumber++, _comp->getAddressEnumerationOption(TR_EnumerateSymbol), memRegion);
    }
 
 const char *
@@ -1411,19 +1412,23 @@ TR_Debug::getName(TR::Instruction *instr, TR::Region &memRegion)
    {
    TR_ASSERT(_comp, "Required compilation object is NULL.\n");
    uint32_t InstructionNumber = 0;
+   const char *prefix = "IN_";
 
-   if (!_comp->getAddressEnumerationOption(TR_EnumerateInstruction))
-      return getName((void *) instr, "IN_", 0, false);
-
-   CS2::HashIndex hashIndex;
-   if (_comp->getToNumberMap().Locate((void *)instr, hashIndex))
+   if (_comp->getAddressEnumerationOption(TR_EnumerateInstruction))
       {
-      InstructionNumber = (uint32_t)_comp->getToNumberMap().DataAt(hashIndex);
-      return getName((void *) instr, "IN_", InstructionNumber, _comp->getAddressEnumerationOption(TR_EnumerateInstruction));
+      CS2::HashIndex hashIndex;
+      if (_comp->getToNumberMap().Locate((void *)instr, hashIndex))
+         {
+         InstructionNumber = (uint32_t)_comp->getToNumberMap().DataAt(hashIndex);
+         }
+      else
+         {
+         TR_ASSERT(0, "each instruction should be associated with a unique number");
+         prefix = "IN1_";
+         }
       }
 
-   TR_ASSERT(0, "each instruction should be associated with a unique number");
-   return getName((void *) instr, "IN1_", 0, _comp->getAddressEnumerationOption(TR_EnumerateInstruction));
+   return getName(reinterpret_cast<void *>(instr), prefix, InstructionNumber, _comp->getAddressEnumerationOption(TR_EnumerateInstruction), memRegion);
    }
 
 const char *
@@ -1438,7 +1443,7 @@ TR_Debug::getName(TR_Structure *structure, TR::Region &memRegion)
    // TODO: Rewrite this more like the other getName functions.  Currently it
    // burns a lot of nextStructureNumbers.
    //
-   return getName((void *) structure, "ST_", _nextStructureNumber++, _comp->getAddressEnumerationOption(TR_EnumerateStructure));
+   return getName(reinterpret_cast<void *>(structure), "ST_", _nextStructureNumber++, _comp->getAddressEnumerationOption(TR_EnumerateStructure), memRegion);
    }
 
 const char *
@@ -1453,7 +1458,7 @@ TR_Debug::getName(TR::Node *node, TR::Region &memRegion)
    if (!node)
       return "(null)";
    else
-      return getName((void *) node, "ND_", node->getGlobalIndex(), _comp->getAddressEnumerationOption(TR_EnumerateNode));
+      return getName(reinterpret_cast<void *>(node), "ND_", node->getGlobalIndex(), _comp->getAddressEnumerationOption(TR_EnumerateNode), memRegion);
    }
 
 const char *
