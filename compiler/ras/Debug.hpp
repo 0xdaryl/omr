@@ -584,7 +584,7 @@ public:
     */
    virtual const char * getName(TR_ResolvedMethod *m, TR::Region &memRegion)
       {
-      return getName((void *) m, "(TR_ResolvedMethod*)", 0, false);
+      return getName(reinterpret_cast<void *>(m), "(TR_ResolvedMethod*)", 0, false, memRegion);
       }
 
    /**
@@ -604,10 +604,22 @@ public:
     */
    virtual const char * getName(TR_OpaqueClassBlock *c, TR::Region &memRegion)
       {
-      return getName((void *) c, "(TR_OpaqueClassBlock*)", 0, false);
+      return getName(reinterpret_cast<void *>(c), "(TR_OpaqueClassBlock*)", 0, false, memRegion);
       }
 
-   virtual const char * getName(void *, const char *, uint32_t, bool);
+   /**
+    * @brief Generate and return a null-terminated char string name for the given address
+    *        using the parameters provided.
+    *
+    * @param[in] address : address of object to name
+    * @param[in] prefix : prefix to prepend to the generated name
+    * @param[in] nextNumber : next number to use if enumerating
+    * @param[in] enumerate : if true, produce an enumerated name from \a nextNumber;
+    *                        if false, use the object address in the name
+    * @param[in] memRegion : \c TR::Region to allocate memory for the string if required
+    */
+   virtual const char * getName(void *address, const char *prefix, uint32_t nextNumber, bool enumerate, TR::Region &memRegion);
+
    virtual const char * getName(const char *s) { return s; }
    virtual const char * getName(const char *s, int32_t len) { return s; }
 
