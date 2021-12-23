@@ -1538,6 +1538,12 @@ TR_Debug::getName(TR_ResolvedMethod *m)
    }
 
 const char *
+TR_Debug::getName(TR_OpaqueClassBlock *c)
+   {
+   return getName(c, comp()->trMemory()->currentStackRegion());
+   }
+
+const char *
 TR_Debug::getName(TR::SymbolReference * symRef)
    {
    int32_t index = symRef->getReferenceNumber();
