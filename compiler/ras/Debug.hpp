@@ -578,7 +578,26 @@ public:
       return getName((void *) m, "(TR_ResolvedMethod*)", 0, false);
       }
 
-   virtual const char * getName(TR_OpaqueClassBlock *c) { return getName((void *) c, "(TR_OpaqueClassBlock*)", 0, false); }
+   /**
+    * @brief Return null-terminated char string name for the given \c TR_OpaqueClassBlock object.
+    *        The current \c TR::Compilation stack memory region will be used to allocate
+    *        memory for the string if required.
+    *
+    * @param[in] c : \c TR_OpaqueClassBlock object
+    */
+   virtual const char * getName(TR_OpaqueClassBlock *c);
+
+   /**
+    * @brief Return null-terminated char string name for given \c TR_OpaqueClassBlock object.
+    *
+    * @param[in] c : \c TR_OpaqueClassBlock object
+    * @param[in] memRegion : \c TR::Region to allocate memory for the string if required
+    */
+   virtual const char * getName(TR_OpaqueClassBlock *c, TR::Region &memRegion)
+      {
+      return getName((void *) c, "(TR_OpaqueClassBlock*)", 0, false);
+      }
+
    virtual const char * getName(void *, const char *, uint32_t, bool);
    virtual const char * getName(const char *s) { return s; }
    virtual const char * getName(const char *s, int32_t len) { return s; }
