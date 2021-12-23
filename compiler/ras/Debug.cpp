@@ -1555,6 +1555,12 @@ TR_Debug::getPerCodeCacheHelperName(TR_CCPreLoadedCode helper)
    }
 
 const char *
+TR_Debug::getName(TR_ResolvedMethod *m)
+   {
+   return getName(m, comp()->trMemory()->currentStackRegion());
+   }
+
+const char *
 TR_Debug::getName(TR::SymbolReference * symRef)
    {
    int32_t index = symRef->getReferenceNumber();
