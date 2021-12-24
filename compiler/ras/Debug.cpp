@@ -1696,7 +1696,7 @@ TR_Debug::getName(TR::SymbolReference *symRef, TR::Region &memRegion)
       case TR::Symbol::IsMethod:
          return getMethodName(symRef, memRegion);
       case TR::Symbol::IsShadow:
-         return getShadowName(symRef);
+         return getShadowName(symRef, memRegion);
       case TR::Symbol::IsMethodMetaData:
          return getMetaDataName(symRef);
       case TR::Symbol::IsLabel:
@@ -2131,13 +2131,14 @@ static const char *commonNonhelperSymbolNames[] =
    };
 
 const char *
-TR_Debug::getShadowName(TR::SymbolReference * symRef)
+TR_Debug::getShadowName(TR::SymbolReference *symRef, TR::Region &memRegion)
    {
+   TR::SymbolReferenceTable *symRefTab = comp()->getSymRefTab();
 
    if (symRef->getCPIndex() >= 0 && !symRef->getSymbol()->isArrayShadowSymbol())
       return getOwningMethod(symRef)->fieldName(symRef->getCPIndex(), comp()->trMemory());
 
-   if (symRef->getSymbol() == _comp->getSymRefTab()->findGenericIntShadowSymbol())
+   if (symRef->getSymbol() == symRefTab->findGenericIntShadowSymbol())
       {
       if (symRef->reallySharesSymbol(_comp))
          {
@@ -2149,30 +2150,30 @@ TR_Debug::getShadowName(TR::SymbolReference * symRef)
          }
       }
 
-   if (_comp->getSymRefTab()->isVtableEntrySymbolRef(symRef))
+   if (symRefTab->isVtableEntrySymbolRef(symRef))
       return "<vtable-entry-symbol>";
 
    if (symRef->getSymbol()->isUnsafeShadowSymbol())
       return "<unsafe shadow sym>";
 
-   if (symRef == _comp->getSymRefTab()->findHeaderFlagsSymbolRef())
+   if (symRef == symRefTab->findHeaderFlagsSymbolRef())
       return "<object header flag word>";
 
    if (symRef->getSymbol())
       {
-      if (comp()->getSymRefTab()->isRefinedArrayShadow(symRef))
+      if (symRefTab->isRefinedArrayShadow(symRef))
          return "<refined-array-shadow>";
 
-      if (comp()->getSymRefTab()->isImmutableArrayShadow(symRef))
+      if (symRefTab->isImmutableArrayShadow(symRef))
          return "<immutable-array-shadow>";
 
-      if(symRef->getSymbol()->isArrayletShadowSymbol())
+      if (symRef->getSymbol()->isArrayletShadowSymbol())
          return "<arraylet-shadow>";
 
-      if(symRef->getSymbol()->isGlobalFragmentShadowSymbol())
+      if (symRef->getSymbol()->isGlobalFragmentShadowSymbol())
          return "<global-fragmnet>";
 
-      if(symRef->getSymbol()->isMemoryTypeShadowSymbol())
+      if (symRef->getSymbol()->isMemoryTypeShadowSymbol())
          return "<memory-type>";
 
       if (symRef->getSymbol()->isNamedShadowSymbol())
@@ -2185,9 +2186,9 @@ TR_Debug::getShadowName(TR::SymbolReference * symRef)
    static_assert (sizeof(commonNonhelperSymbolNames)/sizeof(commonNonhelperSymbolNames[0]) == numCommonNonhelperSymbols,
       "commonNonhelperSymbolNames array must match CommonNonhelperSymbol enumeration");
 
-   for (int32_t i = TR::SymbolReferenceTable::firstCommonNonhelperNonArrayShadowSymbol; i < _comp->getSymRefTab()->getLastCommonNonhelperSymbol(); i++)
+   for (int32_t i = TR::SymbolReferenceTable::firstCommonNonhelperNonArrayShadowSymbol; i < symRefTab->getLastCommonNonhelperSymbol(); i++)
       {
-      TR::SymbolReference *other = _comp->getSymRefTab()->element((TR::SymbolReferenceTable::CommonNonhelperSymbol)i);
+      TR::SymbolReference *other = symRefTab->element((TR::SymbolReferenceTable::CommonNonhelperSymbol)i);
       if (other && other->getSymbol() == symRef->getSymbol())
          return commonNonhelperSymbolNames[i - TR::SymbolReferenceTable::firstCommonNonhelperNonArrayShadowSymbol];
       }
