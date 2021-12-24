@@ -1572,7 +1572,13 @@ TR_Debug::getName(TR_OpaqueClassBlock *c)
    }
 
 const char *
-TR_Debug::getName(TR::SymbolReference * symRef)
+TR_Debug::getName(TR::SymbolReference *symRef)
+   {
+   return getName(symRef, comp()->trMemory()->currentStackRegion());
+   }
+
+const char *
+TR_Debug::getName(TR::SymbolReference *symRef, TR::Region &memRegion)
    {
    int32_t index = symRef->getReferenceNumber();
    int32_t nonhelperIndex, numHelperSymbols;
@@ -1696,7 +1702,7 @@ TR_Debug::getName(TR::SymbolReference * symRef)
          }
       }
 
-    TR::Symbol *sym = symRef->getSymbol();
+   TR::Symbol *sym = symRef->getSymbol();
    switch (sym->getKind())
       {
       case TR::Symbol::IsAutomatic:
