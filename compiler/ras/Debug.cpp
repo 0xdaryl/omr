@@ -1717,7 +1717,7 @@ TR_Debug::getName(TR::SymbolReference *symRef, TR::Region &memRegion)
       case TR::Symbol::IsShadow:
          return getShadowName(symRef, memRegion);
       case TR::Symbol::IsMethodMetaData:
-         return getMetaDataName(symRef);
+         return getMetaDataName(symRef, memRegion);
       case TR::Symbol::IsLabel:
          return getName((TR::LabelSymbol *)sym);
       default:
@@ -2214,7 +2214,7 @@ TR_Debug::getShadowName(TR::SymbolReference *symRef, TR::Region &memRegion)
    }
 
 const char *
-TR_Debug::getMetaDataName(TR::SymbolReference * symRef)
+TR_Debug::getMetaDataName(TR::SymbolReference *symRef, TR::Region &memRegion)
    {
    const char *name = symRef->getSymbol()->getMethodMetaDataSymbol()->getName();
    return name ? name : "method meta data";

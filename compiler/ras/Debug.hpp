@@ -1028,7 +1028,14 @@ public:
     */
    const char * getShadowName(TR::SymbolReference *symRef, TR::Region &memRegion);
 
-   const char * getMetaDataName(TR::SymbolReference *);
+   /**
+    * @brief Return null-terminated char string name for given \c TR::SymbolReference object
+    *        representing a method metadata symbol.
+    *
+    * @param[in] symRef : \c TR::SymbolReference object
+    * @param[in] memRegion : \c TR::Region to allocate memory for the string if required
+    */
+   const char * getMetaDataName(TR::SymbolReference *symRef, TR::Region &memRegion);
 
    TR::FILE *findLogFile(TR::Options *, TR::OptionSet *, char *);
    void   findLogFile(const char *logFileName, TR::Options *cmdOptions, TR::Options **optionArray, int32_t arraySize, int32_t &index);
