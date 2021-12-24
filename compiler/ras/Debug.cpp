@@ -1694,7 +1694,7 @@ TR_Debug::getName(TR::SymbolReference *symRef, TR::Region &memRegion)
          return getStaticName(symRef, memRegion);
       case TR::Symbol::IsResolvedMethod:
       case TR::Symbol::IsMethod:
-         return getMethodName(symRef);
+         return getMethodName(symRef, memRegion);
       case TR::Symbol::IsShadow:
          return getShadowName(symRef);
       case TR::Symbol::IsMethodMetaData:
@@ -1881,7 +1881,7 @@ TR_Debug::getParmName(TR::SymbolReference *symRef, TR::Region &memRegion)
 
 
 const char *
-TR_Debug::getMethodName(TR::SymbolReference * symRef)
+TR_Debug::getMethodName(TR::SymbolReference *symRef, TR::Region &memRegion)
    {
    TR::Method *method = symRef->getSymbol()->castToMethodSymbol()->getMethod();
 

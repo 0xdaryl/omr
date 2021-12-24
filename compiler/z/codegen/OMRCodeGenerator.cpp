@@ -1240,9 +1240,10 @@ OMR::Z::CodeGenerator::insertInstructionPrefetchesForCalls(TR_BranchPreloadCallD
    ////only preload those methods
    //test heuristic enabled with TR_BPRP_Method
    //TODO removed this one?
-   if (bppMethod &&  self()->getDebug() && (strcmp(self()->getDebug()->getMethodName(data->_callSymRef), "java/lang/String.equals(Ljava/lang/Object;)Z") &&
-         strcmp(self()->getDebug()->getMethodName(data->_callSymRef), "java/util/HashMap.hash(Ljava/lang/Object;)I") &&
-         strcmp(self()->getDebug()->getMethodName(data->_callSymRef),"java/util/HashMap.addEntry(ILjava/lang/Object;Ljava/lang/Object;I)V")))
+   if (bppMethod &&  self()->getDebug() &&
+        (strcmp(self()->getDebug()->getMethodName(data->_callSymRef, self()->trMemory()->currentStackRegion()), "java/lang/String.equals(Ljava/lang/Object;)Z") &&
+         strcmp(self()->getDebug()->getMethodName(data->_callSymRef, self()->trMemory()->currentStackRegion()), "java/util/HashMap.hash(Ljava/lang/Object;)I") &&
+         strcmp(self()->getDebug()->getMethodName(data->_callSymRef, self()->trMemory()->currentStackRegion()), "java/util/HashMap.addEntry(ILjava/lang/Object;Ljava/lang/Object;I)V")))
       return;
 
    /*
