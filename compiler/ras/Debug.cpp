@@ -1710,7 +1710,7 @@ TR_Debug::getName(TR::SymbolReference *symRef, TR::Region &memRegion)
       case TR::Symbol::IsParameter:
          return getParmName(symRef, memRegion);
       case TR::Symbol::IsStatic:
-         return getStaticName(symRef);
+         return getStaticName(symRef, memRegion);
       case TR::Symbol::IsResolvedMethod:
       case TR::Symbol::IsMethod:
          return getMethodName(symRef);
@@ -1913,28 +1913,11 @@ TR_Debug::getMethodName(TR::SymbolReference * symRef)
    }
 
 
-
 const char *
-TR_Debug::getStaticName_ForListing(TR::SymbolReference * symRef)
+TR_Debug::getStaticName(TR::SymbolReference *symRef, TR::Region &memRegion)
    {
-   TR::StaticSymbol * sym = symRef->getSymbol()->castToStaticSymbol();
-
-
-   if (_comp->getSymRefTab()->isConstantAreaSymbol(sym) && sym->isStatic() && sym->isNamed())
-      {
-      return sym->getName();
-      }
-
-   return NULL;
-   }
-
-
-const char *
-TR_Debug::getStaticName(TR::SymbolReference * symRef)
-   {
-   TR::StaticSymbol * sym = symRef->getSymbol()->castToStaticSymbol();
-   void * staticAddress;
-   staticAddress = sym->getStaticAddress();
+   TR::StaticSymbol *sym = symRef->getSymbol()->castToStaticSymbol();
+   void *staticAddress = sym->getStaticAddress();
 
    if (sym->isClassObject())
       {
@@ -1944,7 +1927,7 @@ TR_Debug::getStaticName(TR::SymbolReference * symRef)
          char * name = TR::Compiler->cls.classNameChars(comp(), symRef, len);
          if (name)
             {
-            char * s = (char *)_comp->trMemory()->allocateHeapMemory(len+1);
+            char *s = reinterpret_cast<char *>(memRegion.allocate(len+1));
             sprintf(s, "%.*s", len, name);
             return s;
             }
@@ -2016,7 +1999,8 @@ TR_Debug::getStaticName(TR::SymbolReference * symRef)
                      break;
                      }
                }
-            char *result = (char*)_comp->trMemory()->allocateHeapMemory(length+20);
+
+            char *result = reinterpret_cast<char *>(memRegion.allocate(length+20));
             sprintf(result, "<string \"%.*s%s%s\">", (int)prefixLength, contents, etc, contents+suffixOffset);
             return result;
             }
@@ -2045,14 +2029,14 @@ TR_Debug::getStaticName(TR::SymbolReference * symRef)
 #ifdef J9_PROJECT_SPECIFIC
    if (sym->isCallSiteTableEntry())
       {
-      char * s = (char *)_comp->trMemory()->allocateHeapMemory(60);
+      char *s = reinterpret_cast<char *>(memRegion.allocate(60));
       sprintf(s, "<callSite entry @%d " POINTER_PRINTF_FORMAT ">", sym->castToCallSiteTableEntrySymbol()->getCallSiteIndex(), staticAddress);
       return s;
       }
 
    if (sym->isMethodTypeTableEntry())
       {
-      char * s = (char *)_comp->trMemory()->allocateHeapMemory(62);
+      char *s = reinterpret_cast<char *>(memRegion.allocate(62));
       sprintf(s, "<methodType entry @%d " POINTER_PRINTF_FORMAT ">", sym->castToMethodTypeTableEntrySymbol()->getMethodTypeIndex(), staticAddress);
       return s;
       }
@@ -2065,7 +2049,7 @@ TR_Debug::getStaticName(TR::SymbolReference * symRef)
 
    if (staticAddress)
       {
-      char * name = (char *)_comp->trMemory()->allocateHeapMemory(TR::Compiler->debug.pointerPrintfMaxLenInChars()+5);
+      char *name = reinterpret_cast<char *>(memRegion.allocate(TR::Compiler->debug.pointerPrintfMaxLenInChars()+5));
       if (_comp->getOption(TR_MaskAddresses))
          sprintf(name, "*Masked*");
       else
