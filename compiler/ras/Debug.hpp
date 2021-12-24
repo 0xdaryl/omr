@@ -1010,7 +1010,14 @@ public:
     */
    const char * getStaticName(TR::SymbolReference *symRef, TR::Region &memRegion);
 
-   virtual const char * getMethodName(TR::SymbolReference *);
+   /**
+    * @brief Return null-terminated char string name for given \c TR::SymbolReference object
+    *        representing a method symbol.
+    *
+    * @param[in] symRef : \c TR::SymbolReference object
+    * @param[in] memRegion : \c TR::Region to allocate memory for the string if required
+    */
+   virtual const char * getMethodName(TR::SymbolReference *symRef, TR::Region &memRegion);
 
    const char * getShadowName(TR::SymbolReference *);
    const char * getMetaDataName(TR::SymbolReference *);
