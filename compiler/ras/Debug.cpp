@@ -1706,7 +1706,7 @@ TR_Debug::getName(TR::SymbolReference *symRef, TR::Region &memRegion)
    switch (sym->getKind())
       {
       case TR::Symbol::IsAutomatic:
-         return getAutoName(symRef);
+         return getAutoName(symRef, memRegion);
       case TR::Symbol::IsParameter:
          return getParmName(symRef);
       case TR::Symbol::IsStatic:
@@ -1795,19 +1795,17 @@ TR_Debug::getOwningMethod(TR::SymbolReference * symRef)
    return getOwningMethodSymbol(symRef)->getResolvedMethod();
    }
 
-
-
 const char *
-TR_Debug::getAutoName(TR::SymbolReference * symRef)
+TR_Debug::getAutoName(TR::SymbolReference *symRef, TR::Region &memRegion)
    {
    int32_t slot = symRef->getCPIndex();
-   char * name = (char *)_comp->trMemory()->allocateHeapMemory(50+TR::Compiler->debug.pointerPrintfMaxLenInChars());
+   char *name = reinterpret_cast<char *>(memRegion.allocate(50+TR::Compiler->debug.pointerPrintfMaxLenInChars()));
 
    name[0]=0;  //initialize to empty string
 
    if (symRef->getSymbol()->isSpillTempAuto())
       {
-      char * symName = (char *)_comp->trMemory()->allocateHeapMemory(20);
+      char *symName = reinterpret_cast<char *>(memRegion.allocate(20));
       if (symRef->getSymbol()->getDataType() == TR::Float || symRef->getSymbol()->getDataType() == TR::Double)
          sprintf(symName, "#FPSPILL%zu_%d", symRef->getSymbol()->getSize(), symRef->getReferenceNumber());
       else
@@ -1822,7 +1820,7 @@ TR_Debug::getAutoName(TR::SymbolReference * symRef)
       {
       TR_ASSERT(symRef->getSymbol()->isVariableSizeSymbol(),"symRef #%d must contain a variable size symbol\n",symRef->getReferenceNumber());
       TR::AutomaticSymbol *sym = symRef->getSymbol()->getVariableSizeSymbol();
-      sprintf(name, "<%s rc=%d>",getVSSName(sym),sym->getReferenceCount());
+      sprintf(name, "<%s rc=%d>", getVSSName(sym, memRegion), sym->getReferenceCount());
       }
    else if (symRef->getSymbol()->isPendingPush())
       {

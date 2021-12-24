@@ -983,7 +983,15 @@ public:
    TR::ResolvedMethodSymbol * getOwningMethodSymbol(TR::SymbolReference *);
    TR_ResolvedMethod     * getOwningMethod(TR::SymbolReference *);
 
-   const char * getAutoName(TR::SymbolReference *);
+   /**
+    * @brief Return null-terminated char string name for given \c TR::SymbolReference object
+    *        representing a \c TR::AutomaticSymbol.
+    *
+    * @param[in] symRef : \c TR::SymbolReference object
+    * @param[in] memRegion : \c TR::Region to allocate memory for the string if required
+    */
+   const char * getAutoName(TR::SymbolReference *symRef, TR::Region &memRegion);
+
    const char * getParmName(TR::SymbolReference *);
    const char * getStaticName(TR::SymbolReference *);
    const char * getStaticName_ForListing(TR::SymbolReference *);
