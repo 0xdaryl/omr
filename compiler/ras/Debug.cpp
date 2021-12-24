@@ -1689,7 +1689,7 @@ TR_Debug::getName(TR::SymbolReference *symRef, TR::Region &memRegion)
       case TR::Symbol::IsAutomatic:
          return getAutoName(symRef, memRegion);
       case TR::Symbol::IsParameter:
-         return getParmName(symRef);
+         return getParmName(symRef, memRegion);
       case TR::Symbol::IsStatic:
          return getStaticName(symRef);
       case TR::Symbol::IsResolvedMethod:
@@ -1852,7 +1852,7 @@ TR_Debug::getAutoName(TR::SymbolReference *symRef, TR::Region &memRegion)
    }
 
 const char *
-TR_Debug::getParmName(TR::SymbolReference * symRef)
+TR_Debug::getParmName(TR::SymbolReference *symRef, TR::Region &memRegion)
    {
    int32_t debugNameLen, signatureLen;
    int32_t slot = symRef->getCPIndex();
@@ -1867,12 +1867,12 @@ TR_Debug::getParmName(TR::SymbolReference * symRef)
       }
    if (slot == 0 && !getOwningMethodSymbol(symRef)->isStatic())
       {
-      buf = (char *)_comp->trMemory()->allocateHeapMemory(debugNameLen + signatureLen + 17);
+      buf = reinterpret_cast<char *>(memRegion.allocate(debugNameLen + signatureLen + 17));
       sprintf(buf, "%.*s<'this' parm %.*s>", debugNameLen, debugName, signatureLen, s);
       }
    else
       {
-      buf = (char *)_comp->trMemory()->allocateHeapMemory(debugNameLen + signatureLen + 15);
+      buf = reinterpret_cast<char *>(memRegion.allocate(debugNameLen + signatureLen + 15));
       sprintf(buf, "%.*s<parm %d %.*s>", debugNameLen, debugName, symRef->getCPIndex(), signatureLen, s);
       }
    return buf;
