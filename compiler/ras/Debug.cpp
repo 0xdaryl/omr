@@ -1461,7 +1461,7 @@ TR_Debug::getName(TR::CFGNode * node)
 const char *
 TR_Debug::getName(TR::LabelSymbol *labelSymbol)
    {
-   TR_ASSERT(_comp, "Required compilation object is NULL.\n");
+   TR_ASSERT(comp(), "Required compilation object is NULL.\n");
    CS2::HashIndex hashIndex;
    uint32_t labelNumber = 0;
 
@@ -1469,49 +1469,54 @@ TR_Debug::getName(TR::LabelSymbol *labelSymbol)
       {
       return labelSymbol->getName();
       }
-   if (_comp->getToStringMap().Locate((void *)labelSymbol, hashIndex))
+   if (comp()->getToStringMap().Locate((void *)labelSymbol, hashIndex))
       {
-      return (const char *)_comp->getToStringMap().DataAt(hashIndex);
+      return (const char *)comp()->getToStringMap().DataAt(hashIndex);
       }
-   else if (_comp->getToNumberMap().Locate((void *)labelSymbol, hashIndex))
+   else if (comp()->getToNumberMap().Locate((void *)labelSymbol, hashIndex))
       {
-      char *buf = NULL;
-      labelNumber = (uint32_t)_comp->getToNumberMap().DataAt(hashIndex);
+      /**
+       * Memory for label names cached in a map for future reusability must be
+       * allocated at Compilation scope.
+       */
+      char *buf = reinterpret_cast<char *>(comp()->trMemory()->allocateHeapMemory(25));
+      labelNumber = (uint32_t)comp()->getToNumberMap().DataAt(hashIndex);
 
       if (labelSymbol->getSnippet())
          {
-         buf = (char *)_comp->trMemory()->allocateHeapMemory(25);
          sprintf(buf, "Snippet Label L%04d", labelNumber);
          }
       else if (labelSymbol->isStartOfColdInstructionStream())
          {
-         buf = (char *)_comp->trMemory()->allocateHeapMemory(25);
          sprintf(buf, "Outlined Label L%04d", labelNumber);
          }
       else
          {
-         buf = (char *)_comp->trMemory()->allocateHeapMemory(25);
          sprintf(buf, "Label L%04d", labelNumber);
          }
-      _comp->getToStringMap().Add((void *)labelSymbol, buf);
+      comp()->getToStringMap().Add((void *)labelSymbol, buf);
       return buf;
       }
    else
       {
-      char *buf = (char *)_comp->trMemory()->allocateHeapMemory(20+TR::Compiler->debug.pointerPrintfMaxLenInChars());
+      /**
+       * Memory for label names cached in a map for future reusability must be
+       * allocated at Compilation scope.
+       */
+      char *buf = reinterpret_cast<char *>(comp()->trMemory()->allocateHeapMemory(20+TR::Compiler->debug.pointerPrintfMaxLenInChars()));
 
       if (labelSymbol->getSnippet())
-         if (_comp->getOption(TR_MaskAddresses))
+         if (comp()->getOption(TR_MaskAddresses))
             sprintf(buf, "Snippet Label [*Masked*]");
          else
             sprintf(buf, "Snippet Label [" POINTER_PRINTF_FORMAT "]", labelSymbol);
       else
-         if (_comp->getOption(TR_MaskAddresses))
+         if (comp()->getOption(TR_MaskAddresses))
             sprintf(buf, "Label [*Masked*]");
          else
             sprintf(buf, "Label [" POINTER_PRINTF_FORMAT "]", labelSymbol);
 
-      _comp->getToStringMap().Add((void *)labelSymbol, buf);
+      comp()->getToStringMap().Add((void *)labelSymbol, buf);
       return buf;
       }
    }
@@ -1700,7 +1705,7 @@ TR_Debug::getName(TR::SymbolReference *symRef, TR::Region &memRegion)
       case TR::Symbol::IsMethodMetaData:
          return getMetaDataName(symRef, memRegion);
       case TR::Symbol::IsLabel:
-         return getName((TR::LabelSymbol *)sym);
+         return getName(reinterpret_cast<TR::LabelSymbol *>(sym));
       default:
          TR_ASSERT(0, "unexpected symbol kind");
          return "unknown name";

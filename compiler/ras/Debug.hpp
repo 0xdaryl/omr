@@ -490,7 +490,14 @@ public:
    virtual const char * getName(TR::ILOpCodes);
    virtual const char * getName(TR::DataType);
    virtual const char * getName(TR_RawBCDSignCode);
-   virtual const char * getName(TR::LabelSymbol *);
+
+   /**
+    * @brief Return null-terminated char string name for given \c TR::LabelSymbol object.
+    *        Memory requirements will be satisfied at \c TR::Compilation scope.
+    *
+    * @param[in] labelSymbol : \c TR::LabelSymbol object
+    */
+   virtual const char * getName(TR::LabelSymbol *labelSymbol);
 
    /**
     * @brief Return null-terminated char string name for given \c TR::SymbolReference object.
