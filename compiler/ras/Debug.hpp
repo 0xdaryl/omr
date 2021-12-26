@@ -803,7 +803,7 @@ public:
    virtual void         stopTracingRegisterAssignment();
    virtual void         pauseTracingRegisterAssignment();
    virtual void         resumeTracingRegisterAssignment();
-   virtual void         traceRegisterAssignment(const char *format, va_list args);
+   virtual void         traceRegisterAssignment(TR::Region &memRegion, const char *format, va_list args);
    virtual void         traceRegisterAssignment(TR::Instruction *instr, bool insertedByRA = true, bool postRA = false);
    virtual void         traceRegisterAssigned(TR_RegisterAssignmentFlags flags, TR::Register *virtReg, TR::Register *realReg);
    virtual void         traceRegisterFreed(TR::Register *virtReg, TR::Register *realReg);
