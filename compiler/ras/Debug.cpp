@@ -4639,12 +4639,14 @@ TR_Debug::stopTracingRegisterAssignment()
    }
 
 void
-TR_Debug::traceRegisterAssignment(const char *format, va_list args)
+TR_Debug::traceRegisterAssignment(TR::Region &memRegion, const char *format, va_list args)
    {
    if (_file == NULL)
       return;
+
    if (!_comp->getOption(TR_TraceRA))
       return;
+
    if (_registerAssignmentTraceCursor)
       {
       trfprintf(_file, "\n");
@@ -4656,7 +4658,7 @@ TR_Debug::traceRegisterAssignment(const char *format, va_list args)
 
    int32_t  j = 0;
    int32_t  length = static_cast<int32_t>(strlen(format)) + 40;
-   char    *buffer = (char *)_comp->trMemory()->allocateHeapMemory(length + 1);
+   char    *buffer = reinterpret_cast<char *>(memRegion.allocate(length + 1));
    bool     sawPercentR = false;
 
    for (const char *c = format; *c; c++, j++)
@@ -4670,7 +4672,7 @@ TR_Debug::traceRegisterAssignment(const char *format, va_list args)
          if (j + slen >= length) // re-allocate buffer if too small
             {
             length += 40;
-            char *newBuffer = (char *)_comp->trMemory()->allocateHeapMemory(length + 1);
+            char *newBuffer = reinterpret_cast<char *>(memRegion.allocate(length + 1));
             memcpy(newBuffer, buffer, j);
             buffer = newBuffer;
             }
@@ -4683,7 +4685,7 @@ TR_Debug::traceRegisterAssignment(const char *format, va_list args)
          if (j >= length) // re-allocate buffer if too small
             {
             length += 40;
-            char *newBuffer = (char *)_comp->trMemory()->allocateHeapMemory(length + 1);
+            char *newBuffer = reinterpret_cast<char *>(memRegion.allocate(length + 1));
             memcpy(newBuffer, buffer, j);
             buffer = newBuffer;
             }

@@ -1343,7 +1343,7 @@ void OMR::CodeGenerator::traceRegisterAssignment(const char *format, ...)
       {
       va_list args;
       va_start(args, format);
-      self()->getDebug()->traceRegisterAssignment(format, args);
+      self()->getDebug()->traceRegisterAssignment(self()->trMemory()->currentStackRegion(), format, args);
       va_end(args);
       }
    }
