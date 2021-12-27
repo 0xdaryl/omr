@@ -2221,7 +2221,7 @@ const char *
 OMR::Block::getName(TR_Debug * debug)
    {
    if (debug)
-      return debug->getName(self());
+      return debug->getName(self(), debug->comp()->trMemory()->currentStackRegion());
    else
       return "<unknown block>";
    }

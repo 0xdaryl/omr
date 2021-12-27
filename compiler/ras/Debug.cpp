@@ -1439,9 +1439,9 @@ TR_Debug::getName(TR::Node *node, TR::Region &memRegion)
    }
 
 const char *
-TR_Debug::getName(TR::CFGNode * node)
+TR_Debug::getName(TR::CFGNode *node, TR::Region &memRegion)
    {
-   char *buf = (char *)_comp->trMemory()->allocateHeapMemory(25);
+   char *buf = reinterpret_cast<char *>(memRegion.allocate(25));
    if (_comp->getAddressEnumerationOption(TR_EnumerateBlock))
       {
       sprintf(buf, "block_%d", node->getNumber());

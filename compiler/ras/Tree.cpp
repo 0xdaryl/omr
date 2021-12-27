@@ -536,14 +536,14 @@ TR_Debug::printSubGraph(TR::FILE *pOutFile, TR_RegionStructure *regionStructure,
                  "%*s(%s:%s)%d -->",
                  indentation+offset*2,
                  " ",
-                 getName(node), getName(node->getStructure()), node->getNumber());
+                 getName(node, memRegion), getName(node->getStructure()), node->getNumber());
          }
 
       num = 0;
       for (auto edge = node->getSuccessors().begin(); edge != node->getSuccessors().end(); ++edge)
          {
          next = toStructureSubGraphNode((*edge)->getTo());
-         trfprintf(pOutFile," %d(%s)", next->getNumber(), getName(next));
+         trfprintf(pOutFile," %d(%s)", next->getNumber(), getName(next, memRegion));
          if (regionStructure->isExitEdge(*edge))
             trfprintf(pOutFile,"*");
 
@@ -564,12 +564,12 @@ TR_Debug::printSubGraph(TR::FILE *pOutFile, TR_RegionStructure *regionStructure,
                  "%*s(%s:%s)%d >>>",
                  indentation+offset*2,
                  " ",
-                 getName(node), getName(node->getStructure() ), node->getNumber());
+                 getName(node, memRegion), getName(node->getStructure() ), node->getNumber());
          num = 0;
          for (auto edge = node->getExceptionSuccessors().begin(); edge != node->getExceptionSuccessors().end(); ++edge)
             {
             next = toStructureSubGraphNode((*edge)->getTo());
-            trfprintf(pOutFile," %d(%s)", next->getNumber(), getName(next));
+            trfprintf(pOutFile," %d(%s)", next->getNumber(), getName(next, memRegion));
             if (regionStructure->isExitEdge(*edge))
                trfprintf(pOutFile,"*");
 
@@ -602,7 +602,7 @@ TR_Debug::printSubGraph(TR::FILE *pOutFile, TR_RegionStructure *regionStructure,
               "%*s(%s)%d -->%d\n",
               indentation+offset*2,
               " ",
-              getName(exitEdge->getData()->getFrom() ),
+              getName(exitEdge->getData()->getFrom(), memRegion),
               exitEdge->getData()->getFrom()->getNumber(),
               exitEdge->getData()->getTo()->getNumber());
 
@@ -743,7 +743,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Block *block, uint32_t indentation, TR::
    trfprintf(pOutFile, "%*s", indentation, " ");
    if (block->getNumber() >= 0)
       trfprintf(pOutFile, "%4d ", block->getNumber());
-   trfprintf(pOutFile, "[%s] ", getName(block));
+   trfprintf(pOutFile, "[%s] ", getName(block, memRegion));
 
    // If there are no nodes associated with this block, it must be the entry or
    // exit node.
@@ -2035,7 +2035,7 @@ TR_Debug::printVCG(TR::FILE *pOutFile, TR_StructureSubGraphNode *node, bool isEn
       return;
    _structureChecklist.set(node->getNumber());
 
-   trfprintf(pOutFile, "node: {title: \"%s\" ", getName(node));
+   trfprintf(pOutFile, "node: {title: \"%s\" ", getName(node, memRegion));
    trfprintf(pOutFile, "label: \"%d\" ", node->getNumber());
    if (isEntry)
       trfprintf(pOutFile, "vertical_order: 1 ");
@@ -2057,14 +2057,14 @@ TR_Debug::printVCGEdges(TR::FILE *pOutFile, TR_StructureSubGraphNode *node, TR::
       {
       TR_StructureSubGraphNode *to = toStructureSubGraphNode((*edge)->getTo());
       printVCG(pOutFile, to, false, memRegion); //print it out if it is an exit destination
-      trfprintf(pOutFile, "edge: { sourcename: \"%s\" targetname: \"%s\" }\n", getName(node), getName(to));
+      trfprintf(pOutFile, "edge: { sourcename: \"%s\" targetname: \"%s\" }\n", getName(node, memRegion), getName(to, memRegion));
       }
 
    for (auto edge = node->getExceptionSuccessors().begin(); edge != node->getExceptionSuccessors().end(); ++edge)
       {
       TR_StructureSubGraphNode *to = toStructureSubGraphNode((*edge)->getTo());
       printVCG(pOutFile, to, false, memRegion); //print it out if it is an exit destination
-      trfprintf(pOutFile, "edge: { sourcename: \"%s\" targetname: \"%s\" color: pink}\n", getName(node), getName(to));
+      trfprintf(pOutFile, "edge: { sourcename: \"%s\" targetname: \"%s\" color: pink}\n", getName(node, memRegion), getName(to, memRegion));
       }
    }
 

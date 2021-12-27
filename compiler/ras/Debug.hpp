@@ -589,7 +589,13 @@ public:
     */
    virtual const char * getName(TR_Structure *structure, TR::Region &memRegion);
 
-   virtual const char * getName(TR::CFGNode *);
+   /**
+    * @brief Return null-terminated char string name for given \c TR::CFGNode object.
+    *
+    * @param[in] structure : \c TR::CFGNode object
+    * @param[in] memRegion : \c TR::Region to allocate memory for the string if required
+    */
+   virtual const char * getName(TR::CFGNode *node, TR::Region &memRegion);
 
    /**
     * @brief Return null-terminated char string name for the given \c TR_ResolvedMethod object.
