@@ -455,14 +455,14 @@ TR_Debug::print(TR::FILE *pOutFile, TR_RegionStructure *regionStructure, uint32_
               "%*s%d [%s] %s %d\n",
               indentation, " ",
               regionStructure->getNumber(),
-              getName(regionStructure),
+              getName(regionStructure, memRegion),
               type, versionedLoop->getNumber());
       else
         trfprintf(pOutFile,
               "%*s%d [%s] %s\n",
               indentation, " ",
               regionStructure->getNumber(),
-              getName(regionStructure),
+              getName(regionStructure, memRegion),
               type);
       }
 
@@ -547,7 +547,7 @@ TR_Debug::printSubGraph(TR::FILE *pOutFile, TR_RegionStructure *regionStructure,
                  "%*s(%s:%s)%d -->",
                  indentation+offset*2,
                  " ",
-                 getName(node, memRegion), getName(node->getStructure()), node->getNumber());
+                 getName(node, memRegion), getName(node->getStructure(), memRegion), node->getNumber());
          }
 
       num = 0;
@@ -575,7 +575,7 @@ TR_Debug::printSubGraph(TR::FILE *pOutFile, TR_RegionStructure *regionStructure,
                  "%*s(%s:%s)%d >>>",
                  indentation+offset*2,
                  " ",
-                 getName(node, memRegion), getName(node->getStructure() ), node->getNumber());
+                 getName(node, memRegion), getName(node->getStructure(), memRegion), node->getNumber());
          num = 0;
          for (auto edge = node->getExceptionSuccessors().begin(); edge != node->getExceptionSuccessors().end(); ++edge)
             {
@@ -660,7 +660,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR_InductionVariable *inductionVariable, uin
 
    int offset=3;
 
-   trfprintf(pOutFile, "%*sInduction variable [%s]\n", indentation, " ", getName(inductionVariable->getLocal()));
+   trfprintf(pOutFile, "%*sInduction variable [%s]\n", indentation, " ", getName(inductionVariable->getLocal(), memRegion));
    trfprintf(pOutFile, "%*sEntry value: ", indentation+offset, " ");
    print(pOutFile, inductionVariable->getEntry());
    trfprintf(pOutFile, "\n%*sExit value:  ", indentation+offset, " ");
@@ -683,7 +683,7 @@ TR_Debug::printBaseInfo(TR::FILE *pOutFile, TR_Structure *structure, uint32_t in
            "%*s%d [%s] %s",
            indentation, " ",
            structure->getNumber(),
-           getName(structure),
+           getName(structure, memRegion),
            structNames[structure->getKind()]);
 
    trfprintf(pOutFile, "\n");
@@ -771,7 +771,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Block *block, uint32_t indentation, TR::
       // Dump information about regular block
       trfprintf(pOutFile,
               "BBStart at %s",
-              getName(block->getEntry()->getNode()));
+              getName(block->getEntry()->getNode(), memRegion));
       if (block->getFrequency() >= 0)
          trfprintf(pOutFile,
                  ", frequency = %d",
@@ -1963,7 +1963,7 @@ void
 TR_Debug::printVCG(TR::FILE *pOutFile, TR_RegionStructure *regionStructure, TR::Region &memRegion)
    {
    trfprintf(pOutFile, "graph: {\n");
-   trfprintf(pOutFile, "title: \"%s\"\n", getName(regionStructure));
+   trfprintf(pOutFile, "title: \"%s\"\n", getName(regionStructure, memRegion));
 
    printVCG(pOutFile, regionStructure->getEntry(), true, memRegion);
    TR_RegionStructure::Cursor it(*regionStructure);
@@ -2087,12 +2087,12 @@ TR_Debug::printVCG(TR::FILE *pOutFile, TR::Node *node, uint32_t indentation, TR:
 
    if (_nodeChecklist.isSet(node->getGlobalIndex()))
       {
-      trfprintf(pOutFile, "%*s==>%s at %s\\n", 12 + indentation, " ", getName(node->getOpCode()), getName(node));
+      trfprintf(pOutFile, "%*s==>%s at %s\\n", 12 + indentation, " ", getName(node->getOpCode()), getName(node, memRegion));
       return;
       }
 
    _nodeChecklist.set(node->getGlobalIndex());
-   trfprintf(pOutFile, "%s  ", getName(node));
+   trfprintf(pOutFile, "%s  ", getName(node, memRegion));
    trfprintf(pOutFile, "%*s", indentation, " ");
    printNodeInfo(pOutFile, node);
    trfprintf(pOutFile, "\\n");
