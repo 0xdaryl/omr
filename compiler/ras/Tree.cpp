@@ -1913,7 +1913,7 @@ TR_Debug::printBCDNodeInfo(TR::Node * node, TR_PrettyPrinterString& output)
 // Prints out a specification of the control flow graph in VCG format.
 //
 void
-TR_Debug::printVCG(TR::FILE *pOutFile,  TR::CFG * cfg, const char *sig)
+TR_Debug::printVCG(TR::FILE *pOutFile, TR::CFG *cfg, const char *sig, TR::Region &memRegion)
    {
    if (pOutFile == NULL)
       return;
@@ -1938,7 +1938,7 @@ TR_Debug::printVCG(TR::FILE *pOutFile,  TR::CFG * cfg, const char *sig)
       trfprintf(pOutFile, "node: {title: \"Top1\" label: \"%s\" vertical_order: 0 horizontal_order: 0 textcolor: blue borderwidth: 1}\n", sig);
 
       if (cfg->getStructure())
-         printVCG(pOutFile, cfg->getStructure());
+         printVCG(pOutFile, cfg->getStructure(), memRegion);
 
       trfprintf(pOutFile, "\n}\n");
       }
@@ -1960,17 +1960,17 @@ TR_Debug::printVCG(TR::FILE *pOutFile,  TR::CFG * cfg, const char *sig)
       trfprintf(pOutFile, "node: {title: \"Top1\" label: \"%s\" vertical_order: 0 horizontal_order: 0 textcolor: blue borderwidth: 1}\n", sig);
 
       int32_t order;
-       TR::TreeTop *exitTree, *treeTop;
+      TR::TreeTop *exitTree, *treeTop;
       for (order = 1, treeTop = _comp->getStartTree();
            treeTop;
            treeTop = exitTree->getNextTreeTop(), ++order)
          {
          TR::Block *block = treeTop->getNode()->getBlock();
          exitTree = block->getExit();
-         printVCG(pOutFile, block, order, 1);
+         printVCG(pOutFile, block, memRegion, order, 1);
          }
-      printVCG(pOutFile, toBlock(cfg->getStart()), 0, 1);
-      printVCG(pOutFile, toBlock(cfg->getEnd()), order, 1);
+      printVCG(pOutFile, toBlock(cfg->getStart()), memRegion, 0, 1);
+      printVCG(pOutFile, toBlock(cfg->getEnd()), memRegion, order, 1);
 
       trfprintf(pOutFile, "\n}\n");
       }
@@ -1993,43 +1993,43 @@ TR_Debug::printVCG(TR::FILE *pOutFile,  TR::CFG * cfg, const char *sig)
 
       TR::CFGNode *node;
       for (node = cfg->getFirstNode(); node; node = node->getNext())
-         printVCG(pOutFile, toBlock(node));
+         printVCG(pOutFile, toBlock(node), memRegion);
 
       trfprintf(pOutFile, "\n}\n");
       }
    }
 
 void
-TR_Debug::printVCG(TR::FILE *pOutFile, TR_Structure * structure)
+TR_Debug::printVCG(TR::FILE *pOutFile, TR_Structure *structure, TR::Region &memRegion)
    {
    if (structure->asRegion())
-      printVCG(pOutFile, structure->asRegion());
+      printVCG(pOutFile, structure->asRegion(), memRegion);
    }
 
 void
-TR_Debug::printVCG(TR::FILE *pOutFile, TR_RegionStructure * regionStructure)
+TR_Debug::printVCG(TR::FILE *pOutFile, TR_RegionStructure *regionStructure, TR::Region &memRegion)
    {
    trfprintf(pOutFile, "graph: {\n");
    trfprintf(pOutFile, "title: \"%s\"\n", getName(regionStructure));
 
-   printVCG(pOutFile, regionStructure->getEntry(), true);
+   printVCG(pOutFile, regionStructure->getEntry(), true, memRegion);
    TR_RegionStructure::Cursor it(*regionStructure);
    TR_StructureSubGraphNode *node;
    for (node = it.getFirst(); node != NULL; node = it.getNext())
       {
-      printVCG(pOutFile, node, false);
+      printVCG(pOutFile, node, false, memRegion);
       }
    it.reset();
    for (node = it.getFirst(); node != NULL; node = it.getNext())
       {
-      printVCGEdges(pOutFile, node);
+      printVCGEdges(pOutFile, node, memRegion);
       }
 
    trfprintf(pOutFile, "}\n");
    }
 
 void
-TR_Debug::printVCG(TR::FILE *pOutFile, TR_StructureSubGraphNode * node, bool isEntry)
+TR_Debug::printVCG(TR::FILE *pOutFile, TR_StructureSubGraphNode *node, bool isEntry, TR::Region &memRegion)
    {
    if (_structureChecklist.isSet(node->getNumber()))
       return;
@@ -2046,24 +2046,24 @@ TR_Debug::printVCG(TR::FILE *pOutFile, TR_StructureSubGraphNode * node, bool isE
       if (node->getStructure()->asRegion())
          trfprintf(pOutFile, "color: lightcyan ");
       trfprintf(pOutFile, "}\n");
-      printVCG(pOutFile, node->getStructure());
+      printVCG(pOutFile, node->getStructure(), memRegion);
       }
    }
 
 void
-TR_Debug::printVCGEdges(TR::FILE *pOutFile, TR_StructureSubGraphNode * node)
+TR_Debug::printVCGEdges(TR::FILE *pOutFile, TR_StructureSubGraphNode *node, TR::Region &memRegion)
    {
    for (auto edge = node->getSuccessors().begin(); edge != node->getSuccessors().end(); ++edge)
       {
       TR_StructureSubGraphNode *to = toStructureSubGraphNode((*edge)->getTo());
-      printVCG(pOutFile, to, false); //print it out if it is an exit destination
+      printVCG(pOutFile, to, false, memRegion); //print it out if it is an exit destination
       trfprintf(pOutFile, "edge: { sourcename: \"%s\" targetname: \"%s\" }\n", getName(node), getName(to));
       }
 
    for (auto edge = node->getExceptionSuccessors().begin(); edge != node->getExceptionSuccessors().end(); ++edge)
       {
       TR_StructureSubGraphNode *to = toStructureSubGraphNode((*edge)->getTo());
-      printVCG(pOutFile, to, false); //print it out if it is an exit destination
+      printVCG(pOutFile, to, false, memRegion); //print it out if it is an exit destination
       trfprintf(pOutFile, "edge: { sourcename: \"%s\" targetname: \"%s\" color: pink}\n", getName(node), getName(to));
       }
    }
@@ -2073,7 +2073,7 @@ static const char * blockColours[numHotnessLevels] = { "white", "blue", "lightbl
 static const char *  edgeColours[numHotnessLevels] = { "black", "blue", "lightblue", "lightyellow", "gold", "red", "orange",    "black" };
 
 void
-TR_Debug::printVCG(TR::FILE *pOutFile, TR::Block * block, int32_t vorder, int32_t horder)
+TR_Debug::printVCG(TR::FILE *pOutFile, TR::Block *block, TR::Region &memRegion, int32_t vorder, int32_t horder)
    {
    if (pOutFile == NULL) return;
 
@@ -2126,7 +2126,7 @@ TR_Debug::printVCG(TR::FILE *pOutFile, TR::Block * block, int32_t vorder, int32_
 // Output a representation of this node in the VCG output
 //
 void
-TR_Debug::printVCG(TR::FILE *pOutFile, TR::Node * node, uint32_t indentation)
+TR_Debug::printVCG(TR::FILE *pOutFile, TR::Node *node, uint32_t indentation, TR::Region &memRegion)
    {
    if (pOutFile == NULL) return;
 
@@ -2153,7 +2153,7 @@ TR_Debug::printVCG(TR::FILE *pOutFile, TR::Node * node, uint32_t indentation)
    else
       {
       for (i = 0; i < node->getNumChildren(); i++)
-         printVCG(pOutFile, node->getChild(i), indentation);
+         printVCG(pOutFile, node->getChild(i), indentation, memRegion);
       }
    }
 

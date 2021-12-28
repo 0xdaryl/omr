@@ -382,7 +382,7 @@ OMR::Compilation::Compilation(
    // _methodSymbol must be initialized here because creating a jitted method symbol
    //   actually inspects TR::comp()->_methodSymbol (to compare against the new object)
    _methodSymbol = TR::ResolvedMethodSymbol::createJittedMethodSymbol(self()->trHeapMemory(), compilee, self());
-   
+
    // initPersistentCPUField and createOpCode must be done after method symbol creation
 
    if (self()->getOption(TR_EnableNodeGC))
@@ -2082,6 +2082,7 @@ void OMR::Compilation::dumpMethodGraph(int index, TR::ResolvedMethodSymbol *meth
    if (cfg == 0) cfg = self()->getJittedMethodSymbol()->getFlowGraph();
    if (cfg)
       {
+      TR::StackMemoryRegion stackMemoryRegion(*self()->trMemory());
       char fileName[20];
       sprintf(fileName, "cfg%d.vcg", index);
 
@@ -2089,7 +2090,7 @@ void OMR::Compilation::dumpMethodGraph(int index, TR::ResolvedMethodSymbol *meth
       char *fn = self()->fe()->getFormattedName(tmp, 1025, fileName, NULL, false);
       TR::FILE *pFile = trfopen(fn, "wb", false);
       TR_ASSERT(pFile != NULL, "unable to open cfg file");
-      self()->getDebug()->printVCG(pFile, cfg, self()->signature());
+      self()->getDebug()->printVCG(pFile, cfg, self()->signature(), stackMemoryRegion);
       trfprintf(self()->getOutFile(), "VCG graph dumped in file %s\n", fn);
       trfclose(pFile);
       }
