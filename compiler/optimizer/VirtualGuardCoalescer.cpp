@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -768,7 +768,7 @@ void TR_VirtualGuardTailSplitter::remergeGuard(TR_BlockCloner &cloner, VGInfo *i
    char fileName[20];
    sprintf(fileName, "split%d.vcg", block->getNumber());
    FILE *file = fopen(fileName, "w");
-   comp->getDebug()->printVCG(file, _cfg, fileName);
+   comp->getDebug()->printVCG(file, _cfg, fileName, trMemory()->currentStackRegion());
    fclose(file);
 #endif
 

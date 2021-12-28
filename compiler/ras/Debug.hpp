@@ -729,8 +729,8 @@ public:
    virtual void         printAliasInfo(TR::FILE *, TR::SymbolReference *);
 
    virtual int32_t      printWithFixedPrefix(TR::FILE *, TR::Node *, uint32_t indentation, bool printChildren, bool printRefCounts, const char *prefix);
-   virtual void         printVCG(TR::FILE *, TR::CFG *, const char *);
-   virtual void         printVCG(TR::FILE *, TR::Node *, uint32_t indentation);
+   virtual void         printVCG(TR::FILE *pOutFile, TR::CFG *cfg, const char *signature, TR::Region &memRegion);
+   virtual void         printVCG(TR::FILE *pOutFile, TR::Node *node, uint32_t indentation, TR::Region &memRegion);
 
    virtual void         print(J9JITExceptionTable * data, TR_ResolvedMethod * feMethod, bool fourByteOffsets);
 
@@ -1081,11 +1081,11 @@ public:
 
    void printBlockInfo(TR::FILE *, TR::Node * node);
 
-   void printVCG(TR::FILE *, TR_Structure * structure);
-   void printVCG(TR::FILE *, TR_RegionStructure * regionStructure);
-   void printVCG(TR::FILE *, TR_StructureSubGraphNode * node, bool isEntry);
-   void printVCGEdges(TR::FILE *, TR_StructureSubGraphNode * node);
-   void printVCG(TR::FILE *, TR::Block * block, int32_t vorder = -1, int32_t horder = -1);
+   void printVCG(TR::FILE *pOutFile, TR_Structure *structure, TR::Region &memRegion);
+   void printVCG(TR::FILE *pOutFile, TR_RegionStructure *regionStructure, TR::Region &memRegion);
+   void printVCG(TR::FILE *pOutFile, TR_StructureSubGraphNode *node, bool isEntry, TR::Region &memRegion);
+   void printVCGEdges(TR::FILE *pOutFile, TR_StructureSubGraphNode *node, TR::Region &memRegion);
+   void printVCG(TR::FILE *pOutFile, TR::Block *block, TR::Region &memRegion, int32_t vorder = -1, int32_t horder = -1);
 
    void printByteCodeStack(int32_t parentStackIndex, uint16_t byteCodeIndex, char * indent);
    void print(TR::FILE *, TR::GCRegisterMap *);
