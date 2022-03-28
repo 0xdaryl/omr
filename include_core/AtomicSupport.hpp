@@ -33,8 +33,10 @@
 #include <tpf/cmpswp.h>
 #endif
 
+#if defined(AIXPPC)
 #if defined(__xlC__)
 #include <sys/atomic_op.h>
+#endif
 #endif
 
 #include <stdlib.h>
@@ -61,14 +63,14 @@
 #if !defined(ATOMIC_SUPPORT_STUB)
 #if defined(AIXPPC)
 /* The default hardware priorities on AIX is MEDIUM(4).
- * For AIX, dropSMT should drop to LOW(2) and 
+ * For AIX, dropSMT should drop to LOW(2) and
  * restoreSMT should raise back to MEDIUM(4)
  */
 		inline void __dropSMT() { __asm__ __volatile__ ("or 1,1,1"); }
 		inline void __restoreSMT() { __asm__ __volatile__ ("or 2,2,2"); }
 #elif defined(LINUXPPC) /* defined(AIXPPC) */
 /* The default hardware priorities on LINUXPPC is MEDIUM-LOW(3).
- * For LINUXPPC, dropSMT should drop to VERY-LOW(1) and 
+ * For LINUXPPC, dropSMT should drop to VERY-LOW(1) and
  * restoreSMT should raise back to MEDIUM-LOW(3)
  */
 		inline void __dropSMT() {  __asm__ __volatile__ ("or 31,31,31"); }
@@ -417,7 +419,7 @@ public:
 		csg((csg_t *)&oldValue, (csg_t *)address, (csg_t)newValue);
 		return oldValue;
 #elif defined(__xlC__) /* defined(OMRZTPF) */
-#if defined(__64BIT__)
+#if defined(__64BIT__) || !defined(AIXPPC)
 		__compare_and_swaplp((volatile long*)address, (long*)&oldValue, (long)newValue);
 #else /* defined(__64BIT__) */
 		/* __compare_and_swaplp is valid only in 64-bit mode. */
