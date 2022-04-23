@@ -71,7 +71,6 @@
    counterAddressSymbol,      // address of invokation counter for indirect loads and stores
    startPCSymbol,             // startPC of the compiled method
    compiledMethodSymbol,      // J9Method of the compiled method
-   thisRangeExtensionSymbol,
    profilingBufferCursorSymbol,// profilingBufferCursor slot on j9vmthread
    profilingBufferEndSymbol,  // profilingBufferEnd slot on j9vmthread
    profilingBufferSymbol,     // profilingBuffer on j9vmthread

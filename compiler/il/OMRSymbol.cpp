@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -88,8 +88,7 @@ OMR::Symbol::dontEliminateStores(TR::Compilation *comp, bool isForLocalDeadStore
    {
    return (self()->isAuto() && _flags.testAny(PinningArrayPointer)) ||
           (self()->isParm() && _flags.testAny(ReinstatedReceiver)) ||
-          _flags.testAny(HoldsMonitoredObject) ||
-          (comp->getSymRefTab()->findThisRangeExtensionSymRef() && (self() == comp->getSymRefTab()->findThisRangeExtensionSymRef()->getSymbol()));
+          _flags.testAny(HoldsMonitoredObject);
    }
 
 uint32_t

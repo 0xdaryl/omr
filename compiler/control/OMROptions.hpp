@@ -604,7 +604,7 @@ enum TR_CompilationOptions
    TR_DisableTLE                                      = 0x00040000 + 17,
    TR_ForceVSSStackCompaction                         = 0x00080000 + 17, // always compact variable size symbols
    TR_DisableVSSStackCompaction                       = 0x00100000 + 17, // never compact variable size symbols -- if not force or disable then use heuristic based on opt level and VSS total size
-   TR_EnableThisLiveRangeExtension                    = 0x00200000 + 17, // "this" live range extension
+   // Available                                       = 0x00200000 + 17,
    // Available                                       = 0x00400000 + 17,
    TR_EnableDowngradeOnHugeQSZ                        = 0x00800000 + 17,
    TR_DisablePostProfileCompPriorityBoost             = 0x01000000 + 17,

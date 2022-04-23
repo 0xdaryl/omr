@@ -2857,12 +2857,6 @@ TR::Node *constrainStore(OMR::ValuePropagation *vp, TR::Node *node)
    if (!node->getSymbol()->isAutoOrParm())
       {
       globalStore = true;
-
-      if (node->getOpCode().isStore())
-         {
-         if (node->getSymbolReference() == vp->comp()->getSymRefTab()->findThisRangeExtensionSymRef())
-            globalStore = false;
-         }
       }
 
    if (globalStore)

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -224,24 +224,6 @@ TR::SymbolReference *
 OMR::SymbolReferenceTable::findClassRomPtrSymbolRef()
    {
    return element(classRomPtrSymbol);
-   }
-
-
-TR::SymbolReference *
-OMR::SymbolReferenceTable::findOrCreateThisRangeExtensionSymRef(TR::ResolvedMethodSymbol *owningMethodSymbol)
-   {
-   if (!element(thisRangeExtensionSymbol))
-      {
-      TR::SymbolReference *symRef = createKnownStaticDataSymbolRef(0, TR::Address);
-      element(thisRangeExtensionSymbol) = symRef;
-      }
-   return element(thisRangeExtensionSymbol);
-   }
-
-TR::SymbolReference *
-OMR::SymbolReferenceTable::findThisRangeExtensionSymRef(TR::ResolvedMethodSymbol *owningMethodSymbol)
-   {
-   return element(thisRangeExtensionSymbol);
    }
 
 
@@ -2137,7 +2119,6 @@ const char *OMR::SymbolReferenceTable::_commonNonHelperSymbolNames[] =
    "<counterAddress>",
    "<startPC>",
    "<compiledMethod>",
-   "<thisRangeExtension>",
    "<profilingBufferCursor>",
    "<profilingBufferEnd>",
    "<profilingBuffer>",

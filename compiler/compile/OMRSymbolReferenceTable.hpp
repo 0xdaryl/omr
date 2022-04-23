@@ -139,7 +139,6 @@ class SymbolReferenceTable
       counterAddressSymbol,      // address of invokation counter for indirect loads and stores
       startPCSymbol,             // startPC of the compiled method
       compiledMethodSymbol,      // J9Method of the compiled method
-      thisRangeExtensionSymbol,
       profilingBufferCursorSymbol,// profilingBufferCursor slot on j9vmthread
       profilingBufferEndSymbol,  // profilingBufferEnd slot on j9vmthread
       profilingBufferSymbol,     // profilingBuffer on j9vmthread
@@ -774,8 +773,6 @@ class SymbolReferenceTable
    TR::SymbolReference * findClassFromJavaLangClassSymbolRef();
 
    // CG, optimizer
-   TR::SymbolReference * findThisRangeExtensionSymRef(TR::ResolvedMethodSymbol *owningMethodSymbol = 0);
-
    TR::SymbolReference * findOrCreateSymRefWithKnownObject(TR::SymbolReference *original, uintptr_t *referenceLocation);
    TR::SymbolReference * findOrCreateSymRefWithKnownObject(TR::SymbolReference *original, uintptr_t *referenceLocation, bool isArrayWithConstantElements);
    TR::SymbolReference * findOrCreateSymRefWithKnownObject(TR::SymbolReference *original, TR::KnownObjectTable::Index objectIndex);
@@ -785,7 +782,6 @@ class SymbolReferenceTable
     * \note If there is a temp with the same known object already use the existing one. Otherwise, create a new temp.
     */
    TR::SymbolReference * findOrCreateTemporaryWithKnowObjectIndex(TR::ResolvedMethodSymbol * owningMethodSymbol, TR::KnownObjectTable::Index knownObjectIndex);
-   TR::SymbolReference * findOrCreateThisRangeExtensionSymRef(TR::ResolvedMethodSymbol *owningMethodSymbol = 0);
    TR::SymbolReference * findOrCreateContiguousArraySizeSymbolRef();
    TR::SymbolReference * findOrCreateNewArrayNoZeroInitSymbolRef(TR::ResolvedMethodSymbol * owningMethodSymbol);
    TR::SymbolReference * findOrCreateNewObjectSymbolRef(TR::ResolvedMethodSymbol * owningMethodSymbol);

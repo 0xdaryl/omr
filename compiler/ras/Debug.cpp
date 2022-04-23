@@ -1536,8 +1536,6 @@ TR_Debug::getName(TR::SymbolReference * symRef)
             return "<vft-symbol>";
          case TR::SymbolReferenceTable::currentThreadSymbol:
             return "<current-thread>";
-         case TR::SymbolReferenceTable::thisRangeExtensionSymbol:
-            return "<this-range-extension>";
          case TR::SymbolReferenceTable::recompilationCounterSymbol:
             return "<recompilation-counter>";
          case TR::SymbolReferenceTable::counterAddressSymbol:
@@ -2046,7 +2044,6 @@ static const char *commonNonhelperSymbolNames[] =
    "<counterAddress>",
    "<startPC>",
    "<compiledMethod>",
-   "<thisRangeExtension>",
    "<profilingBufferCursor>",
    "<profilingBufferEnd>",
    "<profilingBuffer>",
