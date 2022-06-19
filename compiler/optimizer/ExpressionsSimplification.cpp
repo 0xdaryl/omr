@@ -397,6 +397,9 @@ bool TR_ExpressionsSimplification::transformSummationReductionCandidate(TR::Tree
 
    if (opNode->getOpCodeValue() == TR::iadd || opNode->getOpCodeValue() == TR::isub)
       {
+      if (trace())
+         traceMsg(comp(), "%s %s : opNode=%p\n", __FUNCTION__, opNode->getOpCode().getName(), opNode);
+
       if (opNode->getSecondChild()->getOpCode().hasSymbolReference() &&
             node->getSymbolReference() == opNode->getSecondChild()->getSymbolReference())
          {
@@ -413,6 +416,9 @@ bool TR_ExpressionsSimplification::transformSummationReductionCandidate(TR::Tree
       }
    else if (opNode->getOpCodeValue() == TR::ixor || opNode->getOpCodeValue() == TR::ineg)
       {
+      if (trace())
+         traceMsg(comp(), "%s %s : opNode=%p\n", __FUNCTION__, opNode->getOpCode().getName(), opNode);
+
       expNode = ixorinegSimplifier(opNode, loopInfo, &removeOnly);
       }
 
@@ -514,6 +520,9 @@ TR_ExpressionsSimplification::invalidateCandidates()
 
    for (TR::Block *currentBlock = blocks.getFirst(); currentBlock; currentBlock  = blocks.getNext())
       {
+      if (trace())
+         traceMsg(comp(), "%s : Looking at block_%d\n", __FUNCTION__, currentBlock->getNumber());
+
       TR::TreeTop *tt = currentBlock->getEntry();
       TR::TreeTop *exitTreeTop = currentBlock->getExit();
       while (tt != exitTreeTop)
@@ -521,7 +530,7 @@ TR_ExpressionsSimplification::invalidateCandidates()
          TR::Node *currentNode = tt->getNode();
 
          if (trace())
-            traceMsg(comp(), "Looking at treeTop [%p]\n", currentNode);
+            traceMsg(comp(), "%s : Looking at treeTop [%p]\n", __FUNCTION__, currentNode);
 
          removeCandidate(currentNode, tt);
 
@@ -557,7 +566,7 @@ TR_ExpressionsSimplification::removeCandidate(TR::Node *node, TR::TreeTop* tt)
    node->setVisitCount(_visitCount);
 
    if (trace())
-      traceMsg(comp(), "Looking at Node [%p]\n", node);
+      traceMsg(comp(), "%s : Looking at Node [%p]\n", __FUNCTION__, node);
 
    ListIterator<TR::TreeTop> candidateTTs(_candidateTTs);
    for (TR::TreeTop *candidateTT = candidateTTs.getFirst(); candidateTT; candidateTT = candidateTTs.getNext())
@@ -567,7 +576,7 @@ TR_ExpressionsSimplification::removeCandidate(TR::Node *node, TR::TreeTop* tt)
           candidateTT->getNode()->mayKill(true).contains(node->getSymbolReference(), comp()))
          {
          if (trace())
-            traceMsg(comp(), "Removing candidate %p which has aliases in the loop\n", candidateTT->getNode());
+            traceMsg(comp(), "   Removing candidate %p which has aliases in the loop\n", candidateTT->getNode());
 
          _candidateTTs->remove(candidateTT);
          continue;
@@ -901,12 +910,18 @@ TR_ExpressionsSimplification::iaddisubSimplifier(TR::Node *invariantNode, LoopIn
      iters,
      _currentRegion->getNumber());
 
-   return TR::Node::create(
+   TR::Node *reductionNode = TR::Node::create(
       invariantNode,
       TR::imul,
       2,
       invariantNode->duplicateTree(),
       TR::Node::create(invariantNode, TR::iconst, 0, iters));
+
+   if (trace())
+      traceMsg(comp(), "%s : create imul reduction node %p for invariantNode %p and %d iterations (loop %d)\n",
+         __FUNCTION__, reductionNode, invariantNode, iters, _currentRegion->getNumber());
+
+   return reductionNode;
    }
 
 
