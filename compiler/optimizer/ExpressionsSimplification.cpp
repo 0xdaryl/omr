@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -265,7 +265,7 @@ void TR_ExpressionsSimplification::simplifyInvariantLoopExpressions(ListIterator
 
       if (canReduceSummations)
          {
-         usedCandidate = tranformSummationReductionCandidate(treeTop, loopInfo, &isPreheaderBlockInvalid);
+         usedCandidate = transformSummationReductionCandidate(treeTop, loopInfo, &isPreheaderBlockInvalid);
          }
 
       if (isPreheaderBlockInvalid)
@@ -275,7 +275,7 @@ void TR_ExpressionsSimplification::simplifyInvariantLoopExpressions(ListIterator
 
       if (!usedCandidate)
          {
-         tranformStoreMotionCandidate(treeTop, &isPreheaderBlockInvalid);
+         transformStoreMotionCandidate(treeTop, &isPreheaderBlockInvalid);
          }
       if (isPreheaderBlockInvalid)
          {
@@ -386,7 +386,7 @@ void TR_ExpressionsSimplification::setStoreMotionCandidates(TR::Node *node, TR::
       }
    }
 
-bool TR_ExpressionsSimplification::tranformSummationReductionCandidate(TR::TreeTop *treeTop, LoopInfo *loopInfo, bool *isPreheaderBlockInvalid)
+bool TR_ExpressionsSimplification::transformSummationReductionCandidate(TR::TreeTop *treeTop, LoopInfo *loopInfo, bool *isPreheaderBlockInvalid)
    {
    TR::Node *node = treeTop->getNode();
    TR::Node *opNode = node->getFirstChild();
@@ -451,7 +451,7 @@ bool TR_ExpressionsSimplification::tranformSummationReductionCandidate(TR::TreeT
       return (expNode != NULL);
    }
 
-void TR_ExpressionsSimplification::tranformStoreMotionCandidate(TR::TreeTop *treeTop, bool *isPreheaderBlockInvalid)
+void TR_ExpressionsSimplification::transformStoreMotionCandidate(TR::TreeTop *treeTop, bool *isPreheaderBlockInvalid)
    {
    TR::Node *node = treeTop->getNode();
 
