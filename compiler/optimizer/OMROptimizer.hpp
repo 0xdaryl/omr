@@ -176,9 +176,9 @@ class Optimizer
     * functionality as the `optTest=` parameter, it does not require
     * reinitializing the JIT, nor manually changing the optFile.
     *
-    * If _mockStrategy is NULL, has no effect on the optimizer. 
+    * If _mockStrategy is NULL, has no effect on the optimizer.
     *
-    * @param strategy The #OptimizationStrategy to return when requested. 
+    * @param strategy The #OptimizationStrategy to return when requested.
     */
    static void setMockStrategy(const OptimizationStrategy *strategy) { _mockStrategy = strategy; };
 
@@ -349,9 +349,6 @@ class Optimizer
 
    int32_t performOptimization(const OptimizationStrategy *, int32_t firstOptIndex, int32_t lastOptIndex, int32_t doTiming);
 
-   void dumpStrategy(const OptimizationStrategy *);
-
-
    TR::Compilation *            _compilation;
    TR_Memory *                   _trMemory;
    TR::CodeGenerator *          _cg;
@@ -361,9 +358,9 @@ class Optimizer
 
    const OptimizationStrategy *          _strategy;
 
-   /* 
+   /*
     * Since mock strategies are only used in testing right now, we make this
-    * static to ease implementation. 
+    * static to ease implementation.
     *
     * This is currently not a thread-safe implementation beause doing a
     * thread-safe implementation would require a more invasive compilation
