@@ -51,6 +51,7 @@
 #include "infra/CfgEdge.hpp"
 #include "optimizer/Optimizer.hpp"
 #include "ras/Debug.hpp"
+#include "ras/Logger.hpp"
 
 
 class TR_OpaqueClassBlock;
@@ -290,7 +291,7 @@ TR_LocalAnalysisInfo::TR_LocalAnalysisInfo(TR::Compilation *c, bool t)
                if (trace())
                   {
                   traceMsg(comp(), "\nExpression #%d is : \n", _numNodes);
-                  comp()->getDebug()->print(comp()->getOutFile(), firstNodeInTree, 6, true);
+                  comp()->getDebug()->print(comp()->getLogger(), firstNodeInTree, 6, true);
                   }
 
                firstNodeInTree->setLocalIndex(_numNodes++);
@@ -309,7 +310,7 @@ TR_LocalAnalysisInfo::TR_LocalAnalysisInfo(TR::Compilation *c, bool t)
                   if (trace())
                      {
                      traceMsg(comp(), "\nExpression #%d is : \n", _numNodes);
-                     comp()->getDebug()->print(comp()->getOutFile(), firstNodeInTree->getFirstChild(), 6, true);
+                     comp()->getDebug()->print(comp()->getLogger(), firstNodeInTree->getFirstChild(), 6, true);
                      }
 
                   firstNodeInTree->getFirstChild()->setLocalIndex(_numNodes++);
@@ -984,8 +985,8 @@ bool TR_LocalAnalysisInfo::countSupportedNodes(TR::Node *node, TR::Node *parent,
          {
          if (trace())
             {
-            traceMsg(comp(), "\nExpression #%d is : \n",_numNodes);
-            _compilation->getDebug()->print(_compilation->getOutFile(), node, 6, true);
+            traceMsg(comp(), "\nExpression #%d is : \n", _numNodes);
+            _compilation->getDebug()->print(comp()->getLogger(), node, 6, true);
             }
 
          flag = true;

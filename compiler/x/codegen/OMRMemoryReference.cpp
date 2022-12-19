@@ -54,6 +54,7 @@
 #include "x/codegen/DataSnippet.hpp"
 #include "x/codegen/X86Instruction.hpp"
 #include "codegen/InstOpCode.hpp"
+#include "ras/Logger.hpp"
 
 class TR_OpaqueClassBlock;
 class TR_ScratchRegisterManager;
@@ -765,10 +766,10 @@ OMR::X86::MemoryReference::populateMemoryReference(
       cg->decReferenceCount(nodeToBeAdjusted);
       }
 
-   if (comp->getOption(TR_TraceRegisterPressureDetails))
+   if (comp->getOption(TR_TraceRegisterPressureDetails) && comp->getLoggingEnabled())
       {
       traceMsg(comp, "   populated memref on %s", cg->getDebug()->getName(subTree));
-      cg->getDebug()->dumpLiveRegisters();
+      cg->getDebug()->dumpLiveRegisters(comp->getLogger());
       traceMsg(comp, "\n");
       }
 
@@ -829,10 +830,10 @@ OMR::X86::MemoryReference::consolidateRegisters(
       TR::CodeGenerator *cg)
    {
    TR::Compilation *comp = cg->comp();
-   if (comp->getOption(TR_TraceRegisterPressureDetails))
+   if (comp->getOption(TR_TraceRegisterPressureDetails) && comp->getLoggingEnabled())
       {
       traceMsg(comp, "  consolidateRegisters on %s", cg->getDebug()->getName(node));
-      cg->getDebug()->dumpLiveRegisters();
+      cg->getDebug()->dumpLiveRegisters(comp->getLogger());
       traceMsg(comp, "\n");
       }
 

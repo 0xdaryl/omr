@@ -403,7 +403,7 @@ TR_GlobalRegisterAllocator::perform()
 
 
       if (trace())
-         comp()->dumpMethodTrees("Trees before tactical global register allocator", comp()->getMethodSymbol());
+         comp()->dumpMethodTrees(comp()->getLogger(), "Trees before tactical global register allocator", comp()->getMethodSymbol());
 
       _candidatesNeedingSignExtension = NULL;
       _candidatesSignExtendedInThisLoop = NULL;
@@ -3912,7 +3912,7 @@ void TR_LiveRangeSplitter::splitLiveRanges()
       }
 
    if (trace())
-      comp()->dumpMethodTrees("Trees before live range splitter ", comp()->getMethodSymbol());
+      comp()->dumpMethodTrees(comp()->getLogger(), "Trees before live range splitter ", comp()->getMethodSymbol());
 
    //_origSymRefs = (TR::SymbolReference **)trMemory()->allocateStackMemory(comp()->getSymRefCount()*sizeof(TR::SymbolReference *));
    //memset(_origSymRefs, 0, comp()->getSymRefCount()*sizeof(TR::SymbolReference *));

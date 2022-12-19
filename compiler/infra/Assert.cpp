@@ -37,6 +37,7 @@
 #include "infra/Annotations.hpp"
 #include "infra/ILWalk.hpp"
 #include "ras/Debug.hpp"
+#include "ras/Logger.hpp"
 #include "stdarg.h"
 
 void OMR_NORETURN TR::trap()
@@ -61,7 +62,7 @@ void OMR_NORETURN TR::trap()
 #else // of _MSC_VER
 
       // SIGABRT only has one global signal handler, so we cannot guard function calls against SIGABRT using the port
-      // library APIs. Raising a SIGTRAP is useful for downstream projects who may want to catch such signals for 
+      // library APIs. Raising a SIGTRAP is useful for downstream projects who may want to catch such signals for
       // compilation thread crashes and requeue such compilations (for another attempt, or perhaps to generate
       // additional diagnostic data).
       raise(SIGTRAP);
@@ -207,10 +208,10 @@ namespace TR
 
       if (printFullContext)
          {
-         debug->printIRTrees(TR::IO::Stderr, "Assertion Context", comp->getMethodSymbol());
-         debug->print(TR::IO::Stderr, comp->getMethodSymbol()->getFlowGraph());
+         debug->printIRTrees(TR::StreamLogger::Stderr, "Assertion Context", comp->getMethodSymbol());
+         debug->print(TR::StreamLogger::Stderr, comp->getMethodSymbol()->getFlowGraph());
          if (comp->getKnownObjectTable())
-            comp->getKnownObjectTable()->dumpTo(TR::IO::Stderr, comp);
+            comp->getKnownObjectTable()->dumpTo(TR::StreamLogger::Stderr, comp);
          }
       else
          {
@@ -228,7 +229,7 @@ namespace TR
                {
                foundNode = true;
                debug->restoreNodeChecklist(commonedNodeChecklist);
-               debug->print(TR::IO::Stderr, it.currentTree());
+               debug->print(TR::StreamLogger::Stderr, it.currentTree());
                break;
                }
             else
@@ -260,7 +261,7 @@ namespace TR
       if (printFullContext)
          {
          fprintf(stderr, "\n");
-         debug->dumpMethodInstrs(TR::IO::Stderr, "Assertion Context", false, false);
+         debug->dumpMethodInstrs(TR::StreamLogger::Stderr, "Assertion Context", false, false);
          }
       else
          {
@@ -273,7 +274,7 @@ namespace TR
 
          for (int i = 0; i < numInstructionsInContext && cursor; i++)
             {
-            debug->print(TR::IO::Stderr, cursor);
+            debug->print(TR::StreamLogger::Stderr, cursor);
             cursor = cursor->getNext();
             }
 

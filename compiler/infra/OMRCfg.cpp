@@ -54,6 +54,7 @@
 #include "optimizer/Structure.hpp"
 #include "optimizer/StructuralAnalysis.hpp"
 #include "ras/Debug.hpp"
+#include "ras/Logger.hpp"
 
 #ifdef __MVS__
 #include <stdlib.h>
@@ -138,8 +139,8 @@ OMR::CFG::addEdge(TR::CFGEdge *e)
       getStructure()->addEdge(e, false);
       if (comp()->getOption(TR_TraceAddAndRemoveEdge))
          {
-         traceMsg(comp(),"\nStructures after adding edge %d-->%d:\n", e->getFrom()->getNumber(), e->getTo()->getNumber());
-         comp()->getDebug()->print(comp()->getOutFile(), _rootStructure, 6);
+         traceMsg(comp(), "\nStructures after adding edge %d-->%d:\n", e->getFrom()->getNumber(), e->getTo()->getNumber());
+         comp()->getDebug()->print(comp()->getLogger(), _rootStructure, 6);
          }
       }
    }
@@ -151,7 +152,7 @@ OMR::CFG::addEdge(TR::CFGNode *f, TR::CFGNode *t)
 
    if (comp()->getOption(TR_TraceAddAndRemoveEdge))
       {
-      traceMsg(comp(),"\nAdding real edge %d-->%d:\n", f->getNumber(), t->getNumber());
+      traceMsg(comp(), "\nAdding real edge %d-->%d:\n", f->getNumber(), t->getNumber());
       }
 
    TR_ASSERT(!f->hasExceptionSuccessor(t), "adding a non exception edge when there's already an exception edge");
@@ -235,7 +236,7 @@ OMR::CFG::addExceptionEdgeUnchecked(
       if (comp()->getOption(TR_TraceAddAndRemoveEdge))
          {
          traceMsg(comp(),"\nStructures after adding exception edge %d-->%d:\n", f->getNumber(), t->getNumber());
-         comp()->getDebug()->print(comp()->getOutFile(), _rootStructure, 6);
+         comp()->getDebug()->print(comp()->getLogger(), _rootStructure, 6);
          }
       }
    }
@@ -931,7 +932,6 @@ bool OMR::CFG::removeEdge(TR::CFGEdge *edge)
                if (comp()->getOption(TR_TraceAddAndRemoveEdge))
                   {
                   traceMsg(comp(),"\nStructure changed after removing edge %d-->%d:\n", from->getNumber(), to->getNumber());
-                  ///comp()->getDebug()->print(comp()->getOutFile(), getStructure(), 6);
                   }
                }
             }
@@ -1077,7 +1077,7 @@ bool OMR::CFG::removeEdge(TR::CFGEdge *edge, bool recursiveImpl)
       if (comp()->getOption(TR_TraceAddAndRemoveEdge))
          {
          traceMsg(comp(),"\nStructures after removing edge %d-->%d:\n", from->getNumber(), to->getNumber());
-         comp()->getDebug()->print(comp()->getOutFile(), getStructure(), 6);
+         comp()->getDebug()->print(comp()->getLogger(), getStructure(), 6);
          }
       }
 
@@ -1258,7 +1258,7 @@ OMR::CFG::setFrequencies()
          _max_edge_freq = MAX_STATIC_EDGE_FREQ;
          self()->setBlockAndEdgeFrequenciesBasedOnStructure();
          if (comp()->getOption(TR_TraceBFGeneration))
-            comp()->dumpMethodTrees("Trees after setting frequencies from structures", comp()->getMethodSymbol());
+            comp()->dumpMethodTrees(comp()->getLogger(), "Trees after setting frequencies from structures", comp()->getMethodSymbol());
          }
 
       return true;
@@ -3178,7 +3178,7 @@ void OMR::CFG::resetFrequencies()
    _numEdges = edgeIndex;
 
    if (comp()->getOption(TR_TraceBFGeneration))
-      comp()->dumpMethodTrees("Trees after resetFrequencies");
+      comp()->dumpMethodTrees(comp()->getLogger(), "Trees after resetFrequencies");
 
    }
 

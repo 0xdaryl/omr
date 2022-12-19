@@ -29,7 +29,7 @@
 class TR_Memory;
 namespace TR { class Block; }
 namespace TR { class ResolvedMethodSymbol; }
-
+namespace TR { class Logger; }
 
 template <typename ByteCode, typename ResolvedMethod> class TR_ByteCodeIterator
    {
@@ -98,9 +98,9 @@ public:
 
 protected:
    // Abstract Methods - subclasses must provide these
-   void printByteCodePrologue();
-   void printByteCode();
-   void printByteCodeEpilogue();
+   void printByteCodePrologue(TR::Logger *log);
+   void printByteCode(TR::Logger *log);
+   void printByteCodeEpilogue(TR::Logger *log);
 
    bool isBranch();
    int32_t branchDesination(int32_t base);

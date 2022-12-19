@@ -420,6 +420,10 @@ public:
    TR::FILE *getOutFile()  { return _options->getLogFile(); }
    void  setOutFile(TR::FILE *pf) { _options->setLogFile(pf); }
 
+   TR::Logger *getLogger() { return _options->getLogger(); }
+   void setLogger(TR::Logger *log) { _options->setLogger(log); }
+   bool getLoggingEnabled() { return (_options->getLogFile() != NULL); }
+
    // --------------------------------------------------------------------------
 
    bool allowRecompilation()   {return _options->allowRecompilation();}
@@ -727,9 +731,9 @@ public:
    //
    int32_t getPrevSymRefTabSize() { return _prevSymRefTabSize; }
    void setPrevSymRefTabSize( int32_t prevSize ) { _prevSymRefTabSize = prevSize; }
-   void dumpMethodTrees(char *title, TR::ResolvedMethodSymbol * = 0);
-   void dumpMethodTrees(char *title1, const char *title2, TR::ResolvedMethodSymbol * = 0);
-   void dumpFlowGraph( TR::CFG * = 0);
+   void dumpMethodTrees(TR::Logger *log, char *title, TR::ResolvedMethodSymbol * = 0);
+   void dumpMethodTrees(TR::Logger *log, char *title1, const char *title2, TR::ResolvedMethodSymbol * = 0);
+   void dumpFlowGraph(TR::Logger *log, TR::CFG * = 0);
 
    bool getAddressEnumerationOption(TR_CompilationOptions o) {return _options->getAddressEnumerationOption(o);}
 

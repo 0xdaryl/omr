@@ -57,6 +57,7 @@
 #include "optimizer/TransformUtil.hpp"
 #include "optimizer/VPConstraint.hpp"
 #include "optimizer/AsyncCheckInsertion.hpp"
+#include "ras/Logger.hpp"
 
 #define OPT_DETAILS "O^O REDUNDANT ASYNC CHECK REMOVAL: "
 #define SHORT_RUNNING_LOOP 1
@@ -125,7 +126,7 @@ int32_t TR_RedundantAsyncCheckRemoval::perform()
    TR::StackMemoryRegion stackMemoryRegion(*trMemory());
 
    if (trace())
-      comp()->dumpMethodTrees("Before analysis:");
+      comp()->dumpMethodTrees(comp()->getLogger(), "Before analysis:");
 
    _asyncCheckInCurrentLoop = false;
    _numAsyncChecksInserted  = 0;
@@ -183,7 +184,7 @@ int32_t TR_RedundantAsyncCheckRemoval::perform()
       }
 
    if (trace())
-      comp()->dumpMethodTrees("After analysis:");
+      comp()->dumpMethodTrees(comp()->getLogger(), "After analysis:");
 
    return count;
    }

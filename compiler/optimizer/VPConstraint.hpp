@@ -47,6 +47,7 @@ namespace TR { class VP_BCDValue; }
 namespace TR { class VP_BCDSign; }
 
 namespace TR { class Compilation; }
+namespace TR { class Logger; }
 namespace TR { class Node; }
 namespace TR { class SymbolReference; }
 
@@ -242,8 +243,8 @@ class VPConstraint
    bool hasArtificialIncrement() { return ((_mergePriority & 0x80000000) != 0); }
 
    void print(OMR::ValuePropagation *vp);
-   virtual void print(TR::Compilation *, TR::FILE *);
-   virtual void print(TR::Compilation *, TR::FILE *, int32_t relative);
+   virtual void print(TR::Logger *log, TR::Compilation *);
+   virtual void print(TR::Logger *log, TR::Compilation *, int32_t relative);
 
    bool isUnsigned() { return _unsignedType; }
    void setIsUnsigned(bool b) { TR_ASSERT(0 == 1, "I should eventually remove this property from here"); _unsignedType = b; } //FIXME//CRITICAL
@@ -321,7 +322,7 @@ class VPShortConst : public TR::VPShortConstraint
    virtual int16_t getHigh() {return _low;}
    virtual bool mustBeEqual(TR::VPConstraint *other, OMR::ValuePropagation *vp);
 
-   virtual void print(TR::Compilation *, TR::FILE *);
+   virtual void print(TR::Logger *log, TR::Compilation *);
    virtual const char *name();
 
    virtual int32_t getPrecision() {return getPrecisionFromValue(_low);}
@@ -337,7 +338,7 @@ class VPShortRange : public TR::VPShortConstraint
    virtual TR::VPShortRange *asShortRange();
    virtual int16_t getHigh() {return _high;}
 
-   virtual void print(TR::Compilation *, TR::FILE *);
+   virtual void print(TR::Logger *log, TR::Compilation *);
    virtual const char *name();
 
    virtual int32_t getPrecision() {return getPrecisionFromRange(_low, _high);}
@@ -400,7 +401,7 @@ class VPIntConst : public TR::VPIntConstraint
    virtual int32_t getHigh() {return _low;}
    virtual bool mustBeEqual(TR::VPConstraint *other, OMR::ValuePropagation *vp);
 
-   virtual void print(TR::Compilation *, TR::FILE *);
+   virtual void print(TR::Logger *log, TR::Compilation *);
    virtual const char *name();
 
    virtual int32_t getPrecision() {return getPrecisionFromValue(_low);}
@@ -417,7 +418,7 @@ class VPIntRange : public TR::VPIntConstraint
    virtual TR::VPIntRange *asIntRange();
    virtual int32_t getHigh() {return _high;}
 
-   virtual void print(TR::Compilation *, TR::FILE *);
+   virtual void print(TR::Logger *log, TR::Compilation *);
    virtual const char *name();
 
    virtual int32_t getPrecision() {return getPrecisionFromRange(_low, _high);}
@@ -472,7 +473,7 @@ class VPLongConst : public TR::VPLongConstraint
    virtual int64_t getHigh() {return _low;}
    virtual bool mustBeEqual(TR::VPConstraint *other, OMR::ValuePropagation *vp);
 
-   virtual void print(TR::Compilation *, TR::FILE *);
+   virtual void print(TR::Logger *log, TR::Compilation *);
    virtual const char *name();
 
    virtual int32_t getPrecision() {return getPrecisionFromValue(_low);}
@@ -486,7 +487,7 @@ class VPLongRange : public TR::VPLongConstraint
    virtual TR::VPLongRange *asLongRange();
    virtual int64_t getHigh() {return _high;}
 
-   virtual void print(TR::Compilation *, TR::FILE *);
+   virtual void print(TR::Logger *log, TR::Compilation *);
    virtual const char *name();
 
    void setIsPowerOfTwo() {_isPowerOfTwo = true;}
@@ -541,7 +542,7 @@ class VPClass : public TR::VPConstraint
 
    virtual const char *getClassSignature(int32_t &len);
 
-   virtual void print(TR::Compilation *, TR::FILE *);
+   virtual void print(TR::Logger *log, TR::Compilation *);
    virtual const char *name();
 
    static TR_OpaqueClassBlock *intersectTypeHintClasses(TR_OpaqueClassBlock *hint1, TR_OpaqueClassBlock *hint2, OMR::ValuePropagation *vp);
@@ -626,7 +627,7 @@ class VPResolvedClass : public TR::VPClassType
    virtual bool isPrimitiveArray(TR::Compilation *);
    bool isJavaLangObject(OMR::ValuePropagation *vp);
 
-   virtual void print(TR::Compilation *, TR::FILE *);
+   virtual void print(TR::Logger *log, TR::Compilation *);
    virtual const char *name();
 
    protected:
@@ -650,7 +651,7 @@ class VPFixedClass : public TR::VPResolvedClass
 
    virtual bool hasMoreThanFixedClassInfo(){ return false; }
 
-   virtual void print(TR::Compilation *, TR::FILE *);
+   virtual void print(TR::Logger *log, TR::Compilation *);
    virtual const char *name();
    };
 
@@ -677,7 +678,7 @@ class VPConstString : public TR::VPFixedClass
 
    virtual bool hasMoreThanFixedClassInfo(){ return true; }
 
-   virtual void print(TR::Compilation *, TR::FILE *);
+   virtual void print(TR::Logger *log, TR::Compilation *);
    virtual const char *name();
 
    protected:
@@ -706,7 +707,7 @@ class VPUnresolvedClass : public TR::VPClassType
    bool isDefiniteType()  {return _definiteType;}
    void setDefiniteType(bool b) {_definiteType = b;}
 
-   virtual void print(TR::Compilation *, TR::FILE *);
+   virtual void print(TR::Logger *log, TR::Compilation *);
    virtual const char *name();
 
    TR_ResolvedMethod *getMethod() {return _method; }
@@ -736,7 +737,7 @@ class VPNullObject : public TR::VPClassPresence
 
    virtual bool isNullObject();
 
-   virtual void print(TR::Compilation *, TR::FILE *);
+   virtual void print(TR::Logger *log, TR::Compilation *);
    virtual const char *name();
    };
 
@@ -751,7 +752,7 @@ class VPNonNullObject : public TR::VPClassPresence
 
    virtual bool isNonNullObject();
 
-   virtual void print(TR::Compilation *, TR::FILE *);
+   virtual void print(TR::Logger *log, TR::Compilation *);
    virtual const char *name();
    };
 
@@ -770,7 +771,7 @@ class VPPreexistentObject : public TR::VPConstraint
 
    TR_OpaqueClassBlock *getAssumptionClass() { return _assumptionClass; }
 
-   virtual void print(TR::Compilation *, TR::FILE *);
+   virtual void print(TR::Logger *log, TR::Compilation *);
    virtual const char *name();
 
    TR_OpaqueClassBlock *_assumptionClass;
@@ -794,7 +795,7 @@ class VPArrayInfo : public TR::VPConstraint
    int32_t highBound() {return _highBound;}
    int32_t elementSize() {return _elementSize;}
 
-   virtual void print(TR::Compilation *, TR::FILE *);
+   virtual void print(TR::Logger *log, TR::Compilation *);
    virtual const char *name();
 
    private:
@@ -875,7 +876,7 @@ class VPObjectLocation : public TR::VPConstraint
    virtual TR_YesNoMaybe isJavaLangClassObject();
    virtual TR_YesNoMaybe isJ9ClassObject();
 
-   virtual void print(TR::Compilation *, TR::FILE *);
+   virtual void print(TR::Logger *log, TR::Compilation *);
    virtual const char *name();
 
    private:
@@ -947,7 +948,7 @@ class VPKnownObject : public TR::VPFixedClass
 
    virtual bool hasMoreThanFixedClassInfo(){ return true; }
 
-   virtual void print(TR::Compilation *, TR::FILE *);
+   virtual void print(TR::Logger *log, TR::Compilation *);
    virtual const char *name();
 
    protected:
@@ -974,7 +975,7 @@ class VPImplementedInterface : public TR::VPConstraint
 
    virtual char *getInterfaceSignature(int32_t &len);
 
-   virtual void print(TR::Compilation *, TR::FILE *);
+   virtual void print(TR::Logger *log, TR::Compilation *);
    virtual const char *name();
 
    private:
@@ -1030,7 +1031,7 @@ class VPMergedConstraints : public TR::VPConstraint
    TR_ScratchList<TR::VPConstraint> *getList() {return &_constraints;}
    TR::DataType                     getType() {return _type;}
 
-   virtual void print(TR::Compilation *, TR::FILE *);
+   virtual void print(TR::Logger *log, TR::Compilation *);
    virtual const char *name();
 
    private:
@@ -1058,7 +1059,7 @@ class VPUnreachablePath : public TR::VPConstraint
    static TR::VPUnreachablePath *create(OMR::ValuePropagation *vp);
    virtual TR::VPUnreachablePath *asUnreachablePath();
 
-   virtual void print(TR::Compilation *, TR::FILE *);
+   virtual void print(TR::Logger *log, TR::Compilation *);
    virtual const char *name();
    };
 
@@ -1075,7 +1076,7 @@ class VPSync : public TR::VPConstraint
    ////void setSyncEmitted(TR_YesNoMaybe v) { _syncEmitted = v; }
 
 
-   virtual void print(TR::Compilation *, TR::FILE *);
+   virtual void print(TR::Logger *log, TR::Compilation *);
    virtual const char *name();
 
    private:
@@ -1134,8 +1135,8 @@ class VPLessThanOrEqual : public TR::VPRelation
 
    virtual TR::VPRelation *getComplement(OMR::ValuePropagation *vp);
 
-   virtual void print(TR::Compilation *, TR::FILE *);
-   virtual void print(TR::Compilation *, TR::FILE *, int32_t relative);
+   virtual void print(TR::Logger *log, TR::Compilation *);
+   virtual void print(TR::Logger *log, TR::Compilation *, int32_t relative);
    virtual const char *name();
    };
 
@@ -1166,8 +1167,8 @@ class VPGreaterThanOrEqual : public TR::VPRelation
 
    virtual TR::VPRelation *getComplement(OMR::ValuePropagation *vp);
 
-   virtual void print(TR::Compilation *, TR::FILE *);
-   virtual void print(TR::Compilation *, TR::FILE *, int32_t relative);
+   virtual void print(TR::Logger *log, TR::Compilation *);
+   virtual void print(TR::Logger *log, TR::Compilation *, int32_t relative);
    virtual const char *name();
    };
 
@@ -1201,8 +1202,8 @@ class VPEqual : public TR::VPRelation
 
    virtual TR::VPRelation *getComplement(OMR::ValuePropagation *vp);
 
-   virtual void print(TR::Compilation *, TR::FILE *);
-   virtual void print(TR::Compilation *, TR::FILE *, int32_t relative);
+   virtual void print(TR::Logger *log, TR::Compilation *);
+   virtual void print(TR::Logger *log, TR::Compilation *, int32_t relative);
    virtual const char *name();
    };
 
@@ -1230,8 +1231,8 @@ class VPNotEqual : public TR::VPRelation
 
    virtual TR::VPRelation *getComplement(OMR::ValuePropagation *vp);
 
-   virtual void print(TR::Compilation *, TR::FILE *);
-   virtual void print(TR::Compilation *, TR::FILE *, int32_t relative);
+   virtual void print(TR::Logger *log, TR::Compilation *);
+   virtual void print(TR::Logger *log, TR::Compilation *, int32_t relative);
    virtual const char *name();
    };
 

@@ -30,6 +30,7 @@
 #include "infra/Assert.hpp"
 #include "infra/BitVector.hpp"
 #include "optimizer/DataFlowAnalysis.hpp"
+#include "ras/Logger.hpp"
 
 class TR_BlockStructure;
 class TR_Structure;
@@ -103,7 +104,7 @@ TR_LiveOnAllPaths::TR_LiveOnAllPaths(TR::Compilation *comp,
          if (_blockAnalysisInfo[i])
             {
             traceMsg(comp, "\nLiveOnAllPaths variables for block_%d: ",i);
-            _blockAnalysisInfo[i]->print(comp);
+            _blockAnalysisInfo[i]->print(comp->getLogger(), comp);
             }
          }
       traceMsg(comp, "\nEnding LiveOnAllPaths analysis\n");
@@ -123,22 +124,22 @@ bool TR_LiveOnAllPaths::postInitializationProcessing()
          if (_regularGenSetInfo[i])
             {
             traceMsg(comp(), " gen set ");
-            _regularGenSetInfo[i]->print(comp());
+            _regularGenSetInfo[i]->print(comp()->getLogger(), comp());
             }
          if (_regularKillSetInfo[i])
             {
             traceMsg(comp(), " kill set ");
-            _regularKillSetInfo[i]->print(comp());
+            _regularKillSetInfo[i]->print(comp()->getLogger(), comp());
             }
          if (_exceptionGenSetInfo[i])
             {
             traceMsg(comp(), " exception gen set ");
-            _exceptionGenSetInfo[i]->print(comp());
+            _exceptionGenSetInfo[i]->print(comp()->getLogger(), comp());
             }
          if (_exceptionKillSetInfo[i])
             {
             traceMsg(comp(), " exception kill set ");
-            _exceptionKillSetInfo[i]->print(comp());
+            _exceptionKillSetInfo[i]->print(comp()->getLogger(), comp());
             }
          }
       }

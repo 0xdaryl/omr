@@ -27,6 +27,7 @@
 #include "compile/ResolvedMethod.hpp"
 #include "compile/InlineBlock.hpp"
 #include "env/IO.hpp"
+#include "ras/Logger.hpp"
 
 namespace TestCompiler
 {
@@ -60,12 +61,9 @@ IlGeneratorMethodDetails::getIlGenerator(TR::ResolvedMethodSymbol *methodSymbol,
 
 
 void
-IlGeneratorMethodDetails::print(TR_FrontEnd *fe, TR::FILE *file)
+IlGeneratorMethodDetails::print(TR::Logger *log, TR_FrontEnd *fe)
    {
-   if (file == NULL)
-      return;
-
-   trfprintf(file, "( %p )", self()->getMethod());
+   log->printf("( %p )", self()->getMethod());
    }
 
 }

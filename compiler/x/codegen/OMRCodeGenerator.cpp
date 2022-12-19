@@ -91,6 +91,7 @@
 #include "optimizer/RegisterCandidate.hpp"
 #include "ras/Debug.hpp"
 #include "ras/DebugCounter.hpp"
+#include "ras/Logger.hpp"
 #include "runtime/CodeCacheManager.hpp"
 #include "x/codegen/DataSnippet.hpp"
 #include "x/codegen/OutlinedInstructions.hpp"
@@ -1648,8 +1649,8 @@ void OMR::X86::CodeGenerator::doBackwardsRegisterAssignment(
 
 #ifdef DEBUG
    TR::Instruction *origNextInstruction;
-   bool dumpPreGP = (debug("dumpGPRA") || debug("dumpGPRA0")) && comp->getOutFile() != NULL;
-   bool dumpPostGP = (debug("dumpGPRA") || debug("dumpGPRA1")) && comp->getOutFile() != NULL;
+   bool dumpPreGP = (debug("dumpGPRA") || debug("dumpGPRA0")) && comp->getLoggingEnabled();
+   bool dumpPostGP = (debug("dumpGPRA") || debug("dumpGPRA1")) && comp->getLoggingEnabled();
 #endif
 
    if (self()->getUseNonLinearRegisterAssigner())
@@ -1661,7 +1662,7 @@ void OMR::X86::CodeGenerator::doBackwardsRegisterAssignment(
       }
 
    if (self()->getDebug())
-      self()->getDebug()->startTracingRegisterAssignment("backward", kindsToAssign);
+      self()->getDebug()->startTracingRegisterAssignment(self()->comp()->getLogger(), "backward", kindsToAssign);
 
    while (instructionCursor && instructionCursor != appendInstruction)
       {
@@ -1716,7 +1717,7 @@ void OMR::X86::CodeGenerator::doBackwardsRegisterAssignment(
       }
 
    if (self()->getDebug())
-      self()->getDebug()->stopTracingRegisterAssignment();
+      self()->getDebug()->stopTracingRegisterAssignment(self()->comp()->getLogger());
    }
 
 
@@ -1727,10 +1728,10 @@ void OMR::X86::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssig
 
 #if defined(DEBUG)
    TR::Instruction *origPrevInstruction;
-   bool            dumpPreFP = (debug("dumpFPRA") || debug("dumpFPRA0")) && self()->comp()->getOutFile() != NULL;
-   bool            dumpPostFP = (debug("dumpFPRA") || debug("dumpFPRA1")) && self()->comp()->getOutFile() != NULL;
-   bool            dumpPreGP = (debug("dumpGPRA") || debug("dumpGPRA0")) && self()->comp()->getOutFile() != NULL;
-   bool            dumpPostGP = (debug("dumpGPRA") || debug("dumpGPRA1")) && self()->comp()->getOutFile() != NULL;
+   bool            dumpPreFP = (debug("dumpFPRA") || debug("dumpFPRA0")) && self()->comp()->getLoggingEnabled();
+   bool            dumpPostFP = (debug("dumpFPRA") || debug("dumpFPRA1")) && self()->comp()->getLoggingEnabled();
+   bool            dumpPreGP = (debug("dumpGPRA") || debug("dumpGPRA0")) && self()->comp()->getLoggingEnabled();
+   bool            dumpPostGP = (debug("dumpGPRA") || debug("dumpGPRA1")) && self()->comp()->getLoggingEnabled();
 #endif
 
    LexicalTimer pt1("total register assignment", self()->comp()->phaseTimer());
@@ -1740,7 +1741,7 @@ void OMR::X86::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssig
    if (kindsToAssign & TR_X87_Mask)
       {
       if (self()->getDebug())
-         self()->getDebug()->startTracingRegisterAssignment("forward", TR_X87_Mask);
+         self()->getDebug()->startTracingRegisterAssignment(self()->comp()->getLogger(), "forward", TR_X87_Mask);
 
 #if defined(DEBUG)
       if (dumpPreFP || dumpPostFP)
@@ -1774,7 +1775,7 @@ void OMR::X86::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssig
          }
 
       if (self()->getDebug())
-         self()->getDebug()->stopTracingRegisterAssignment();
+         self()->getDebug()->stopTracingRegisterAssignment(self()->comp()->getLogger());
       }
 
    // Use new float/double slots for XMMR spills, to avoid
@@ -1998,7 +1999,7 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
       estimateCursor->adjustVFPState(&_vfpState, self());
 
       if (self()->comp()->getOption(TR_TraceCG))
-         self()->getDebug()->dumpInstructionWithVFPState(estimateCursor, &prevState);
+         self()->getDebug()->dumpInstructionWithVFPState(self()->comp()->getLogger(), estimateCursor, &prevState);
 
       if (estimateCursor == _vfpResetInstruction)
          self()->generateDebugCounter(estimateCursor, "cg.prologues:#instructionBytes", estimate - estimatedPrologueStartOffset, TR::DebugCounter::Expensive);
@@ -2162,10 +2163,10 @@ TR::Register *OMR::X86::CodeGenerator::gprClobberEvaluate(TR::Node * node, TR::I
          {
          if (debug("traceClobberedConstantRegisters") && node->getRegister())
             {
-            trfprintf(self()->comp()->getOutFile(),
-               "CLOBBERING CONSTANT in %s on " POINTER_PRINTF_FORMAT " in %s\n",
+            TR::Logger *log = self()->comp()->getLogger();
+            log->printf("CLOBBERING CONSTANT in %s on " POINTER_PRINTF_FORMAT " in %s\n",
                self()->getDebug()->getName(node->getRegister()), node, self()->comp()->signature());
-            trfflush(self()->comp()->getOutFile());
+            log->flush();
             }
          }
 
@@ -3092,14 +3093,11 @@ void OMR::X86::CodeGenerator::removeUnavailableRegisters(TR::RegisterCandidate *
       }
    }
 
-void OMR::X86::CodeGenerator::dumpDataSnippets(TR::FILE *outFile)
+void OMR::X86::CodeGenerator::dumpDataSnippets(TR::Logger *log)
    {
-   if (outFile == NULL)
-      return;
-
    for (auto iterator = _dataSnippetList.begin(); iterator != _dataSnippetList.end(); ++iterator)
       {
-      (*iterator)->print(outFile, self()->getDebug());
+      (*iterator)->print(log, self()->getDebug());
       }
    }
 
@@ -3107,20 +3105,17 @@ void OMR::X86::CodeGenerator::dumpDataSnippets(TR::FILE *outFile)
 // Dump the instruction before FP register assignment to
 // reveal the virtual registers prior to stack register assignment.
 //
-void OMR::X86::CodeGenerator::dumpPreFPRegisterAssignment(TR::Instruction * instructionCursor)
+void OMR::X86::CodeGenerator::dumpPreFPRegisterAssignment(TR::Logger *log, TR::Instruction *instructionCursor)
    {
-   if (self()->comp()->getOutFile() == NULL)
-      return;
-
    if (instructionCursor->totalReferencedFPRegisters(self()) > 0)
       {
-      trfprintf(self()->comp()->getOutFile(), "\n<< Pre-FPR assignment for instruction: %p", instructionCursor);
-      self()->getDebug()->print(self()->comp()->getOutFile(), instructionCursor);
-      self()->getDebug()->printReferencedRegisterInfo(self()->comp()->getOutFile(), instructionCursor);
+      log->printf("\n<< Pre-FPR assignment for instruction: %p", instructionCursor);
+      self()->getDebug()->print(log, instructionCursor);
+      self()->getDebug()->printReferencedRegisterInfo(log, instructionCursor);
 
       if (debug("dumpFPRegStatus"))
          {
-         self()->machine()->printFPRegisterStatus(self()->fe(), self()->comp()->getOutFile());
+         self()->machine()->printFPRegisterStatus(log, self()->fe());
          }
       }
    }
@@ -3128,16 +3123,15 @@ void OMR::X86::CodeGenerator::dumpPreFPRegisterAssignment(TR::Instruction * inst
 // Dump the current instruction with the FP registers assigned and any new
 // instructions that may have been added before it (such as FXCH).
 //
-void OMR::X86::CodeGenerator::dumpPostFPRegisterAssignment(TR::Instruction * instructionCursor,
-                                                        TR::Instruction *origPrevInstruction)
+void OMR::X86::CodeGenerator::dumpPostFPRegisterAssignment(
+      TR::Logger *log,
+      TR::Instruction *instructionCursor,
+      TR::Instruction *origPrevInstruction)
    {
-   if (self()->comp()->getOutFile() == NULL)
-      return;
-
    if (instructionCursor->totalReferencedFPRegisters(self()) > 0)
       {
       TR::Instruction * prevInstruction = instructionCursor->getPrev();
-      trfprintf(self()->comp()->getOutFile(), "\n>> Post-FPR assignment for instruction: %p", instructionCursor);
+      log->printf("\n>> Post-FPR assignment for instruction: %p", instructionCursor);
 
       if (prevInstruction == origPrevInstruction) prevInstruction = NULL;
 
@@ -3149,34 +3143,31 @@ void OMR::X86::CodeGenerator::dumpPostFPRegisterAssignment(TR::Instruction * ins
 
       while (prevInstruction && (prevInstruction != instructionCursor))
          {
-         self()->getDebug()->print(self()->comp()->getOutFile(), prevInstruction);
+         self()->getDebug()->print(log, prevInstruction);
          prevInstruction = prevInstruction->getNext();
          }
 
-      self()->getDebug()->print(self()->comp()->getOutFile(), instructionCursor);
-      self()->getDebug()->printReferencedRegisterInfo(self()->comp()->getOutFile(), instructionCursor);
+      self()->getDebug()->print(log, instructionCursor);
+      self()->getDebug()->printReferencedRegisterInfo(log, instructionCursor);
 
       if (debug("dumpFPRegStatus"))
          {
-         self()->machine()->printFPRegisterStatus(self()->fe(), self()->comp()->getOutFile());
+         self()->machine()->printFPRegisterStatus(log, self()->fe());
          }
       }
    }
 
-void OMR::X86::CodeGenerator::dumpPreGPRegisterAssignment(TR::Instruction * instructionCursor)
+void OMR::X86::CodeGenerator::dumpPreGPRegisterAssignment(TR::Logger *log, TR::Instruction *instructionCursor)
    {
-   if (self()->comp()->getOutFile() == NULL)
-      return;
-
    if (instructionCursor->totalReferencedGPRegisters(self()) > 0)
       {
-      trfprintf(self()->comp()->getOutFile(), "\n<< Pre-GPR assignment for instruction: %p", instructionCursor);
-      self()->getDebug()->print(self()->comp()->getOutFile(), instructionCursor);
-      self()->getDebug()->printReferencedRegisterInfo(self()->comp()->getOutFile(), instructionCursor);
+      log->printf("\n<< Pre-GPR assignment for instruction: %p", instructionCursor);
+      self()->getDebug()->print(log, instructionCursor);
+      self()->getDebug()->printReferencedRegisterInfo(log, instructionCursor);
 
       if (debug("dumpGPRegStatus"))
          {
-         self()->machine()->printGPRegisterStatus(self()->fe(), self()->machine()->registerFile(), self()->comp()->getOutFile());
+         self()->machine()->printGPRegisterStatus(log, self()->fe(), self()->machine()->registerFile());
          }
       }
    }
@@ -3184,29 +3175,28 @@ void OMR::X86::CodeGenerator::dumpPreGPRegisterAssignment(TR::Instruction * inst
 // Dump the current instruction with the GP registers assigned and any new
 // instructions that may have been added after it.
 //
-void OMR::X86::CodeGenerator::dumpPostGPRegisterAssignment(TR::Instruction * instructionCursor,
-                                                        TR::Instruction *origNextInstruction)
+void OMR::X86::CodeGenerator::dumpPostGPRegisterAssignment(
+      TR::Logger *log,
+      TR::Instruction *instructionCursor,
+      TR::Instruction *origNextInstruction)
    {
-   if (self()->comp()->getOutFile() == NULL)
-      return;
-
    if (instructionCursor->totalReferencedGPRegisters(self()) > 0)
       {
-      trfprintf(self()->comp()->getOutFile(), "\n>> Post-GPR assignment for instruction: %p", instructionCursor);
+      log->printf("\n>> Post-GPR assignment for instruction: %p", instructionCursor);
 
-      TR::Instruction * nextInstruction = instructionCursor;
+      TR::Instruction *nextInstruction = instructionCursor;
 
       while (nextInstruction && (nextInstruction != origNextInstruction))
          {
-         self()->getDebug()->print(self()->comp()->getOutFile(), nextInstruction);
+         self()->getDebug()->print(log, nextInstruction);
          nextInstruction = nextInstruction->getNext();
          }
 
-      self()->getDebug()->printReferencedRegisterInfo(self()->comp()->getOutFile(), instructionCursor);
+      self()->getDebug()->printReferencedRegisterInfo(log, instructionCursor);
 
       if (debug("dumpGPRegStatus"))
          {
-         self()->machine()->printGPRegisterStatus(self()->fe(), self()->machine()->registerFile(), self()->comp()->getOutFile());
+         self()->machine()->printGPRegisterStatus(log, self()->fe(), self()->machine()->registerFile());
          }
       }
    }

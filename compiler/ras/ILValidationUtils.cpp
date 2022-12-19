@@ -27,6 +27,7 @@
 #include "il/Node_inlines.hpp"
 #include "il/ILProps.hpp"
 #include "il/ILOps.hpp"
+#include "ras/Logger.hpp"
 
 
 TR::LiveNodeWindow::LiveNodeWindow(NodeSideTable<NodeState> &sideTable,
@@ -69,7 +70,7 @@ void TR::printILDiagnostic(TR::Compilation *comp, const char *formatStr, ...)
    va_start(stderr_args, formatStr);
    vfprintf(stderr, formatStr, stderr_args);
    va_end(stderr_args);
-   if (comp->getOutFile() != NULL)
+   if (comp->getLoggingEnabled())
       {
       va_list log_args;
       va_start(log_args, formatStr);
@@ -85,7 +86,7 @@ void TR::vprintILDiagnostic(TR::Compilation *comp, const char *formatStr,
    va_copy(stderr_copy, ap);
    vfprintf(stderr, formatStr, stderr_copy);
    va_end(stderr_copy);
-   if (comp->getOutFile() != NULL)
+   if (comp->getLoggingEnabled())
       {
       va_list log_copy;
       va_copy(log_copy, ap);

@@ -40,6 +40,7 @@ int jitDebugARM;
 #include "env/jittypes.h"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
+#include "ras/Logger.hpp"
 #include "runtime/CodeCacheManager.hpp"
 
 #ifdef J9_PROJECT_SPECIFIC
@@ -446,7 +447,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARMImmSymInstruction * instr)
          }
       else
          {
-         printARMHelperBranch(instr->getSymbolReference(), bufferPos, pOutFile, fullOpCodeName(instr));
+         printARMHelperBranch(pOutFile, instr->getSymbolReference(), bufferPos, fullOpCodeName(instr));
          }
       }
    else
@@ -823,7 +824,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARMMultipleMoveInstruction * instr)
    }
 
 void
-TR_Debug::printARMHelperBranch(TR::SymbolReference *symRef, uint8_t *bufferPos, TR::FILE *pOutFile, const char * opcodeName)
+TR_Debug::printARMHelperBranch(TR::Logger *log, TR::SymbolReference *symRef, uint8_t *bufferPos, const char * opcodeName)
    {
    TR::MethodSymbol *methodSym = symRef->getSymbol()->castToMethodSymbol();
    intptr_t         target    = (intptr_t)methodSym->getMethodAddress();
@@ -1207,7 +1208,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARMCallSnippet * snippet)
          }
       }
 
-   printARMHelperBranch(glueRef, bufferPos, pOutFile);
+   printARMHelperBranch(pOutFile, glueRef, bufferPos);
    bufferPos += 4;
 
    printPrefix(pOutFile, NULL, bufferPos, 4);
@@ -1279,7 +1280,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARMVirtualUnresolvedSnippet * snippet)
    printSnippetLabel(pOutFile, snippet->getSnippetLabel(), bufferPos, getName(snippet), getName(callSymRef));
 
    TR::SymbolReference *glueRef = _cg->getSymRef(TR_ARMvirtualUnresolvedHelper);
-   printARMHelperBranch(glueRef, bufferPos, pOutFile);
+   printARMHelperBranch(pOutFile, glueRef, bufferPos);
    bufferPos += 4;
 
    printPrefix(pOutFile, NULL, bufferPos, 4);
@@ -1306,7 +1307,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARMInterfaceCallSnippet * snippet)
 
    printSnippetLabel(pOutFile, snippet->getSnippetLabel(), bufferPos, getName(snippet), getName(callSymRef));
 
-   printARMHelperBranch(glueRef, bufferPos, pOutFile);
+   printARMHelperBranch(pOutFile, glueRef, bufferPos);
    bufferPos += 4;
 
    printPrefix(pOutFile, NULL, bufferPos, 4);
@@ -1378,7 +1379,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARMHelperCallSnippet * snippet)
    TR::LabelSymbol *restartLabel = snippet->getRestartLabel();
    //int32_t          distance  = target - (uintptr_t)bufferPos;
 
-   printARMHelperBranch(snippet->getDestination(), bufferPos, pOutFile);
+   printARMHelperBranch(pOutFile, snippet->getDestination(), bufferPos);
    bufferPos += 4;
 
    if (restartLabel)
@@ -1447,7 +1448,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARMStackCheckFailureSnippet * snippet)
       bufferPos += 4;
       }
 
-   printARMHelperBranch(sofRef, bufferPos, pOutFile);
+   printARMHelperBranch(pOutFile, sofRef, bufferPos);
    bufferPos += 4;
 
    if (saveLR)
@@ -1474,7 +1475,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::UnresolvedDataSnippet * snippet)
    uint8_t *bufferPos = snippet->getSnippetLabel()->getCodeLocation();
    printSnippetLabel(pOutFile, snippet->getSnippetLabel(), bufferPos, getName(snippet), getName(symRef));
 
-   printARMHelperBranch(_cg->getSymRef(snippet->getHelper()), bufferPos, pOutFile);
+   printARMHelperBranch(pOutFile, _cg->getSymRef(snippet->getHelper()), bufferPos);
    bufferPos += 4;
 
    printPrefix(pOutFile, NULL, bufferPos, 4);
@@ -1509,7 +1510,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARMRecompilationSnippet * snippet)
    printSnippetLabel(pOutFile, snippet->getSnippetLabel(), cursor, "Counting Recompilation Snippet");
 
    TR::SymbolReference *symRef = _cg->getSymRef(TR_ARMcountingRecompileMethod);
-   printARMHelperBranch(symRef, cursor, pOutFile);
+   printARMHelperBranch(pOutFile, symRef, cursor);
    cursor += 4;
 
    // methodInfo

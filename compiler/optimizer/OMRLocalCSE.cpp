@@ -60,6 +60,7 @@
 #include "optimizer/Optimizations.hpp"
 #include "optimizer/Optimizer.hpp"
 #include "ras/Debug.hpp"
+#include "ras/Logger.hpp"
 
 #define MAX_DEPTH 3000
 #define MAX_COPY_PROP 400
@@ -515,7 +516,7 @@ void OMR::LocalCSE::examineNode(TR::Node *node, TR_BitVector &seenAvailableLoade
       TR_BitVector tmpAliases(comp()->trMemory()->currentStackRegion());
       traceMsg(comp(), "For Node %p UseDefAliases = ",node);
       UseDefAliases.getAliasesAndUnionWith(tmpAliases);
-      tmpAliases.print(comp());
+      tmpAliases.print(comp()->getLogger(), comp());
       traceMsg(comp(), "\n");
       }
 
@@ -607,13 +608,13 @@ void OMR::LocalCSE::examineNode(TR::Node *node, TR_BitVector &seenAvailableLoade
         if (trace())
            {
            traceMsg(comp(), "For node %p tmp: ",node);
-           tmp.print(comp());
+           tmp.print(comp()->getLogger(), comp());
 
            traceMsg(comp(), "\n_seenCallSymbolReferences: ");
-           _seenCallSymbolReferences.print(comp());
+           _seenCallSymbolReferences.print(comp()->getLogger(), comp());
 
            traceMsg(comp(), "\n seenAvailableLoadedSymbolReferences:");
-           seenAvailableLoadedSymbolReferences.print(comp());
+           seenAvailableLoadedSymbolReferences.print(comp()->getLogger(), comp());
 
            traceMsg(comp(), "\n");
            }
@@ -718,7 +719,7 @@ void OMR::LocalCSE::examineNode(TR::Node *node, TR_BitVector &seenAvailableLoade
    if (verboseProcessing)
       {
       traceMsg(comp(), "  after n%dn [%p] seenAvailableLoadedSymbolReferences:", node->getGlobalIndex(), node);
-      seenAvailableLoadedSymbolReferences.print(comp());
+      seenAvailableLoadedSymbolReferences.print(comp()->getLogger(), comp());
       traceMsg(comp(), "\n");
       }
    }
@@ -1286,7 +1287,7 @@ TR::Node* OMR::LocalCSE::getAvailableExpression(TR::Node *parent, TR::Node *node
    if (trace())
       {
       traceMsg(comp(), "In getAvailableExpression _availableCallExprs = ");
-      _availableCallExprs.print(comp());
+      _availableCallExprs.print(comp()->getLogger(), comp());
       traceMsg(comp(),"\n");
       }
 

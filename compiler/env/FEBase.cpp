@@ -39,6 +39,7 @@
 #include "il/ILOps.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
+#include "ras/Logger.hpp"
 
 TR::FECommon::FECommon()
    : TR_FrontEnd()
@@ -171,7 +172,7 @@ void __cxa_pure_virtual()
 #endif
 
 
-void TR_Debug::print(J9JITExceptionTable *, TR_ResolvedMethod *, bool) { }
-void TR_Debug::printAnnotationInfoEntry(J9AnnotationInfo *,J9AnnotationInfoEntry *,int32_t) { }
-void TR_Debug::printByteCodeAnnotations() { }
-void TR_Debug::printByteCodeStack(int32_t, uint16_t, char *) { }
+void TR_Debug::print(TR::Logger *log, J9JITExceptionTable *, TR_ResolvedMethod *, bool) { }
+void TR_Debug::printAnnotationInfoEntry(TR::Logger *log, J9AnnotationInfo *,J9AnnotationInfoEntry *,int32_t) { }
+void TR_Debug::printByteCodeAnnotations(TR::Logger *log) { }
+void TR_Debug::printByteCodeStack(TR::Logger *log, int32_t, uint16_t, char *) { }

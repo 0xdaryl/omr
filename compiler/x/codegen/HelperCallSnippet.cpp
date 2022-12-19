@@ -52,6 +52,7 @@
 #include "il/SymbolReference.hpp"
 #include "infra/Assert.hpp"
 #include "ras/Debug.hpp"
+#include "ras/Logger.hpp"
 #include "runtime/CodeCacheManager.hpp"
 #include "runtime/Runtime.hpp"
 #include "x/codegen/RestartSnippet.hpp"
@@ -322,19 +323,16 @@ uint8_t *TR::X86HelperCallSnippet::genHelperCall(uint8_t *buffer)
 
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR::X86HelperCallSnippet  * snippet)
+TR_Debug::print(TR::Logger *log, TR::X86HelperCallSnippet *snippet)
    {
-   if (pOutFile == NULL)
-      return;
    uint8_t *bufferPos = snippet->getSnippetLabel()->getCodeLocation();
-   printSnippetLabel(pOutFile, snippet->getSnippetLabel(), bufferPos, getName(snippet), getName(snippet->getDestination()));
-   printBody(pOutFile, snippet, bufferPos);
+   printSnippetLabel(log, snippet->getSnippetLabel(), bufferPos, getName(snippet), getName(snippet->getDestination()));
+   printBody(log, snippet, bufferPos);
    }
 
 void
-TR_Debug::printBody(TR::FILE *pOutFile, TR::X86HelperCallSnippet  * snippet, uint8_t *bufferPos)
+TR_Debug::printBody(TR::Logger *log, TR::X86HelperCallSnippet *snippet, uint8_t *bufferPos)
    {
-   TR_ASSERT(pOutFile != NULL, "assertion failure");
    TR::MethodSymbol *sym = snippet->getDestination()->getSymbol()->castToMethodSymbol();
 
    int32_t i = 0;
@@ -342,8 +340,8 @@ TR_Debug::printBody(TR::FILE *pOutFile, TR::X86HelperCallSnippet  * snippet, uin
    if (snippet->getStackPointerAdjustment() != 0)
       {
       uint8_t size = 5 + (comp()->target().is64Bit()? 1 : 0);
-      printPrefix(pOutFile, NULL, bufferPos, size);
-      trfprintf(pOutFile, "add \t%s, %d\t\t\t%s Temporarily deallocate stack frame", comp()->target().is64Bit()? "rsp":"esp", snippet->getStackPointerAdjustment(),
+      printPrefix(log, NULL, bufferPos, size);
+      log->printf("add \t%s, %d\t\t\t%s Temporarily deallocate stack frame", comp()->target().is64Bit()? "rsp":"esp", snippet->getStackPointerAdjustment(),
                     commentString());
       bufferPos += size;
       }
@@ -360,12 +358,11 @@ TR_Debug::printBody(TR::FILE *pOutFile, TR::X86HelperCallSnippet  * snippet, uin
          else
             pushLength = (useDedicatedFrameReg ? 6 : 7);
 
-         printPrefix(pOutFile, NULL, bufferPos, pushLength);
-         trfprintf(pOutFile,
-                       "push\t[%s +%d]\t%s Address of Receiver",
-                       useDedicatedFrameReg ? "ebx" : "esp",
-                       snippet->getOffset(),
-                       commentString());
+         printPrefix(log, NULL, bufferPos, pushLength);
+         log->printf("push\t[%s +%d]\t%s Address of Receiver",
+                     useDedicatedFrameReg ? "ebx" : "esp",
+                     snippet->getOffset(),
+                     commentString());
 
          bufferPos += pushLength;
          i = 1; // skip the first child
@@ -380,33 +377,33 @@ TR_Debug::printBody(TR::FILE *pOutFile, TR::X86HelperCallSnippet  * snippet, uin
             {
             TR::StaticSymbol *sym = child->getSymbol()->getStaticSymbol();
             TR_ASSERT( sym, "Bad argument to helper call");
-            printPrefix(pOutFile, NULL, bufferPos, 5);
-            trfprintf(pOutFile, "push\t" POINTER_PRINTF_FORMAT, sym->getStaticAddress());
+            printPrefix(log, NULL, bufferPos, 5);
+            log->printf("push\t" POINTER_PRINTF_FORMAT, sym->getStaticAddress());
             bufferPos += 5;
             }
          else if (child->getOpCode().isLoadConst())
             {
             int32_t argValue = child->getInt();
             int32_t size = (argValue >= -128 && argValue <= 127) ? 2 : 5;
-            printPrefix(pOutFile, NULL, bufferPos, size);
-            trfprintf(pOutFile, "push\t" POINTER_PRINTF_FORMAT, argValue);
+            printPrefix(log, NULL, bufferPos, size);
+            log->printf("push\t" POINTER_PRINTF_FORMAT, argValue);
             bufferPos += size;
             }
          else
             {
             TR_ASSERT( child->getRegister(), "Bad argument to helper call");
 
-            printPrefix(pOutFile, NULL, bufferPos, 1);
-            trfprintf(pOutFile, "push\t");
+            printPrefix(log, NULL, bufferPos, 1);
+            log->prints("push\t");
             TR_ASSERT( deps, "null dependencies on restart label of helper call snippet with register args");
-            print(pOutFile, _cg->machine()->getRealRegister(deps->getPostConditions()->getRegisterDependency(registerArgs++)->getRealRegister()), TR_WordReg);
+            print(log, _cg->machine()->getRealRegister(deps->getPostConditions()->getRegisterDependency(registerArgs++)->getRealRegister()), TR_WordReg);
             bufferPos++;
             }
          }
       }
 
-   printPrefix(pOutFile, NULL, bufferPos, 5);
-   trfprintf(pOutFile, "call\t%s \t%s Helper Address = " POINTER_PRINTF_FORMAT,
+   printPrefix(log, NULL, bufferPos, 5);
+   log->printf("call\t%s \t%s Helper Address = " POINTER_PRINTF_FORMAT,
                  getName(snippet->getDestination()),
                  commentString(),
                  sym->getMethodAddress());
@@ -415,13 +412,13 @@ TR_Debug::printBody(TR::FILE *pOutFile, TR::X86HelperCallSnippet  * snippet, uin
    if (snippet->getStackPointerAdjustment() != 0)
       {
       uint8_t size = 5 + (comp()->target().is64Bit()? 1 : 0);
-      printPrefix(pOutFile, NULL, bufferPos, size);
-      trfprintf(pOutFile, "sub \t%s, %d\t\t\t%s Reallocate stack frame", comp()->target().is64Bit()? "rsp":"esp", snippet->getStackPointerAdjustment(),
+      printPrefix(log, NULL, bufferPos, size);
+      log->printf("sub \t%s, %d\t\t\t%s Reallocate stack frame", comp()->target().is64Bit()? "rsp":"esp", snippet->getStackPointerAdjustment(),
                     commentString());
       bufferPos += size;
       }
 
-   printRestartJump(pOutFile, snippet, bufferPos);
+   printRestartJump(log, snippet, bufferPos);
    }
 
 
