@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -25,6 +25,7 @@
 #include "codegen/UnresolvedDataSnippet.hpp"
 #include "codegen/UnresolvedDataSnippet_inlines.hpp"
 #include "il/LabelSymbol.hpp"
+#include "ras/Logger.hpp"
 
 namespace TR { class Node; }
 namespace TR { class SymbolReference; }
@@ -67,13 +68,10 @@ OMR::UnresolvedDataSnippet::create(TR::CodeGenerator * cg, TR::Node * node, TR::
  */
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR::UnresolvedDataSnippet * snippet)
+TR_Debug::print(TR::Logger *log, TR::UnresolvedDataSnippet *snippet)
    {
-   if (pOutFile == NULL)
-      return;
-
    uint8_t *bufferPos = snippet->getSnippetLabel()->getCodeLocation();
-   printSnippetLabel(pOutFile, snippet->getSnippetLabel(), bufferPos, getName(snippet));
+   printSnippetLabel(log, snippet->getSnippetLabel(), bufferPos, getName(snippet));
    }
 
 #endif

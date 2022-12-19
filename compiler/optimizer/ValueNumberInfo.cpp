@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -50,6 +50,7 @@
 #include "optimizer/Optimizer.hpp"
 #include "optimizer/UseDefInfo.hpp"
 #include "ras/Debug.hpp"
+#include "ras/Logger.hpp"
 
 TR_ValueNumberInfo::TR_ValueNumberInfo(TR::Compilation *comp)
    : _compilation(comp),
@@ -133,7 +134,7 @@ TR_ValueNumberInfo::TR_ValueNumberInfo(TR::Compilation *comp, TR::Optimizer *opt
       comp->incVisitCount();
       for (treeTop = comp->getStartTree(); treeTop; treeTop = treeTop->getNextTreeTop())
          {
-         comp->getDebug()->print(comp->getOutFile(), treeTop);
+         comp->getDebug()->print(comp->getLogger(), treeTop);
          }
       traceMsg(comp, "\n\n");
       }
@@ -1546,7 +1547,7 @@ TR_HashValueNumberInfo::TR_HashValueNumberInfo(TR::Compilation *comp, TR::Optimi
       comp->incVisitCount();
       for (treeTop = comp->getStartTree(); treeTop; treeTop = treeTop->getNextTreeTop())
          {
-         comp->getDebug()->print(comp->getOutFile(), treeTop);
+         comp->getDebug()->print(comp->getLogger(), treeTop);
          }
       traceMsg(comp, "\n\n");
       }

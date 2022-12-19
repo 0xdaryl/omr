@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -30,6 +30,7 @@
 #include "codegen/RealRegister.hpp"
 #include "compile/Compilation.hpp"
 #include "ras/Debug.hpp"
+#include "ras/Logger.hpp"
 
 OMR::Register::Register(uint32_t f):
    _flags(f),
@@ -189,9 +190,9 @@ OMR::Register::setContainsInternalPointer()
 
 #if defined(DEBUG)
 void
-OMR::Register::print(TR::Compilation *comp, TR::FILE *pOutFile, TR_RegisterSizes size)
+OMR::Register::print(TR::Logger *log, TR::Compilation *comp, TR_RegisterSizes size)
    {
-   comp->getDebug()->print(pOutFile, self(), size);
+   comp->getDebug()->print(log, self(), size);
    }
 #endif
 

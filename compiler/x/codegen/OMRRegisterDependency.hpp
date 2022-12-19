@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2022 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -53,6 +53,7 @@
 #include "infra/Assert.hpp"
 
 namespace TR { class Instruction; }
+namespace TR { class Logger; }
 namespace TR { class Node; }
 namespace TR { class RegisterDependencyConditions; }
 template <typename ListKind> class List;
@@ -263,11 +264,7 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
 #if defined(DEBUG) || defined(PROD_WITH_ASSUMES)
    uint32_t numReferencedGPRegisters(TR::CodeGenerator *);
    uint32_t numReferencedFPRegisters(TR::CodeGenerator *);
-   void printFullRegisterDependencyInfo(FILE *pOutFile);
-   void printDependencyConditions(TR::RegisterDependencyGroup *conditions,
-                                  uint32_t   numConditions,
-                                  char                           *prefix,
-                                  FILE                           *pOutFile);
+   void printFullRegisterDependencyInfo(TR::Logger *log);
 #endif /* defined(DEBUG) || defined(PROD_WITH_ASSUMES) */
 
    };

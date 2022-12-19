@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2022 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -52,6 +52,7 @@
 #include "optimizer/TransformUtil.hpp"
 #include "optimizer/ValueNumberInfo.hpp"
 #include "optimizer/LocalOpts.hpp"
+#include "ras/Logger.hpp"
 #ifdef J9_PROJECT_SPECIFIC
 #include "runtime/J9Profiler.hpp"
 #include "runtime/J9ValueProfiler.hpp"
@@ -100,7 +101,7 @@ int32_t TR_VirtualGuardTailSplitter::perform()
 
    if (trace())
       {
-      comp()->dumpMethodTrees("Trees after splitLinear");
+      comp()->dumpMethodTrees(comp()->getLogger(), "Trees after splitLinear");
       }
 
    return 0;
@@ -828,7 +829,7 @@ TR_InnerPreexistence::perform()
    TR::StackMemoryRegion stackMemoryRegion(*trMemory());
 
    if (trace())
-      comp()->dumpMethodTrees("Trees before InnerPreexistence");
+      comp()->dumpMethodTrees(comp()->getLogger(), "Trees before InnerPreexistence");
 
    int32_t candidates = initialize();
 

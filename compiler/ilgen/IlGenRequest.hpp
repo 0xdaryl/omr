@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -31,6 +31,7 @@ class TR_IlGenerator;
 class TR_InlineBlocks;
 namespace TR { class Compilation; }
 namespace TR { class IlGeneratorMethodDetails; }
+namespace TR { class Logger; }
 namespace TR { class ResolvedMethodSymbol; }
 namespace TR { class SymbolReferenceTable; }
 
@@ -71,7 +72,7 @@ public:
          TR::Compilation *comp,
          TR::SymbolReferenceTable *symRefTab);
 
-   virtual void print(TR_FrontEnd *fe, TR::FILE *file, const char *suffix);
+   virtual void print(TR::Logger *log, TR_FrontEnd *fe, const char *suffix);
    };
 
 
@@ -92,7 +93,7 @@ public:
          TR::Compilation *comp,
          TR::SymbolReferenceTable *symRefTab);
 
-   virtual void print(TR_FrontEnd *fe, TR::FILE *file, const char *suffix);
+   virtual void print(TR::Logger *log, TR_FrontEnd *fe, const char *suffix);
    };
 
 
@@ -114,7 +115,7 @@ public:
          TR::Compilation *comp,
          TR::SymbolReferenceTable *symRefTab);
 
-   virtual void print(TR_FrontEnd *fe, TR::FILE *file, const char *suffix);
+   virtual void print(TR::Logger *log, TR_FrontEnd *fe, const char *suffix);
    };
 
 

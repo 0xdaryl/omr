@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -27,6 +27,7 @@
 #include "compile/ResolvedMethod.hpp"
 #include "compile/InlineBlock.hpp"
 #include "env/IO.hpp"
+#include "ras/Logger.hpp"
 
 namespace TestCompiler
 {
@@ -60,12 +61,9 @@ IlGeneratorMethodDetails::getIlGenerator(TR::ResolvedMethodSymbol *methodSymbol,
 
 
 void
-IlGeneratorMethodDetails::print(TR_FrontEnd *fe, TR::FILE *file)
+IlGeneratorMethodDetails::print(TR::Logger *log, TR_FrontEnd *fe)
    {
-   if (file == NULL)
-      return;
-
-   trfprintf(file, "( %p )", self()->getMethod());
+   log->printf("( %p )", self()->getMethod());
    }
 
 }

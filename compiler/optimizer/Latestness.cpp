@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -35,6 +35,7 @@
 #include "optimizer/DataFlowAnalysis.hpp"
 #include "optimizer/LocalAnalysis.hpp"
 #include "optimizer/Structure.hpp"
+#include "ras/Logger.hpp"
 
 namespace TR { class Optimizer; }
 
@@ -127,7 +128,7 @@ TR_Latestness::TR_Latestness(TR::Compilation *comp, TR::Optimizer *optimizer, TR
       if (trace)
          {
          traceMsg(comp, "\nIn Set of Block : %d\n", blockStructure->getNumber());
-         _inSetInfo[blockStructure->getNumber()]->print(comp);
+         _inSetInfo[blockStructure->getNumber()]->print(comp->getLogger(), comp);
          }
       }
 

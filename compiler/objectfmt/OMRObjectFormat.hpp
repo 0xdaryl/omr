@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2021, 2021 IBM Corp. and others
+ * Copyright (c) 2021, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -39,6 +39,7 @@ namespace OMR { typedef OMR::ObjectFormat ObjectFormatConnector; }
 
 namespace TR { class FunctionCallData; }
 namespace TR { class Instruction; }
+namespace TR { class Logger; }
 
 namespace OMR
 {
@@ -118,13 +119,13 @@ public:
    virtual int32_t estimateBinaryLength() = 0;
 
    /**
-    * @brief Print an encoded function call to a file stream
+    * @brief Print an encoded function call to a logger
     *
-    * @param[in] file : the \c TR::FILE to print to
+    * @param[in] log : the \c TR::Logger to print to
     * @param[in] data : a populated \c TR::FunctionCallData structure with valid parameters
     *          for an encoded function call.
     */
-   virtual uint8_t* printEncodedFunctionCall(TR::FILE *file, TR::FunctionCallData &data) = 0;
+   virtual uint8_t* printEncodedFunctionCall(TR::Logger *log, TR::FunctionCallData &data) = 0;
 
    };
 

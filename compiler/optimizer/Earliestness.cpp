@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -31,6 +31,7 @@
 #include "optimizer/Structure.hpp"
 #include "optimizer/DataFlowAnalysis.hpp"
 #include "optimizer/LocalAnalysis.hpp"
+#include "ras/Logger.hpp"
 
 namespace TR { class Optimizer; }
 
@@ -87,7 +88,7 @@ TR_Earliestness::TR_Earliestness(TR::Compilation *comp, TR::Optimizer *optimizer
       for (i = 0; i < _numberOfNodes; i++)
          {
          traceMsg(comp, "Block number : %d has solution : ", i);
-         _inSetInfo[i]->print(comp);
+         _inSetInfo[i]->print(comp->getLogger(), comp);
          traceMsg(comp, "\n");
          }
       traceMsg(comp, "\nEnding Earliestness\n");
@@ -141,9 +142,9 @@ void TR_Earliestness::analyzeTreeTopsInBlockStructure(TR_BlockStructure *blockSt
    if (trace())
       {
       /////traceMsg(comp(), "\nIn Set of Block : %d\n", blockStructure->getNumber());
-      /////_inSetInfo[blockStructure->getNumber()]->print(comp()->getOutFile());
+      /////_inSetInfo[blockStructure->getNumber()]->print(comp()->getLogger());
       /////traceMsg(comp(), "\nOut Set of Block : %d\n", blockStructure->getNumber());
-      /////_blockAnalysisInfo[blockStructure->getNumber()]->print(comp()->getOutFile());
+      /////_blockAnalysisInfo[blockStructure->getNumber()]->print(comp()->getLogger());
       }
 
    TR::Block *block = blockStructure->getBlock();

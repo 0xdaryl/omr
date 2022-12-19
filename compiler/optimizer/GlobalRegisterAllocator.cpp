@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2022 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -400,7 +400,7 @@ TR_GlobalRegisterAllocator::perform()
 
 
       if (trace())
-         comp()->dumpMethodTrees("Trees before tactical global register allocator", comp()->getMethodSymbol());
+         comp()->dumpMethodTrees(comp()->getLogger(), "Trees before tactical global register allocator", comp()->getMethodSymbol());
 
       _candidatesNeedingSignExtension = NULL;
       _candidatesSignExtendedInThisLoop = NULL;
@@ -4240,7 +4240,7 @@ void TR_LiveRangeSplitter::splitLiveRanges()
       }
 
    if (trace())
-      comp()->dumpMethodTrees("Trees before live range splitter ", comp()->getMethodSymbol());
+      comp()->dumpMethodTrees(comp()->getLogger(), "Trees before live range splitter ", comp()->getMethodSymbol());
 
    //_origSymRefs = (TR::SymbolReference **)trMemory()->allocateStackMemory(comp()->getSymRefCount()*sizeof(TR::SymbolReference *));
    //memset(_origSymRefs, 0, comp()->getSymRefCount()*sizeof(TR::SymbolReference *));

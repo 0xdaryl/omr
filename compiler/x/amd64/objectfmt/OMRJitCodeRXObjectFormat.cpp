@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2021, 2021 IBM Corp. and others
+ * Copyright (c) 2021, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -28,6 +28,7 @@
 #include "infra/Assert.hpp"
 #include "objectfmt/FunctionCallData.hpp"
 #include "objectfmt/JitCodeRXObjectFormat.hpp"
+#include "ras/Logger.hpp"
 #include "runtime/Runtime.hpp"
 #include "omrformatconsts.h"
 
@@ -195,26 +196,21 @@ OMR::X86::AMD64::JitCodeRXObjectFormat::encodeFunctionCall(TR::FunctionCallData 
 
 
 void
-OMR::X86::AMD64::JitCodeRXObjectFormat::printEncodedFunctionCall(TR::FILE *pOutFile, TR::FunctionCallData &data, uint8_t *bufferPos)
+OMR::X86::AMD64::JitCodeRXObjectFormat::printEncodedFunctionCall(TR::Logger *log, TR::FunctionCallData &data, uint8_t *bufferPos)
    {
-   if (!pOutFile)
-      {
-      return;
-      }
-
    TR_Debug *debug = data.cg->getDebug();
 
-   debug->printPrefix(pOutFile, NULL, bufferPos, 5);
-   trfprintf(pOutFile, data.useCall ? "call\t" : "jmp\t");
-   trfprintf(pOutFile, "[%#" OMR_PRIxPTR "]", data.out_encodedMethodAddressLocation);
+   debug->printPrefix(log, NULL, bufferPos, 5);
+   log->prints(data.useCall ? "call\t" : "jmp\t");
+   log->printf("[%#" OMR_PRIxPTR "]", data.out_encodedMethodAddressLocation);
 
    if (data.methodSymRef && data.methodSymRef->getSymbol()->castToMethodSymbol()->isHelper())
       {
-      trfprintf(pOutFile, " (%s)", debug->getRuntimeHelperName(data.methodSymRef->getReferenceNumber()));
+      log->printf(" (%s)", debug->getRuntimeHelperName(data.methodSymRef->getReferenceNumber()));
       }
    else
       {
-      trfprintf(pOutFile, " (%#" OMR_PRIxPTR ")", data.methodSymRef->getMethodAddress());
+      log->printf(" (%#" OMR_PRIxPTR ")", data.methodSymRef->getMethodAddress());
       }
    }
 

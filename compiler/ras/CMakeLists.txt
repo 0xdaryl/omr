@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2018 IBM Corp. and others
+# Copyright (c) 2017, 2023 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -29,6 +29,7 @@ compiler_library(ras
 	${CMAKE_CURRENT_LIST_DIR}/ILValidator.cpp
 	${CMAKE_CURRENT_LIST_DIR}/IgnoreLocale.cpp
 	${CMAKE_CURRENT_LIST_DIR}/LimitFile.cpp
+	${CMAKE_CURRENT_LIST_DIR}/Logger.cpp
 	${CMAKE_CURRENT_LIST_DIR}/LogTracer.cpp
 	${CMAKE_CURRENT_LIST_DIR}/OptionsDebug.cpp
 	${CMAKE_CURRENT_LIST_DIR}/Tree.cpp

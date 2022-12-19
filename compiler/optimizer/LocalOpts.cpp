@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2022 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -96,6 +96,7 @@
 #include "ras/DebugCounter.hpp"
 #include "ras/ILValidator.hpp"
 #include "ras/ILValidationStrategies.hpp"
+#include "ras/Logger.hpp"
 #include "runtime/Runtime.hpp"
 #include "env/VMAccessCriticalSection.hpp"
 
@@ -1296,7 +1297,6 @@ int32_t TR_BlockManipulator::performChecksAndTreesMovement(TR::Block *newBlock, 
           endOfTreesBeingMoved && !prevNode->isNopableInlineGuard() &&
           performTransformation(comp(), "%sswing down block_%d to maximize fall through with block_%d\n",optDetailString(), newBlock->getNumber(), prevBlock->getNumber()))
          {
-         //comp()->dumpMethodTrees("Trees before :");
          TR::TreeTop *nextTree = prevBlock->getExit()->getNextTreeTop();
          TR::TreeTop *exitTree = prevBlock->getExit();
          TR::TreeTop *prevTree = startOfTreesBeingMoved->getPrevTreeTop();
@@ -8754,7 +8754,7 @@ TR_ColdBlockOutlining::perform()
 
    if (trace())
       {
-      comp()->dumpMethodTrees("Before cold block outlining");
+      comp()->dumpMethodTrees(comp()->getLogger(), "Before cold block outlining");
       traceMsg(comp(), "Original ");
       orderBlocks.dumpBlockOrdering(comp()->getMethodSymbol()->getFirstTreeTop());
       }
@@ -8766,7 +8766,7 @@ TR_ColdBlockOutlining::perform()
       {
       traceMsg(comp(), "After outlining cold Block ");
       orderBlocks.dumpBlockOrdering(comp()->getMethodSymbol()->getFirstTreeTop());
-      comp()->dumpMethodTrees("After cold block outlining");
+      comp()->dumpMethodTrees(comp()->getLogger(), "After cold block outlining");
       }
 
    return 1;

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -31,6 +31,7 @@
 #include "control/Options_inlines.hpp"
 #include "infra/List.hpp"
 #include "ras/Debug.hpp"
+#include "ras/Logger.hpp"
 
 namespace TR { class AutomaticSymbol; }
 
@@ -50,7 +51,7 @@ OMR::GCStackAtlas::close(TR::CodeGenerator *cg)
 
    if (comp->getOption(TR_TraceCG))
       {
-      comp->getDebug()->print(comp->getOutFile(), self());
+      comp->getDebug()->print(comp->getLogger(), self());
       }
 
    // Merge adjacent similar maps

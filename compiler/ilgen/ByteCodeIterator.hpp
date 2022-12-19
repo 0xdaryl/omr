@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -29,7 +29,7 @@
 class TR_Memory;
 namespace TR { class Block; }
 namespace TR { class ResolvedMethodSymbol; }
-
+namespace TR { class Logger; }
 
 template <typename ByteCode, typename ResolvedMethod> class TR_ByteCodeIterator
    {
@@ -98,9 +98,9 @@ public:
 
 protected:
    // Abstract Methods - subclasses must provide these
-   void printByteCodePrologue();
-   void printByteCode();
-   void printByteCodeEpilogue();
+   void printByteCodePrologue(TR::Logger *log);
+   void printByteCode(TR::Logger *log);
+   void printByteCodeEpilogue(TR::Logger *log);
 
    bool isBranch();
    int32_t branchDesination(int32_t base);

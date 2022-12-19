@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -33,6 +33,7 @@
 
 class TR_FrontEnd;
 namespace TR { class CFGEdge; }
+namespace TR { class Logger; }
 namespace TR { class ResolvedMethodSymbol; }
 template <class T> class ListElement;
 
@@ -84,9 +85,9 @@ class TR_Dominators
 
       int32_t getIndex() {return _block?_block->getNumber()+1:-1;}
 #ifdef DEBUG
-      void print(TR_FrontEnd *fe, TR::FILE *pOutFile);
+      void print(TR::Logger *log, TR_FrontEnd *fe);
 #else
-      void print(TR_FrontEnd *fe, TR::FILE *pOutFile) { }
+      void print(TR::Logger *log, TR_FrontEnd *fe) { }
 #endif
       };
 

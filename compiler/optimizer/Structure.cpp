@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2022 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -51,6 +51,7 @@
 #include "optimizer/DataFlowAnalysis.hpp"
 #include "optimizer/LocalAnalysis.hpp"
 #include "ras/Debug.hpp"
+#include "ras/Logger.hpp"
 
 #define OPT_DETAILS "O^O STRUCTURE: "
 
@@ -428,7 +429,7 @@ void TR_RegionStructure::ExitExtraction::extractUnconditionalExits(
       return;
 
    if (_trace)
-      _comp->dumpMethodTrees("Trees before unconditional exit extraction");
+      _comp->dumpMethodTrees(_comp->getLogger(), "Trees before unconditional exit extraction");
 
    while (_workStack.size() > 0)
       {
@@ -610,10 +611,10 @@ void TR_RegionStructure::ExitExtraction::extractStructure(
       moveNodeIntoParent(node, region, parent);
       removeContentsFromRegion(initialStructure, region);
 
-      if (_trace && _comp->getOutFile() != NULL)
+      if (_trace)
          {
          traceMsg(_comp, "Structure after moving node into parent:\n<structure>\n");
-         _comp->getDebug()->print(_comp->getOutFile(), _cfg->getStructure(), 0);
+         _comp->getDebug()->print(_comp->getLogger(), _cfg->getStructure(), 0);
          traceMsg(_comp, "</structure>\n");
          }
 
@@ -2079,11 +2080,11 @@ void TR_RegionStructure::addExternalEdge(TR_Structure *from, int32_t toNumber, b
 
 void TR_RegionStructure::collapseIntoParent()
    {
-   if (debug("traceCollapseRegion"))
+   if (debug("traceCollapseRegion") && comp()->getLoggingEnabled())
       {
       diagnostic("==> Structure before collapsing %d into parent %d\n",
                   getNumber(), getParent()->getNumber());
-      comp()->getDebug()->print(comp()->getOutFile(), getParent(), 6);
+      comp()->getDebug()->print(comp()->getLogger(), getParent(), 6);
       }
 
    TR_StructureSubGraphNode *node;
@@ -2815,8 +2816,8 @@ void TR_Structure::mergeBlocks(TR::Block *merged, TR::Block *mergedInto)
    merged->setStructureOf(s);
 
    TR_ASSERT(s->getNumber() == merged->getNumber(),"Structure: bad structure when merging blocks");
-   if (debug("dumpStructure"))
-      comp()->getDebug()->print(comp()->getOutFile(), comp()->getFlowGraph()->getStructure(), 6);
+   if (debug("dumpStructure") && comp()->getLoggingEnabled())
+      comp()->getDebug()->print(comp()->getLogger(), comp()->getFlowGraph()->getStructure(), 6);
    }
 
 

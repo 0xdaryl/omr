@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2022 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -44,6 +44,7 @@
 #include "infra/Assert.hpp"
 #include "infra/Stack.hpp"
 #include "ras/Debug.hpp"
+#include "ras/Logger.hpp"
 
 #ifdef J9_PROJECT_SPECIFIC
 #ifdef TR_TARGET_S390
@@ -180,10 +181,10 @@ OMR::CodeGenerator::evaluate(TR::Node * node)
 
       reg = _nodeToInstrEvaluators[opcode](node, self());
 
-      if (self()->comp()->getOption(TR_TraceRegisterPressureDetails))
+      if (self()->comp()->getOption(TR_TraceRegisterPressureDetails) && self()->comp()->getLoggingEnabled())
          {
          traceMsg(self()->comp(), "  evaluated %s", self()->getDebug()->getName(node));
-         self()->getDebug()->dumpLiveRegisters();
+         self()->getDebug()->dumpLiveRegisters(self()->comp()->getLogger());
          traceMsg(self()->comp(), "\n");
          }
 
@@ -439,7 +440,7 @@ OMR::CodeGenerator::evaluateChildrenWithMultipleRefCount(TR::Node * node)
          // but for nopable virtual guards we can wait to load and mask the pointer
          // until we actually need to use it
          //
-         if (child->getReferenceCount() > 1 && 
+         if (child->getReferenceCount() > 1 &&
 	     (child->getOpCode().hasSymbolReference() ||
 	      (child->getOpCodeValue() == TR::l2a && child->getChild(0)->containsCompressionSequence())))
             {

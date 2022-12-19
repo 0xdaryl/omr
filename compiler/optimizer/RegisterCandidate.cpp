@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2022 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -72,6 +72,7 @@
 #include "optimizer/Optimizer.hpp"
 #include "optimizer/Structure.hpp"
 #include "ras/Debug.hpp"
+#include "ras/Logger.hpp"
 
 
 //TODO:GRA: if we are going to have two versions of GRA one with Meta Data and one without then we can do someting here
@@ -1128,7 +1129,7 @@ TR_RegisterCandidate::processLiveOnEntryBlocks(TR::Block * * blocks, int32_t *bl
                               if (trace)
                                  {
                                  dumpOptDetails(comp, "\n1Loop %d does not use candidate, removing the following blocks from live ranges of candidate #%d \n", parent->getNumber(), getSymbolReference()->getReferenceNumber());
-                                 comp->getOptimizer()->getResetExitsGRA()->print(comp);
+                                 comp->getOptimizer()->getResetExitsGRA()->print(comp->getLogger(), comp);
                                  }
                               _liveOnEntry -= *comp->getOptimizer()->getResetExitsGRA();
                               *resetLiveOnEntry |= *comp->getOptimizer()->getResetExitsGRA(); // Added by Nakaike
@@ -1845,7 +1846,7 @@ TR_RegisterCandidates::reprioritizeCandidates(
             if (trace)
                {
                dumpOptDetails(comp, "\nBefore repriortization, removing the following blocks from live ranges of candidate #%d \n", rc->getSymbolReference()->getReferenceNumber());
-               successorBits->print(comp);
+               successorBits->print(comp->getLogger(), comp);
                }
 
             rc->getBlocksLiveOnEntry() -= *successorBits;
@@ -1872,7 +1873,7 @@ scanPressureSimulatorCacheForConflicts(TR_RegisterCandidate *rc, TR_BitVector &b
      {
      traceMsg(comp,"\tscanPressureSimulatorCacheForConflits: Candidate #%d\n",rc->getSymbolReference()->getReferenceNumber());
      traceMsg(comp,"\t blocks candidate is live: ");
-     blocks.print(comp);
+     blocks.print(comp->getLogger(), comp);
      traceMsg(comp, "\n");
      traceMsg(comp,"\t   adding conflicts as reg#: { [Entry|Exit](block#) [Entry|Exit](block#) ...}\n");
      }
@@ -1896,7 +1897,7 @@ scanPressureSimulatorCacheForConflicts(TR_RegisterCandidate *rc, TR_BitVector &b
          if (r < firstRegister ||  r > lastRegister)
            tmpSpilledRegs.reset(r);
          }
-  tmpSpilledRegs.print(comp);
+  tmpSpilledRegs.print(comp->getLogger(), comp);
         traceMsg(comp, "\n");
         }
 
@@ -2047,10 +2048,10 @@ scanPressureSimulatorCacheForConflicts(TR_RegisterCandidate *rc, TR_BitVector &b
          if (firstRegister <= regNum && regNum <= lastRegister)
             {
             traceMsg(comp, "\tFor candidate #%d, on entry block conflicts with register %d ", rc->getSymbolReference()->getReferenceNumber(), regNum);
-            liveOnEntryConflicts[regNum].print(comp);
+            liveOnEntryConflicts[regNum].print(comp->getLogger(), comp);
             traceMsg(comp, "\n");
             traceMsg(comp, "\tFor candidate #%d, on exit block conflicts with register %d ", rc->getSymbolReference()->getReferenceNumber(), regNum);
-            liveOnExitConflicts[regNum].print(comp);
+            liveOnExitConflicts[regNum].print(comp->getLogger(), comp);
             traceMsg(comp, "\n");
             }
          }
@@ -2775,10 +2776,10 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
          {
          dumpOptDetails(comp(), "\nFor candidate %d : trials left %d weight : %d\n", rc->getSymbolReference()->getReferenceNumber(), rc->getReprioritized(), rc->getWeight());
          dumpOptDetails(comp(), "live on entry : ");
-         rc->getBlocksLiveOnEntry().print(comp());
+         rc->getBlocksLiveOnEntry().print(comp()->getLogger(), comp());
          dumpOptDetails(comp(), "\n");
          dumpOptDetails(comp(), "live on exit : ");
-         rc->getBlocksLiveOnExit().print(comp());
+         rc->getBlocksLiveOnExit().print(comp()->getLogger(), comp());
          dumpOptDetails(comp(), "\n");
          }
       //
@@ -2789,7 +2790,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
       if (trace)
          {
          traceMsg(comp(), "available registers : ");
-         availableRegisters.print(comp());
+         availableRegisters.print(comp()->getLogger(), comp());
          traceMsg(comp(), "\n");
          }
       TR::CodeGenerator * cg = comp()->cg();
@@ -2830,7 +2831,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
                dumpOptDetails(comp(),"alias set? %d\t", !availableRegisters.isSet(cg->getOverlappedAliasForGRN(i)));
                dumpOptDetails(comp(),"aliased grn? %d\t", cg->isAliasedGRN(i));
                dumpOptDetails(comp(), "avail (check is set?):\n");
-               availableRegisters.print(comp());
+               availableRegisters.print(comp()->getLogger(), comp());
                dumpOptDetails(comp(), "\n");
                }
             if ((cg->isGlobalFPR(i) || cg->isGlobalVRF(i)) && cg->isAliasedGRN(i) &&
@@ -2853,7 +2854,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
       if (trace) // Feel this would be useful by default
          {
          dumpOptDetails(comp(), "available registers : ");
-         availableRegisters.print(comp());
+         availableRegisters.print(comp()->getLogger(), comp());
          dumpOptDetails(comp(), "\n");
          }
 
@@ -2960,7 +2961,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
               if (trace)
                  {
                  traceMsg(comp(), "Final live on entry conflicts with register : %d\n", i);
-                 _liveOnEntryConflicts[i].print(comp());
+                 _liveOnEntryConflicts[i].print(comp()->getLogger(), comp());
                  traceMsg(comp(), "\n");
                  }
 
@@ -3149,7 +3150,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
               if (trace)
                  {
                  dumpOptDetails(comp(), "\nDue to conflicts, removing the following blocks from live on entry ranges of candidate #%d conflicting register %d\n", rc->getSymbolReference()->getReferenceNumber(), conflictingRegister);
-                 intersection.print(comp());
+                 intersection.print(comp()->getLogger(), comp());
                  }
 
 #ifdef TRIM_ASSIGNED_CANDIDATES
@@ -3163,7 +3164,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
                  if (trace)
                     {
                     traceMsg(comp(), "\nBlocks to be freed for candidate #%d: ", rc->getSymbolReference()->getReferenceNumber());
-                    blocksToBeFreed.print(comp());
+                    blocksToBeFreed.print(comp()->getLogger(), comp());
                     traceMsg(comp(),"\n");
                     }
 
@@ -3477,7 +3478,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
      if (trace)
         {
         traceMsg(comp(), "After assigning candidate %d real register %d, entry usage : \n", rc->getSymbolReference()->getReferenceNumber(), registerNumber);
-        _liveOnEntryUsage[registerNumber].print(comp());
+        _liveOnEntryUsage[registerNumber].print(comp()->getLogger(), comp());
         traceMsg(comp(), "\n");
         }
 
@@ -3486,7 +3487,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
      if (trace)
         {
         traceMsg(comp(), "After assigning candidate %d real register %d, exit usage : \n", rc->getSymbolReference()->getReferenceNumber(), registerNumber);
-        _liveOnExitUsage[registerNumber].print(comp());
+        _liveOnExitUsage[registerNumber].print(comp()->getLogger(), comp());
         traceMsg(comp(), "\n");
         }
 
@@ -3497,7 +3498,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
         if (trace)
            {
            traceMsg(comp(), "After assigning candidate %d real register %d, entry usage : \n", rc->getSymbolReference()->getReferenceNumber(), highRegisterNumber);
-           _liveOnEntryUsage[highRegisterNumber].print(comp());
+           _liveOnEntryUsage[highRegisterNumber].print(comp()->getLogger(), comp());
            traceMsg(comp(), "\n");
            }
 
@@ -3506,7 +3507,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
         if (trace)
            {
            traceMsg(comp(), "After assigning candidate %d real register %d, exit usage : \n", rc->getSymbolReference()->getReferenceNumber(), highRegisterNumber);
-           _liveOnEntryUsage[highRegisterNumber].print(comp());
+           _liveOnEntryUsage[highRegisterNumber].print(comp()->getLogger(), comp());
            traceMsg(comp(), "\n");
            }
         }
@@ -3683,13 +3684,13 @@ TR_RegisterCandidates::computeAvailableRegisters(TR_RegisterCandidate *rc, int32
          {
          traceMsg(comp(), "For candidate %d real register %d : \n", rc->getSymbolReference()->getReferenceNumber(), i);
          traceMsg(comp(), "live on entry conflicts : ");
-         liveOnEntryConflicts.print(comp());
+         liveOnEntryConflicts.print(comp()->getLogger(), comp());
          traceMsg(comp(), "\nlive on exit conflicts : ");
-         liveOnExitConflicts.print(comp());
+         liveOnExitConflicts.print(comp()->getLogger(), comp());
          traceMsg(comp(), "\nentry exit conflicts : ");
-         entryExitConflicts.print(comp());
+         entryExitConflicts.print(comp()->getLogger(), comp());
          traceMsg(comp(), "\nexit entry conflicts : ");
-         exitEntryConflicts.print(comp());
+         exitEntryConflicts.print(comp()->getLogger(), comp());
          traceMsg(comp(), "\n");
          }
 

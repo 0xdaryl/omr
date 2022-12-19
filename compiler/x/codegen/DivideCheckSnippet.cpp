@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2022 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -28,6 +28,7 @@
 #include "il/ILOps.hpp"
 #include "il/LabelSymbol.hpp"
 #include "ras/Debug.hpp"
+#include "ras/Logger.hpp"
 #include "codegen/X86Instruction.hpp"
 #include "codegen/InstOpCode.hpp"
 #include "env/IO.hpp"
@@ -93,14 +94,11 @@ uint8_t *TR::X86DivideCheckSnippet::emitSnippetBody()
    }
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR::X86DivideCheckSnippet  * snippet) // TODO:FIX THIS!!!
+TR_Debug::print(TR::Logger *log, TR::X86DivideCheckSnippet *snippet)
    {
-   if (pOutFile == NULL)
-      return;
-
    uint8_t *bufferPos = snippet->getSnippetLabel()->getCodeLocation();
 
-   printSnippetLabel(pOutFile, snippet->getSnippetLabel(), bufferPos, getName(snippet));
+   printSnippetLabel(log, snippet->getSnippetLabel(), bufferPos, getName(snippet));
 
    TR::RealRegister *realDivisorReg  = toRealRegister(snippet->getDivideInstruction()->getSourceRegister());
    TR::RealRegister *realDividendReg = toRealRegister(snippet->getDivideInstruction()->getTargetRegister());
@@ -118,13 +116,13 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86DivideCheckSnippet  * snippet) // TOD
          cmpSize++;
       }
 #endif
-   printPrefix(pOutFile, NULL, bufferPos, cmpSize);
-   trfprintf(pOutFile, "cmp\t%s, -1", getName(realDivisorReg)); // TODO: Might be 64-bit register
+   printPrefix(log, NULL, bufferPos, cmpSize);
+   log->printf("cmp\t%s, -1", getName(realDivisorReg)); // TODO: Might be 64-bit register
    bufferPos += cmpSize;
 
    int32_t size = snippet->estimateRestartJumpLength(TR::InstOpCode::JNE4, static_cast<int32_t>(bufferPos - (uint8_t*)0), snippet->getDivideLabel());
-   printPrefix(pOutFile, NULL, bufferPos, size);
-   printLabelInstruction(pOutFile, "jne", snippet->getDivideLabel());
+   printPrefix(log, NULL, bufferPos, size);
+   printLabelInstruction(log, "jne", snippet->getDivideLabel());
    bufferPos += size;
 
    if (snippet->getOpCode().isDiv() && realDividendReg->getRegisterNumber() != TR::RealRegister::eax)
@@ -140,8 +138,8 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86DivideCheckSnippet  * snippet) // TOD
             movSize++;
          }
 #endif
-      printPrefix(pOutFile, NULL, bufferPos, movSize);
-      trfprintf(pOutFile, "mov\teax, %s", getName(realDividendReg)); // TODO: Might be rax
+      printPrefix(log, NULL, bufferPos, movSize);
+      log->printf("mov\teax, %s", getName(realDividendReg)); // TODO: Might be rax
       bufferPos += movSize;
       }
 
@@ -150,15 +148,13 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86DivideCheckSnippet  * snippet) // TOD
       int32_t xorSize = 2;
       if (isLong)
          xorSize++;
-      printPrefix(pOutFile, NULL, bufferPos, xorSize);
-      trfprintf(pOutFile, "xor\tedx, edx"); // TODO: Might be rdx
+      printPrefix(log, NULL, bufferPos, xorSize);
+      log->prints("xor\tedx, edx"); // TODO: Might be rdx
       bufferPos += xorSize;
       }
 
-   printRestartJump(pOutFile, snippet, bufferPos);
+   printRestartJump(log, snippet, bufferPos);
    }
-
-
 
 uint32_t TR::X86DivideCheckSnippet::getLength(int32_t estimatedSnippetStart)
    {

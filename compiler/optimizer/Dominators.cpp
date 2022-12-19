@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -37,6 +37,7 @@
 #include "infra/CfgEdge.hpp"
 #include "infra/CfgNode.hpp"
 #include "ras/Debug.hpp"
+#include "ras/Logger.hpp"
 
 TR_Dominators::TR_Dominators(TR::Compilation *c, bool post) :
    _region(c->trMemory()->heapMemoryRegion()),
@@ -162,7 +163,7 @@ void TR_Dominators::findDominators(TR::Block *start)
    if (trace())
       {
       traceMsg(comp(), "CFG before initialization:\n");
-      comp()->getDebug()->print(comp()->getOutFile(), _cfg);
+      comp()->getDebug()->print(comp()->getLogger(), _cfg);
       }
 
    // Initialize the BBInfo structures for the real blocks
@@ -171,11 +172,11 @@ void TR_Dominators::findDominators(TR::Block *start)
 
    if (trace())
       {
-	  traceMsg(comp(), "CFG after initialization:\n");
-      comp()->getDebug()->print(comp()->getOutFile(), _cfg);
+      traceMsg(comp(), "CFG after initialization:\n");
+      comp()->getDebug()->print(comp()->getLogger(), _cfg);
       traceMsg(comp(), "\nInfo after initialization:\n");
       for (i = 0; i <= _topDfNum; i++)
-         getInfo(i).print(comp()->fe(), comp()->getOutFile());
+         getInfo(i).print(comp()->getLogger(), comp()->fe());
       }
 
    for (i = _topDfNum; i > 1; i--)
@@ -225,9 +226,9 @@ void TR_Dominators::findDominators(TR::Block *start)
          BBInfo &sdom = getInfo(cursor);
          u = eval(cursor);
          if (getInfo(u)._sdno < sdom._sdno)
-        	 sdom._idom = u;
+            sdom._idom = u;
          else
-        	 sdom._idom = w._parent;
+            sdom._idom = w._parent;
          }
       parentBucket.empty();
       }
@@ -369,7 +370,7 @@ void TR_Dominators::initialize(TR::Block *start, BBInfo *nullParent) {
 //
 int32_t TR_Dominators::eval(int32_t index)
    {
-   	BBInfo &bbInfo = getInfo(index);
+   BBInfo &bbInfo = getInfo(index);
    if (bbInfo._ancestor == 0)
       return bbInfo._label;
    compress(index);
@@ -384,8 +385,8 @@ int32_t TR_Dominators::eval(int32_t index)
 //
 void TR_Dominators::compress(int32_t index)
    {
-   	BBInfo & bbInfo = getInfo(index);
-   	BBInfo &ancestor = getInfo(bbInfo._ancestor);
+   BBInfo & bbInfo = getInfo(index);
+   BBInfo &ancestor = getInfo(bbInfo._ancestor);
    if (ancestor._ancestor != 0)
       {
       compress(bbInfo._ancestor);
@@ -437,12 +438,10 @@ void TR_Dominators::link(int32_t parentIndex, int32_t childIndex)
    }
 
 #ifdef DEBUG
-void TR_Dominators::BBInfo::print(TR_FrontEnd *fe, TR::FILE *pOutFile)
+void TR_Dominators::BBInfo::print(TR::Logger *log, TR_FrontEnd *fe)
    {
-   if (pOutFile == NULL)
-      return;
-   trfprintf(pOutFile,"BBInfo %d:\n",getIndex());
-   trfprintf(pOutFile,"   _parent=%d, _idom=%d, _sdno=%d, _ancestor=%d, _label=%d, _size=%d, _child=%d\n",
+   log->printf("BBInfo %d:\n", getIndex());
+   log->printf("   _parent=%d, _idom=%d, _sdno=%d, _ancestor=%d, _label=%d, _size=%d, _child=%d\n",
              _parent,
              _idom,
              _sdno,
@@ -475,7 +474,7 @@ void TR_PostDominators::findControlDependents()
          TR::Block *p;
          p = toBlock((*next)->getTo());
          while (p != getDominator(block))
-	        {
+            {
             bv.set(p->getNumber());
             p = getDominator(p);
             }
@@ -491,15 +490,15 @@ void TR_PostDominators::findControlDependents()
          cursor.SetToFirstOne();
          traceMsg(comp(), "Block %d controls blocks: {", i);
          if (cursor.Valid())
-         	  {
-         	  int32_t b = cursor;
-         	  traceMsg(comp(),"%d", b);
-         	  while(cursor.SetToNextOne())
-         	     {
-         	     b = cursor;
-         	     traceMsg(comp(),", %d", b);
-         	     }
-         	  }
+            {
+            int32_t b = cursor;
+            traceMsg(comp(),"%d", b);
+            while(cursor.SetToNextOne())
+               {
+               b = cursor;
+               traceMsg(comp(),", %d", b);
+               }
+            }
          traceMsg(comp(), "} \t\t%d blocks in total\n", numberOfBlocksControlled(i));
          }
       }

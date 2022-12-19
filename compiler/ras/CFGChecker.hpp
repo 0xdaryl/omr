@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -30,6 +30,7 @@
 
 class TR_Debug;
 namespace TR { class Block; }
+namespace TR { class Logger; }
 namespace TR { class Node; }
 namespace TR { class ResolvedMethodSymbol; }
 namespace TR { class TreeTop; }
@@ -55,9 +56,11 @@ class TR_CFGChecker
    TR_ALLOC(TR_Memory::CFGChecker)
 
    TR_CFGChecker(TR::ResolvedMethodSymbol *, TR_Debug *);
-   TR_CFGChecker(TR::CFG *cfg, TR::FILE *pOutFile) : _cfg(cfg), _fe(cfg->comp()->fe()), _outFile(pOutFile) { };
 
    void check();
+
+   TR::Logger *getLogger() { return _logger; }
+   bool getLoggingEnabled() { return _loggingEnabled; }
 
    protected:
 
@@ -77,8 +80,9 @@ class TR_CFGChecker
    int32_t    _numRealBlocks;
    bool       _successorsCorrect;
    bool       _isCFGConsistent;
+   bool       _loggingEnabled;
    TR_BitVector _blockChecklist;
-   TR::FILE *_outFile;
+   TR::Logger *_logger;
    TR_FrontEnd *_fe;
    };
 

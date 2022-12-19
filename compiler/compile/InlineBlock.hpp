@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -58,7 +58,6 @@ class TR_InlineBlocks
    void addExceptionBlock(TR::Block *);
    bool isInList(int32_t);
    bool isInExceptionList(int32_t);
-   void dump(TR::FILE *);
 
    int32_t getNumBlocks() { return _numBlocks; }
    int32_t getNumExceptionBlocks() { return _numExceptionBlocks;}

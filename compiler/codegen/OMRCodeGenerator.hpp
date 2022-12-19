@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2022 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -97,6 +97,7 @@ namespace TR { class CodeGenerator; }
 namespace TR { class Instruction; }
 namespace TR { class LabelSymbol; }
 namespace TR { class Linkage; }
+namespace TR { class Logger; }
 namespace TR { class MemoryReference; }
 namespace TR { class ObjectFormat; }
 namespace TR { class RealRegister; }
@@ -1071,11 +1072,7 @@ public:
    // X86 only
    uint32_t estimateBinaryLength(TR::MemoryReference *) { return 0; }
 
-#ifdef DEBUG
-   static void shutdown(TR_FrontEnd *fe, TR::FILE *logFile);
-#endif
-
-   void dumpDataSnippets(TR::FILE *outFile) {}
+   void dumpDataSnippets(TR::Logger *log) {}
 
    // --------------------------------------------------------------------------
    // Register assignment tracing

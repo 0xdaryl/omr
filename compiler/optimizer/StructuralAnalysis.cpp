@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2022 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -41,6 +41,7 @@
 #include "optimizer/Structure.hpp"
 #include "optimizer/Dominators.hpp"
 #include "ras/Debug.hpp"
+#include "ras/Logger.hpp"
 
 void TR_RegionAnalysis::simpleIterator (TR_Stack<int32_t>& workStack,
                                         StructureBitVector& vector,
@@ -197,7 +198,7 @@ TR_Structure *TR_RegionAnalysis::getRegions(TR::Compilation *comp, TR::ResolvedM
    if (ra.trace())
       {
       traceMsg(comp, "Blocks before Region Analysis:\n");
-      comp->getDebug()->print(comp->getOutFile(), cfg);
+      comp->getDebug()->print(comp->getLogger(), cfg);
       }
 
    ra.createLeafStructures(cfg, stackMemoryRegion);
@@ -241,7 +242,7 @@ TR_Structure *TR_RegionAnalysis::getRegions(TR::Compilation *comp)
    if (ra.trace())
       {
       traceMsg(comp, "Blocks before Region Analysis:\n");
-      comp->getDebug()->print(comp->getOutFile(), cfg);
+      comp->getDebug()->print(comp->getLogger(), cfg);
       }
 
    ra.createLeafStructures(cfg, stackMemoryRegion);
@@ -753,8 +754,8 @@ void TR_RegionAnalysis::buildRegionSubGraph(TR_RegionStructure *region,
    region->setEntry(cfgNodes[entryNode._nodeIndex]);
    if (trace())
       {
-      _compilation->getDebug()->print(_compilation->getOutFile(), region, 6);
+      comp()->getDebug()->print(comp()->getLogger(), region, 6);
       traceMsg(comp(), "   Structure after finding a region:\n");
-      _compilation->getDebug()->print(_compilation->getOutFile(), this, 6);
+      comp()->getDebug()->print(comp()->getLogger(), this, 6);
       }
    }

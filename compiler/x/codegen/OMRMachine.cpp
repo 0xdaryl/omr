@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2022 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -2957,50 +2957,44 @@ uint32_t OMR::X86::Machine::maxAssignableRegisters()
 
 
 #if defined(DEBUG)
-static void printOneRegisterStatus(TR_FrontEnd *fe, TR::FILE *pOutFile, TR_Debug *debug, TR::RealRegister *reg)
+static void printOneRegisterStatus(TR::Logger *log, TR_FrontEnd *fe, TR_Debug *debug, TR::RealRegister *reg)
    {
-   trfprintf(pOutFile,"                      ");
-   debug->printFullRegInfo(pOutFile, reg);
+   log->prints("                      ");
+   debug->printFullRegInfo(log, reg);
    }
 
-void OMR::X86::Machine::printGPRegisterStatus(TR_FrontEnd *fe, TR::RealRegister ** registerFile, TR::FILE *pOutFile)
+void OMR::X86::Machine::printGPRegisterStatus(TR::Logger *log, TR_FrontEnd *fe, TR::RealRegister **registerFile)
    {
-   if (pOutFile == NULL)
-      return;
-
-   trfprintf(pOutFile, "\n  GP Reg Status:          Register         State        Assigned\n");
+   log->prints("\n  GP Reg Status:          Register         State        Assigned\n");
    int i;
    for (i = TR::RealRegister::FirstGPR; i <= TR::RealRegister::LastAssignableGPR; i++)
       {
-      printOneRegisterStatus(fe, pOutFile, self()->getDebug(), registerFile[i]);
+      printOneRegisterStatus(log, fe, self()->getDebug(), registerFile[i]);
       }
    for (i = TR::RealRegister::FirstXMMR; i <= TR::RealRegister::LastXMMR; i++)
       {
-      printOneRegisterStatus(fe, pOutFile, self()->getDebug(), registerFile[i]);
+      printOneRegisterStatus(log, fe, self()->getDebug(), registerFile[i]);
       }
 
-   trfflush(pOutFile);
+   log->flush();
    }
 
 // Dump the FP register stack
 //
-void OMR::X86::Machine::printFPRegisterStatus(TR_FrontEnd *fe, TR::FILE *pOutFile)
+void OMR::X86::Machine::printFPRegisterStatus(TR::Logger *log, TR_FrontEnd *fe)
    {
    char buf[32];
    char *cursor;
    int32_t i,j;
 
-   if (pOutFile == NULL)
-      return;
-
-   trfprintf(pOutFile, "\n  FP Reg Status:          Register         State        Assigned      Total Future\n");
+   log->prints("\n  FP Reg Status:          Register         State        Assigned      Total Future\n");
    for (i=_fpTopOfStack, j=0; i != TR_X86FPStackRegister::fpStackEmpty; i--, j++)
       {
       memset(buf, ' ', 25);
       cursor = buf+17;
       sprintf(cursor, "st%d: ",j);
-      trfprintf(pOutFile, buf);
-      self()->getDebug()->printFullRegInfo(pOutFile, _fpStack[i]->getAssignedRegister());
+      log->prints(buf);
+      self()->getDebug()->printFullRegInfo(log, _fpStack[i]->getAssignedRegister());
       }
 
    for (i=j; i<8; i++)
@@ -3008,9 +3002,9 @@ void OMR::X86::Machine::printFPRegisterStatus(TR_FrontEnd *fe, TR::FILE *pOutFil
       memset(buf, ' ', 25);
       cursor = buf+17;
       sprintf(cursor, "st%d:",i);
-      trfprintf(pOutFile, "%s [ empty      ]\n", buf);
+      log->printf("%s [ empty      ]\n", buf);
       }
 
-   trfflush(pOutFile);
+   log->flush();
    }
 #endif

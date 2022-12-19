@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2022 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -67,6 +67,7 @@
 #include "infra/CfgNode.hpp"
 #include "optimizer/Optimizer.hpp"
 #include "ras/Debug.hpp"
+#include "ras/Logger.hpp"
 #include "runtime/Runtime.hpp"
 #include "infra/SimpleRegex.hpp"
 
@@ -1155,7 +1156,7 @@ OMR::ResolvedMethodSymbol::genIL(TR_FrontEnd * fe, TR::Compilation * comp, TR::S
    if (comp->ilGenTrace() || comp->isPeekingMethod())
       traceIt = true;
 
-   if (traceIt && comp->getOutFile() != NULL && comp->getOption(TR_TraceBC))
+   if (traceIt && comp->getLoggingEnabled() && comp->getOption(TR_TraceBC))
       {
       // matching its traceflag
       if (comp->isPeekingMethod())
@@ -1169,7 +1170,7 @@ OMR::ResolvedMethodSymbol::genIL(TR_FrontEnd * fe, TR::Compilation * comp, TR::S
       if (comp->getDebug())
          {
          traceMsg(comp, "   <request> ");
-         customRequest.print(fe, comp->getOutFile(), " </request>\n");
+         customRequest.print(comp->getLogger(), fe, " </request>\n");
          }
       }
 
@@ -1207,7 +1208,7 @@ OMR::ResolvedMethodSymbol::genIL(TR_FrontEnd * fe, TR::Compilation * comp, TR::S
          auto genIL_rc = ilGen->genIL();
          _methodFlags.set(IlGenSuccess, genIL_rc);
 
-         if (comp->getOutFile() != NULL && comp->getOption(TR_TraceBC))
+         if (comp->getLoggingEnabled() && comp->getOption(TR_TraceBC))
             {
             traceMsg(self()->comp(), "genIL() returned %d\n", genIL_rc);
             }
@@ -1258,7 +1259,7 @@ OMR::ResolvedMethodSymbol::genIL(TR_FrontEnd * fe, TR::Compilation * comp, TR::S
                   {
                   self()->genOSRHelperCall(siteIndex, symRefTab);
                   if (comp->getOption(TR_TraceOSR))
-                     comp->dumpMethodTrees("Trees after OSR in genIL", self());
+                     comp->dumpMethodTrees(comp->getLogger(), "Trees after OSR in genIL", self());
                   }
 
                if (!comp->isOutermostMethod())
@@ -1272,7 +1273,7 @@ OMR::ResolvedMethodSymbol::genIL(TR_FrontEnd * fe, TR::Compilation * comp, TR::S
                }
             else
                {
-               if (comp->getOutFile() != NULL && comp->getOption(TR_TraceBC))
+               if (comp->getLoggingEnabled() && comp->getOption(TR_TraceBC))
                   traceMsg(comp, "Skipping ilgen opts\n");
                }
             }
@@ -1290,7 +1291,7 @@ OMR::ResolvedMethodSymbol::genIL(TR_FrontEnd * fe, TR::Compilation * comp, TR::S
          comp->setCurrentIlGenerator(0);
       }
 
-   if (traceIt && (comp->getOutFile() != NULL) && comp->getOption(TR_TraceBC))
+   if (traceIt && comp->getLoggingEnabled() && comp->getOption(TR_TraceBC))
       {
       if (comp->isPeekingMethod())
          traceMsg(comp, "</peeking ilgen>\n");

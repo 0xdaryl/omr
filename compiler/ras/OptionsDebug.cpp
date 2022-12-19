@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2022 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -37,6 +37,7 @@
 #include "optimizer/Optimizations.hpp"
 #include "ras/Debug.hpp"
 #include "ras/IgnoreLocale.hpp"
+#include "ras/Logger.hpp"
 
 #ifdef J9_PROJECT_SPECIFIC
 #include "env/VMJ9.h"
@@ -63,12 +64,17 @@ static char *optionCategoryNames[] = {"\nGeneral options:\n",
 
 
 
-TR::FILE *TR_Debug::findLogFile(TR::Options *cmdLineOptions, TR::OptionSet *optSet, char *logFileName)
+TR::FILE *TR_Debug::findLogFile(TR::Options *cmdLineOptions, TR::OptionSet *optSet, char *logFileName, TR::Logger *&logger)
    {
    char *fileName = cmdLineOptions->getLogFileName();
    TR::FILE *logFile = NULL;
+   logger = NULL;
+
    if (fileName && !STRICMP(logFileName, fileName))
+      {
       logFile = cmdLineOptions->getLogFile();
+      logger = cmdLineOptions->getLogger();
+      }
    else
       {
       for (TR::OptionSet *prev = cmdLineOptions->getFirstOptionSet(); prev && prev != optSet; prev = prev->getNext())
@@ -77,6 +83,7 @@ TR::FILE *TR_Debug::findLogFile(TR::Options *cmdLineOptions, TR::OptionSet *optS
          if (fileName && !STRICMP(logFileName, fileName))
             {
             logFile = prev->getOptions()->getLogFile();
+            logger = prev->getOptions()->getLogger();
             break;
             }
          }
@@ -84,18 +91,18 @@ TR::FILE *TR_Debug::findLogFile(TR::Options *cmdLineOptions, TR::OptionSet *optS
    return logFile;
    }
 
-TR::FILE *TR_Debug::findLogFile(TR::Options *aotCmdLineOptions, TR::Options *jitCmdLineOptions, TR::OptionSet *optSet, char *logFileName)
+TR::FILE *TR_Debug::findLogFile(TR::Options *aotCmdLineOptions, TR::Options *jitCmdLineOptions, TR::OptionSet *optSet, char *logFileName, TR::Logger *&logger)
    {
    if (aotCmdLineOptions)
       {
-      TR::FILE *logFile = findLogFile(aotCmdLineOptions, optSet, logFileName);
+      TR::FILE *logFile = findLogFile(aotCmdLineOptions, optSet, logFileName, logger);
       if (logFile != NULL)
          return logFile;
       }
 
    if (jitCmdLineOptions)
       {
-      TR::FILE *logFile = findLogFile(jitCmdLineOptions, optSet, logFileName);
+      TR::FILE *logFile = findLogFile(jitCmdLineOptions, optSet, logFileName, logger);
       if (logFile != NULL)
          return logFile;
       }

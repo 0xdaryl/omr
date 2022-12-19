@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -61,6 +61,7 @@
 #include "optimizer/UseDefInfo.hpp"
 #include "optimizer/VPConstraint.hpp"
 #include "ras/Debug.hpp"
+#include "ras/Logger.hpp"
 
 
 TR_IsolatedStoreElimination::TR_IsolatedStoreElimination(TR::OptimizationManager *manager)
@@ -1607,7 +1608,7 @@ void TR_IsolatedStoreElimination::analyzeSingleBlockLoop(TR_RegionStructure *reg
                      {
                      traceMsg(comp(), "treeTop : %p\n", treeTop->getNode());
                      traceMsg(comp(), "PREDICTABLE COMPUTATION : \n");
-                     comp()->getDebug()->print(comp()->getOutFile(), treeTop);
+                     comp()->getDebug()->print(comp()->getLogger(), treeTop);
                      }
                   }
                }

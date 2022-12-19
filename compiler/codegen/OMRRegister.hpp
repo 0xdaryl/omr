@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -44,6 +44,7 @@ class TR_BackingStore;
 namespace TR { class AutomaticSymbol; }
 namespace TR { class Compilation; }
 namespace TR { class Instruction; }
+namespace TR { class Logger; }
 namespace TR { class RealRegister; }
 namespace TR { class Register; }
 namespace TR { class RegisterPair; }
@@ -159,15 +160,12 @@ class OMR_EXTENSIBLE Register
    virtual const char         *getRegisterName(TR::Compilation *comp, TR_RegisterSizes size = TR_WordReg);
    static const char          *getRegisterKindName(TR::Compilation *comp, TR_RegisterKinds rk);
 
-
    virtual void block();
    virtual void unblock();
 
-
 #if defined(DEBUG)
-   virtual void print(TR::Compilation *comp, TR::FILE *pOutFile, TR_RegisterSizes size = TR_WordReg);
+   virtual void print(TR::Logger *log, TR::Compilation *comp, TR_RegisterSizes size = TR_WordReg);
 #endif
-
 
    protected:
 

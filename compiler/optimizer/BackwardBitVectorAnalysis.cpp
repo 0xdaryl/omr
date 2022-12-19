@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -34,6 +34,7 @@
 #include "infra/CfgNode.hpp"
 #include "optimizer/Structure.hpp"
 #include "optimizer/DataFlowAnalysis.hpp"
+#include "ras/Logger.hpp"
 
 class TR_BitVector;
 #define MAX_CASES_FOR_STACK_ALLOCATION 16
@@ -313,7 +314,7 @@ template<class Container>void TR_BackwardDFSetAnalysis<Container *>::initializeG
                if (pair->_container)
                   {
                   traceMsg(this->comp(), "Exit or Succ numbered %d : ", pair->_nodeNumber);
-                  pair->_container->print(this->comp());
+                  pair->_container->print(this->comp()->getLogger(), this->comp());
                   traceMsg(this->comp(), "\n");
                   }
                }
@@ -328,7 +329,7 @@ template<class Container>void TR_BackwardDFSetAnalysis<Container *>::initializeG
                if (pair->_container)
                   {
                   traceMsg(this->comp(), "Exit or Succ numbered %d : ", pair->_nodeNumber);
-                  pair->_container->print(this->comp());
+                  pair->_container->print(this->comp()->getLogger(), this->comp());
                   traceMsg(this->comp(), "\n");
                   }
                }
@@ -343,7 +344,7 @@ template<class Container>void TR_BackwardDFSetAnalysis<Container *>::initializeG
                if (pair->_container)
                   {
                   traceMsg(this->comp(), "Exit or Succ numbered %d : ", pair->_nodeNumber);
-                  pair->_container->print(this->comp());
+                  pair->_container->print(this->comp()->getLogger(), this->comp());
                   traceMsg(this->comp(), "\n");
                   }
                }
@@ -358,7 +359,7 @@ template<class Container>void TR_BackwardDFSetAnalysis<Container *>::initializeG
                if (pair->_container)
                   {
                   traceMsg(this->comp(), "Exit or Succ numbered %d : ", pair->_nodeNumber);
-                  pair->_container->print(this->comp());
+                  pair->_container->print(this->comp()->getLogger(), this->comp());
                   traceMsg(this->comp(), "\n");
                   }
                }
@@ -620,7 +621,7 @@ template<class Container>void TR_BackwardDFSetAnalysis<Container *>::initializeG
                if (pair->_container)
                   {
                   traceMsg(this->comp(), "Exit or Succ numbered %d : ", pair->_nodeNumber);
-                  pair->_container->print(this->comp());
+                  pair->_container->print(this->comp()->getLogger(), this->comp());
                   traceMsg(this->comp(), "\n");
                   }
                }
@@ -635,7 +636,7 @@ template<class Container>void TR_BackwardDFSetAnalysis<Container *>::initializeG
                if (pair->_container)
                   {
                   traceMsg(this->comp(), "Exit or Succ numbered %d : ", pair->_nodeNumber);
-                  pair->_container->print(this->comp());
+                  pair->_container->print(this->comp()->getLogger(), this->comp());
                   traceMsg(this->comp(), "\n");
                   }
                }
@@ -650,7 +651,7 @@ template<class Container>void TR_BackwardDFSetAnalysis<Container *>::initializeG
                if (pair->_container)
                   {
                   traceMsg(this->comp(), "Exit or Succ numbered %d : ", pair->_nodeNumber);
-                  pair->_container->print(this->comp());
+                  pair->_container->print(this->comp()->getLogger(), this->comp());
                   traceMsg(this->comp(), "\n");
                   }
                }
@@ -665,7 +666,7 @@ template<class Container>void TR_BackwardDFSetAnalysis<Container *>::initializeG
                if (pair->_container)
                   {
                   traceMsg(this->comp(), "Exit or Succ numbered %d : ", pair->_nodeNumber);
-                  pair->_container->print(this->comp());
+                  pair->_container->print(this->comp()->getLogger(), this->comp());
                   traceMsg(this->comp(), "\n");
                   }
                }
@@ -1277,12 +1278,12 @@ template<class Container>bool TR_BackwardDFSetAnalysis<Container *>::analyzeNode
          for (pair = analysisInfo->_outSetInfo->getFirst(); pair; pair = pair->getNext())
             {
             traceMsg(this->comp(), "Exit or Succ numbered %d : ", pair->_nodeNumber);
-            pair->_container->print(this->comp());
-            _currentOutSetInfo[pair->_nodeNumber]->print(this->comp());
+            pair->_container->print(this->comp()->getLogger(), this->comp());
+            _currentOutSetInfo[pair->_nodeNumber]->print(this->comp()->getLogger(), this->comp());
             traceMsg(this->comp(), "\n");
             }
          traceMsg(this->comp(), "\nBEFORE In Set Info for Region or Block : %p numbered %d is : \n", nodeStructure->getStructure(), nodeStructure->getStructure()->getNumber());
-         analysisInfo->_inSetInfo->print(this->comp());
+         analysisInfo->_inSetInfo->print(this->comp()->getLogger(), this->comp());
          traceMsg(this->comp(), "\n");
          }
 
@@ -1300,11 +1301,11 @@ template<class Container>bool TR_BackwardDFSetAnalysis<Container *>::analyzeNode
          for (pair = analysisInfo->_outSetInfo->getFirst(); pair; pair = pair->getNext())
             {
             traceMsg(this->comp(), "Exit or Succ numbered %d : ", pair->_nodeNumber);
-            pair->_container->print(this->comp());
+            pair->_container->print(this->comp()->getLogger(), this->comp());
             traceMsg(this->comp(), "\n");
             }
          traceMsg(this->comp(), "\nIn Set Info for Region or Block : %p numbered %d is : \n", nodeStructure->getStructure(), nodeStructure->getStructure()->getNumber());
-         analysisInfo->_inSetInfo->print(this->comp());
+         analysisInfo->_inSetInfo->print(this->comp()->getLogger(), this->comp());
          traceMsg(this->comp(), "\n");
 
 
@@ -1312,11 +1313,11 @@ template<class Container>bool TR_BackwardDFSetAnalysis<Container *>::analyzeNode
          for (pair = regionAnalysisInfo->_outSetInfo->getFirst(); pair; pair = pair->getNext())
             {
             traceMsg(this->comp(), "Succ numbered %d : ", pair->_nodeNumber);
-            pair->_container->print(this->comp());
+            pair->_container->print(this->comp()->getLogger(), this->comp());
             traceMsg(this->comp(), "\n");
             }
          traceMsg(this->comp(), "\nIn Set Info for parent region : %p numbered %d is : \n", regionStructure, regionStructure->getNumber());
-         regionAnalysisInfo->_inSetInfo->print(this->comp());
+         regionAnalysisInfo->_inSetInfo->print(this->comp()->getLogger(), this->comp());
          traceMsg(this->comp(), "\n");
          }
 
@@ -1458,7 +1459,7 @@ template<class Container>bool TR_BackwardDFSetAnalysis<Container *>::analyzeBloc
          if (traceBBVA())
             {
             dumpOptDetails(this->comp(), "Normal info for %d : ", blockNum);
-            this->_regularInfo->print(this->comp());
+            this->_regularInfo->print(this->comp()->getLogger(), this->comp());
             dumpOptDetails(this->comp(), "\n");
             }
 
@@ -1468,7 +1469,7 @@ template<class Container>bool TR_BackwardDFSetAnalysis<Container *>::analyzeBloc
          if (traceBBVA())
             {
             dumpOptDetails(this->comp(), "Normal info for %d : ", blockNum);
-            this->_regularInfo->print(this->comp());
+            this->_regularInfo->print(this->comp()->getLogger(), this->comp());
             dumpOptDetails(this->comp(), "\n");
             }
 
@@ -1481,7 +1482,7 @@ template<class Container>bool TR_BackwardDFSetAnalysis<Container *>::analyzeBloc
          if (traceBBVA())
             {
             dumpOptDetails(this->comp(), "Normal info for %d : ", blockNum);
-            this->_regularInfo->print(this->comp());
+            this->_regularInfo->print(this->comp()->getLogger(), this->comp());
             dumpOptDetails(this->comp(), "\n");
             }
          }
@@ -1515,11 +1516,11 @@ template<class Container>bool TR_BackwardDFSetAnalysis<Container *>::analyzeBloc
       for (pair = analysisInfo->_outSetInfo->getFirst(); pair; pair = pair->getNext())
          {
          traceMsg(this->comp(), "Succ numbered %d : ", pair->_nodeNumber);
-         pair->_container->print(this->comp());
+         pair->_container->print(this->comp()->getLogger(), this->comp());
          traceMsg(this->comp(), "\n");
          }
       traceMsg(this->comp(), "\nIn Set Info for Block : %p numbered %d is : \n", blockStructure, blockStructure->getNumber());
-      analysisInfo->_inSetInfo->print(this->comp());
+      analysisInfo->_inSetInfo->print(this->comp()->getLogger(), this->comp());
       traceMsg(this->comp(), "\n");
       }
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -41,6 +41,7 @@ namespace OMR { typedef OMR::KnownObjectTable KnownObjectTableConnector; }
 class TR_FrontEnd;
 namespace TR { class Compilation; }
 namespace TR { class KnownObjectTable; }
+namespace TR { class Logger; }
 
 namespace OMR
 {
@@ -80,7 +81,7 @@ public:
    uintptr_t *getPointerLocation(Index index);
    bool isNull(Index index);
 
-   void dumpTo(TR::FILE *file, TR::Compilation *comp);
+   void dumpTo(TR::Logger *log, TR::Compilation *comp);
 
    // Handy wrappers
 

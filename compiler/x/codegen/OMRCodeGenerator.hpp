@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2022 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -66,6 +66,7 @@ namespace TR { class X86DataSnippet; }
 class TR_OutlinedInstructions;
 namespace OMR { namespace X86 { class CodeGenerator; } }
 namespace TR { class CodeGenerator; }
+namespace TR { class Logger; }
 namespace TR { class MemoryReference; }
 namespace TR { class X86ImmInstruction;         }
 namespace TR { class X86LabelInstruction;       }
@@ -613,7 +614,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    void dumpPostGPRegisterAssignment(TR::Instruction *, TR::Instruction *);
 #endif
 
-   void dumpDataSnippets(TR::FILE *pOutFile);
+   void dumpDataSnippets(TR::Logger *log);
 
    TR::X86ConstantDataSnippet *findOrCreate2ByteConstant(TR::Node *, int16_t c);
    TR::X86ConstantDataSnippet *findOrCreate4ByteConstant(TR::Node *, int32_t c);

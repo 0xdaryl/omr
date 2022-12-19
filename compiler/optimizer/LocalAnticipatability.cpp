@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -45,6 +45,7 @@
 #include "il/TreeTop_inlines.hpp"
 #include "infra/BitVector.hpp"
 #include "optimizer/LocalAnalysis.hpp"
+#include "ras/Logger.hpp"
 #include "compile/AliasBuilder.hpp"
 
 TR_LocalAnticipatability::TR_LocalAnticipatability(TR_LocalAnalysisInfo &info, TR_LocalTransparency *lt, bool t)
@@ -116,9 +117,9 @@ TR_LocalAnticipatability::TR_LocalAnticipatability(TR_LocalAnalysisInfo &info, T
       if (trace())
           {
           traceMsg(comp(), "\nSolution for block number : %d\n", block->getNumber());
-          binfo->_analysisInfo->print(comp());
-          binfo->_downwardExposedAnalysisInfo->print(comp());
-          binfo->_downwardExposedStoreAnalysisInfo->print(comp());
+          binfo->_analysisInfo->print(comp()->getLogger(), comp());
+          binfo->_downwardExposedAnalysisInfo->print(comp()->getLogger(), comp());
+          binfo->_downwardExposedStoreAnalysisInfo->print(comp()->getLogger(), comp());
           }
       }
 

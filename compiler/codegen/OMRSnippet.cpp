@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -23,6 +23,7 @@
 #include "il/LabelSymbol.hpp"
 #include "codegen/Snippet.hpp"
 #include "codegen/CodeGenerator.hpp"
+#include "ras/Logger.hpp"
 
 OMR::Snippet::Snippet(
       TR::CodeGenerator *cg,
@@ -93,20 +94,20 @@ OMR::Snippet::prepareSnippetForGCSafePoint()
    }
 
 void
-OMR::Snippet::print(TR::FILE* f, TR_Debug* debug)
+OMR::Snippet::print(TR::Logger *log, TR_Debug *debug)
    {
-   uint8_t* cursor = self()->getSnippetLabel()->getCodeLocation();
+   uint8_t *cursor = self()->getSnippetLabel()->getCodeLocation();
 
-   debug->printSnippetLabel(f, self()->getSnippetLabel(), cursor, "<Unknown Snippet>");
+   debug->printSnippetLabel(log, self()->getSnippetLabel(), cursor, "<Unknown Snippet>");
 
    for (auto i = 0; i < self()->getLength(0) / sizeof(uint64_t); ++i)
       {
-      debug->printPrefix(f, NULL, cursor, sizeof(uint64_t));
+      debug->printPrefix(log, NULL, cursor, sizeof(uint64_t));
       cursor += sizeof(uint64_t);
       }
 
    if (self()->getLength(0) % sizeof(uint64_t) != 0)
       {
-      debug->printPrefix(f, NULL, cursor, self()->getLength(0) % sizeof(uint64_t));
+      debug->printPrefix(log, NULL, cursor, self()->getLength(0) % sizeof(uint64_t));
       }
    }

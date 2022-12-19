@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -55,6 +55,7 @@
 #include "optimizer/Structure.hpp"
 
 #include "optimizer/OMRSimplifierHelpers.hpp"
+#include "ras/Logger.hpp"
 
 #define OPT_DETAILS "O^O ORDER BLOCKS: "
 
@@ -2074,7 +2075,7 @@ void TR_OrderBlocks::doReordering()
    // do another round of peepholing, because there may be more opportunities now
    if (_doPeepHoleOptimizationsAfter)
       {
-      if (trace()) comp()->dumpMethodTrees("Before final peepholing");
+      if (trace()) comp()->dumpMethodTrees(comp()->getLogger(), "Before final peepholing");
       lookForPeepHoleOpportunities(OPT_DETAILS);
       }
    }
@@ -2097,16 +2098,14 @@ int32_t TR_OrderBlocks::perform()
 
    TR::StackMemoryRegion stackMemoryRegion(*trMemory());
 
-   if (trace()) comp()->dumpMethodTrees("Before ordering");
+   if (trace()) comp()->dumpMethodTrees(comp()->getLogger(), "Before ordering");
 
    initialize();
 
    if (_doPeepHoleOptimizationsBefore)
       {
       lookForPeepHoleOpportunities(OPT_DETAILS);
-      if (trace()) comp()->dumpMethodTrees("After early peepholing");
-      //comp()->getDebug()->verifyCFG(optimizer()->getMethodSymbol());
-
+      if (trace()) comp()->dumpMethodTrees(comp()->getLogger(), "After early peepholing");
       }
 
    if (_reorderBlocks && performTransformation(comp(), "%s Propagating coldness information\n", OPT_DETAILS))
@@ -2125,20 +2124,17 @@ int32_t TR_OrderBlocks::perform()
       doReordering();
 
    //comp()->getFlowGraph()->setFrequencies();
-   //comp()->getDebug()->verifyCFG(getOptimizer()->getMethodSymbol());
 
    // block extension must be the last thing we do...particularly after peephole opts because they can change a block's predecessors
    if (_extendBlocks)
       {
-      if (trace()) comp()->dumpMethodTrees("Before extending blocks");
+      if (trace()) comp()->dumpMethodTrees(comp()->getLogger(), "Before extending blocks");
       bool blocksWereExtended = doBlockExtension();
-      if (trace()) comp()->dumpMethodTrees("After extending blocks");
-      //comp()->getDebug()->verifyCFG(getOptimizer()->getMethodSymbol());
+      if (trace()) comp()->dumpMethodTrees(comp()->getLogger(), "After extending blocks");
       if (blocksWereExtended)
          optimizer()->enableAllLocalOpts();
       }
-      if (trace()) comp()->dumpMethodTrees("After enableAllLocalOpts");
-      //comp()->getDebug()->verifyCFG(getOptimizer()->getMethodSymbol());
+      if (trace()) comp()->dumpMethodTrees(comp()->getLogger(), "After enableAllLocalOpts");
 
    if (trace())
       {

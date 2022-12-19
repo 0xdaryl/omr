@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -26,6 +26,7 @@
 #endif
 #include "compile/Compilation.hpp"
 #include "env/CompilerEnv.hpp"
+#include "ras/Logger.hpp"
 
 
 OMR::KnownObjectTable::KnownObjectTable(TR::Compilation *comp) :
@@ -109,7 +110,7 @@ OMR::KnownObjectTable::isNull(Index index)
    }
 
 void
-OMR::KnownObjectTable::dumpTo(TR::FILE *file, TR::Compilation *comp)
+OMR::KnownObjectTable::dumpTo(TR::Logger *log, TR::Compilation *comp)
    {
    TR_UNIMPLEMENTED();
    }

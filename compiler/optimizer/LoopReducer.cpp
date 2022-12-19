@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -61,6 +61,7 @@
 #include "optimizer/TranslateTable.hpp"
 #include "optimizer/VPConstraint.hpp"
 #include "ras/Debug.hpp"
+#include "ras/Logger.hpp"
 
 #define OPT_DETAILS "O^O LOOP TRANSFORMATION: "
 
@@ -4447,7 +4448,7 @@ TR_LoopReducer::perform()
       {
       traceMsg(comp(), "Starting LoopReducer\n");
       traceMsg(comp(), "\nCFG before loop reduction:\n");
-      getDebug()->print(comp()->getOutFile(), _cfg);
+      getDebug()->print(comp()->getLogger(), _cfg);
       }
 
    // From this point on, stack memory allocations will die when the function returns
@@ -4491,11 +4492,10 @@ TR_LoopReducer::perform()
    optimizer()->setUseDefInfo(NULL);
    optimizer()->setValueNumberInfo(NULL);
 
-
    if (trace())
       {
       traceMsg(comp(), "\nCFG after loop reduction:\n");
-      getDebug()->print(comp()->getOutFile(), _cfg);
+      getDebug()->print(comp()->getLogger(), _cfg);
       traceMsg(comp(), "Ending LoopReducer\n");
       }
 
