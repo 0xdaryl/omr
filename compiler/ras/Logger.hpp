@@ -40,7 +40,7 @@ public:
 
    virtual int32_t printc(char c);
 
-   virtual int32_t vprintf(const char *format, va_list ap);
+   virtual int32_t vprintf(const char *format, va_list args);
 
    virtual int64_t tell() { return -1; }
 
@@ -66,9 +66,7 @@ public:
    ~StreamLogger();
 */
 
-   StreamLogger(::FILE *fp);
-
-   static StreamLogger *create(::FILE *fp);
+   static StreamLogger *create(::FILE *fd);
 
    virtual int32_t printf(const char *format, ...);
 
@@ -76,7 +74,7 @@ public:
 
    virtual int32_t printc(char c);
 
-   virtual int32_t vprintf(const char *format, va_list ap);
+   virtual int32_t vprintf(const char *format, va_list args);
 
    virtual int64_t tell();
 
@@ -88,15 +86,58 @@ public:
 
    virtual bool supportsRewinding() { return true; }
 
-   static StreamLogger *Stderr;
+   StreamLogger *Stderr;
 
-   static StreamLogger *Stdout;
+   StreamLogger *Stdout;
 
 private:
 
-   ::FILE *_fp;
+   StreamLogger(::FILE *fd);
+
+   ::FILE *_fd;
 
    };
 
+
+class BufferedStreamLogger : public Logger
+   {
+
+public:
+
+   static BufferedStreamLogger *create(::FILE *fd, char *buffer, int64_t bufferLength);
+
+   virtual int32_t printf(const char *format, ...);
+
+   virtual int32_t prints(const char *string);
+
+   virtual int32_t printc(char c);
+
+   virtual int32_t vprintf(const char *format, va_list args);
+
+   virtual int64_t tell();
+
+   virtual void rewind();
+
+   virtual void flush();
+
+   virtual void close();
+
+   virtual bool supportsRewinding() { return false; }
+
+private:
+
+   BufferedStreamLogger(::FILE *fd, char *buffer, int64_t bufferLength);
+
+   int64_t bufOffset;
+
+   int64_t bufLength;
+
+   char *buf;
+
+   char *bufCursor;
+
+   ::FILE *_fd;
+
+   };
 }
 #endif

@@ -21,6 +21,8 @@
 
 #include <stdio.h>
 #include <stdarg.h>
+#include <string.h>
+#include <unistd.h>
 #include "env/IO.hpp"
 #include "ras/Logger.hpp"
 
@@ -50,19 +52,24 @@ TR::Logger::printc(char c)
    }
 
 int32_t
-TR::Logger::vprintf(const char *format, va_list ap)
+TR::Logger::vprintf(const char *format, va_list args)
    {
-   return ::vfprintf(stdout, format, ap);
+   return ::vfprintf(stdout, format, args);
    }
 
-TR::StreamLogger::StreamLogger(::FILE *fp)
+/*
+ * -----------------------------------------------------------------------------
+ * StreamLogger
+ * -----------------------------------------------------------------------------
+ */
+TR::StreamLogger::StreamLogger(::FILE *fd)
    {
-   _fp = fp;
+   _fd = fd;
    }
 
-TR::StreamLogger *TR::StreamLogger::create(::FILE *fp)
+TR::StreamLogger *TR::StreamLogger::create(::FILE *fd)
    {
-   return new TR::StreamLogger(fp);
+   return new TR::StreamLogger(fd);
    }
 
 int32_t
@@ -70,7 +77,7 @@ TR::StreamLogger::printf(const char *format, ...)
    {
    va_list args;
    va_start(args, format);
-   int32_t length = ::vfprintf(_fp, format, args);
+   int32_t length = ::vfprintf(_fd, format, args);
    va_end(args);
    return length;
    }
@@ -78,39 +85,39 @@ TR::StreamLogger::printf(const char *format, ...)
 int32_t
 TR::StreamLogger::prints(const char *str)
    {
-   ::fputs(str, _fp);
+   ::fputs(str, _fd);
    return 0;
    }
 
 int32_t
 TR::StreamLogger::printc(char c)
    {
-   ::fputc(c, _fp);
+   ::fputc(c, _fd);
    return 0;
    }
 
 int32_t
-TR::StreamLogger::vprintf(const char *format, va_list ap)
+TR::StreamLogger::vprintf(const char *format, va_list args)
    {
-   return ::vfprintf(_fp, format, ap);
+   return ::vfprintf(_fd, format, args);
    }
 
 int64_t
 TR::StreamLogger::tell()
    {
-   return ::ftell(_fp);
+   return ::ftell(_fd);
    }
 
 void
 TR::StreamLogger::flush()
    {
-   ::fflush(_fp);
+   ::fflush(_fd);
    }
 
 void
 TR::StreamLogger::rewind()
    {
-   ::fseek(_fp, 0, SEEK_SET);
+   ::fseek(_fd, 0, SEEK_SET);
    }
 
 void
@@ -121,3 +128,131 @@ TR::StreamLogger::close()
 TR::StreamLogger *TR::StreamLogger::Stderr = TR::StreamLogger::create(stderr);
 
 TR::StreamLogger *TR::StreamLogger::Stdout = TR::StreamLogger::create(stdout);
+
+/*
+ * -----------------------------------------------------------------------------
+ * BufferedStreamLogger
+ * -----------------------------------------------------------------------------
+ */
+
+TR::BufferedStreamLogger::BufferedStreamLogger(::FILE *fd, char *buffer,  int64_t bufferLength) :
+      Stderr(NULL),
+      Stdout(NULL),
+      bufOffset(0),
+      bufLength(bufferLength),
+      buf(buffer),
+      bufCursor(buffer),
+      _fd(fd)
+   {
+   }
+
+TR::BufferedStreamLogger *TR::BufferedStreamLogger::create(::FILE *fd, buffer, bufferLength)
+   {
+   return new TR::BufferedStreamLogger(fd, buffer, bufferLength);
+   }
+
+
+void
+TR::BufferedSreamLogger::flushBuffer()
+   {
+   ssize_t bytesWritten = ::write(_fd, buf, bufOffset);
+
+   if (bytesWritten != -1)
+      {
+      bufOffset = 0;
+      bufCursor = buf;
+      }
+   else
+      {
+      // unable to flush
+      fprintf(stderr, "Unable to flush buffer : buf=%p, bufOffset=%d, bufLength=%d\n", buf, bufOffset, bufLength);
+      }
+   }
+
+
+int32_t
+TR::BufferedStreamLogger::prints(char *str)
+   {
+   size_t len = strlen(str);
+
+   if (bufOffset + len > bufLength)
+      {
+      flushBuffer();
+      }
+
+   memcpy(bufCursor, str, len);
+
+   bufCursor += len;
+   bufOffset += len;
+   return 0;
+   }
+
+
+int32_t
+TR::BufferedStreamLogger::printc(char c)
+   {
+   // Space for a single character?
+   //
+   if (bufCursor + 1 > bufLength)
+      {
+      flushBuffer();
+      }
+
+   *bufCursor++ = c;
+   bufOffset++;
+   return 0;
+   }
+
+
+int32_t
+TR::BufferedStreamLogger::printf(const char *format, ...)
+   {
+   va_list args;
+   va_start(args, format);
+   int32_t n = vprintf(format, args);
+   va_end(args);
+   return 0;
+   }
+
+int32_t
+TR::BufferedStreamLogger::vprintf(const char *format, va_list args)
+   {
+   va_list argsCopy;
+   va_copy(argsCopy, args)
+
+   int32_t n = ::vsnprintf(bufCursor, bufLength-bufOffset, format, args);
+
+   if (n >= (bufLength-bufOffset))
+      {
+      // The string was not written completely.  Flush the buffer and try again.
+      //
+      flushBuffer();
+      n = ::vsnprintf(bufCursor, bufLength-bufOffset, format, argsCopy);
+
+      if (n >= (bufLength-bufOffset))
+         {
+         // Still could not write string to buffer.  Consider it truncated.
+         //
+         n = bufLength - bufOffset;
+         }
+      }
+
+   va_copy_end(argsCopy);
+
+   bufCursor += n;
+   bufOffset += n;
+   return 0;
+   }
+
+void
+TR::BufferedStreamLogger::flush()
+   {
+   flushBuffer();
+   ::fflush(_fd);
+   }
+
+void
+TR::BufferedStreamLogger::close()
+   {
+   flushBuffer();
+   }
