@@ -151,7 +151,7 @@ TR::BufferedStreamLogger *TR::BufferedStreamLogger::create(::FILE *fd, char *buf
 
 
 void
-TR::BufferedSreamLogger::flushBuffer()
+TR::BufferedStreamLogger::flushBuffer()
    {
    ssize_t bytesWritten = ::write(_fd, _buf, _bufOffset);
 
