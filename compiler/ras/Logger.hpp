@@ -86,9 +86,9 @@ public:
 
    virtual bool supportsRewinding() { return true; }
 
-   StreamLogger *Stderr;
+   static StreamLogger *Stderr;
 
-   StreamLogger *Stdout;
+   static StreamLogger *Stdout;
 
 private:
 
