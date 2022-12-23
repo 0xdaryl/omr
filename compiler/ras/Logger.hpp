@@ -128,13 +128,13 @@ private:
 
    BufferedStreamLogger(::FILE *fd, char *buffer, int64_t bufferLength);
 
-   int64_t bufOffset;
+   int64_t _bufOffset;
 
-   int64_t bufLength;
+   int64_t _bufLength;
 
-   char *buf;
+   char *_buf;
 
-   char *bufCursor;
+   char *_bufCursor;
 
    ::FILE *_fd;
 

@@ -136,17 +136,15 @@ TR::StreamLogger *TR::StreamLogger::Stdout = TR::StreamLogger::create(stdout);
  */
 
 TR::BufferedStreamLogger::BufferedStreamLogger(::FILE *fd, char *buffer,  int64_t bufferLength) :
-      Stderr(NULL),
-      Stdout(NULL),
-      bufOffset(0),
-      bufLength(bufferLength),
-      buf(buffer),
-      bufCursor(buffer),
+      _bufOffset(0),
+      _bufLength(bufferLength),
+      _buf(buffer),
+      _bufCursor(buffer),
       _fd(fd)
    {
    }
 
-TR::BufferedStreamLogger *TR::BufferedStreamLogger::create(::FILE *fd, buffer, bufferLength)
+TR::BufferedStreamLogger *TR::BufferedStreamLogger::create(::FILE *fd, char *buffer, int64_t bufferLength)
    {
    return new TR::BufferedStreamLogger(fd, buffer, bufferLength);
    }
@@ -155,17 +153,17 @@ TR::BufferedStreamLogger *TR::BufferedStreamLogger::create(::FILE *fd, buffer, b
 void
 TR::BufferedSreamLogger::flushBuffer()
    {
-   ssize_t bytesWritten = ::write(_fd, buf, bufOffset);
+   ssize_t bytesWritten = ::write(_fd, _buf, _bufOffset);
 
    if (bytesWritten != -1)
       {
-      bufOffset = 0;
-      bufCursor = buf;
+      _bufOffset = 0;
+      _bufCursor = _buf;
       }
    else
       {
       // unable to flush
-      fprintf(stderr, "Unable to flush buffer : buf=%p, bufOffset=%d, bufLength=%d\n", buf, bufOffset, bufLength);
+      fprintf(stderr, "Unable to flush buffer : _buf=%p, _bufOffset=%d, _bufLength=%d\n", _buf, _bufOffset, _bufLength);
       }
    }
 
@@ -175,15 +173,15 @@ TR::BufferedStreamLogger::prints(char *str)
    {
    size_t len = strlen(str);
 
-   if (bufOffset + len > bufLength)
+   if (_bufOffset + len > _bufLength)
       {
       flushBuffer();
       }
 
-   memcpy(bufCursor, str, len);
+   memcpy(_bufCursor, str, len);
 
-   bufCursor += len;
-   bufOffset += len;
+   _bufCursor += len;
+   _bufOffset += len;
    return 0;
    }
 
@@ -193,13 +191,13 @@ TR::BufferedStreamLogger::printc(char c)
    {
    // Space for a single character?
    //
-   if (bufCursor + 1 > bufLength)
+   if (_bufCursor + 1 > _bufLength)
       {
       flushBuffer();
       }
 
-   *bufCursor++ = c;
-   bufOffset++;
+   *_bufCursor++ = c;
+   _bufOffset++;
    return 0;
    }
 
@@ -220,27 +218,27 @@ TR::BufferedStreamLogger::vprintf(const char *format, va_list args)
    va_list argsCopy;
    va_copy(argsCopy, args)
 
-   int32_t n = ::vsnprintf(bufCursor, bufLength-bufOffset, format, args);
+   int32_t n = ::vsnprintf(_bufCursor, _bufLength-_bufOffset, format, args);
 
-   if (n >= (bufLength-bufOffset))
+   if (n >= (_bufLength-_bufOffset))
       {
       // The string was not written completely.  Flush the buffer and try again.
       //
       flushBuffer();
-      n = ::vsnprintf(bufCursor, bufLength-bufOffset, format, argsCopy);
+      n = ::vsnprintf(_bufCursor, _bufLength-_bufOffset, format, argsCopy);
 
-      if (n >= (bufLength-bufOffset))
+      if (n >= (_bufLength-_bufOffset))
          {
          // Still could not write string to buffer.  Consider it truncated.
          //
-         n = bufLength - bufOffset;
+         n = _bufLength - _bufOffset;
          }
       }
 
    va_copy_end(argsCopy);
 
-   bufCursor += n;
-   bufOffset += n;
+   _bufCursor += n;
+   _bufOffset += n;
    return 0;
    }
 
