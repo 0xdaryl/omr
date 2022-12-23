@@ -169,7 +169,7 @@ TR::BufferedStreamLogger::flushBuffer()
 
 
 int32_t
-TR::BufferedStreamLogger::prints(char *str)
+TR::BufferedStreamLogger::prints(const char *str)
    {
    size_t len = strlen(str);
 

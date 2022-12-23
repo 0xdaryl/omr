@@ -108,7 +108,7 @@ public:
 
    virtual int32_t printf(const char *format, ...);
 
-   virtual int32_t prints(const char *string);
+   virtual int32_t prints(const char *str);
 
    virtual int32_t printc(char c);
 
@@ -127,6 +127,8 @@ public:
 private:
 
    BufferedStreamLogger(::FILE *fd, char *buffer, int64_t bufferLength);
+
+   void flushBuffer();
 
    int64_t _bufOffset;
 
