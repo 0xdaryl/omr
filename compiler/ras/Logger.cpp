@@ -62,14 +62,14 @@ TR::Logger::vprintf(const char *format, va_list args)
  * StreamLogger
  * -----------------------------------------------------------------------------
  */
-TR::StreamLogger::StreamLogger(::FILE *fd)
+TR::StreamLogger::StreamLogger(::FILE *stream)
    {
-   _fd = fd;
+   _stream = stream;
    }
 
-TR::StreamLogger *TR::StreamLogger::create(::FILE *fd)
+TR::StreamLogger *TR::StreamLogger::create(::FILE *stream)
    {
-   return new TR::StreamLogger(fd);
+   return new TR::StreamLogger(stream);
    }
 
 int32_t
@@ -77,7 +77,7 @@ TR::StreamLogger::printf(const char *format, ...)
    {
    va_list args;
    va_start(args, format);
-   int32_t length = ::vfprintf(_fd, format, args);
+   int32_t length = ::vfprintf(_stream, format, args);
    va_end(args);
    return length;
    }
@@ -85,39 +85,39 @@ TR::StreamLogger::printf(const char *format, ...)
 int32_t
 TR::StreamLogger::prints(const char *str)
    {
-   ::fputs(str, _fd);
+   ::fputs(str, _stream);
    return 0;
    }
 
 int32_t
 TR::StreamLogger::printc(char c)
    {
-   ::fputc(c, _fd);
+   ::fputc(c, _stream);
    return 0;
    }
 
 int32_t
 TR::StreamLogger::vprintf(const char *format, va_list args)
    {
-   return ::vfprintf(_fd, format, args);
+   return ::vfprintf(_stream, format, args);
    }
 
 int64_t
 TR::StreamLogger::tell()
    {
-   return ::ftell(_fd);
+   return ::ftell(_stream);
    }
 
 void
 TR::StreamLogger::flush()
    {
-   ::fflush(_fd);
+   ::fflush(_stream);
    }
 
 void
 TR::StreamLogger::rewind()
    {
-   ::fseek(_fd, 0, SEEK_SET);
+   ::fseek(_stream, 0, SEEK_SET);
    }
 
 void
@@ -135,25 +135,25 @@ TR::StreamLogger *TR::StreamLogger::Stdout = TR::StreamLogger::create(stdout);
  * -----------------------------------------------------------------------------
  */
 
-TR::BufferedStreamLogger::BufferedStreamLogger(::FILE *fd, char *buffer,  int64_t bufferLength) :
+TR::BufferedStreamLogger::BufferedStreamLogger(::FILE *stream, char *buffer,  int64_t bufferLength) :
       _bufOffset(0),
       _bufLength(bufferLength),
       _buf(buffer),
       _bufCursor(buffer),
-      _fd(fd)
+      _stream(stream)
    {
    }
 
-TR::BufferedStreamLogger *TR::BufferedStreamLogger::create(::FILE *fd, char *buffer, int64_t bufferLength)
+TR::BufferedStreamLogger *TR::BufferedStreamLogger::create(::FILE *stream, char *buffer, int64_t bufferLength)
    {
-   return new TR::BufferedStreamLogger(fd, buffer, bufferLength);
+   return new TR::BufferedStreamLogger(stream, buffer, bufferLength);
    }
 
 
 void
 TR::BufferedStreamLogger::flushBuffer()
    {
-   ssize_t bytesWritten = ::write(_fd, _buf, _bufOffset);
+   size_t bytesWritten = ::fwrite(_buf, 1, _bufOffset, _stream);
 
    if (bytesWritten != -1)
       {
@@ -246,7 +246,7 @@ void
 TR::BufferedStreamLogger::flush()
    {
    flushBuffer();
-   ::fflush(_fd);
+   ::fflush(_stream);
    }
 
 void

@@ -66,7 +66,7 @@ public:
    ~StreamLogger();
 */
 
-   static StreamLogger *create(::FILE *fd);
+   static StreamLogger *create(::FILE *stream);
 
    virtual int32_t printf(const char *format, ...);
 
@@ -92,9 +92,9 @@ public:
 
 private:
 
-   StreamLogger(::FILE *fd);
+   StreamLogger(::FILE *stream);
 
-   ::FILE *_fd;
+   ::FILE *_stream;
 
    };
 
@@ -104,7 +104,7 @@ class BufferedStreamLogger : public Logger
 
 public:
 
-   static BufferedStreamLogger *create(::FILE *fd, char *buffer, int64_t bufferLength);
+   static BufferedStreamLogger *create(::FILE *stream, char *buffer, int64_t bufferLength);
 
    virtual int32_t printf(const char *format, ...);
 
@@ -126,7 +126,7 @@ public:
 
 private:
 
-   BufferedStreamLogger(::FILE *fd, char *buffer, int64_t bufferLength);
+   BufferedStreamLogger(::FILE *stream, char *buffer, int64_t bufferLength);
 
    void flushBuffer();
 
@@ -138,7 +138,7 @@ private:
 
    char *_bufCursor;
 
-   ::FILE *_fd;
+   ::FILE *_stream;
 
    };
 }
