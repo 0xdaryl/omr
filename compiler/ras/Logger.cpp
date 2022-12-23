@@ -216,7 +216,7 @@ int32_t
 TR::BufferedStreamLogger::vprintf(const char *format, va_list args)
    {
    va_list argsCopy;
-   va_copy(argsCopy, args)
+   va_copy(argsCopy, args);
 
    int32_t n = ::vsnprintf(_bufCursor, _bufLength-_bufOffset, format, args);
 
