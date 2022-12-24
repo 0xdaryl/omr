@@ -141,7 +141,8 @@ private:
    ::FILE *_stream;
 
    };
-}
 #endif
+
+}
 
 #endif
