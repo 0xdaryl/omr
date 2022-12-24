@@ -98,7 +98,7 @@ private:
 
    };
 
-
+#if 0
 class BufferedStreamLogger : public Logger
    {
 
@@ -142,4 +142,6 @@ private:
 
    };
 }
+#endif
+
 #endif

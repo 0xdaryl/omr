@@ -129,6 +129,7 @@ TR::StreamLogger *TR::StreamLogger::Stderr = TR::StreamLogger::create(stderr);
 
 TR::StreamLogger *TR::StreamLogger::Stdout = TR::StreamLogger::create(stdout);
 
+#if 0
 /*
  * -----------------------------------------------------------------------------
  * BufferedStreamLogger
@@ -163,7 +164,7 @@ TR::BufferedStreamLogger::flushBuffer()
    else
       {
       // unable to flush
-      fprintf(stderr, "Unable to flush buffer : _buf=%p, _bufOffset=%d, _bufLength=%d\n", _buf, _bufOffset, _bufLength);
+      fprintf(stderr, "Unable to flush buffer : _buf=%p, _bufOffset=%ld, _bufLength=%ld\n", _buf, _bufOffset, _bufLength);
       }
    }
 
@@ -254,3 +255,4 @@ TR::BufferedStreamLogger::close()
    {
    flushBuffer();
    }
+#endif
