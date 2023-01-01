@@ -3082,6 +3082,7 @@ void OMR::X86::CodeGenerator::removeUnavailableRegisters(TR_RegisterCandidate * 
 
 void OMR::X86::CodeGenerator::dumpDataSnippets(TR::Logger *log)
    {
+TIMER_FUNC(OMR_X86_CodeGenerator_dumpDataSnippets)
    for (auto iterator = _dataSnippetList.begin(); iterator != _dataSnippetList.end(); ++iterator)
       {
       (*iterator)->print(log, self()->getDebug());
@@ -3094,6 +3095,7 @@ void OMR::X86::CodeGenerator::dumpDataSnippets(TR::Logger *log)
 //
 void OMR::X86::CodeGenerator::dumpPreFPRegisterAssignment(TR::Logger *log, TR::Instruction *instructionCursor)
    {
+TIMER_FUNC(OMR_X86_CodeGenerator_dumpPreFPRegisterAssignment)
    if (instructionCursor->totalReferencedFPRegisters(self()) > 0)
       {
       log->printf("\n<< Pre-FPR assignment for instruction: %p", instructionCursor);
@@ -3115,6 +3117,7 @@ void OMR::X86::CodeGenerator::dumpPostFPRegisterAssignment(
       TR::Instruction *instructionCursor,
       TR::Instruction *origPrevInstruction)
    {
+TIMER_FUNC(OMR_X86_CodeGenerator_dumpPostFPRegisterAssignment)
    if (instructionCursor->totalReferencedFPRegisters(self()) > 0)
       {
       TR::Instruction * prevInstruction = instructionCursor->getPrev();
@@ -3146,6 +3149,7 @@ void OMR::X86::CodeGenerator::dumpPostFPRegisterAssignment(
 
 void OMR::X86::CodeGenerator::dumpPreGPRegisterAssignment(TR::Logger *log, TR::Instruction *instructionCursor)
    {
+TIMER_FUNC(OMR_X86_CodeGenerator_dumpPreGPRegisterAssignment)
    if (instructionCursor->totalReferencedGPRegisters(self()) > 0)
       {
       log->printf("\n<< Pre-GPR assignment for instruction: %p", instructionCursor);
@@ -3167,6 +3171,7 @@ void OMR::X86::CodeGenerator::dumpPostGPRegisterAssignment(
       TR::Instruction *instructionCursor,
       TR::Instruction *origNextInstruction)
    {
+TIMER_FUNC(OMR_X86_CodeGenerator_dumpPostGPRegisterAssignment)
    if (instructionCursor->totalReferencedGPRegisters(self()) > 0)
       {
       log->printf("\n>> Post-GPR assignment for instruction: %p", instructionCursor);

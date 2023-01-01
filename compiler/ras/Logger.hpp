@@ -24,7 +24,7 @@
 
 #include <stdint.h>
 #include "env/FilePointerDecl.hpp"
-
+#include "ras/MeteredFunctions.hpp"
 
 namespace TR
 {

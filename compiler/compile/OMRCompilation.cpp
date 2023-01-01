@@ -1898,6 +1898,7 @@ void OMR::Compilation::setUsesPreexistence(bool v)
 //
 void OMR::Compilation::dumpMethodTrees(TR::Logger *log, char *title, TR::ResolvedMethodSymbol *methodSymbol)
    {
+TIMER_FUNC(OMR_Compilatjon_dumpMethodTrees)
    if (methodSymbol == 0) methodSymbol = _methodSymbol;
 
    self()->getDebug()->printIRTrees(log, title, methodSymbol);
@@ -1913,6 +1914,7 @@ void OMR::Compilation::dumpMethodTrees(TR::Logger *log, char *title, TR::Resolve
 
 void OMR::Compilation::dumpMethodTrees(TR::Logger *log, char *title1, const char *title2, TR::ResolvedMethodSymbol *methodSymbol)
    {
+TIMER_FUNC(OMR_Compilation_dumpMethodTrees_title2)
    TR::StackMemoryRegion stackMemoryRegion(*self()->trMemory());
    char *title = (char*)self()->trMemory()->allocateStackMemory(20 + strlen(title1) + strlen(title2));
    sprintf(title, "%s%s", title1, title2);
@@ -1921,6 +1923,7 @@ void OMR::Compilation::dumpMethodTrees(TR::Logger *log, char *title1, const char
 
 void OMR::Compilation::dumpFlowGraph(TR::Logger *log, TR::CFG *cfg)
    {
+TIMER_FUNC(OMR_Compilation_dumpFlowGraph_CFG)
    if (cfg == 0) cfg = self()->getFlowGraph();
    if (debug("dumpCFG") || self()->getOption(TR_TraceTrees) || self()->getOption(TR_TraceCG) || self()->getOption(TR_TraceUseDefs))
       {

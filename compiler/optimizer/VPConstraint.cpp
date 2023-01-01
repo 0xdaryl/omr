@@ -5773,16 +5773,19 @@ void TR::VPConstraint::print(OMR::ValuePropagation *vp)
 
 void TR::VPConstraint::print(TR::Logger *log, TR::Compilation *comp)
    {
+TIMER_FUNC(TR_VPConstraint_print)
    log->prints("unknown absolute constraint");
    }
 
 void TR::VPConstraint::print(TR::Logger *log, TR::Compilation *comp, int32_t relative)
    {
+TIMER_FUNC(TR_VPConstraint_print_relative)
    log->printf("unknown constraint relative to value number %d", relative);
    }
 
 void TR::VPShortConst::print(TR::Logger *log, TR::Compilation *comp)
    {
+TIMER_FUNC(TR_VPShortConst_print)
    if (isUnsigned())
       log->printf("%u US ", getLow());
    else
@@ -5792,6 +5795,7 @@ void TR::VPShortConst::print(TR::Logger *log, TR::Compilation *comp)
 
 void TR::VPShortRange::print(TR::Logger *log, TR::Compilation *comp)
    {
+TIMER_FUNC(TR_VPShortRange_print)
    if (isUnsigned())
       {
        if ((uint16_t)getLow() == TR::getMinUnsigned<TR::Int16>())
@@ -5819,6 +5823,7 @@ void TR::VPShortRange::print(TR::Logger *log, TR::Compilation *comp)
 
 void TR::VPIntConst::print(TR::Logger *log, TR::Compilation *comp)
    {
+TIMER_FUNC(TR_VPIntConst_print)
    if (isUnsigned())
       log->printf("%u UI ", getLow());
    else
@@ -5827,6 +5832,7 @@ void TR::VPIntConst::print(TR::Logger *log, TR::Compilation *comp)
 
 void TR::VPIntRange::print(TR::Logger *log, TR::Compilation *comp)
    {
+TIMER_FUNC(TR_VPIntRange_print)
    if (isUnsigned())
       {
       if ((uint32_t)getLow() == TR::getMinUnsigned<TR::Int32>())
@@ -5853,6 +5859,7 @@ void TR::VPIntRange::print(TR::Logger *log, TR::Compilation *comp)
 
 void TR::VPLongConst::print(TR::Logger *log, TR::Compilation *comp)
    {
+TIMER_FUNC(TR_VPLongConst_print)
    if (isUnsigned())
       log->printf(UINT64_PRINTF_FORMAT " UL ", getUnsignedLong());
    else
@@ -5861,6 +5868,7 @@ void TR::VPLongConst::print(TR::Logger *log, TR::Compilation *comp)
 
 void TR::VPLongRange::print(TR::Logger *log, TR::Compilation *comp)
    {
+TIMER_FUNC(TR_VPLongRange)
    if (isUnsigned())
       {
       if (getLow() == 0ULL)
@@ -5888,6 +5896,7 @@ void TR::VPLongRange::print(TR::Logger *log, TR::Compilation *comp)
 
 void TR::VPClass::print(TR::Logger *log, TR::Compilation *comp)
    {
+TIMER_FUNC(TR_VPClass_print)
    if (_type)
       _type->print(log, comp);
    if (_typeHintClass)
@@ -5920,6 +5929,7 @@ void TR::VPClass::print(TR::Logger *log, TR::Compilation *comp)
 
 void TR::VPResolvedClass::print(TR::Logger *log, TR::Compilation *comp)
    {
+TIMER_FUNC(TR_VPResolvedClass_print)
    int32_t len = _len;
    const char *sig = _sig;
    if (isSpecialClass((uintptr_t)_class))
@@ -5946,6 +5956,7 @@ void TR::VPResolvedClass::print(TR::Logger *log, TR::Compilation *comp)
 
 void TR::VPFixedClass::print(TR::Logger *log, TR::Compilation *comp)
    {
+TIMER_FUNC(TR_VPFixedClass_print)
    log->prints("fixed ");
    TR::VPResolvedClass::print(log, comp);
    }
@@ -5953,6 +5964,7 @@ void TR::VPFixedClass::print(TR::Logger *log, TR::Compilation *comp)
 static uint16_t format[] = {'C','S',':','"','%','.','*','s','"',0};
 void TR::VPConstString::print(TR::Logger *log, TR::Compilation *comp)
    {
+TIMER_FUNC(TR_VPConstString_print)
    log->prints("constant string: \"");
 #ifdef J9_PROJECT_SPECIFIC
       {
@@ -5975,12 +5987,14 @@ void TR::VPConstString::print(TR::Logger *log, TR::Compilation *comp)
 
 void TR::VPKnownObject::print(TR::Logger *log, TR::Compilation *comp)
    {
+TIMER_FUNC(TR_VPKnownObject_print)
    log->printf("known object obj%d ", _index);
    TR::VPFixedClass::print(log, comp);
    }
 
 void TR::VPUnresolvedClass::print(TR::Logger *log, TR::Compilation *comp)
    {
+TIMER_FUNC(TR_VPUnresolvedClass_print)
    int32_t methodLen  = _method->nameLength();
    char   *methodName = _method->nameChars();
    log->printf("unresolved class %.*s in method %.*s", _len, _sig, methodLen, methodName);
@@ -5988,21 +6002,25 @@ void TR::VPUnresolvedClass::print(TR::Logger *log, TR::Compilation *comp)
 
 void TR::VPNullObject::print(TR::Logger *log, TR::Compilation *comp)
    {
+TIMER_FUNC(TR_VPNullObject_print)
    log->prints(" (NULL)");
    }
 
 void TR::VPNonNullObject::print(TR::Logger *log, TR::Compilation *comp)
    {
+TIMER_FUNC(TR_VPNonNullObject_print)
    log->prints(" (non-NULL)");
    }
 
 void TR::VPPreexistentObject::print(TR::Logger *log, TR::Compilation *comp)
    {
+TIMER_FUNC(TR_VPPreexistentObject_print)
    log->prints(" (pre-existent)");
    }
 
 void TR::VPArrayInfo::print(TR::Logger *log, TR::Compilation *comp)
    {
+TIMER_FUNC(TR_VPArrayInfo_print)
    if (_lowBound > 0 || _highBound < TR::getMaxSigned<TR::Int32>())
       log->printf(" (min bound %d, max bound %d)", _lowBound, _highBound);
    if (_elementSize > 0)
@@ -6011,6 +6029,7 @@ void TR::VPArrayInfo::print(TR::Logger *log, TR::Compilation *comp)
 
 void TR::VPObjectLocation::print(TR::Logger *log, TR::Compilation *comp)
    {
+TIMER_FUNC(TR_VPObjectLocation_print)
    const int nkinds = 4;
    static VPObjectLocationKind kinds[nkinds] = {  HeapObject ,  StackObject ,  JavaLangClassObject ,  J9ClassObject  };
    static const char * const      names[nkinds] = { "HeapObject", "StackObject", "JavaLangClassObject", "J9ClassObject" };
@@ -6029,6 +6048,7 @@ void TR::VPObjectLocation::print(TR::Logger *log, TR::Compilation *comp)
 
 void TR::VPMergedConstraints::print(TR::Logger *log, TR::Compilation *comp)
    {
+TIMER_FUNC(TR_VPMergedConstraints_print)
    log->printc('{');
    ListElement<TR::VPConstraint> *p;
    for (p = _constraints.getListHead(); p; p = p->getNextElement())
@@ -6042,16 +6062,19 @@ void TR::VPMergedConstraints::print(TR::Logger *log, TR::Compilation *comp)
 
 void TR::VPUnreachablePath::print(TR::Logger *log, TR::Compilation *comp)
    {
+TIMER_FUNC(TR_VPUnreachablePath_print)
    log->prints("*** Unreachable Path ***");
    }
 
 void TR::VPSync::print(TR::Logger *log, TR::Compilation *comp)
    {
+TIMER_FUNC(TR_VPSync_print)
    log->printf("sync has %s been emitted", (syncEmitted() == TR_yes) ? "" : "not");
    }
 
 void TR::VPLessThanOrEqual::print(TR::Logger *log, TR::Compilation *comp)
    {
+TIMER_FUNC(TR_VPLessThanOrEqual_print)
    log->prints("less than or equal to another value number");
    if (increment() > 0)
       log->printf(" + %d", increment());
@@ -6061,6 +6084,7 @@ void TR::VPLessThanOrEqual::print(TR::Logger *log, TR::Compilation *comp)
 
 void TR::VPLessThanOrEqual::print(TR::Logger *log, TR::Compilation *comp, int32_t relative)
    {
+TIMER_FUNC(TR_VPLessThanOrEqual_print_relative)
    log->printf("less than or equal to value number %d", relative);
    if (increment() > 0)
       log->printf(" + %d", increment());
@@ -6070,6 +6094,7 @@ void TR::VPLessThanOrEqual::print(TR::Logger *log, TR::Compilation *comp, int32_
 
 void TR::VPGreaterThanOrEqual::print(TR::Logger *log, TR::Compilation *comp)
    {
+TIMER_FUNC(TR_VPGreaterThanOrEqual_print)
    log->prints("greater than or equal to another value number");
    if (increment() > 0)
       log->printf(" + %d", increment());
@@ -6079,6 +6104,7 @@ void TR::VPGreaterThanOrEqual::print(TR::Logger *log, TR::Compilation *comp)
 
 void TR::VPGreaterThanOrEqual::print(TR::Logger *log, TR::Compilation *comp, int32_t relative)
    {
+TIMER_FUNC(TR_VPGreaterThanOrEqual_print_relative)
    log->printf("greater than or equal to value number %d", relative);
    if (increment() > 0)
       log->printf(" + %d", increment());
@@ -6088,6 +6114,7 @@ void TR::VPGreaterThanOrEqual::print(TR::Logger *log, TR::Compilation *comp, int
 
 void TR::VPEqual::print(TR::Logger *log, TR::Compilation *comp)
    {
+TIMER_FUNC(TR_VPEqual_print)
    log->prints("equal to another value number");
    if (increment() > 0)
       log->printf(" + %d", increment());
@@ -6097,6 +6124,7 @@ void TR::VPEqual::print(TR::Logger *log, TR::Compilation *comp)
 
 void TR::VPEqual::print(TR::Logger *log, TR::Compilation *comp, int32_t relative)
    {
+TIMER_FUNC(TR_VPEqual_print_relative)
    log->printf("equal to value number %d", relative);
    if (increment() > 0)
       log->printf(" + %d", increment());
@@ -6106,6 +6134,7 @@ void TR::VPEqual::print(TR::Logger *log, TR::Compilation *comp, int32_t relative
 
 void TR::VPNotEqual::print(TR::Logger *log, TR::Compilation *comp)
    {
+TIMER_FUNC(TR_VPNotEqual_print)
    log->prints("not equal to another value number");
    if (increment() > 0)
       log->printf(" + %d", increment());
@@ -6115,6 +6144,7 @@ void TR::VPNotEqual::print(TR::Logger *log, TR::Compilation *comp)
 
 void TR::VPNotEqual::print(TR::Logger *log, TR::Compilation *comp, int32_t relative)
    {
+TIMER_FUNC(TR_VPNotEqual_print_relative)
    log->printf("not equal to value number %d", relative);
    if (increment() > 0)
       log->printf(" + %d", increment());

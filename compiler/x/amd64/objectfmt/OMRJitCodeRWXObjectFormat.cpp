@@ -244,6 +244,7 @@ OMR::X86::AMD64::JitCodeRWXObjectFormat::encodeFunctionCall(TR::FunctionCallData
 void
 OMR::X86::AMD64::JitCodeRWXObjectFormat::printEncodedFunctionCall(TR::Logger *log, TR::FunctionCallData &data, uint8_t *bufferPos)
    {
+TIMER_FUNC(OMR_X86_AMD64_JitCodeRWXObjectFormat_printEncodedFunctionCall)
    TR_Debug *debug = data.cg->getDebug();
 
    debug->printPrefix(log, NULL, bufferPos, 5);

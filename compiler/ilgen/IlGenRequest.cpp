@@ -49,6 +49,7 @@ CompileIlGenRequest::getIlGenerator(
 void
 CompileIlGenRequest::print(TR::Logger *log, TR_FrontEnd *fe, const char *suffix)
    {
+TIMER_FUNC(CompileIlGenRequest_print)
    log->printc('{');
    details().print(log, fe);
    log->printf("}%s", suffix);
@@ -71,6 +72,7 @@ InliningIlGenRequest::getIlGenerator(
 void
 InliningIlGenRequest::print(TR::Logger *log, TR_FrontEnd *fe, const char *suffix)
    {
+TIMER_FUNC(InliningIlGenRequest_print)
    log->prints("{Inlining ");
    details().print(log, fe);
    log->printf("}%s", suffix);
@@ -93,6 +95,7 @@ PartialInliningIlGenRequest::getIlGenerator(
 void
 PartialInliningIlGenRequest::print(TR::Logger *log, TR_FrontEnd *fe, const char *suffix)
    {
+TIMER_FUNC(PartialInliningIlGenRequest_print)
    log->prints("{Partial inlining ");
    details().print(log, fe);
    log->printf("}%s", suffix);

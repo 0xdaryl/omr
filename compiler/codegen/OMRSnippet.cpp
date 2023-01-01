@@ -96,6 +96,7 @@ OMR::Snippet::prepareSnippetForGCSafePoint()
 void
 OMR::Snippet::print(TR::Logger *log, TR_Debug *debug)
    {
+TIMER_FUNC(OMR_Snippet_print)
    uint8_t *cursor = self()->getSnippetLabel()->getCodeLocation();
 
    debug->printSnippetLabel(log, self()->getSnippetLabel(), cursor, "<Unknown Snippet>");

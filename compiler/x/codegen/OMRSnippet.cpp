@@ -142,6 +142,7 @@ TR_Debug::getNamex(TR::Snippet *snippet)
 void
 TR_Debug::printx(TR::Logger *log, TR::Snippet *snippet)
    {
+TIMER_FUNC(TR_Debug_printx_Snippet)
    switch (snippet->getKind())
       {
 #ifdef J9_PROJECT_SPECIFIC
@@ -208,6 +209,7 @@ TR_Debug::printx(TR::Logger *log, TR::Snippet *snippet)
 int32_t
 TR_Debug::printRestartJump(TR::Logger *log, TR::X86RestartSnippet *snippet, uint8_t *bufferPos)
    {
+TIMER_FUNC(TR_Debug_printRestartJump_X86RestartSnippet)
    int32_t size = snippet->estimateRestartJumpLength(TR::InstOpCode::JMP4, static_cast<int32_t>(bufferPos - (uint8_t*)snippet->cg()->getBinaryBufferStart()));
    printPrefix(log, NULL, bufferPos, size);
    printLabelInstruction(log, "jmp", snippet->getRestartLabel());
@@ -217,6 +219,7 @@ TR_Debug::printRestartJump(TR::Logger *log, TR::X86RestartSnippet *snippet, uint
 int32_t
 TR_Debug::printRestartJump(TR::Logger *log, TR::X86RestartSnippet *snippet, uint8_t *bufferPos, int32_t branchOp, const char *branchOpName)
    {
+TIMER_FUNC(TR_Debug_printRestartJump_X86RestartSnippet_bufferPos)
    int32_t size = snippet->estimateRestartJumpLength((TR::InstOpCode::Mnemonic) branchOp, static_cast<int32_t>(bufferPos - (uint8_t*)snippet->cg()->getBinaryBufferStart()));
    printPrefix(log, NULL, bufferPos, size);
    printLabelInstruction(log, branchOpName, snippet->getRestartLabel());
