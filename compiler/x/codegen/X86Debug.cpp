@@ -1893,7 +1893,7 @@ TIMER_FUNC(TR_Debug_print_RealRegister)
 void
 TR_Debug::printFullRegInfo(TR::Logger *log, TR::RealRegister *reg)
    {
-TIMER_FUNC(TR_Debug_printFullRegInfo)
+TIMER_FUNC(TR_Debug_printFullRegInfo_reg)
    log->prints("[ ");
 
    log->printf("%-12s ][ ", getName(reg));

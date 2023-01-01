@@ -638,14 +638,14 @@ TR_Debug::printInstruction(TR::Instruction *instr)
 void
 TR_Debug::printHeader(TR::Logger *log)
    {
-FUNC_TIMER(TR_Debug_printHeader)
+TIMER_FUNC(TR_Debug_printHeader)
    log->printf("\n=======>%s\n", signature(_comp->getMethodSymbol()));
    }
 
 void
 TR_Debug::printMethodHotness(TR::Logger *log)
    {
-FUNC_TIMER(TR_Debug_printMethodHotness)
+TIMER_FUNC(TR_Debug_printMethodHotness)
    log->printf("\nThis method is %s", _comp->getHotnessName(_comp->getMethodHotness()));
    if (_comp->getRecompilationInfo() &&
        _comp->getRecompilationInfo()->isProfilingCompilation())
@@ -661,7 +661,7 @@ FUNC_TIMER(TR_Debug_printMethodHotness)
 void
 TR_Debug::printInstrDumpHeader(TR::Logger *log, const char *title)
    {
-FUNC_TIMER(TR_Debug_printInstrDumpHeader)
+TIMER_FUNC(TR_Debug_printInstrDumpHeader)
    int addressFieldWidth   = TR::Compiler->debug.hexAddressFieldWidthInChars();
    int codeByteColumnWidth = TR::Compiler->debug.codeByteColumnWidth();
    int prefixWidth         = addressFieldWidth * 2 + codeByteColumnWidth + 12; // 8 bytes of offsets, 2 spaces, and opening and closing brackets
@@ -708,7 +708,7 @@ FUNC_TIMER(TR_Debug_printInstrDumpHeader)
 uint8_t *
 TR_Debug::printPrefix(TR::Logger *log, TR::Instruction *instr, uint8_t *cursor, uint8_t size)
    {
-FUNC_TIMER(TR_Debug_printPrefix)
+TIMER_FUNC(TR_Debug_printPrefix_size)
    if (cursor != NULL)
       {
       uint32_t offset = static_cast<uint32_t>(cursor - _comp->cg()->getCodeStart());
@@ -790,7 +790,7 @@ FUNC_TIMER(TR_Debug_printPrefix)
 void
 TR_Debug::printSnippetLabel(TR::Logger *log, TR::LabelSymbol *label, uint8_t *cursor, const char *comment1, const char *comment2)
    {
-FUNC_TIMER(TR_Debug_printSnippetLabel)
+TIMER_FUNC(TR_Debug_printSnippetLabel)
    int addressFieldWidth   = TR::Compiler->debug.hexAddressFieldWidthInChars();
    int codeByteColumnWidth = TR::Compiler->debug.codeByteColumnWidth();
    int prefixWidth         = addressFieldWidth * 2 + codeByteColumnWidth + 12; // 8 bytes of offsets, 2 spaces, and opening and closing brackets
@@ -820,7 +820,7 @@ FUNC_TIMER(TR_Debug_printSnippetLabel)
 void
 TR_Debug::print(TR::Logger *log, TR_BitVector *bv)
    {
-FUNC_TIMER(TR_Debug_print_TR_BitVector)
+TIMER_FUNC(TR_Debug_print_TR_BitVector)
    log->printc('{');
    bool firstOne = true;
    TR_BitVectorIterator bvi(*bv);
@@ -853,14 +853,14 @@ FUNC_TIMER(TR_Debug_print_TR_BitVector)
 void
 TR_Debug::print(TR::Logger *log, TR_SingleBitContainer *sbc)
    {
-FUNC_TIMER(TR_Debug_print_TR_SingleBitContainer)
+TIMER_FUNC(TR_Debug_print_TR_SingleBitContainer)
    log->prints(sbc->isEmpty() ? "{}" : "{0}");
    }
 
 void
 TR_Debug::print(TR::Logger *log, TR::BitVector *bv)
    {
-FUNC_TIMER(TR_Debug_print_colon_BitVector)
+TIMER_FUNC(TR_Debug_print_colon_BitVector)
    log->printc('{');
    bool firstOne = true;
    int32_t num = 0;
@@ -893,7 +893,7 @@ FUNC_TIMER(TR_Debug_print_colon_BitVector)
 void
 TR_Debug::print(TR::Logger *log, TR::SparseBitVector *sparse)
    {
-FUNC_TIMER(TR_Debug_print_TR_SparseBitVector)
+TIMER_FUNC(TR_Debug_print_TR_SparseBitVector)
    log->printc('{');
    bool firstOne = true;
    int32_t num = 0;
@@ -926,7 +926,7 @@ FUNC_TIMER(TR_Debug_print_TR_SparseBitVector)
 void
 TR_Debug::print(TR::Logger *log, TR::SymbolReference *symRef)
    {
-FUNC_TIMER(TR_Debug_print_TR_SymbolReference)
+TIMER_FUNC(TR_Debug_print_TR_SymbolReference)
    TR_PrettyPrinterString output(this);
    print(symRef, output);
    log->prints(output.getStr());
@@ -1305,7 +1305,7 @@ TR_Debug::print(TR::SymbolReference * symRef, TR_PrettyPrinterString& output, bo
 void
 TR_Debug::print(TR::Logger *log, TR::LabelSymbol *labelSymbol)
    {
-FUNC_TIMER(TR_Debug_print_TR_LabelSymbol)
+TIMER_FUNC(TR_Debug_print_TR_LabelSymbol)
    TR_PrettyPrinterString output(this);
    print(labelSymbol, output);
    log->prints(output.getStr());
@@ -1685,7 +1685,7 @@ TR_Debug::getName(TR::SymbolReference * symRef)
 void
 TR_Debug::print(TR::Logger *log, TR::SymbolReferenceTable *symRefTab)
    {
-FUNC_TIMER(TR_Debug_print_SymbolReferenceTable)
+TIMER_FUNC(TR_Debug_print_SymbolReferenceTable)
    if (symRefTab->baseArray.size() > 0 && _comp->getOption(TR_TraceAliases))
       {
       log->prints("Symbol Reference Map for this method:\n");
@@ -1698,7 +1698,7 @@ FUNC_TIMER(TR_Debug_print_SymbolReferenceTable)
 void
 TR_Debug::printAliasInfo(TR::Logger *log, TR::SymbolReferenceTable *symRefTab)
    {
-FUNC_TIMER(TR_Debug_printAliasInfo)
+TIMER_FUNC(TR_Debug_printAliasInfo_SymbolReferenceTable)
    log->prints("\nSymbol References with Aliases:\n\n");
    for (int32_t i = symRefTab->getIndexOfFirstSymRef(); i < symRefTab->getNumSymRefs(); ++i)
       if (symRefTab->getSymRef(i))
@@ -1708,7 +1708,7 @@ FUNC_TIMER(TR_Debug_printAliasInfo)
 void
 TR_Debug::printAliasInfo(TR::Logger *log, TR::SymbolReference *symRef)
    {
-FUNC_TIMER(TR_Debug_printAliasInfo)
+TIMER_FUNC(TR_Debug_printAliasInfo_SymbolReference)
    TR_BitVector * useDefAliases = symRef->getUseDefAliasesBV();
    TR_BitVector * useOnlyAliases = symRef->getUseonlyAliasesBV(_comp->getSymRefTab());
    if (useDefAliases || useOnlyAliases)
@@ -2209,7 +2209,7 @@ TR_Debug::getMetaDataName(TR::SymbolReference * symRef)
 void
 TR_Debug::printBlockInfo(TR::Logger *log, TR::Node *node)
    {
-FUNC_TIMER(TR_Debug_printBlockInfo)
+TIMER_FUNC(TR_Debug_printBlockInfo)
    if (node)
       {
       if (node->getOpCodeValue() == TR::BBStart)
@@ -2299,7 +2299,7 @@ TR_Debug::restoreNodeChecklist(TR_BitVector &saveArea)
 void
 TR_Debug::dumpLiveRegisters(TR::Logger *log)
    {
-FUNC_TIMER(TR_Debug_dumpLiveRegisters)
+TIMER_FUNC(TR_Debug_dumpLiveRegisters)
    int i = 0;
 
    log->prints("; Live regs: ");
@@ -2339,7 +2339,7 @@ FUNC_TIMER(TR_Debug_dumpLiveRegisters)
 void
 TR_Debug::setupToDumpTreesAndInstructions(TR::Logger *log, const char *title)
    {
-FUNC_TIMER(TR_Debug_setupToDumpTreesAndInstructions)
+TIMER_FUNC(TR_Debug_setupToDumpTreesAndInstructions)
    log->printf("\n%s:\n", title);
    _nodeChecklist.empty();
    log->prints("\n\n============================================================\n");
@@ -2355,7 +2355,7 @@ TR_Debug::dumpSingleTreeWithInstrs(
       bool dumpRefCounts,
       bool dumpLiveRegs)
    {
-FUNC_TIMER(TR_Debug_dumpSingleTreeWithInstrs)
+TIMER_FUNC(TR_Debug_dumpSingleTreeWithInstrs)
    if (dumpLiveRegs)
       {
       dumpLiveRegisters(log);
@@ -2417,7 +2417,7 @@ FUNC_TIMER(TR_Debug_dumpSingleTreeWithInstrs)
 void
 TR_Debug::dumpMethodInstrs(TR::Logger *log, const char *title, bool dumpTrees, bool header)
    {
-FUNC_TIMER(TR_Debug_dumpMethodInstrs)
+TIMER_FUNC(TR_Debug_dumpMethodInstrs)
    const char *hotnessString = _comp->getHotnessName(_comp->getMethodHotness());
 
    log->printf("\n<instructions\n"
@@ -2484,7 +2484,7 @@ FUNC_TIMER(TR_Debug_dumpMethodInstrs)
 void
 TR_Debug::dumpMixedModeDisassembly(TR::Logger *log)
    {
-FUNC_TIMER(TR_Debug_dumpMixedModeDisassembly)
+TIMER_FUNC(TR_Debug_dumpMixedModeDisassembly)
    const char * title = "Mixed Mode Disassembly";
 
    log->printf("<instructions\n"
@@ -2519,7 +2519,7 @@ FUNC_TIMER(TR_Debug_dumpMixedModeDisassembly)
 void
 TR_Debug::dumpInstructionComments(TR::Logger *log, TR::Instruction *instr, bool needsStartComment)
    {
-FUNC_TIMER(TR_Debug_dumpInstructionComments)
+TIMER_FUNC(TR_Debug_dumpInstructionComments)
    CS2::HashIndex hashIndex;
    if (_comp->getToCommentMap().Locate((void *)instr, hashIndex))
       {
@@ -2545,7 +2545,7 @@ FUNC_TIMER(TR_Debug_dumpInstructionComments)
 void
 TR_Debug::print(TR::Logger *log, TR::Instruction *inst)
    {
-FUNC_TIMER(TR_Debug_print_Instruction)
+TIMER_FUNC(TR_Debug_print_Instruction)
    print(log, inst, NULL);
    }
 #endif
@@ -2553,7 +2553,7 @@ FUNC_TIMER(TR_Debug_print_Instruction)
 void
 TR_Debug::print(TR::Logger *log, TR::Instruction *inst, const char *title)
    {
-FUNC_TIMER(TR_Debug_print_Instruction_title)
+TIMER_FUNC(TR_Debug_print_Instruction_title)
 #if defined(TR_TARGET_X86)
    if (_comp->target().cpu.isX86())
       {
@@ -2606,7 +2606,7 @@ FUNC_TIMER(TR_Debug_print_Instruction_title)
 void
 TR_Debug::print(TR::Logger *log, TR::GCRegisterMap *map)
    {
-FUNC_TIMER(TR_Debug_print_GCRegisterMap)
+TIMER_FUNC(TR_Debug_print_GCRegisterMap)
 #if defined(TR_TARGET_X86)
    if (_comp->target().cpu.isX86())
       {
@@ -2659,7 +2659,7 @@ FUNC_TIMER(TR_Debug_print_GCRegisterMap)
 void
 TR_Debug::print(TR::Logger *log, TR::list<TR::Snippet*> & snippetList)
    {
-FUNC_TIMER(TR_Debug_print_snippetList)
+TIMER_FUNC(TR_Debug_print_snippetList)
    for (auto snippets = snippetList.begin(); snippets != snippetList.end(); ++snippets)
       {
       print(log, *snippets);
@@ -2672,7 +2672,7 @@ FUNC_TIMER(TR_Debug_print_snippetList)
 void
 TR_Debug::print(TR::Logger *log, List<TR::Snippet> & snippetList)
    {
-FUNC_TIMER(TR_Debug_print_List_snippetList)
+TIMER_FUNC(TR_Debug_print_List_snippetList)
    ListIterator<TR::Snippet> snippets(&snippetList);
    for (TR::Snippet * snippet = snippets.getFirst(); snippet; snippet = snippets.getNext())
       {
@@ -2706,7 +2706,7 @@ TR_Debug::getName(TR::Snippet *snippet)
 void
 TR_Debug::print(TR::Logger *log, TR::Snippet *snippet)
    {
-FUNC_TIMER(TR_Debug_print_Snippet)
+TIMER_FUNC(TR_Debug_print_Snippet)
 #if defined(TR_TARGET_X86)
    if (_comp->target().cpu.isX86())
       {
@@ -2906,7 +2906,7 @@ TR_Debug::getRegisterKindName(TR_RegisterKinds rk)
 void
 TR_Debug::printRegisterMask(TR::Logger *log, TR_RegisterMask mask, TR_RegisterKinds rk)
    {
-FUNC_TIMER(TR_Debug_printRegisterMask)
+TIMER_FUNC(TR_Debug_printRegisterMask)
    mask = mask & (TR::RealRegister::getAvailableRegistersMask(rk));
    int32_t n = populationCount(mask);
 
@@ -2934,7 +2934,7 @@ FUNC_TIMER(TR_Debug_printRegisterMask)
 void
 TR_Debug::print(TR::Logger *log, TR::Register *reg, TR_RegisterSizes size)
    {
-FUNC_TIMER(TR_Debug_print_Register)
+TIMER_FUNC(TR_Debug_print_Register)
 #if defined(TR_TARGET_S390)
    if (reg == NULL && _comp->target().cpu.isZ()) // zero based ptr
       {
@@ -3005,7 +3005,7 @@ FUNC_TIMER(TR_Debug_print_Register)
 void
 TR_Debug::printFullRegInfo(TR::Logger *log, TR::Register * reg)
    {
-FUNC_TIMER(TR_Debug_printFullRegInfo)
+TIMER_FUNC(TR_Debug_printFullRegInfo)
    static const char * ignoreFreeRegs = feGetEnv("TR_ignoreFreeRegsDuringTraceRA");
    static const char * ignoreFreeAndLockedRegs = feGetEnv("TR_ignoreFreeAndLockedRegsDuringTraceRA");
 
@@ -3081,7 +3081,7 @@ FUNC_TIMER(TR_Debug_printFullRegInfo)
 void
 TR_Debug::printGPRegisterStatus(TR::Logger *log, OMR::MachineConnector *machine)
    {
-FUNC_TIMER(TR_Debug_printGPRegisterStatus)
+TIMER_FUNC(TR_Debug_printGPRegisterStatus)
 #if defined(TR_TARGET_S390)
    if (_comp->target().cpu.isZ())
       {
@@ -3094,7 +3094,7 @@ FUNC_TIMER(TR_Debug_printGPRegisterStatus)
 void
 TR_Debug::printFPRegisterStatus(TR::Logger *log, OMR::MachineConnector *machine)
    {
-FUNC_TIMER(TR_Debug_printFPRegisterStatus)
+TIMER_FUNC(TR_Debug_printFPRegisterStatus)
 #if defined(TR_TARGET_S390)
    if (_comp->target().cpu.isZ())
       {
@@ -3132,7 +3132,7 @@ TR_Debug::toString(TR_RematerializationInfo * info)
 void
 TR_Debug::print(TR::Logger *log, TR::RegisterMappedSymbol *localCursor, bool isSpillTemp)
    {
-FUNC_TIMER(TR_Debug_print_RegisterMappedSymbol)
+TIMER_FUNC(TR_Debug_print_RegisterMappedSymbol)
    log->printf("  Local [%s] (GC map index : %3d, Offset : %3d, Size : %d) is an ", getName(localCursor), localCursor->getGCMapIndex(), localCursor->getOffset(), localCursor->getSize());
    if (!localCursor->isInitializedReference())
       log->prints("uninitialized ");
@@ -3172,7 +3172,7 @@ TR_Debug::print(TR::Logger *log, uint8_t* instrStart, uint8_t* instrEnd)
 void
 TR_Debug::print(TR::Logger *log, TR::GCStackAtlas *atlas)
    {
-FUNC_TIMER(TR_Debug_print_GCStackAtlas)
+TIMER_FUNC(TR_Debug_print_GCStackAtlas)
    log->prints("\n<atlas>\n\nInternal stack atlas:\n");
    log->printf("  numberOfMaps=%d\n", atlas->getNumberOfMaps());
    log->printf("  numberOfSlotsMapped=%d\n", atlas->getNumberOfSlotsMapped());
@@ -3283,7 +3283,7 @@ FUNC_TIMER(TR_Debug_print_GCStackAtlas)
 void
 TR_Debug::print(TR::Logger *log, TR_GCStackMap *map, TR::GCStackAtlas *atlas)
    {
-FUNC_TIMER(TR_Debug_print_TR_GCStackMap_GCStackAtlas)
+TIMER_FUNC(TR_Debug_print_TR_GCStackMap_GCStackAtlas)
    log->printf("\n  Code offset range starts at [%08x]", map->_lowestCodeOffset);
    log->prints("\n  GC stack map information : ");
    log->printf("\n    number of stack slots mapped = %d", map->_numberOfSlotsMapped);
@@ -3329,7 +3329,7 @@ FUNC_TIMER(TR_Debug_print_TR_GCStackMap_GCStackAtlas)
 void
 TR_Debug::dump(TR::Logger *log, TR_CHTable *chTable)
    {
-FUNC_TIMER(TR_Debug_dump_CHTable)
+TIMER_FUNC(TR_Debug_dump_CHTable)
    const TR::Compilation::GuardSet &vguards = _comp->getVirtualGuards();
 
    if (!chTable->_preXMethods && !chTable->_classes && vguards.empty())
@@ -4216,7 +4216,7 @@ TR_Debug::getSpillKindName(uint8_t kind)
 
 void TR_Debug::dumpSimulatedNode(TR::Logger *log, TR::Node *node, char tagChar)
    {
-FUNC_TIMER(TR_Debug_dumpSimulatedNode)
+TIMER_FUNC(TR_Debug_dumpSimulatedNode)
    log->printf("\n               [%s]", getName(node));
    if (_comp->cg()->simulatedNodeState(node)._willBeRematerialized)
       {
@@ -4320,7 +4320,7 @@ FUNC_TIMER(TR_Debug_dumpSimulatedNode)
 void
 TR_Debug::dumpGlobalRegisterTable(TR::Logger *log)
    {
-FUNC_TIMER(TR_Debug_dumpGlobalRegisterTable)
+TIMER_FUNC(TR_Debug_dumpGlobalRegisterTable)
    log->prints("Global regs:\n");
    for (int32_t i = 0; i < _comp->cg()->getNumberOfGlobalRegisters(); i++)
       {
@@ -4331,7 +4331,7 @@ FUNC_TIMER(TR_Debug_dumpGlobalRegisterTable)
 void
 TR_Debug::startTracingRegisterAssignment(TR::Logger *log, const char *direction, TR_RegisterKinds kindsToAssign)
    {
-FUNC_TIMER(TR_Debug_startTracingRegisterAssignment)
+TIMER_FUNC(TR_Debug_startTracingRegisterAssignment)
    if (!_comp->getOption(TR_TraceRA))
       return;
 
@@ -4375,7 +4375,7 @@ TR_Debug::resumeTracingRegisterAssignment()
 void
 TR_Debug::stopTracingRegisterAssignment(TR::Logger *log)
    {
-FUNC_TIMER(TR_Debug_stopTracingRegisterAssignment)
+TIMER_FUNC(TR_Debug_stopTracingRegisterAssignment)
    if (!_comp->getOption(TR_TraceRA))
       return;
 
@@ -4390,7 +4390,7 @@ FUNC_TIMER(TR_Debug_stopTracingRegisterAssignment)
 void
 TR_Debug::traceRegisterAssignment(TR::Logger *log, const char *format, va_list args)
    {
-FUNC_TIMER(TR_Debug_traceRegisterAssignment_format)
+TIMER_FUNC(TR_Debug_traceRegisterAssignment_format)
    if (!_comp->getOption(TR_TraceRA))
       return;
 
@@ -4453,7 +4453,7 @@ FUNC_TIMER(TR_Debug_traceRegisterAssignment_format)
 void
 TR_Debug::traceRegisterAssignment(TR::Logger *log, TR::Instruction *instr, bool insertedByRA, bool postRA)
    {
-FUNC_TIMER(TR_Debug_traceRegisterAssignment_instr)
+TIMER_FUNC(TR_Debug_traceRegisterAssignment_instr)
    TR_ASSERT(instr, "cannot trace assignment of NULL instructions\n");
 
    if (!_comp->getOption(TR_TraceRA))
@@ -4529,7 +4529,7 @@ FUNC_TIMER(TR_Debug_traceRegisterAssignment_instr)
 void
 TR_Debug::traceRegisterAssigned(TR::Logger *log, TR_RegisterAssignmentFlags flags, TR::Register *virtReg, TR::Register *realReg)
    {
-FUNC_TIMER(TR_Debug_traceRegisterAssigned_TR_RegisterAssignmentFlags)
+TIMER_FUNC(TR_Debug_traceRegisterAssigned_TR_RegisterAssignmentFlags)
    TR_ASSERT(realReg, "Cannot trace assignment of NULL Real Register\n");
    TR_ASSERT(virtReg, "Cannot trace assignment of NULL Virtual Register\n");
 
@@ -4579,7 +4579,7 @@ FUNC_TIMER(TR_Debug_traceRegisterAssigned_TR_RegisterAssignmentFlags)
 void
 TR_Debug::traceRegisterFreed(TR::Logger *log, TR::Register *virtReg, TR::Register *realReg)
    {
-FUNC_TIMER(TR_Debug_traceRegisterFreed)
+TIMER_FUNC(TR_Debug_traceRegisterFreed)
    TR_ASSERT(realReg, "Cannot trace assignment of NULL Real Register\n");
    TR_ASSERT(virtReg, "Cannot trace assignment of NULL Virtual Register\n");
 
@@ -4613,7 +4613,7 @@ FUNC_TIMER(TR_Debug_traceRegisterFreed)
 void
 TR_Debug::traceRegisterInterference(TR::Logger *log, TR::Register *virtReg, TR::Register *interferingVirtual, int32_t distance)
    {
-FUNC_TIMER(TR_Debug_traceRegisterInterference)
+TIMER_FUNC(TR_Debug_traceRegisterInterference)
    TR_ASSERT( virtReg && interferingVirtual, "cannot trace assignment of NULL registers\n");
 
    if (!_comp->getOption(TR_TraceRA))
@@ -4637,7 +4637,7 @@ FUNC_TIMER(TR_Debug_traceRegisterInterference)
 void
 TR_Debug::traceRegisterWeight(TR::Logger *log, TR::Register *realReg, uint32_t weight)
    {
-FUNC_TIMER(TR_Debug_traceRegisterWeight)
+TIMER_FUNC(TR_Debug_traceRegisterWeight)
    TR_ASSERT( realReg, "cannot trace weight of NULL register\n");
 
    if (!_comp->getOption(TR_TraceRA))
