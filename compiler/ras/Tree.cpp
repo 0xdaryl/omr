@@ -779,7 +779,7 @@ TIMER_FUNC(TR_Debug_print_Block)
 
 static void printInlinePath(TR::Logger *log, TR_InlinedCallSite *site, TR_Debug *debug)
    {
-TIMER_FUNC(printInlinePath)
+TIMER_FUNC(printInlinePath_static)
    int32_t callerIndex = site->_byteCodeInfo.getCallerIndex();
    if (callerIndex == -1)
       {
