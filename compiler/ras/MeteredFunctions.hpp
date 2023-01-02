@@ -1,12 +1,12 @@
 #ifndef TR_METERED_FUNCTIONS
 #define TR_METERED_FUNCTIONS
 
-typedef enum meteredFunctionEnum {
+typedef enum MeteredFunction {
 #define METERED_FUNCTION(Enum) Enum
 #include "ras/MeteredFunctions.ins"
    numMeteredFunctions
 #undef METERED_FUNCTION
-} meteredFunctionEnum;
+} MeteredFunction;
 
 
 namespace TR {
