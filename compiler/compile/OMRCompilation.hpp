@@ -69,7 +69,7 @@ namespace OMR { typedef OMR::Compilation CompilationConnector; }
 #include "ras/Debug.hpp"
 #include "ras/DebugCounter.hpp"
 #include "ras/ILValidationStrategies.hpp"
-
+#include "ras/MeteredFunctions.hpp"
 
 
 class TR_AOTGuardSite;
@@ -1127,6 +1127,11 @@ public:
     *    reference to the copy of the target env
     */
    TR::Environment& target() { return _target; }
+
+
+public:
+   int64_t totalCalls[numMeteredFunctions];
+   int64_t elapsedTimeInNanos[numMeteredFunctions];
 
 private:
    void resetVisitCounts(vcount_t, TR::ResolvedMethodSymbol *);
