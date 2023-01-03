@@ -531,7 +531,7 @@ TIMER_FUNC(TR_SwitchAnalyzer_printInfo_TR_LinkHead, comp())
 
 void TR::SwitchAnalyzer::SwitchInfo::print(TR::Logger *log, TR_FrontEnd *fe, int32_t indent)
    {
-TIMER_FUNC(TR_SwitchAnalyzer_print, comp())
+//TIMER_FUNC(TR_SwitchAnalyzer_print)
    log->printf("%*s %0.8g %4d %8d [%4d -%4d] ",
                indent, " ", _freq, _count, _cost, _min, _max);
    switch (_kind)
