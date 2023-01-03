@@ -30,6 +30,6 @@ public:
 }
 
 
-#define TIMER_FUNC(x) { TR::FunctionMeter startMF(f, c); }
+#define TIMER_FUNC(f,c) { TR::FunctionMeter startMF(f, c); }
 
 #endif
