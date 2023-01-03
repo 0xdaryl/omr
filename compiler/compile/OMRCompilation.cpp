@@ -465,7 +465,7 @@ OMR::Compilation::~Compilation() throw()
       {
       TR::Logger *log = getLogger();
 
-      for (int32_t i=0; i<TR::FunctionMeter::numMeteredFunctions; i++)
+      for (int32_t i=0; i<numMeteredFunctions; i++)
          {
          log->printf("QQQQQ,%s,%ld,%ld\n", TR::FunctionMeter::meteredFunctionName[i], totalCalls[i], elapsedTimeInNanos[i]);
          }
