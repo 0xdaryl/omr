@@ -14,7 +14,7 @@ TR::FunctionMeter::FunctionMeter(MeteredFunction f, TR::Compilation *comp) : _mf
    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &_startTime);
 }
 
-~TR::FunctionMeter::FunctionMeter() {
+TR::FunctionMeter::~FunctionMeter() {
    struct timespec end_time;
    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &end_time);
    int64_t diffInNanos = (end_time.tv_sec - _start_time.tv_sec) * (int64_t)1e9 + (end_time.tv_nsec - _start_time.tv_nsec);
