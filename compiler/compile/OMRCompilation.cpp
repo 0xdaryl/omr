@@ -2087,6 +2087,17 @@ OMR::Compilation::shutdown(TR_FrontEnd * fe)
    statUseDefsTiming.report(stderr);
    statGlobalValNumTiming.report(stderr);
 #endif
+
+   if (getLoggingEnabled())
+      {
+      TR::Logger *log = getLogger();
+
+      for (int32_t i=0; i<TR::MeteredFunction::numMeteredFunctions; i++)
+         {
+         log->printf("QQQQQ,%s,%ld,%ld\n", TR::FunctionMeter::meteredFunctionName[i], totalCalls[i], elapsedTimeInNanos[i]);
+         }
+      }
+
    }
 
 
