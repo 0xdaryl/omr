@@ -1,6 +1,8 @@
 #ifndef TR_METERED_FUNCTIONS
 #define TR_METERED_FUNCTIONS
 
+#include <time.h>
+
 typedef enum MeteredFunction {
 #define METERED_FUNCTION(Enum) Enum
 #include "ras/MeteredFunctions.ins"
