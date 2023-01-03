@@ -3082,7 +3082,7 @@ void OMR::X86::CodeGenerator::removeUnavailableRegisters(TR_RegisterCandidate * 
 
 void OMR::X86::CodeGenerator::dumpDataSnippets(TR::Logger *log)
    {
-TIMER_FUNC(OMR_X86_CodeGenerator_dumpDataSnippets)
+TIMER_FUNC(OMR_X86_CodeGenerator_dumpDataSnippets, comp())
    for (auto iterator = _dataSnippetList.begin(); iterator != _dataSnippetList.end(); ++iterator)
       {
       (*iterator)->print(log, self()->getDebug());
@@ -3095,7 +3095,7 @@ TIMER_FUNC(OMR_X86_CodeGenerator_dumpDataSnippets)
 //
 void OMR::X86::CodeGenerator::dumpPreFPRegisterAssignment(TR::Logger *log, TR::Instruction *instructionCursor)
    {
-TIMER_FUNC(OMR_X86_CodeGenerator_dumpPreFPRegisterAssignment)
+TIMER_FUNC(OMR_X86_CodeGenerator_dumpPreFPRegisterAssignment, comp())
    if (instructionCursor->totalReferencedFPRegisters(self()) > 0)
       {
       log->printf("\n<< Pre-FPR assignment for instruction: %p", instructionCursor);
@@ -3117,7 +3117,7 @@ void OMR::X86::CodeGenerator::dumpPostFPRegisterAssignment(
       TR::Instruction *instructionCursor,
       TR::Instruction *origPrevInstruction)
    {
-TIMER_FUNC(OMR_X86_CodeGenerator_dumpPostFPRegisterAssignment)
+TIMER_FUNC(OMR_X86_CodeGenerator_dumpPostFPRegisterAssignment, comp())
    if (instructionCursor->totalReferencedFPRegisters(self()) > 0)
       {
       TR::Instruction * prevInstruction = instructionCursor->getPrev();
@@ -3149,7 +3149,7 @@ TIMER_FUNC(OMR_X86_CodeGenerator_dumpPostFPRegisterAssignment)
 
 void OMR::X86::CodeGenerator::dumpPreGPRegisterAssignment(TR::Logger *log, TR::Instruction *instructionCursor)
    {
-TIMER_FUNC(OMR_X86_CodeGenerator_dumpPreGPRegisterAssignment)
+TIMER_FUNC(OMR_X86_CodeGenerator_dumpPreGPRegisterAssignment, comp())
    if (instructionCursor->totalReferencedGPRegisters(self()) > 0)
       {
       log->printf("\n<< Pre-GPR assignment for instruction: %p", instructionCursor);
@@ -3171,7 +3171,7 @@ void OMR::X86::CodeGenerator::dumpPostGPRegisterAssignment(
       TR::Instruction *instructionCursor,
       TR::Instruction *origNextInstruction)
    {
-TIMER_FUNC(OMR_X86_CodeGenerator_dumpPostGPRegisterAssignment)
+TIMER_FUNC(OMR_X86_CodeGenerator_dumpPostGPRegisterAssignment, comp())
    if (instructionCursor->totalReferencedGPRegisters(self()) > 0)
       {
       log->printf("\n>> Post-GPR assignment for instruction: %p", instructionCursor);

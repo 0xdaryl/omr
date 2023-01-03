@@ -172,7 +172,7 @@ uint8_t *TR::X86FPConvertToIntSnippet::genFPConversion(uint8_t *buffer)
 void
 TR_Debug::print(TR::Logger *log, TR::X86FPConvertToIntSnippet *snippet)
    {
-TIMER_FUNC(TR_Debug_print_X86FPConvertToIntSnippet)
+TIMER_FUNC(TR_Debug_print_X86FPConvertToIntSnippet, comp())
    uint8_t *bufferPos = snippet->getSnippetLabel()->getCodeLocation();
 
    printSnippetLabel(log, snippet->getSnippetLabel(), bufferPos, getName(snippet));
@@ -352,7 +352,7 @@ uint8_t *TR::X86FPConvertToLongSnippet::genFPConversion(uint8_t *buffer)
 void
 TR_Debug::print(TR::Logger *log, TR::X86FPConvertToLongSnippet *snippet)
    {
-TIMER_FUNC(TR_Debug_print_X86FPConvertToLongSnippet)
+TIMER_FUNC(TR_Debug_print_X86FPConvertToLongSnippet, comp())
    uint8_t *bufferPos = snippet->getSnippetLabel()->getCodeLocation();
 
    uint8_t action = TR::X86FPConvertToLongSnippet::_registerActions[snippet->getAction() & 0x7f ];

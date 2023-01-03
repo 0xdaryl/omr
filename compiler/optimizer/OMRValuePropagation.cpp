@@ -4981,7 +4981,7 @@ void OMR::ValuePropagation::setUnreachablePath(TR::CFGEdge *edge)
 
 void OMR::ValuePropagation::printStructureInfo(TR::Logger *log, TR_Structure *s, bool starting, bool lastTimeThrough)
    {
-TIMER_FUNC(OMR_ValuePropagation_printStructureInfo)
+TIMER_FUNC(OMR_ValuePropagation_printStructureInfo, comp())
    traceMsg(comp(), "\n%s ", starting ? "Starting " : "Stopping ");
    char *type;
    bool isLoop = false;
@@ -5040,7 +5040,7 @@ TIMER_FUNC(OMR_ValuePropagation_printStructureInfo)
 
 void OMR::ValuePropagation::printParentStructure(TR::Logger *log, TR_Structure *s)
    {
-TIMER_FUNC(OMR_ValuePropagation_printParentStructure)
+TIMER_FUNC(OMR_ValuePropagation_printParentStructure, comp())
    if (s->getParent())
       {
       printParentStructure(log, s->getParent());
@@ -5051,7 +5051,7 @@ TIMER_FUNC(OMR_ValuePropagation_printParentStructure)
 
 void OMR::ValuePropagation::printValueConstraints(TR::Logger *log, ValueConstraints &valueConstraints)
    {
-TIMER_FUNC(OMR_ValuePropagation_printValueConstraints)
+TIMER_FUNC(OMR_ValuePropagation_printValueConstraints, comp())
    ValueConstraintIterator iter(valueConstraints);
    ValueConstraint *vc;
    for (vc = iter.getFirst(); vc; vc = iter.getNext())
@@ -5062,7 +5062,7 @@ TIMER_FUNC(OMR_ValuePropagation_printValueConstraints)
 
 void OMR::ValuePropagation::printGlobalConstraints(TR::Logger *log)
    {
-TIMER_FUNC(OMR_ValuePropagation_printGlobalConstraints)
+TIMER_FUNC(OMR_ValuePropagation_printGlobalConstraints, comp())
    traceMsg(comp(), "   Global constraints:\n");
    for (auto i = 0U; i <= _globalConstraintsHTMaxBucketIndex; i++)
       {
@@ -5080,7 +5080,7 @@ TIMER_FUNC(OMR_ValuePropagation_printGlobalConstraints)
 
 void OMR::ValuePropagation::printEdgeConstraints(TR::Logger *log, EdgeConstraints *constraints)
    {
-TIMER_FUNC(OMR_ValuePropagation_printEdgeConstraints)
+TIMER_FUNC(OMR_ValuePropagation_printEdgeConstraints, comp())
    if (!_isGlobalPropagation)
       return;
 
@@ -5107,7 +5107,7 @@ TIMER_FUNC(OMR_ValuePropagation_printEdgeConstraints)
 
 void OMR::ValuePropagation::Relationship::print(TR::Logger *log, OMR::ValuePropagation *vp)
    {
-TIMER_FUNC(OMR_ValuePropagation_Relationship_print)
+TIMER_FUNC(OMR_ValuePropagation_Relationship_print, comp())
    if (relative == AbsoluteConstraint)
       {
       // An absolute store constraint can have a null constraint value.
@@ -5123,7 +5123,7 @@ TIMER_FUNC(OMR_ValuePropagation_Relationship_print)
 
 void OMR::ValuePropagation::Relationship::print(TR::Logger *log, OMR::ValuePropagation *vp, int32_t valueNumber, int32_t indent)
    {
-TIMER_FUNC(OMR_ValuePropagation_Relationship_print_valueNumber)
+TIMER_FUNC(OMR_ValuePropagation_Relationship_print_valueNumber, comp())
    TR_FrontEnd *fe = vp->fe();
    if (valueNumber < vp->_firstUnresolvedSymbolValueNumber)
       {
@@ -5159,7 +5159,7 @@ TIMER_FUNC(OMR_ValuePropagation_Relationship_print_valueNumber)
 
 void OMR::ValuePropagation::StoreRelationship::print(TR::Logger *log, OMR::ValuePropagation *vp, int32_t valueNumber, int32_t indent)
    {
-TIMER_FUNC(OMR_ValuePropagation_StoreRelationship_print)
+TIMER_FUNC(OMR_ValuePropagation_StoreRelationship_print, comp())
    if (relationships.getFirst())
       {
       for (Relationship *rel = relationships.getFirst(); rel; rel = rel->getNext())
@@ -5174,7 +5174,7 @@ TIMER_FUNC(OMR_ValuePropagation_StoreRelationship_print)
 
 void OMR::ValuePropagation::ValueConstraint::print(TR::Logger *log, OMR::ValuePropagation *vp, int32_t indent)
    {
-TIMER_FUNC(OMR_ValuePropagation_ValueConstraint_print)
+TIMER_FUNC(OMR_ValuePropagation_ValueConstraint_print, comp())
    for (Relationship *rel = relationships.getFirst(); rel; rel = rel->getNext())
       rel->print(log, vp, getValueNumber(), indent);
    for (StoreRelationship *storeRel = storeRelationships.getFirst(); storeRel; storeRel = storeRel->getNext())

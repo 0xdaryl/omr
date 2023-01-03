@@ -68,7 +68,7 @@ namespace TR { class Register; }
 void
 TR_Debug::printx(TR::Logger *log, TR::Instruction  *instr)
    {
-TIMER_FUNC(TR_Debug_printx_Instruction)
+TIMER_FUNC(TR_Debug_printx_Instruction, comp())
    switch (instr->getKind())
       {
       case TR::Instruction::IsLabel:
@@ -219,7 +219,7 @@ TIMER_FUNC(TR_Debug_printx_Instruction)
 void
 TR_Debug::printPrefix(TR::Logger *log, TR::Instruction *instr)
    {
-TIMER_FUNC(TR_Debug_printPrefix)
+TIMER_FUNC(TR_Debug_printPrefix, comp())
    printPrefix(log, instr, instr->getBinaryEncoding(), instr->getBinaryLength());
    }
 
@@ -230,7 +230,7 @@ TR_Debug::printDependencyConditions(
       uint8_t numConditions,
       char *prefix)
    {
-TIMER_FUNC(TR_Debug_printDependencyConditions)
+TIMER_FUNC(TR_Debug_printDependencyConditions, comp())
    char buf[32];
    char *cursor;
    int len,i;
@@ -290,7 +290,7 @@ TIMER_FUNC(TR_Debug_printDependencyConditions)
 void
 TR_Debug::printFullRegisterDependencyInfo(TR::Logger *log, TR::RegisterDependencyConditions  *conditions)
    {
-TIMER_FUNC(TR_Debug_printFullRegisterDependencyInfo)
+TIMER_FUNC(TR_Debug_printFullRegisterDependencyInfo, comp())
    if (conditions->getNumPreConditions() > 0)
       {
       printDependencyConditions(log, conditions->getPreConditions(), conditions->getNumPreConditions(), "Pre");
@@ -310,7 +310,7 @@ TR_Debug::dumpDependencyGroup(
       char *prefix,
       bool omitNullDependencies)
    {
-TIMER_FUNC(TR_Debug_dumpDependencyGroup)
+TIMER_FUNC(TR_Debug_dumpDependencyGroup, comp())
    TR::RealRegister::RegNum r;
    TR::Register *virtReg;
    int32_t i;
@@ -358,7 +358,7 @@ TIMER_FUNC(TR_Debug_dumpDependencyGroup)
 void
 TR_Debug::dumpDependencies(TR::Logger *log, TR::Instruction *instr)
    {
-TIMER_FUNC(TR_Debug_dumpDependencies)
+TIMER_FUNC(TR_Debug_dumpDependencies, comp())
    // If we are in instruction selection or register assignment and
    // dependency information is requested, dump it.
    //
@@ -384,7 +384,7 @@ TIMER_FUNC(TR_Debug_dumpDependencies)
 void
 TR_Debug::printRegisterInfoHeader(TR::Logger *log, TR::Instruction *instr)
    {
-TIMER_FUNC(TR_Debug_printRegisterInfoHeader)
+TIMER_FUNC(TR_Debug_printRegisterInfoHeader, comp())
    log->printf("\n\n  FP stack height: %d", _cg->machine()->getFPTopOfStack() + 1);
    log->prints("\n  Referenced Regs:        Register         State        Assigned      Total Future Flags\n");
    // DMDM // DMDM log->flush();
@@ -393,7 +393,7 @@ TIMER_FUNC(TR_Debug_printRegisterInfoHeader)
 void
 TR_Debug::printReferencedRegisterInfo(TR::Logger *log, TR::Instruction *instr)
    {
-TIMER_FUNC(TR_Debug_printReferencedRegisterInfo_Instruction)
+TIMER_FUNC(TR_Debug_printReferencedRegisterInfo_Instruction, comp())
    if (instr->getDependencyConditions())
       {
       printRegisterInfoHeader(log, instr);
@@ -404,7 +404,7 @@ TIMER_FUNC(TR_Debug_printReferencedRegisterInfo_Instruction)
 void
 TR_Debug::print(TR::Logger *log, TR::X86PaddingInstruction *instr)
    {
-TIMER_FUNC(TR_Debug_print_X86PaddingInstruction)
+TIMER_FUNC(TR_Debug_print_X86PaddingInstruction, comp())
    printPrefix(log, instr);
    if (instr->getBinaryEncoding())
       log->printf("nop (%d byte%s)\t\t%s Padding (%d byte%s)",
@@ -425,7 +425,7 @@ TIMER_FUNC(TR_Debug_print_X86PaddingInstruction)
 void
 TR_Debug::print(TR::Logger *log, TR::X86AlignmentInstruction *instr)
    {
-TIMER_FUNC(TR_Debug_print_X86AlignmentInstruction)
+TIMER_FUNC(TR_Debug_print_X86AlignmentInstruction, comp())
    uint8_t length = instr->getBinaryLength();
    uint8_t margin = instr->getMargin();
 
@@ -450,7 +450,7 @@ TIMER_FUNC(TR_Debug_print_X86AlignmentInstruction)
 void
 TR_Debug::printBoundaryAvoidanceInfo(TR::Logger *log, TR::X86BoundaryAvoidanceInstruction *instr)
    {
-TIMER_FUNC(TR_Debug_printBoundaryAvoidanceInfo_X86BoundaryAvoidanceInstruction)
+TIMER_FUNC(TR_Debug_printBoundaryAvoidanceInfo_X86BoundaryAvoidanceInstruction, comp())
    log->printf(" @%d", instr->getBoundarySpacing());
    if (instr->getMaxPadding() < instr->getBoundarySpacing()-1)
       log->printf(" max %d", instr->getMaxPadding());
@@ -470,7 +470,7 @@ TIMER_FUNC(TR_Debug_printBoundaryAvoidanceInfo_X86BoundaryAvoidanceInstruction)
 void
 TR_Debug::print(TR::Logger *log, TR::X86BoundaryAvoidanceInstruction *instr)
    {
-TIMER_FUNC(TR_Debug_print_X86BoundaryAvoidanceInstruction)
+TIMER_FUNC(TR_Debug_print_X86BoundaryAvoidanceInstruction, comp())
    printPrefix(log, instr);
    if (instr->getBinaryEncoding())
       log->printf("nop (%d byte%s)\t\t%s ",
@@ -488,7 +488,7 @@ TIMER_FUNC(TR_Debug_print_X86BoundaryAvoidanceInstruction)
 void
 TR_Debug::print(TR::Logger *log, TR::X86PatchableCodeAlignmentInstruction *instr)
    {
-TIMER_FUNC(TR_Debug_print_X86PatchableCodeAlignmentInstruction)
+TIMER_FUNC(TR_Debug_print_X86PatchableCodeAlignmentInstruction, comp())
    printPrefix(log, instr);
    if (instr->getBinaryEncoding())
       log->printf("nop (%d byte%s)\t\t%s ",
@@ -506,7 +506,7 @@ TIMER_FUNC(TR_Debug_print_X86PatchableCodeAlignmentInstruction)
 void
 TR_Debug::print(TR::Logger *log, TR::X86LabelInstruction *instr)
    {
-TIMER_FUNC(TR_Debug_print_X86LabelInstruction)
+TIMER_FUNC(TR_Debug_print_X86LabelInstruction, comp())
    printPrefix(log, instr);
    TR::LabelSymbol *label = instr->getLabelSymbol();
    TR::Snippet *snippet = label ? label->getSnippet() : NULL;
@@ -548,7 +548,7 @@ TIMER_FUNC(TR_Debug_print_X86LabelInstruction)
 void
 TR_Debug::print(TR::Logger *log, TR::X86FenceInstruction *instr)
    {
-TIMER_FUNC(TR_Debug_print_X86FenceInstruction)
+TIMER_FUNC(TR_Debug_print_X86FenceInstruction, comp())
    // Omit fences from post-binary dumps unless they mark basic block boundaries.
    if (instr->getBinaryEncoding() &&
        instr->getNode()->getOpCodeValue() != TR::BBStart &&
@@ -599,7 +599,7 @@ TIMER_FUNC(TR_Debug_print_X86FenceInstruction)
 void
 TR_Debug::print(TR::Logger *log, TR::X86VirtualGuardNOPInstruction *instr)
    {
-TIMER_FUNC(TR_Debug_print_X86VirtualGuardNOPInstruction)
+TIMER_FUNC(TR_Debug_print_X86VirtualGuardNOPInstruction, comp())
    printPrefix(log, instr);
    log->printf("%s Site:" POINTER_PRINTF_FORMAT ", ", getMnemonicName(&instr->getOpCode()), instr->getSite());
    print(log, instr->getLabelSymbol());
@@ -612,7 +612,7 @@ TIMER_FUNC(TR_Debug_print_X86VirtualGuardNOPInstruction)
 void
 TR_Debug::print(TR::Logger *log, TR::X86ImmInstruction *instr)
    {
-TIMER_FUNC(TR_Debug_print_X86ImmInstruction)
+TIMER_FUNC(TR_Debug_print_X86ImmInstruction, comp())
    printPrefix(log, instr);
    log->printf("%s\t", getMnemonicName(&instr->getOpCode()));
 
@@ -641,7 +641,7 @@ TIMER_FUNC(TR_Debug_print_X86ImmInstruction)
 void
 TR_Debug::print(TR::Logger *log, TR::AMD64Imm64Instruction *instr)
    {
-TIMER_FUNC(TR_Debug_print_AMD64Imm64Instruction)
+TIMER_FUNC(TR_Debug_print_AMD64Imm64Instruction, comp())
    printPrefix(log, instr);
    log->printf("%s\t", getMnemonicName(&instr->getOpCode()));
 
@@ -670,7 +670,7 @@ TIMER_FUNC(TR_Debug_print_AMD64Imm64Instruction)
 void
 TR_Debug::print(TR::Logger *log, TR::AMD64Imm64SymInstruction *instr)
    {
-TIMER_FUNC(TR_Debug_print_AMD64Imm64SymInstruction)
+TIMER_FUNC(TR_Debug_print_AMD64Imm64SymInstruction, comp())
    printPrefix(log, instr);
    TR::Symbol *sym  = instr->getSymbolReference()->getSymbol();
    const char *name = getName(instr->getSymbolReference());
@@ -712,7 +712,7 @@ TIMER_FUNC(TR_Debug_print_AMD64Imm64SymInstruction)
 void
 TR_Debug::print(TR::Logger *log, TR::AMD64RegImm64Instruction *instr)
    {
-TIMER_FUNC(TR_Debug_print_AMD64RegImm64Instruction)
+TIMER_FUNC(TR_Debug_print_AMD64RegImm64Instruction, comp())
    printPrefix(log, instr);
    log->printf("%s\t", getMnemonicName(&instr->getOpCode()));
    if (!(instr->getOpCode().targetRegIsImplicit() != 0))
@@ -729,7 +729,7 @@ TIMER_FUNC(TR_Debug_print_AMD64RegImm64Instruction)
 
 void TR_Debug::print(TR::Logger *log, TR::X86VFPSaveInstruction *instr)
    {
-TIMER_FUNC(TR_Debug_print_X86VFPSaveInstruction)
+TIMER_FUNC(TR_Debug_print_X86VFPSaveInstruction, comp())
    printPrefix(log, instr);
    log->prints(getMnemonicName(&instr->getOpCode()));
 
@@ -741,7 +741,7 @@ TIMER_FUNC(TR_Debug_print_X86VFPSaveInstruction)
 
 void TR_Debug::print(TR::Logger *log, TR::X86VFPRestoreInstruction *instr)
    {
-TIMER_FUNC(TR_Debug_print_X86VFPRestoreInstruction)
+TIMER_FUNC(TR_Debug_print_X86VFPRestoreInstruction, comp())
    printPrefix(log, instr);
    log->printf("vfpRestore [%s]", getName(instr->getSaveInstruction()));
 
@@ -753,7 +753,7 @@ TIMER_FUNC(TR_Debug_print_X86VFPRestoreInstruction)
 
 void TR_Debug::print(TR::Logger *log, TR::X86VFPDedicateInstruction *instr)
    {
-TIMER_FUNC(TR_Debug_print_X86VFPDedicateInstruction)
+TIMER_FUNC(TR_Debug_print_X86VFPDedicateInstruction, comp())
    print(log, (TR::X86RegMemInstruction*)instr);
 
    log->printf("%s vfpDedicate %s",
@@ -764,7 +764,7 @@ TIMER_FUNC(TR_Debug_print_X86VFPDedicateInstruction)
 
 void TR_Debug::print(TR::Logger *log, TR::X86VFPReleaseInstruction *instr)
    {
-TIMER_FUNC(TR_Debug_print_X86VFPReleaseInstruction)
+TIMER_FUNC(TR_Debug_print_X86VFPReleaseInstruction, comp())
    printPrefix(log, instr);
    log->printf("vfpRelease [%s]", getName(instr->getDedicateInstruction()));
 
@@ -776,7 +776,7 @@ TIMER_FUNC(TR_Debug_print_X86VFPReleaseInstruction)
 
 void TR_Debug::print(TR::Logger *log, TR::X86VFPCallCleanupInstruction *instr)
    {
-TIMER_FUNC(TR_Debug_print_X86VFPCallCleanupInstruction)
+TIMER_FUNC(TR_Debug_print_X86VFPCallCleanupInstruction, comp())
    printPrefix(log, instr);
    log->printf("vfpCallCleanup (%d bytes)", instr->getStackPointerAdjustment());
 
@@ -789,7 +789,7 @@ TIMER_FUNC(TR_Debug_print_X86VFPCallCleanupInstruction)
 void
 TR_Debug::print(TR::Logger *log, TR::X86ImmSnippetInstruction *instr)
    {
-TIMER_FUNC(TR_Debug_print_X86ImmSnippetInstruction)
+TIMER_FUNC(TR_Debug_print_X86ImmSnippetInstruction, comp())
    printPrefix(log, instr);
    log->printf("%s\t", getMnemonicName(&instr->getOpCode()));
    printIntConstant(log, instr->getSourceImmediate(), 16, getImmediateSizeFromInstruction(instr), true);
@@ -801,7 +801,7 @@ TIMER_FUNC(TR_Debug_print_X86ImmSnippetInstruction)
 void
 TR_Debug::print(TR::Logger *log, TR::X86ImmSymInstruction *instr)
    {
-TIMER_FUNC(TR_Debug_print_X86ImmSymInstruction)
+TIMER_FUNC(TR_Debug_print_X86ImmSymInstruction, comp())
    TR::Symbol *sym = instr->getSymbolReference()->getSymbol();
    const char *name = getName(instr->getSymbolReference());
 
@@ -867,7 +867,7 @@ TIMER_FUNC(TR_Debug_print_X86ImmSymInstruction)
 void
 TR_Debug::print(TR::Logger *log, TR::X86RegInstruction *instr)
    {
-TIMER_FUNC(TR_Debug_print_X86RegInstruction)
+TIMER_FUNC(TR_Debug_print_X86RegInstruction, comp())
    printPrefix(log, instr);
    log->printf("%s\t", getMnemonicName(&instr->getOpCode()));
    if (!(instr->getOpCode().targetRegIsImplicit() != 0))
@@ -880,7 +880,7 @@ TIMER_FUNC(TR_Debug_print_X86RegInstruction)
 void
 TR_Debug::printReferencedRegisterInfo(TR::Logger *log, TR::X86RegInstruction *instr)
    {
-TIMER_FUNC(TR_Debug_printReferencedRegisterInfo_X86RegInstruction)
+TIMER_FUNC(TR_Debug_printReferencedRegisterInfo_X86RegInstruction, comp())
    printRegisterInfoHeader(log, instr);
    log->prints("    Target            ");
    printFullRegInfo(log, instr->getTargetRegister());
@@ -896,7 +896,7 @@ TIMER_FUNC(TR_Debug_printReferencedRegisterInfo_X86RegInstruction)
 void
 TR_Debug::print(TR::Logger *log, TR::X86RegRegInstruction *instr)
    {
-TIMER_FUNC(TR_Debug_print_X86RegRegInstruction)
+TIMER_FUNC(TR_Debug_print_X86RegRegInstruction, comp())
    printPrefix(log, instr);
    log->printf("%s\t", getMnemonicName(&instr->getOpCode()));
    if (!(instr->getOpCode().targetRegIsImplicit() != 0))
@@ -913,7 +913,7 @@ TIMER_FUNC(TR_Debug_print_X86RegRegInstruction)
 void
 TR_Debug::print(TR::Logger *log, TR::X86RegMaskRegInstruction *instr)
    {
-TIMER_FUNC(TR_Debug_print_X86RegMaskRegInstruction)
+TIMER_FUNC(TR_Debug_print_X86RegMaskRegInstruction, comp())
    printPrefix(log, instr);
    log->printf("%s\t", getMnemonicName(&instr->getOpCode()));
    if (instr->getOpCode().targetRegIsImplicit() == 0 || instr->getMaskRegister())
@@ -939,7 +939,7 @@ TIMER_FUNC(TR_Debug_print_X86RegMaskRegInstruction)
 void
 TR_Debug::printReferencedRegisterInfo(TR::Logger *log, TR::X86RegRegInstruction *instr)
    {
-TIMER_FUNC(TR_Debug_printReferencedRegisterInfo_X86RegRegInstruction)
+TIMER_FUNC(TR_Debug_printReferencedRegisterInfo_X86RegRegInstruction, comp())
    printRegisterInfoHeader(log, instr);
    log->prints("    Target            ");
    printFullRegInfo(log, instr->getTargetRegister());
@@ -957,7 +957,7 @@ TIMER_FUNC(TR_Debug_printReferencedRegisterInfo_X86RegRegInstruction)
 void
 TR_Debug::print(TR::Logger *log, TR::X86RegImmInstruction *instr)
    {
-TIMER_FUNC(TR_Debug_print_X86RegImmInstruction)
+TIMER_FUNC(TR_Debug_print_X86RegImmInstruction, comp())
    printPrefix(log, instr);
    log->printf("%s\t", getMnemonicName(&instr->getOpCode()));
    if (!(instr->getOpCode().targetRegIsImplicit() != 0))
@@ -974,7 +974,7 @@ TIMER_FUNC(TR_Debug_print_X86RegImmInstruction)
 void
 TR_Debug::print(TR::Logger *log, TR::X86RegRegImmInstruction *instr)
    {
-TIMER_FUNC(TR_Debug_print_X86RegRegImmInstruction)
+TIMER_FUNC(TR_Debug_print_X86RegRegImmInstruction, comp())
    printPrefix(log, instr);
    log->printf("%s\t", getMnemonicName(&instr->getOpCode()));
    if (!(instr->getOpCode().targetRegIsImplicit() != 0))
@@ -998,7 +998,7 @@ TIMER_FUNC(TR_Debug_print_X86RegRegImmInstruction)
 void
 TR_Debug::print(TR::Logger *log, TR::X86RegMaskRegRegInstruction *instr)
    {
-TIMER_FUNC(TR_Debug_X86RegMaskRegRegInstruction)
+TIMER_FUNC(TR_Debug_X86RegMaskRegRegInstruction, comp())
    printPrefix(log, instr);
    log->printf("%s\t", getMnemonicName(&instr->getOpCode()));
 
@@ -1031,7 +1031,7 @@ TIMER_FUNC(TR_Debug_X86RegMaskRegRegInstruction)
 void
 TR_Debug::print(TR::Logger *log, TR::X86RegRegRegInstruction *instr)
    {
-TIMER_FUNC(TR_Debug_print_X86RegRegRegInstruction)
+TIMER_FUNC(TR_Debug_print_X86RegRegRegInstruction, comp())
    printPrefix(log, instr);
    log->printf("%s\t", getMnemonicName(&instr->getOpCode()));
    if (!(instr->getOpCode().targetRegIsImplicit() != 0))
@@ -1055,7 +1055,7 @@ TIMER_FUNC(TR_Debug_print_X86RegRegRegInstruction)
 void
 TR_Debug::printReferencedRegisterInfo(TR::Logger *log, TR::X86RegRegRegInstruction *instr)
    {
-TIMER_FUNC(TR_Debug_printReferencedRegisterInfo_X86RegRegRegInstruction)
+TIMER_FUNC(TR_Debug_printReferencedRegisterInfo_X86RegRegRegInstruction, comp())
    printRegisterInfoHeader(log, instr);
    log->prints("    Source            ");
    printFullRegInfo(log, instr->getSourceRegister());
@@ -1078,7 +1078,7 @@ TR_Debug::printPrefixAndMnemonicWithoutBarrier(
       TR::Instruction *instr,
       int32_t barrier)
    {
-TIMER_FUNC(TR_Debug_printPrefixAndMnemonicWithoutBarrier)
+TIMER_FUNC(TR_Debug_printPrefixAndMnemonicWithoutBarrier, comp())
    int32_t barrierLength = ::estimateMemoryBarrierBinaryLength(barrier, _comp->cg());
    int32_t nonBarrierLength = instr->getBinaryLength()-barrierLength;
 
@@ -1095,7 +1095,7 @@ TR_Debug::printPrefixAndMemoryBarrier(
       int32_t barrier,
       int32_t barrierOffset)
    {
-TIMER_FUNC(TR_Debug_printPrefixAndMemoryBarrier)
+TIMER_FUNC(TR_Debug_printPrefixAndMemoryBarrier, comp())
    int32_t barrierLength = ::estimateMemoryBarrierBinaryLength(barrier, _comp->cg());
    uint8_t *barrierStart = instr->getBinaryEncoding() ? (instr->getBinaryEncoding()+barrierOffset) : NULL;
 
@@ -1105,7 +1105,7 @@ TIMER_FUNC(TR_Debug_printPrefixAndMemoryBarrier)
 void
 TR_Debug::print(TR::Logger *log, TR::X86MemInstruction *instr)
    {
-TIMER_FUNC(TR_Debug_print_X86MemInstruction)
+TIMER_FUNC(TR_Debug_print_X86MemInstruction, comp())
    int32_t barrier = memoryBarrierRequired(instr->getOpCode(), instr->getMemoryReference(), _cg, false);
    int32_t barrierOffset = printPrefixAndMnemonicWithoutBarrier(log, instr, barrier);
 
@@ -1123,7 +1123,7 @@ TIMER_FUNC(TR_Debug_print_X86MemInstruction)
 void
 TR_Debug::printReferencedRegisterInfo(TR::Logger *log, TR::X86MemInstruction *instr)
    {
-TIMER_FUNC(TR_Debug_printReferencedRegisterInfo_X86MemInstruction)
+TIMER_FUNC(TR_Debug_printReferencedRegisterInfo_X86MemInstruction, comp())
    printRegisterInfoHeader(log, instr);
    printReferencedRegisterInfo(log, instr->getMemoryReference());
 
@@ -1138,7 +1138,7 @@ TIMER_FUNC(TR_Debug_printReferencedRegisterInfo_X86MemInstruction)
 void
 TR_Debug::print(TR::Logger *log, TR::X86MemImmInstruction *instr)
    {
-TIMER_FUNC(TR_Debug_print_X86MemImmInstruction)
+TIMER_FUNC(TR_Debug_print_X86MemImmInstruction, comp())
    int32_t barrier = memoryBarrierRequired(instr->getOpCode(), instr->getMemoryReference(), _cg, false);
    int32_t barrierOffset = printPrefixAndMnemonicWithoutBarrier(log, instr, barrier);
 
@@ -1158,7 +1158,7 @@ TIMER_FUNC(TR_Debug_print_X86MemImmInstruction)
 void
 TR_Debug::print(TR::Logger *log, TR::X86MemRegInstruction *instr)
    {
-TIMER_FUNC(TR_Debug_print_X86MemRegInstruction)
+TIMER_FUNC(TR_Debug_print_X86MemRegInstruction, comp())
    int32_t barrier = memoryBarrierRequired(instr->getOpCode(), instr->getMemoryReference(), _cg, false);
    int32_t barrierOffset = printPrefixAndMnemonicWithoutBarrier(log, instr, barrier);
 
@@ -1181,7 +1181,7 @@ TIMER_FUNC(TR_Debug_print_X86MemRegInstruction)
 void
 TR_Debug::print(TR::Logger *log, TR::X86MemMaskRegInstruction *instr)
    {
-TIMER_FUNC(TR_Debug_print_X86MemMaskRegInstruction)
+TIMER_FUNC(TR_Debug_print_X86MemMaskRegInstruction, comp())
    int32_t barrier = memoryBarrierRequired(instr->getOpCode(), instr->getMemoryReference(), _cg, false);
    int32_t barrierOffset = printPrefixAndMnemonicWithoutBarrier(log, instr, barrier);
 
@@ -1212,7 +1212,7 @@ TIMER_FUNC(TR_Debug_print_X86MemMaskRegInstruction)
 void
 TR_Debug::printReferencedRegisterInfo(TR::Logger *log, TR::X86MemRegInstruction *instr)
    {
-TIMER_FUNC(TR_Debug_printReferencedRegisterInfo__X86MemRegInstruction)
+TIMER_FUNC(TR_Debug_printReferencedRegisterInfo__X86MemRegInstruction, comp())
    printRegisterInfoHeader(log, instr);
    log->prints("    Source            ");
    printFullRegInfo(log, instr->getSourceRegister());
@@ -1229,7 +1229,7 @@ TIMER_FUNC(TR_Debug_printReferencedRegisterInfo__X86MemRegInstruction)
 void
 TR_Debug::print(TR::Logger *log, TR::X86MemRegImmInstruction *instr)
    {
-TIMER_FUNC(TR_Debug_print_X86MemRegImmInstruction)
+TIMER_FUNC(TR_Debug_print_X86MemRegImmInstruction, comp())
    int32_t barrier = memoryBarrierRequired(instr->getOpCode(), instr->getMemoryReference(), _cg, false);
    int32_t barrierOffset = printPrefixAndMnemonicWithoutBarrier(log, instr, barrier);
 
@@ -1254,7 +1254,7 @@ TIMER_FUNC(TR_Debug_print_X86MemRegImmInstruction)
 void
 TR_Debug::print(TR::Logger *log, TR::X86RegMemInstruction *instr)
    {
-TIMER_FUNC(TR_Debug_print_X86RegMemInstruction)
+TIMER_FUNC(TR_Debug_print_X86RegMemInstruction, comp())
    int32_t barrier = memoryBarrierRequired(instr->getOpCode(), instr->getMemoryReference(), _cg, false);
    int32_t barrierOffset = printPrefixAndMnemonicWithoutBarrier(log, instr, barrier);
 
@@ -1284,7 +1284,7 @@ TIMER_FUNC(TR_Debug_print_X86RegMemInstruction)
 void
 TR_Debug::print(TR::Logger *log, TR::X86RegMaskMemInstruction *instr)
    {
-TIMER_FUNC(TR_Debug_print_X86RegMaskMemInstruction)
+TIMER_FUNC(TR_Debug_print_X86RegMaskMemInstruction, comp())
    int32_t barrier = memoryBarrierRequired(instr->getOpCode(), instr->getMemoryReference(), _cg, false);
    int32_t barrierOffset = printPrefixAndMnemonicWithoutBarrier(log, instr, barrier);
 
@@ -1321,7 +1321,7 @@ TIMER_FUNC(TR_Debug_print_X86RegMaskMemInstruction)
 void
 TR_Debug::printReferencedRegisterInfo(TR::Logger *log, TR::X86RegMemInstruction *instr)
    {
-TIMER_FUNC(TR_Debug_printReferencedRegisterInfo_X86RegMemInstruction)
+TIMER_FUNC(TR_Debug_printReferencedRegisterInfo_X86RegMemInstruction, comp())
    printRegisterInfoHeader(log, instr);
    log->prints("    Target            ");
    printFullRegInfo(log, instr->getTargetRegister());
@@ -1339,7 +1339,7 @@ TIMER_FUNC(TR_Debug_printReferencedRegisterInfo_X86RegMemInstruction)
 void
 TR_Debug::print(TR::Logger *log, TR::X86RegMemImmInstruction *instr)
    {
-TIMER_FUNC(TR_Debug_print_X86RegMemImmInstruction)
+TIMER_FUNC(TR_Debug_print_X86RegMemImmInstruction, comp())
    int32_t barrier = memoryBarrierRequired(instr->getOpCode(), instr->getMemoryReference(), _cg, false);
    int32_t barrierOffset = printPrefixAndMnemonicWithoutBarrier(log, instr, barrier);
 
@@ -1365,7 +1365,7 @@ TIMER_FUNC(TR_Debug_print_X86RegMemImmInstruction)
 void
 TR_Debug::print(TR::Logger *log, TR::X86RegRegMemInstruction *instr)
    {
-TIMER_FUNC(TR_Debug_print_X86RegRegMemInstruction)
+TIMER_FUNC(TR_Debug_print_X86RegRegMemInstruction, comp())
    int32_t barrier = memoryBarrierRequired(instr->getOpCode(), instr->getMemoryReference(), _cg, false);
    int32_t barrierOffset = printPrefixAndMnemonicWithoutBarrier(log, instr, barrier);
 
@@ -1400,7 +1400,7 @@ TIMER_FUNC(TR_Debug_print_X86RegRegMemInstruction)
 void
 TR_Debug::printReferencedRegisterInfo(TR::Logger *log, TR::X86RegRegMemInstruction *instr)
    {
-TIMER_FUNC(TR_Debug_printReferencedRegisterInfo_X86RegRegMemInstruction)
+TIMER_FUNC(TR_Debug_printReferencedRegisterInfo_X86RegRegMemInstruction, comp())
    printReferencedRegisterInfo(log, instr->getMemoryReference());
 
    printFullRegInfo(log, instr->getSourceRegister());
@@ -1492,7 +1492,7 @@ TR_Debug::print(TR::Logger *log, TR::X86FPRegMemInstruction *instr)
 void
 TR_Debug::print(TR::Logger *log, TR::MemoryReference *mr, TR_RegisterSizes operandSize)
    {
-TIMER_FUNC(TR_Debug_print_MemoryReference)
+TIMER_FUNC(TR_Debug_print_MemoryReference, comp())
    const char *typeSpecifier[10] = {
       "byte",     // TR_ByteReg
       "word",     // TR_HalfWordReg
@@ -1635,7 +1635,7 @@ TIMER_FUNC(TR_Debug_print_MemoryReference)
 int32_t
 TR_Debug::printIntConstant(TR::Logger *log, int64_t value, int8_t radix, TR_RegisterSizes size, bool padWithZeros)
    {
-TIMER_FUNC(TR_Debug_printIntConstant)
+TIMER_FUNC(TR_Debug_printIntConstant, comp())
    const int8_t registerSizeToWidth[7] = {
       2,     // TR_ByteReg
       4,     // TR_HalfWordReg
@@ -1666,7 +1666,7 @@ TIMER_FUNC(TR_Debug_printIntConstant)
 int32_t
 TR_Debug::printDecimalConstant(TR::Logger *log, int64_t value, int8_t width, bool padWithZeros)
    {
-TIMER_FUNC(TR_Debug_printDecimalConstant)
+TIMER_FUNC(TR_Debug_printDecimalConstant, comp())
    log->printf("%lld", value);
    return 0;
    }
@@ -1674,7 +1674,7 @@ TIMER_FUNC(TR_Debug_printDecimalConstant)
 int32_t
 TR_Debug::printHexConstant(TR::Logger *log, int64_t value, int8_t width, bool padWithZeros)
    {
-TIMER_FUNC(TR_Debug_printHexConstant)
+TIMER_FUNC(TR_Debug_printHexConstant, comp())
    // we probably need to revisit generateMasmListingSyntax
    const char *prefix = _comp->target().isLinux() ? "0x" : (_cg->generateMasmListingSyntax() ? "0" : "0x");
    const char *suffix = _comp->target().isLinux() ? "" : (_cg->generateMasmListingSyntax() ? "h" : "");
@@ -1702,7 +1702,7 @@ TR_Debug::printFPRegisterComment(TR::Logger *log, TR::Register *source, TR::Regi
 void
 TR_Debug::printInstructionComment(TR::Logger *log, int32_t tabStops, TR::Instruction  *instr)
    {
-TIMER_FUNC(TR_Debug_printInstructionComment)
+TIMER_FUNC(TR_Debug_printInstructionComment, comp())
    while (tabStops-- > 0)
       log->printc('\t');
 
@@ -1715,7 +1715,7 @@ TIMER_FUNC(TR_Debug_printInstructionComment)
 void
 TR_Debug::printMemoryReferenceComment(TR::Logger *log, TR::MemoryReference  *mr)
    {
-TIMER_FUNC(TR_Debug_printMemoryReferenceComment)
+TIMER_FUNC(TR_Debug_printMemoryReferenceComment, comp())
    TR::Symbol *symbol = mr->getSymbolReference().getSymbol();
 
    if (symbol == NULL && mr->getSymbolReference().getOffset() == 0)
@@ -1831,7 +1831,7 @@ TR_Debug::getImmediateSizeFromInstruction(TR::Instruction  *instr)
 void
 TR_Debug::printReferencedRegisterInfo(TR::Logger *log, TR::MemoryReference *mr)
    {
-TIMER_FUNC(TR_Debug_printReferencedRegisterInfo_MemoryReference)
+TIMER_FUNC(TR_Debug_printReferencedRegisterInfo_MemoryReference, comp())
    if (mr->getBaseRegister())
       {
       log->prints("    Base Reg          ");
@@ -1850,7 +1850,7 @@ TIMER_FUNC(TR_Debug_printReferencedRegisterInfo_MemoryReference)
 void
 TR_Debug::printX86GCRegisterMap(TR::Logger *log, TR::GCRegisterMap *map)
    {
-TIMER_FUNC(TR_Debug_printX86GCRegisterMap)
+TIMER_FUNC(TR_Debug_printX86GCRegisterMap, comp())
    TR::Machine *machine = _cg->machine();
 
    log->printf("    slot pushes: %d", ((map->getMap() & _cg->getRegisterMapInfoBitsMask()) >> 16));
@@ -1868,7 +1868,7 @@ TIMER_FUNC(TR_Debug_printX86GCRegisterMap)
 void
 TR_Debug::print(TR::Logger *log, TR::RealRegister *reg, TR_RegisterSizes size)
    {
-TIMER_FUNC(TR_Debug_print_RealRegister)
+TIMER_FUNC(TR_Debug_print_RealRegister, comp())
    switch (size)
       {
       case TR_WordReg:
@@ -1893,7 +1893,7 @@ TIMER_FUNC(TR_Debug_print_RealRegister)
 void
 TR_Debug::printFullRegInfo(TR::Logger *log, TR::RealRegister *reg)
    {
-TIMER_FUNC(TR_Debug_printFullRegInfo_reg)
+TIMER_FUNC(TR_Debug_printFullRegInfo_reg, comp())
    log->prints("[ ");
 
    log->printf("%-12s ][ ", getName(reg));
@@ -2089,7 +2089,7 @@ TR_Debug::getName(TR::RealRegister *reg, TR_RegisterSizes size)
 
 void TR_Debug::dumpInstructionWithVFPState(TR::Logger *log, TR::Instruction *instr, const TR_VFPState *prevState)
    {
-TIMER_FUNC(TR_Debug_dumpInstructionWithVFPState)
+TIMER_FUNC(TR_Debug_dumpInstructionWithVFPState, comp())
    const TR_VFPState &vfpState = _cg->vfpState();
    print(log, instr);
 
@@ -2115,7 +2115,7 @@ TIMER_FUNC(TR_Debug_dumpInstructionWithVFPState)
 void
 TR_Debug::printRegRegInstruction(TR::Logger *log, const char *opCode, TR::RealRegister *reg1, TR::RealRegister *reg2)
    {
-TIMER_FUNC(TR_Debug_printRegRegInstruction)
+TIMER_FUNC(TR_Debug_printRegRegInstruction, comp())
    log->printf("%s\t", opCode);
    print(log, reg1);
    if (reg2)
@@ -2128,7 +2128,7 @@ TIMER_FUNC(TR_Debug_printRegRegInstruction)
 void
 TR_Debug::printRegMemInstruction(TR::Logger *log, const char *opCode, TR::RealRegister *reg, TR::RealRegister *base, int32_t offset)
    {
-TIMER_FUNC(TR_Debug_printRegMemInstruction)
+TIMER_FUNC(TR_Debug_printRegMemInstruction, comp())
    log->printf("%s\t", opCode);
    print(log, reg);
    if (base)
@@ -2142,7 +2142,7 @@ TIMER_FUNC(TR_Debug_printRegMemInstruction)
 void
 TR_Debug::printRegImmInstruction(TR::Logger *log, const char *opCode, TR::RealRegister *reg, int32_t imm)
    {
-TIMER_FUNC(TR_Debug_printRegImmInstruction)
+TIMER_FUNC(TR_Debug_printRegImmInstruction, comp())
    log->printf("%s\t", opCode);
    print(log, reg);
    if (imm <= 1024)
@@ -2154,7 +2154,7 @@ TIMER_FUNC(TR_Debug_printRegImmInstruction)
 void
 TR_Debug::printMemRegInstruction(TR::Logger *log, const char *opCode, TR::RealRegister *base, int32_t offset, TR::RealRegister *reg)
    {
-TIMER_FUNC(TR_Debug_printMemRegInstruction)
+TIMER_FUNC(TR_Debug_printMemRegInstruction, comp())
    log->printf("%s\t", opCode);
    log->printc('[');
    print(log, base);
@@ -2169,7 +2169,7 @@ TIMER_FUNC(TR_Debug_printMemRegInstruction)
 void
 TR_Debug::printMemImmInstruction(TR::Logger *log, const char *opCode, TR::RealRegister *base, int32_t offset, int32_t imm)
    {
-TIMER_FUNC(TR_Debug_printMemImmInstruction)
+TIMER_FUNC(TR_Debug_printMemImmInstruction, comp())
    log->printf("%s\t", opCode);
    log->printc('[');
    print(log, base);
@@ -2183,7 +2183,7 @@ TIMER_FUNC(TR_Debug_printMemImmInstruction)
 void
 TR_Debug::printLabelInstruction(TR::Logger *log, const char *opCode, TR::LabelSymbol *label)
    {
-TIMER_FUNC(TR_Debug_printLabelInstruction)
+TIMER_FUNC(TR_Debug_printLabelInstruction, comp())
    log->printf("%s\t", opCode);
    print(log, label);
    }
@@ -2234,7 +2234,7 @@ getInterpretedMethodNameHelper(TR::MethodSymbol *methodSymbol,
 void
 TR_Debug::print(TR::Logger *log, TR::X86CallSnippet *snippet)
    {
-TIMER_FUNC(TR_Debug_print_X86CallSnippet)
+TIMER_FUNC(TR_Debug_print_X86CallSnippet, comp())
    uint8_t            *bufferPos = snippet->getSnippetLabel()->getCodeLocation();
    TR::Node            *callNode = snippet->getNode();
    TR::SymbolReference *methodSymRef = callNode->getSymbolReference();
@@ -2315,7 +2315,7 @@ TIMER_FUNC(TR_Debug_print_X86CallSnippet)
 
 void TR_Debug::printX86OOLSequences(TR::Logger *log)
    {
-TIMER_FUNC(TR_Debug_printX86OOLSequences)
+TIMER_FUNC(TR_Debug_printX86OOLSequences, comp())
    auto oiIterator = _cg->getOutlinedInstructionsList().begin();
    while (oiIterator != _cg->getOutlinedInstructionsList().end())
       {
@@ -2350,7 +2350,7 @@ TR_Debug::printArgumentFlush(
       bool isFlushToStack, // flush to stack or flush to regs
       uint8_t *bufferPos)
    {
-TIMER_FUNC(TR_Debug_printArgumentFlush)
+TIMER_FUNC(TR_Debug_printArgumentFlush, comp())
    TR::MethodSymbol *methodSymbol = callNode->getSymbol()->castToMethodSymbol();
    TR::Linkage *linkage = _cg->getLinkage();
 

@@ -190,13 +190,13 @@ void TR_BitVector::setChunkSize(int32_t chunkSize)
 
 void TR_BitVector::print(TR::Logger *log, TR::Compilation *comp)
    {
-TIMER_FUNC(TR_BitVector_print)
+TIMER_FUNC(TR_BitVector_print, comp)
    comp->getDebug()->print(log, this);
    }
 
 void TR_SingleBitContainer::print(TR::Logger *log, TR::Compilation *comp)
    {
-TIMER_FUNC(TR_SingleBitContainer_print)
+TIMER_FUNC(TR_SingleBitContainer_print, comp)
    comp->getDebug()->print(log, this);
    }
 

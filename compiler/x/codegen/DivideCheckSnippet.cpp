@@ -96,7 +96,7 @@ uint8_t *TR::X86DivideCheckSnippet::emitSnippetBody()
 void
 TR_Debug::print(TR::Logger *log, TR::X86DivideCheckSnippet *snippet)
    {
-TIMER_FUNC(TR_Debug_print_X86DivideCheckSnippet)
+TIMER_FUNC(TR_Debug_print_X86DivideCheckSnippet, comp())
    uint8_t *bufferPos = snippet->getSnippetLabel()->getCodeLocation();
 
    printSnippetLabel(log, snippet->getSnippetLabel(), bufferPos, getName(snippet));

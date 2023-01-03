@@ -80,7 +80,7 @@ extern int32_t addressWidth;
 void
 TR_Debug::printTopLegend(TR::Logger *log)
    {
-TIMER_FUNC(TR_Debug_printTopLegend)
+TIMER_FUNC(TR_Debug_printTopLegend, comp())
    log->prints("\n------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
    log->flush();
    }
@@ -88,7 +88,7 @@ TIMER_FUNC(TR_Debug_printTopLegend)
 void
 TR_Debug::printBottomLegend(TR::Logger *log)
    {
-TIMER_FUNC(TR_Debug_printBottomLegend)
+TIMER_FUNC(TR_Debug_printBottomLegend, comp())
    log->prints("\n"
                "index:       node global index\n"
                );
@@ -118,7 +118,7 @@ TIMER_FUNC(TR_Debug_printBottomLegend)
 void
 TR_Debug::printSymRefTable(TR::Logger *log, bool printFullTable)
    {
-TIMER_FUNC(TR_Debug_printSymRefTable)
+TIMER_FUNC(TR_Debug_printSymRefTable, comp())
    TR_PrettyPrinterString output(this);
    TR::SymbolReferenceTable *symRefTab = _comp->getSymRefTab();
    TR::SymbolReference *symRefIterator;
@@ -152,7 +152,7 @@ TIMER_FUNC(TR_Debug_printSymRefTable)
 void
 TR_Debug::printOptimizationHeader(TR::Logger *log, const char *funcName, const char *optName, int32_t optIndex, bool mustBeDone)
    {
-TIMER_FUNC(TR_Debug_printOptimizationHeader)
+TIMER_FUNC(TR_Debug_printOptimizationHeader, comp())
    log->printf("<optimization id=%d name=%s method=%s>\n", optIndex, optName ? optName : "???", funcName);
    log->printf("Performing %d: %s%s\n", optIndex, optName ? optName : "???", mustBeDone? " mustBeDone" : "");
    }
@@ -181,7 +181,7 @@ static bool valueIsProbablyHex(TR::Node *node)
 void
 TR_Debug::printLoadConst(TR::Logger *log, TR::Node *node)
    {
-TIMER_FUNC(TR_Debug_printLoadConst)
+TIMER_FUNC(TR_Debug_printLoadConst, comp())
    TR_PrettyPrinterString output(this);
    printLoadConst(node, output);
    log->prints(output.getStr());
@@ -191,7 +191,7 @@ TIMER_FUNC(TR_Debug_printLoadConst)
 void
 TR_Debug::printLoadConst(TR::Node *node, TR_PrettyPrinterString& output)
    {
-TIMER_FUNC(TR_Debug_printLoadConst_pretty)
+TIMER_FUNC(TR_Debug_printLoadConst_pretty, comp())
    char const *fmtStr;
    bool isUnsigned = node->getOpCode().isUnsigned();
    switch (node->getDataType())
@@ -271,7 +271,7 @@ TIMER_FUNC(TR_Debug_printLoadConst_pretty)
 void
 TR_Debug::print(TR::Logger *log, TR::CFG *cfg)
    {
-TIMER_FUNC(TR_Debug_print_CFG)
+TIMER_FUNC(TR_Debug_print_CFG, comp())
    int32_t     numNodes = 0;
    int32_t     index;
    TR::CFGNode *node;
@@ -324,7 +324,7 @@ TIMER_FUNC(TR_Debug_print_CFG)
 void
 TR_Debug::print(TR::Logger *log, TR_RegionAnalysis *regionAnalysis, uint32_t indentation)
    {
-TIMER_FUNC(TR_Debug_print_TR_RegionAnalysis)
+TIMER_FUNC(TR_Debug_print_TR_RegionAnalysis, comp())
    for (int32_t index = 0; index < regionAnalysis->_totalNumberOfNodes; index++)
       {
       TR_RegionAnalysis::StructInfo &node = regionAnalysis->getInfo(index);
@@ -375,7 +375,7 @@ TIMER_FUNC(TR_Debug_print_TR_RegionAnalysis)
 void
 TR_Debug::print(TR::Logger *log, TR_Structure *structure, uint32_t indentation)
    {
-TIMER_FUNC(TR_Debug_print_TR_Structure)
+TIMER_FUNC(TR_Debug_print_TR_Structure, comp())
    if (structure->asBlock())
       print(log, structure->asBlock(), indentation);
    else
@@ -385,7 +385,7 @@ TIMER_FUNC(TR_Debug_print_TR_Structure)
 void
 TR_Debug::print(TR::Logger *log, TR_RegionStructure *regionStructure, uint32_t indentation)
    {
-TIMER_FUNC(TR_Debug_print_TR_RegionStructure)
+TIMER_FUNC(TR_Debug_print_TR_RegionStructure, comp())
    TR_RegionStructure *versionedLoop = NULL;
    if (debug("fullStructure"))
       printBaseInfo(log, regionStructure, indentation);
@@ -443,7 +443,7 @@ TIMER_FUNC(TR_Debug_print_TR_RegionStructure)
 void
 TR_Debug::printPreds(TR::Logger *log, TR::CFGNode *node)
    {
-TIMER_FUNC(TR_Debug_printPreds)
+TIMER_FUNC(TR_Debug_printPreds, comp())
    log->prints("in={");
    int num = 0;
    for (auto edge = node->getPredecessors().begin(); edge != node->getPredecessors().end(); ++edge)
@@ -478,7 +478,7 @@ TIMER_FUNC(TR_Debug_printPreds)
 void
 TR_Debug::printSubGraph(TR::Logger *log, TR_RegionStructure *regionStructure, uint32_t indentation)
    {
-TIMER_FUNC(TR_Debug_printSubGraph)
+TIMER_FUNC(TR_Debug_printSubGraph, comp())
    int offset = 3;
    int num = 0;
 
@@ -615,7 +615,7 @@ TIMER_FUNC(TR_Debug_printSubGraph)
 void
 TR_Debug::print(TR::Logger *log, TR_InductionVariable *inductionVariable, uint32_t indentation)
    {
-TIMER_FUNC(TR_Debug_print_TR_InductionVariable)
+TIMER_FUNC(TR_Debug_print_TR_InductionVariable, comp())
    int offset = 3;
 
    log->printf("%*sInduction variable [%s]\n", indentation, " ", getName(inductionVariable->getLocal()));
@@ -633,7 +633,7 @@ static const char *structNames[] = { "Blank", "Block", "Region" };
 void
 TR_Debug::printBaseInfo(TR::Logger *log, TR_Structure *structure, uint32_t indentation)
    {
-TIMER_FUNC(TR_Debug_printBaseInfo)
+TIMER_FUNC(TR_Debug_printBaseInfo, comp())
    // Do indentation and dump the address of this block
    log->printf(
            "%*s%d [%s] %s",
@@ -648,7 +648,7 @@ TIMER_FUNC(TR_Debug_printBaseInfo)
 void
 TR_Debug::print(TR::Logger *log, TR_BlockStructure *blockStructure, uint32_t indentation)
    {
-TIMER_FUNC(TR_Debug_print_TR_BlockStructure)
+TIMER_FUNC(TR_Debug_print_TR_BlockStructure, comp())
    printBaseInfo(log, blockStructure, indentation);
    if (blockStructure->getBlock()->getStructureOf() != blockStructure)
       log->printf("******* Block %d does not refer back to block structure\n", blockStructure->getBlock()->getNumber());
@@ -657,7 +657,7 @@ TIMER_FUNC(TR_Debug_print_TR_BlockStructure)
 void
 TR_Debug::print(TR::Logger *log, TR::CFGNode *cfgNode, uint32_t indentation)
    {
-TIMER_FUNC(TR_Debug_print_CFGNode)
+TIMER_FUNC(TR_Debug_print_CFGNode, comp())
    if (cfgNode->asBlock())
       print(log, toBlock(cfgNode), indentation);
    else
@@ -667,14 +667,14 @@ TIMER_FUNC(TR_Debug_print_CFGNode)
 void
 TR_Debug::print(TR::Logger *log, TR_StructureSubGraphNode *node, uint32_t indentation)
    {
-TIMER_FUNC(TR_Debug_print_TR_StructureSubGraphNode)
+TIMER_FUNC(TR_Debug_print_TR_StructureSubGraphNode, comp())
    print(log, node->getStructure(), indentation);
    }
 
 void
 TR_Debug::printNodesInEdgeListIterator(TR::Logger *log, TR::CFGEdgeList &li, bool fromNode)
    {
-TIMER_FUNC(TR_Debug_printNodesInEdgeListIterator)
+TIMER_FUNC(TR_Debug_printNodesInEdgeListIterator, comp())
    TR::Block *b;
    int num = 0;
    for (auto edge = li.begin(); edge != li.end(); ++edge)
@@ -697,7 +697,7 @@ TIMER_FUNC(TR_Debug_printNodesInEdgeListIterator)
 void
 TR_Debug::print(TR::Logger *log, TR::Block * block, uint32_t indentation)
    {
-TIMER_FUNC(TR_Debug_print_Block)
+TIMER_FUNC(TR_Debug_print_Block, comp())
    // Do indentation and dump the address of this block
    log->printf("%*s", indentation, " ");
    if (block->getNumber() >= 0)
@@ -779,7 +779,7 @@ TIMER_FUNC(TR_Debug_print_Block)
 
 static void printInlinePath(TR::Logger *log, TR_InlinedCallSite *site, TR_Debug *debug)
    {
-TIMER_FUNC(printInlinePath_static)
+TIMER_FUNC(printInlinePath_static, comp())
    int32_t callerIndex = site->_byteCodeInfo.getCallerIndex();
    if (callerIndex == -1)
       {
@@ -798,7 +798,7 @@ TIMER_FUNC(printInlinePath_static)
 void
 TR_Debug::printIRTrees(TR::Logger *log, const char *title, TR::ResolvedMethodSymbol *methodSymbol)
    {
-TIMER_FUNC(TR_Debug_printIRTrees)
+TIMER_FUNC(TR_Debug_printIRTrees, comp())
    if (!methodSymbol)
       methodSymbol = _comp->getMethodSymbol();
 
@@ -889,7 +889,7 @@ TIMER_FUNC(TR_Debug_printIRTrees)
 void
 TR_Debug::printBlockOrders(TR::Logger *log, const char *title, TR::ResolvedMethodSymbol *methodSymbol)
    {
-TIMER_FUNC(TR_Debug_printBlockOrders)
+TIMER_FUNC(TR_Debug_printBlockOrders, comp())
    TR::TreeTop *tt = methodSymbol->getFirstTreeTop();
 
    log->printf("%s block ordering:\n", title);
@@ -989,7 +989,7 @@ void TR_PrettyPrinterString::appends(char const *str)
 int32_t
 TR_Debug::print(TR::Logger *log, TR::TreeTop *tt)
    {
-TIMER_FUNC(TR_Debug_print_TreeTop)
+TIMER_FUNC(TR_Debug_print_TreeTop, comp())
    return print(log, tt->getNode(), DEFAULT_TREETOP_INDENT, true);
    }
 
@@ -998,7 +998,7 @@ TIMER_FUNC(TR_Debug_print_TreeTop)
 int32_t
 TR_Debug::print(TR::Logger *log, TR::Node *node, uint32_t indentation, bool printChildren)
    {
-TIMER_FUNC(TR_Debug_print_Node)
+TIMER_FUNC(TR_Debug_print_Node, comp())
    TR_ASSERT(node != NULL, "node is NULL\n");
 
    // If this node has already been printed, just print a reference to it.
@@ -1214,7 +1214,7 @@ TR_Debug::getNumSpacesAfterIndex( uint32_t index, uint32_t maxIndexLength ) cons
 int32_t
 TR_Debug::printWithFixedPrefix(TR::Logger *log, TR::Node *node, uint32_t indentation, bool printChildren, bool printRefCounts, const char *prefix)
    {
-TIMER_FUNC(TR_Debug_printWithFixedPrefix)
+TIMER_FUNC(TR_Debug_printWithFixedPrefix, comp())
    uint32_t numSpaces,
             globalIndex;
 
@@ -1389,7 +1389,7 @@ TIMER_FUNC(TR_Debug_printWithFixedPrefix)
 void
 TR_Debug::printDestination(TR::Logger *log, TR::TreeTop *treeTop)
    {
-TIMER_FUNC(TR_Debug_printDestination)
+TIMER_FUNC(TR_Debug_printDestination, comp())
    TR_PrettyPrinterString output(this);
    printDestination(treeTop, output);
    log->prints(output.getStr());
@@ -1412,7 +1412,7 @@ TR_Debug::printDestination(TR::TreeTop *treeTop, TR_PrettyPrinterString& output)
 void
 TR_Debug::printBasicPreNodeInfoAndIndent(TR::Logger *log, TR::Node *node, uint32_t indentation)
    {
-TIMER_FUNC(TR_Debug_printBasicPreNodeInfoAndIndent)
+TIMER_FUNC(TR_Debug_printBasicPreNodeInfoAndIndent, comp())
    uint32_t numSpaces;
 
    if (node->getOpCodeValue() == TR::BBStart &&
@@ -1433,7 +1433,7 @@ TIMER_FUNC(TR_Debug_printBasicPreNodeInfoAndIndent)
 void
 TR_Debug::printBasicPostNodeInfo(TR::Logger *log, TR::Node *node, uint32_t indentation)
    {
-TIMER_FUNC(TR_Debug_printBasicPostNodeInfo)
+TIMER_FUNC(TR_Debug_printBasicPostNodeInfo, comp())
    TR_PrettyPrinterString output(this);
 
    output.appends("  ");
@@ -1492,7 +1492,7 @@ TIMER_FUNC(TR_Debug_printBasicPostNodeInfo)
 void
 TR_Debug::printNodeInfo(TR::Logger *log, TR::Node *node)
    {
-TIMER_FUNC(TR_Debug_printNodeInfo)
+TIMER_FUNC(TR_Debug_printNodeInfo, comp())
    TR_PrettyPrinterString output(this);
    printNodeInfo(node, output, false);
    log->prints(output.getStr());
@@ -1753,7 +1753,7 @@ TR_Debug::printNodeInfo(TR::Node *node, TR_PrettyPrinterString& output, bool pre
 void
 TR_Debug::printNodeFlags(TR::Logger *log, TR::Node *node)
    {
-TIMER_FUNC(TR_Debug_printNodeFlags)
+TIMER_FUNC(TR_Debug_printNodeFlags, comp())
    TR_PrettyPrinterString output(this);
 
    if (node->getFlags().getValue())
@@ -1773,7 +1773,7 @@ TIMER_FUNC(TR_Debug_printNodeFlags)
 void
 TR_Debug::printBCDNodeInfo(TR::Logger *log, TR::Node *node)
    {
-TIMER_FUNC(TR_Debug_printBCDNodeInfo)
+TIMER_FUNC(TR_Debug_printBCDNodeInfo, comp())
    TR_PrettyPrinterString output(this);
    printBCDNodeInfo(node, output);
    log->prints(output.getStr());
@@ -1885,7 +1885,7 @@ TR_Debug::printBCDNodeInfo(TR::Node *node, TR_PrettyPrinterString& output)
 void
 TR_Debug::printVCG(TR::Logger *log, TR::CFG *cfg, const char *sig)
    {
-TIMER_FUNC(TR_Debug_printVCG_CFG)
+TIMER_FUNC(TR_Debug_printVCG_CFG, comp())
    _nodeChecklist.empty();
    _structureChecklist.empty();
    if (debug("nestedVCG"))
@@ -1970,7 +1970,7 @@ TIMER_FUNC(TR_Debug_printVCG_CFG)
 void
 TR_Debug::printVCG(TR::Logger *log, TR_Structure *structure)
    {
-TIMER_FUNC(TR_Debug_printVCG_TR_Structure)
+TIMER_FUNC(TR_Debug_printVCG_TR_Structure, comp())
    if (structure->asRegion())
       printVCG(log, structure->asRegion());
    }
@@ -1978,7 +1978,7 @@ TIMER_FUNC(TR_Debug_printVCG_TR_Structure)
 void
 TR_Debug::printVCG(TR::Logger *log, TR_RegionStructure *regionStructure)
    {
-TIMER_FUNC(TR_Debug_TR_RegionStructure)
+TIMER_FUNC(TR_Debug_TR_RegionStructure, comp())
    log->prints("graph: {\n");
    log->printf("title: \"%s\"\n", getName(regionStructure));
 
@@ -2001,7 +2001,7 @@ TIMER_FUNC(TR_Debug_TR_RegionStructure)
 void
 TR_Debug::printVCG(TR::Logger *log, TR_StructureSubGraphNode *node, bool isEntry)
    {
-TIMER_FUNC(TR_Debug_TR_StructureSubGraphNode)
+TIMER_FUNC(TR_Debug_TR_StructureSubGraphNode, comp())
    if (_structureChecklist.isSet(node->getNumber()))
       return;
    _structureChecklist.set(node->getNumber());
@@ -2024,7 +2024,7 @@ TIMER_FUNC(TR_Debug_TR_StructureSubGraphNode)
 void
 TR_Debug::printVCGEdges(TR::Logger *log, TR_StructureSubGraphNode *node)
    {
-TIMER_FUNC(TR_Debug_printVCGEdges)
+TIMER_FUNC(TR_Debug_printVCGEdges, comp())
    for (auto edge = node->getSuccessors().begin(); edge != node->getSuccessors().end(); ++edge)
       {
       TR_StructureSubGraphNode *to = toStructureSubGraphNode((*edge)->getTo());
@@ -2047,7 +2047,7 @@ static const char *  edgeColours[numHotnessLevels] = { "black", "blue", "lightbl
 void
 TR_Debug::printVCG(TR::Logger *log, TR::Block *block, int32_t vorder, int32_t horder)
    {
-TIMER_FUNC(TR_Debug_printVCG_Block)
+TIMER_FUNC(TR_Debug_printVCG_Block, comp())
    TR::CFG *cfg = _comp->getFlowGraph();
 
    log->printf("node: {title: \"%d\" ", block->getNumber());
@@ -2099,7 +2099,7 @@ TIMER_FUNC(TR_Debug_printVCG_Block)
 void
 TR_Debug::printVCG(TR::Logger *log, TR::Node *node, uint32_t indentation)
    {
-TIMER_FUNC(TR_Debug_printVCG_Node)
+TIMER_FUNC(TR_Debug_printVCG_Node, comp())
    int32_t i;
 
    if (_nodeChecklist.isSet(node->getGlobalIndex()))
@@ -2130,7 +2130,7 @@ TIMER_FUNC(TR_Debug_printVCG_Node)
 void
 TR_Debug::print(TR::Logger *log, TR::VPConstraint *info)
    {
-TIMER_FUNC(TR_Debug_VPConstraint)
+TIMER_FUNC(TR_Debug_VPConstraint, comp())
    if (!info)
       {
       log->prints("none");

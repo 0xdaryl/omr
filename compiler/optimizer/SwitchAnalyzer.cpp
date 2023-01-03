@@ -518,7 +518,7 @@ void TR::SwitchAnalyzer::denseMerge(SwitchInfo *to, SwitchInfo *from)
 
 void TR::SwitchAnalyzer::printInfo(TR::Logger *log, TR_FrontEnd *fe, TR_LinkHead<SwitchInfo> *chain)
    {
-TIMER_FUNC(TR_SwitchAnalyzer_printInfo_TR_LinkHead)
+TIMER_FUNC(TR_SwitchAnalyzer_printInfo_TR_LinkHead, comp())
    log->printf("------------------------------------------------ for lookup node [%p] in block_%d\n", _switch, _block->getNumber());
 
    for (SwitchInfo *info = chain->getFirst(); info; info = info->getNext())
@@ -531,7 +531,7 @@ TIMER_FUNC(TR_SwitchAnalyzer_printInfo_TR_LinkHead)
 
 void TR::SwitchAnalyzer::SwitchInfo::print(TR::Logger *log, TR_FrontEnd *fe, int32_t indent)
    {
-TIMER_FUNC(TR_SwitchAnalyzer_print)
+TIMER_FUNC(TR_SwitchAnalyzer_print, comp())
    log->printf("%*s %0.8g %4d %8d [%4d -%4d] ",
                indent, " ", _freq, _count, _cost, _min, _max);
    switch (_kind)

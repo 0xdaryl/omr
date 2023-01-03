@@ -117,7 +117,7 @@ uint8_t *TR::X86DataSnippet::emitSnippetBody()
 
 void TR::X86DataSnippet::printValue(TR::Logger *log, TR_Debug *debug)
    {
-TIMER_FUNC(TR_X86DataSnippet_printValue)
+TIMER_FUNC(TR_X86DataSnippet_printValue, cg()->comp())
    switch (getDataSize())
       {
       case 2:
@@ -145,7 +145,7 @@ TIMER_FUNC(TR_X86DataSnippet_printValue)
 
 void TR::X86DataSnippet::print(TR::Logger *log, TR_Debug* debug)
    {
-TIMER_FUNC(TR_X86DataSnippet_print_debug)
+TIMER_FUNC(TR_X86DataSnippet_print_debug, cg()->comp())
    uint8_t *bufferPos = getSnippetLabel()->getCodeLocation();
 
    debug->printSnippetLabel(log, getSnippetLabel(), bufferPos, debug->getName(this));

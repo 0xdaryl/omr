@@ -523,7 +523,7 @@ uint32_t TR_OSRCompilationData::getOSRStackFrameSize(uint32_t methodIndex)
 
 void TR_OSRCompilationData::printMap(TR::Logger *log, DefiningMap *map)
    {
-TIMER_FUNC(TR_OSRCompilationData_printMap)
+TIMER_FUNC(TR_OSRCompilationData_printMap, comp)
    if (map)
       {
       for (auto it = map->begin(); it != map->end(); ++it)

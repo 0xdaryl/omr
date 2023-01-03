@@ -326,7 +326,7 @@ uint8_t *TR::X86HelperCallSnippet::genHelperCall(uint8_t *buffer)
 void
 TR_Debug::print(TR::Logger *log, TR::X86HelperCallSnippet *snippet)
    {
-TIMER_FUNC(TR_Debug_print_X86HelperCallSnippet)
+TIMER_FUNC(TR_Debug_print_X86HelperCallSnippet, comp())
    uint8_t *bufferPos = snippet->getSnippetLabel()->getCodeLocation();
    printSnippetLabel(log, snippet->getSnippetLabel(), bufferPos, getName(snippet), getName(snippet->getDestination()));
    printBody(log, snippet, bufferPos);
@@ -335,7 +335,7 @@ TIMER_FUNC(TR_Debug_print_X86HelperCallSnippet)
 void
 TR_Debug::printBody(TR::Logger *log, TR::X86HelperCallSnippet *snippet, uint8_t *bufferPos)
    {
-TIMER_FUNC(TR_Debug_printBody_X86HelperCallSnippet)
+TIMER_FUNC(TR_Debug_printBody_X86HelperCallSnippet, comp())
    TR::MethodSymbol *sym = snippet->getDestination()->getSymbol()->castToMethodSymbol();
 
    int32_t i = 0;
