@@ -2,7 +2,7 @@
 #include "ras/MeteredFunctions.hpp"
 #include <time.h>
 
-static const char *meteredFunctionName[] =
+const char *TR::FunctionMeter::meteredFunctionName[] =
 {
 #define METERED_FUNCTION(Enum) #Enum
 #include "ras/MeteredFunctions.ins"

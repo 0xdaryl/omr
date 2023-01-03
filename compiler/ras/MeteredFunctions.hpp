@@ -27,6 +27,8 @@ public:
    FunctionMeter(MeteredFunction f, TR::Compilation *comp);
 
    ~FunctionMeter();
+
+   static const char *meteredFunctionName[];
 };
 
 }
