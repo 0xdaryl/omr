@@ -8,6 +8,8 @@ typedef enum MeteredFunction {
 #undef METERED_FUNCTION
 } MeteredFunction;
 
+namespace TR { class Compilation; }
+
 
 namespace TR {
 
@@ -21,14 +23,13 @@ private:
 
 public:
    FunctionMeter(MeteredFunction f, TR::Compilation *comp);
-   ~FunctionMeter();
 
+   ~FunctionMeter();
 };
 
 }
 
 
-
-#define TIMER_FUNC(x) {}
+#define TIMER_FUNC(x) { TR::FunctionMeter startMF(f, c); }
 
 #endif
