@@ -5107,7 +5107,7 @@ TIMER_FUNC(OMR_ValuePropagation_printEdgeConstraints, comp())
 
 void OMR::ValuePropagation::Relationship::print(TR::Logger *log, OMR::ValuePropagation *vp)
    {
-TIMER_FUNC(OMR_ValuePropagation_Relationship_print, comp())
+TIMER_FUNC(OMR_ValuePropagation_Relationship_print, vp->comp())
    if (relative == AbsoluteConstraint)
       {
       // An absolute store constraint can have a null constraint value.
@@ -5123,7 +5123,7 @@ TIMER_FUNC(OMR_ValuePropagation_Relationship_print, comp())
 
 void OMR::ValuePropagation::Relationship::print(TR::Logger *log, OMR::ValuePropagation *vp, int32_t valueNumber, int32_t indent)
    {
-TIMER_FUNC(OMR_ValuePropagation_Relationship_print_valueNumber, comp())
+TIMER_FUNC(OMR_ValuePropagation_Relationship_print_valueNumber, vp->comp())
    TR_FrontEnd *fe = vp->fe();
    if (valueNumber < vp->_firstUnresolvedSymbolValueNumber)
       {
@@ -5159,7 +5159,7 @@ TIMER_FUNC(OMR_ValuePropagation_Relationship_print_valueNumber, comp())
 
 void OMR::ValuePropagation::StoreRelationship::print(TR::Logger *log, OMR::ValuePropagation *vp, int32_t valueNumber, int32_t indent)
    {
-TIMER_FUNC(OMR_ValuePropagation_StoreRelationship_print, comp())
+TIMER_FUNC(OMR_ValuePropagation_StoreRelationship_print, vp->comp())
    if (relationships.getFirst())
       {
       for (Relationship *rel = relationships.getFirst(); rel; rel = rel->getNext())
@@ -5174,7 +5174,7 @@ TIMER_FUNC(OMR_ValuePropagation_StoreRelationship_print, comp())
 
 void OMR::ValuePropagation::ValueConstraint::print(TR::Logger *log, OMR::ValuePropagation *vp, int32_t indent)
    {
-TIMER_FUNC(OMR_ValuePropagation_ValueConstraint_print, comp())
+TIMER_FUNC(OMR_ValuePropagation_ValueConstraint_print, vp->comp())
    for (Relationship *rel = relationships.getFirst(); rel; rel = rel->getNext())
       rel->print(log, vp, getValueNumber(), indent);
    for (StoreRelationship *storeRel = storeRelationships.getFirst(); storeRel; storeRel = storeRel->getNext())
