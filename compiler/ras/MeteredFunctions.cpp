@@ -1,3 +1,4 @@
+#include "compile/Compilation.hpp"
 #include "ras/MeteredFunctions.hpp"
 #include <time.h>
 
@@ -8,7 +9,7 @@ static const char *meteredFunctionName[] =
 #undef METERED_FUNCTION
 };
 
-TR::FunctionMeter:FunctionMeter(MeteredFunction f, TR::Compilation *comp) : _mf(f), _comp(comp) {
+TR::FunctionMeter::FunctionMeter(MeteredFunction f, TR::Compilation *comp) : _mf(f), _comp(comp) {
    comp->totalCalls[f]++;
    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &_startTime);
 }
