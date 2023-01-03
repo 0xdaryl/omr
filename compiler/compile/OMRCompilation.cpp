@@ -461,6 +461,15 @@ OMR::Compilation::Compilation(
 
 OMR::Compilation::~Compilation() throw()
    {
+   if (getLoggingEnabled())
+      {
+      TR::Logger *log = getLogger();
+
+      for (int32_t i=0; i<TR::MeteredFunction::numMeteredFunctions; i++)
+         {
+         log->printf("QQQQQ,%s,%ld,%ld\n", TR::FunctionMeter::meteredFunctionName[i], totalCalls[i], elapsedTimeInNanos[i]);
+         }
+      }
    }
 
 
@@ -2088,15 +2097,6 @@ OMR::Compilation::shutdown(TR_FrontEnd * fe)
    statGlobalValNumTiming.report(stderr);
 #endif
 
-   if (getLoggingEnabled())
-      {
-      TR::Logger *log = getLogger();
-
-      for (int32_t i=0; i<TR::MeteredFunction::numMeteredFunctions; i++)
-         {
-         log->printf("QQQQQ,%s,%ld,%ld\n", TR::FunctionMeter::meteredFunctionName[i], totalCalls[i], elapsedTimeInNanos[i]);
-         }
-      }
 
    }
 
