@@ -1736,6 +1736,7 @@ TIMER_FUNC(TR_Debug_printMemoryReferenceComment, comp())
 TR_RegisterSizes
 TR_Debug::getTargetSizeFromInstruction(TR::Instruction  *instr)
    {
+TIMER_FUNC(WW_TR_Debug_getTargetSizeFromInstruction, comp())
    TR_RegisterSizes targetSize;
 
    OMR::X86::Encoding encoding = instr->getEncodingMethod();
@@ -1774,6 +1775,7 @@ TR_Debug::getTargetSizeFromInstruction(TR::Instruction  *instr)
 TR_RegisterSizes
 TR_Debug::getSourceSizeFromInstruction(TR::Instruction  *instr)
    {
+TIMER_FUNC(WW_TR_Debug_getSourceSizeFromInstruction, comp())
    TR_RegisterSizes sourceSize;
 
    OMR::X86::Encoding encoding = instr->getEncodingMethod();
@@ -1812,6 +1814,7 @@ TR_Debug::getSourceSizeFromInstruction(TR::Instruction  *instr)
 TR_RegisterSizes
 TR_Debug::getImmediateSizeFromInstruction(TR::Instruction  *instr)
    {
+TIMER_FUNC(WW_TR_Debug_getImmediateSizeFromInstruction, comp())
    TR_RegisterSizes immedSize;
 
    if (instr->getOpCode().hasShortImmediate() != 0)
@@ -1933,6 +1936,7 @@ unknownRegisterName(const char kind=0)
 const char *
 TR_Debug::getName(uint32_t realRegisterIndex, TR_RegisterSizes size)
    {
+TIMER_FUNC(WW_TR_Debug_getName_realRegisterIndex, comp())
    switch (realRegisterIndex)
       {
       case TR::RealRegister::NoReg:
@@ -2052,6 +2056,7 @@ TR_Debug::getName(uint32_t realRegisterIndex, TR_RegisterSizes size)
 const char *
 TR_Debug::getName(TR::RealRegister *reg, TR_RegisterSizes size)
    {
+TIMER_FUNC(WW_TR_Debug_getName_realRegister, comp())
    if (reg->getKind() == TR_X87)
       {
       switch (reg->getRegisterNumber())
@@ -2472,12 +2477,14 @@ static const char *opCodeToMnemonicMap[] =
 const char *
 TR_Debug::getOpCodeName(TR::InstOpCode *opCode)
    {
+TIMER_FUNC(WW_TR_Debug_getOpCodeName, comp())
    return opCodeToNameMap[opCode->getOpCodeValue()];
    }
 
 const char *
 TR_Debug::getMnemonicName(TR::InstOpCode *opCode)
    {
+TIMER_FUNC(WW_TR_Debug_getMnemonicName, comp())
    if (_comp->target().isLinux())
       {
       int32_t o = opCode->getOpCodeValue();

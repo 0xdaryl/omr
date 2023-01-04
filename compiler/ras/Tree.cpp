@@ -1150,6 +1150,7 @@ TIMER_FUNC(TR_Debug_print_Node, comp())
 uint32_t
 TR_Debug::getIntLength(uint32_t num) const
    {
+TIMER_FUNC(WW_TR_Debug_getIntLength, comp())
    // The fastest means is a binary search over the range of possible
    // uint32_t values.  The maximum number of digits for a 32-bit unsigned
    // integer is 10.
@@ -1203,6 +1204,7 @@ TR_Debug::getIntLength(uint32_t num) const
 uint32_t
 TR_Debug::getNumSpacesAfterIndex( uint32_t index, uint32_t maxIndexLength ) const
    {
+TIMER_FUNC(WW_TR_Debug_getNumSpacesAfterIndex, comp())
    uint32_t indexLength = getIntLength( index );
 
    return maxIndexLength > indexLength ? (maxIndexLength - indexLength) : 0;
@@ -1784,6 +1786,7 @@ TIMER_FUNC(TR_Debug_printBCDNodeInfo, comp())
 void
 TR_Debug::printBCDNodeInfo(TR::Node *node, TR_PrettyPrinterString& output)
    {
+TIMER_FUNC(WW_TR_Debug_printBCDNodeInfo, comp())
    if (node->getType().isBCD())
       {
       if (node->getOpCode().isStore() ||
@@ -2183,6 +2186,7 @@ TIMER_FUNC(TR_Debug_VPConstraint, comp())
 const char *
 TR_Debug::getName(TR::DataType type)
    {
+TIMER_FUNC(WW_TR_Debug_getName_DataType, comp())
    return TR::DataType::getName(type);
    }
 
@@ -2207,18 +2211,21 @@ TR_Debug::getName(TR_RawBCDSignCode type)
 const char *
 TR_Debug::getName(TR::ILOpCodes opCode)
    {
+TIMER_FUNC(WW_TR_Debug_getName_ILOpCodes, comp())
    return TR::ILOpCode(opCode).getName();
    }
 
 const char *
 TR_Debug::getName(TR::ILOpCode opCode)
    {
+TIMER_FUNC(WW_TR_Debug_getName_ILOpCode, comp())
    return opCode.getName();
    }
 
 void
 TR_Debug::verifyGlobalIndices(TR::Node * node, TR::Node **nodesByGlobalIndex)
    {
+TIMER_FUNC(WW_TR_Debug_verifyGlobalIndices, comp())
    TR::Node *nodeFromArray = nodesByGlobalIndex[node->getGlobalIndex()];
    if (nodeFromArray == node)
       return;
@@ -2232,6 +2239,7 @@ TR_Debug::verifyGlobalIndices(TR::Node * node, TR::Node **nodesByGlobalIndex)
 void
 TR_Debug::verifyTrees(TR::ResolvedMethodSymbol *methodSymbol)
    {
+TIMER_FUNC(WW_TR_Debug_verifyTrees, comp())
 #ifndef ASSUMES
    if (!_comp->getLoggingEnabled())
       {
@@ -2280,6 +2288,7 @@ TR_Debug::verifyTrees(TR::ResolvedMethodSymbol *methodSymbol)
 void
 TR_Debug::verifyTreesPass1(TR::Node *node)
    {
+TIMER_FUNC(WW_TR_Debug_verifyTreesPass1, comp())
    // If this is the first time through this node, verify the children
    //
    if (!_nodeChecklist.isSet(node->getGlobalIndex()))
@@ -2340,6 +2349,7 @@ TR_Debug::verifyTreesPass1(TR::Node *node)
 void
 TR_Debug::verifyTreesPass2(TR::Node *node, bool isTreeTop)
    {
+TIMER_FUNC(WW_TR_Debug_verifyTreesPass2, comp())
 
    // Verify the reference count. Pass 1 should have set the localIndex to the
    // reference count.
@@ -2397,6 +2407,7 @@ TR_Debug::verifyTreesPass2(TR::Node *node, bool isTreeTop)
 TR::Node *
 TR_Debug::verifyFinalNodeReferenceCounts(TR::ResolvedMethodSymbol *methodSymbol)
    {
+TIMER_FUNC(WW_TR_Debug_verifyFinalNodeReferenceCounts_ResolvedMethodSymbol, comp())
    _nodeChecklist.empty();
 
    TR::Node *firstBadNode = NULL;
@@ -2426,6 +2437,7 @@ TR_Debug::verifyFinalNodeReferenceCounts(TR::ResolvedMethodSymbol *methodSymbol)
 TR::Node *
 TR_Debug::verifyFinalNodeReferenceCounts(TR::Node *node)
    {
+TIMER_FUNC(WW_TR_Debug_verifyFinalNodeReferenceCounts_Node, comp())
    TR::Node *badNode = NULL;
    if (!_nodeChecklist.isSet(node->getGlobalIndex()))
       {
@@ -2461,6 +2473,7 @@ TR_Debug::verifyFinalNodeReferenceCounts(TR::Node *node)
 void
 TR_Debug::verifyBlocks(TR::ResolvedMethodSymbol * methodSymbol)
    {
+TIMER_FUNC(WW_TR_Debug_verifyBlocks, comp())
 #ifndef ASSUMES
    if (!_comp->getLoggingEnabled())
       {
@@ -2500,6 +2513,7 @@ TR_Debug::verifyBlocks(TR::ResolvedMethodSymbol * methodSymbol)
 void
 TR_Debug::verifyBlocksPass1(TR::Node *node)
    {
+TIMER_FUNC(WW_TR_Debug_verifyBlocksPass1, comp())
    // If this is the first time through this node, verify the children
    //
    if (!_nodeChecklist.isSet(node->getGlobalIndex()))
@@ -2526,6 +2540,7 @@ TR_Debug::verifyBlocksPass1(TR::Node *node)
 void
 TR_Debug::verifyBlocksPass2(TR::Node *node)
    {
+TIMER_FUNC(WW_TR_Debug_verifyBlocksPass2, comp())
    // Pass through and make sure that the localIndex == 0 for each child
    //
    if (!_nodeChecklist.isSet(node->getGlobalIndex()))

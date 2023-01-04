@@ -469,6 +469,7 @@ TR_Debug::getDiagnosticFormat(const char *format, char *buffer, int32_t length)
 bool
 TR_Debug::performTransformationImpl(bool canOmitTransformation, const char * format, ...)
    {
+TIMER_FUNC(WW_TR_Debug_performTransformationImpl, comp())
    int32_t optIndex = _comp->getOptIndex();
    int32_t firstOptIndex = _comp->getOptions()->getFirstOptIndex();
    int32_t lastOptIndex = _comp->getOptions()->getLastOptIndex();
@@ -936,6 +937,7 @@ TIMER_FUNC(TR_Debug_print_TR_SymbolReference, comp())
 const char *
 TR_Debug::signature(TR::ResolvedMethodSymbol *s)
    {
+TIMER_FUNC(WW_TR_Debug_signature, comp())
 #ifdef J9_PROJECT_SPECIFIC
    if (s->getRecognizedMethod() == TR::java_lang_Class_newInstancePrototype)
       return s->getResolvedMethod()->newInstancePrototypeSignature(_comp->trMemory());
@@ -947,6 +949,7 @@ TR_Debug::signature(TR::ResolvedMethodSymbol *s)
 TR_OpaqueClassBlock *
 TR_Debug::containingClass(TR::SymbolReference *symRef)
    {
+TIMER_FUNC(WW_TR_Debug_containingClass, comp())
    TR::Method *method = symRef->getSymbol()->castToMethodSymbol()->getMethod();
 
    if (method)
@@ -962,6 +965,7 @@ TR_Debug::containingClass(TR::SymbolReference *symRef)
 void
 TR_Debug::nodePrintAllFlags(TR::Node *node, TR_PrettyPrinterString &output)
    {
+TIMER_FUNC(WW_TR_Debug_nodePrintAllFlags_Node, comp())
    // This guard info is not strictly speaking in the node flags anymore, but
    // with the node flags is a good place to show it.
    TR_VirtualGuard *guard = node->virtualGuardInfo();
@@ -1106,6 +1110,7 @@ TR_Debug::nodePrintAllFlags(TR::Node *node, TR_PrettyPrinterString &output)
 void
 TR_Debug::print(TR::SymbolReference * symRef, TR_PrettyPrinterString& output, bool hideHelperMethodInfo, bool verbose)
    {
+TIMER_FUNC(WW_TR_Debug_print_SymbolReference_pretty, comp())
    int32_t displacement = 0;
    uint32_t numSpaces;
    TR_PrettyPrinterString symRefNum(this),
@@ -1314,12 +1319,14 @@ TIMER_FUNC(TR_Debug_print_TR_LabelSymbol, comp())
 void
 TR_Debug::print(TR::LabelSymbol * labelSymbol, TR_PrettyPrinterString& output)
    {
+TIMER_FUNC(WW_TR_Debug_print_LabelSymbol_pretty, comp())
    output.appendf( "%s", getName(labelSymbol));
    }
 
 const char *
 TR_Debug::getName(void * address, const char * prefix, uint32_t nextNumber, bool enumerate)
    {
+TIMER_FUNC(WW_TR_Debug_getName_address_prefix, comp())
    TR_ASSERT(_comp, "Required compilation object is NULL.\n");
    // Common getName facility
 
@@ -1381,6 +1388,7 @@ TR_Debug::getVSSName(TR::AutomaticSymbol *sym)
 const char *
 TR_Debug::getName( TR::Symbol * sym)
    {
+TIMER_FUNC(WW_TR_Debug_getName_Symbol, comp())
    if (sym == NULL)
       return "(null)";
 
@@ -1395,6 +1403,7 @@ TR_Debug::getName( TR::Symbol * sym)
 const char *
 TR_Debug::getName(TR::Instruction * instr)
    {
+TIMER_FUNC(WW_TR_Debug_getName_Instruction, comp())
    TR_ASSERT(_comp, "Required compilation object is NULL.\n");
    uint32_t InstructionNumber = 0;
 
@@ -1416,6 +1425,7 @@ TR_Debug::getName(TR::Instruction * instr)
 const char *
 TR_Debug::getName(TR_Structure * structure)
    {
+TIMER_FUNC(WW_TR_Debug_getName_TR_Structure, comp())
    // TODO: Rewrite this more like the other getName functions.  Currently it
    // burns a lot of nextStructureNumbers.
    //
@@ -1425,6 +1435,7 @@ TR_Debug::getName(TR_Structure * structure)
 const char *
 TR_Debug::getName(TR::Node * node)
    {
+TIMER_FUNC(WW_TR_Debug_getName_Node, comp())
    if (!node)
       return "(null)";
    else
@@ -1434,6 +1445,7 @@ TR_Debug::getName(TR::Node * node)
 const char *
 TR_Debug::getName(TR::CFGNode * node)
    {
+TIMER_FUNC(WW_TR_Debug_getName_CFGNode, comp())
    char *buf = (char *)_comp->trMemory()->allocateHeapMemory(25);
    if (_comp->getAddressEnumerationOption(TR_EnumerateBlock))
       {
@@ -1454,6 +1466,7 @@ TR_Debug::getName(TR::CFGNode * node)
 const char *
 TR_Debug::getName(TR::LabelSymbol *labelSymbol)
    {
+TIMER_FUNC(WW_TR_Debug_getName_LabelSymbol, comp())
    TR_ASSERT(_comp, "Required compilation object is NULL.\n");
    CS2::HashIndex hashIndex;
    uint32_t labelNumber = 0;
@@ -1532,6 +1545,7 @@ TR_Debug::getPerCodeCacheHelperName(TR_CCPreLoadedCode helper)
 const char *
 TR_Debug::getName(TR::SymbolReference * symRef)
    {
+TIMER_FUNC(WW_TR_Debug_getName_SymbolReference, comp())
    int32_t index = symRef->getReferenceNumber();
    int32_t nonhelperIndex, numHelperSymbols;
 
@@ -1741,12 +1755,14 @@ TIMER_FUNC(TR_Debug_printAliasInfo_SymbolReference, comp())
 TR::ResolvedMethodSymbol *
 TR_Debug::getOwningMethodSymbol(TR::SymbolReference * symRef)
    {
+TIMER_FUNC(WW_TR_Debug_getOwningMethodSymbol, comp())
    return _comp->getOwningMethodSymbol(symRef->getOwningMethodIndex());
    }
 
 TR_ResolvedMethod *
 TR_Debug::getOwningMethod(TR::SymbolReference * symRef)
    {
+TIMER_FUNC(WW_TR_Debug_getOwningMethod, comp())
    return getOwningMethodSymbol(symRef)->getResolvedMethod();
    }
 
@@ -1755,6 +1771,7 @@ TR_Debug::getOwningMethod(TR::SymbolReference * symRef)
 const char *
 TR_Debug::getAutoName(TR::SymbolReference * symRef)
    {
+TIMER_FUNC(WW_TR_Debug_getAutoName, comp())
    int32_t slot = symRef->getCPIndex();
    char * name = (char *)_comp->trMemory()->allocateHeapMemory(50+TR::Compiler->debug.pointerPrintfMaxLenInChars());
 
@@ -1830,6 +1847,7 @@ TR_Debug::getAutoName(TR::SymbolReference * symRef)
 const char *
 TR_Debug::getParmName(TR::SymbolReference * symRef)
    {
+TIMER_FUNC(WW_TR_Debug_getParmName, comp())
    int32_t debugNameLen, signatureLen;
    int32_t slot = symRef->getCPIndex();
    const char * s = symRef->getSymbol()->castToParmSymbol()->getTypeSignature(signatureLen);
@@ -1859,6 +1877,7 @@ TR_Debug::getParmName(TR::SymbolReference * symRef)
 const char *
 TR_Debug::getMethodName(TR::SymbolReference * symRef)
    {
+TIMER_FUNC(WW_TR_Debug_getMethodName, comp())
    TR::Method *method = symRef->getSymbol()->castToMethodSymbol()->getMethod();
 
    if (method==NULL)
@@ -1874,6 +1893,7 @@ TR_Debug::getMethodName(TR::SymbolReference * symRef)
 const char *
 TR_Debug::getStaticName_ForListing(TR::SymbolReference * symRef)
    {
+TIMER_FUNC(WW_TR_Debug_getStaticName_ForListing, comp())
    TR::StaticSymbol * sym = symRef->getSymbol()->castToStaticSymbol();
 
 
@@ -1889,6 +1909,7 @@ TR_Debug::getStaticName_ForListing(TR::SymbolReference * symRef)
 const char *
 TR_Debug::getStaticName(TR::SymbolReference * symRef)
    {
+TIMER_FUNC(WW_TR_Debug_getStaticName, comp())
    TR::StaticSymbol * sym = symRef->getSymbol()->castToStaticSymbol();
    void * staticAddress;
    staticAddress = sym->getStaticAddress();
@@ -2137,6 +2158,7 @@ static const char *commonNonhelperSymbolNames[] =
 const char *
 TR_Debug::getShadowName(TR::SymbolReference * symRef)
    {
+TIMER_FUNC(WW_TR_Debug_getShadowName, comp())
 
    if (symRef->getCPIndex() >= 0 && !symRef->getSymbol()->isArrayShadowSymbol())
       return getOwningMethod(symRef)->fieldName(symRef->getCPIndex(), comp()->trMemory());
@@ -2202,6 +2224,7 @@ TR_Debug::getShadowName(TR::SymbolReference * symRef)
 const char *
 TR_Debug::getMetaDataName(TR::SymbolReference * symRef)
    {
+TIMER_FUNC(WW_TR_Debug_getMetaDataName, comp())
    const char *name = symRef->getSymbol()->getMethodMetaDataSymbol()->getName();
    return name ? name : "method meta data";
    }
@@ -2747,6 +2770,7 @@ TIMER_FUNC(TR_Debug_print_Snippet, comp())
 const char *
 TR_Debug::getRealRegisterName(uint32_t regNum)
    {
+TIMER_FUNC(WW_TR_Debug_getRealRegisterName_uint, comp())
 //need to add 1 to regNum because the enum has 0 = NoReg, and we want 0 to = GPR0
 #if defined(TR_TARGET_X86)
    return getName(regNum+1);
@@ -2767,6 +2791,7 @@ TR_Debug::getRealRegisterName(uint32_t regNum)
 const char *
 TR_Debug::getName(TR::Register *reg, TR_RegisterSizes size)
    {
+TIMER_FUNC(WW_TR_Debug_getName, comp())
    if (!reg)
       return "(null)";
 
@@ -2861,6 +2886,7 @@ TR_Debug::getName(TR::Register *reg, TR_RegisterSizes size)
 
 const char *TR_Debug::getGlobalRegisterName(TR_GlobalRegisterNumber regNum, TR_RegisterSizes size)
    {
+TIMER_FUNC(WW_TR_Debug_getGlobalRegisterName, comp())
    uint32_t realRegNum = _comp->cg()->getGlobalRegister(regNum);
 #if defined(TR_TARGET_X86)
    if (_comp->target().cpu.isX86())
@@ -2888,6 +2914,7 @@ const char *TR_Debug::getGlobalRegisterName(TR_GlobalRegisterNumber regNum, TR_R
 const char *
 TR_Debug::getRegisterKindName(TR_RegisterKinds rk)
    {
+TIMER_FUNC(WW_TR_Debug_getRegisterKindName, comp())
    switch (rk)
       {
       case TR_GPR:   return "GPR";
@@ -3107,6 +3134,7 @@ TIMER_FUNC(TR_Debug_printFPRegisterStatus, comp())
 const char *
 TR_Debug::toString(TR_RematerializationInfo * info)
    {
+TIMER_FUNC(WW_TR_Debug_toString_TR_Remat, comp())
    if (info->isRematerializableFromConstant())
       return "constant load";
 
@@ -3415,6 +3443,7 @@ TIMER_FUNC(TR_Debug_dump_CHTable, comp())
 const char *
 TR_Debug::getRuntimeHelperName(int32_t index)
    {
+TIMER_FUNC(WW_TR_Debug_getRuntimeHelperName, comp())
 
 #ifdef J9_PROJECT_SPECIFIC
    if (index < TR_FSRH)
@@ -4042,6 +4071,7 @@ TR_Debug::getRuntimeHelperName(int32_t index)
 const char *
 TR_Debug::getLinkageConventionName(uint8_t lc)
    {
+TIMER_FUNC(WW_TR_Debug_getLinkageConventionName, comp())
    switch((TR_LinkageConventions)lc)
       {
       case TR_Private:
@@ -4059,6 +4089,7 @@ TR_Debug::getLinkageConventionName(uint8_t lc)
 const char *
 TR_Debug::getVirtualGuardKindName(TR_VirtualGuardKind kind)
    {
+TIMER_FUNC(WW_TR_Debug_getVirtualGuardKindName, comp())
    switch (kind)
       {
       case TR_NoGuard:
@@ -4103,6 +4134,7 @@ TR_Debug::getVirtualGuardKindName(TR_VirtualGuardKind kind)
 const char *
 TR_Debug::getVirtualGuardTestTypeName(TR_VirtualGuardTestType testType)
    {
+TIMER_FUNC(WW_TR_Debug_getVirtualGuardTestTypeName, comp())
    switch (testType)
       {
       case TR_DummyTest:
@@ -4123,6 +4155,7 @@ TR_Debug::getVirtualGuardTestTypeName(TR_VirtualGuardTestType testType)
 const char *
 TR_Debug::getWriteBarrierKindName(int32_t kind)
    {
+TIMER_FUNC(WW_TR_Debug_getWriteBarrierKindName, comp())
    switch (kind)
       {
       case gc_modron_wrtbar_none:
@@ -4148,6 +4181,7 @@ TR_Debug::getWriteBarrierKindName(int32_t kind)
 const char *
 TR_Debug::getSpillKindName(uint8_t kind)
    {
+TIMER_FUNC(WW_TR_Debug_getSpillKindName, comp())
    switch((TR_SpillKinds)kind)
       {
       case TR_gprSpill:
