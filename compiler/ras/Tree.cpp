@@ -1148,7 +1148,7 @@ TIMER_FUNC(TR_Debug_print_Node, comp())
    }
 
 uint32_t
-TR_Debug::getIntLength(uint32_t num) const
+TR_Debug::getIntLength(uint32_t num)
    {
 TIMER_FUNC(WW_TR_Debug_getIntLength, comp())
    // The fastest means is a binary search over the range of possible
@@ -1202,7 +1202,7 @@ TIMER_FUNC(WW_TR_Debug_getIntLength, comp())
    }
 
 uint32_t
-TR_Debug::getNumSpacesAfterIndex( uint32_t index, uint32_t maxIndexLength ) const
+TR_Debug::getNumSpacesAfterIndex( uint32_t index, uint32_t maxIndexLength )
    {
 TIMER_FUNC(WW_TR_Debug_getNumSpacesAfterIndex, comp())
    uint32_t indexLength = getIntLength( index );

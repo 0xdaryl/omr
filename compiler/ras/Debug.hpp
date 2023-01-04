@@ -786,9 +786,9 @@ public:
    void verifyGlobalIndices(TR::Node * node, TR::Node **nodesByGlobalIndex);
 
    TR::Node *verifyFinalNodeReferenceCounts(TR::Node *node);
-   uint32_t getIntLength( uint32_t num ) const; // Number of digits in an integer
+   uint32_t getIntLength( uint32_t num ); // Number of digits in an integer
    // Number of spaces that must be inserted after index when index's length < maxIndexLength so the information following it will be aligned
-   uint32_t getNumSpacesAfterIndex( uint32_t index, uint32_t maxIndexLength ) const;
+   uint32_t getNumSpacesAfterIndex( uint32_t index, uint32_t maxIndexLength );
 
 #if defined(TR_TARGET_X86)
    void printPrefix(TR::Logger *log, TR::Instruction *instr);
