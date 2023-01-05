@@ -2407,7 +2407,10 @@ OMR::Z::MemoryReference::assignRegisters(TR::Instruction * currentInstruction, T
          _baseRegister->setAssignedRegister(NULL);
          assignedBaseRegister->setAssignedRegister(NULL);
          assignedBaseRegister->setState(TR::RealRegister::Free);
-         cg->traceRegFreed(_baseRegister, assignedBaseRegister);
+         if (comp->getOption(TR_TraceRA))
+            {
+            cg->traceRegFreed(_baseRegister, assignedBaseRegister);
+            }
          }
       self()->setBaseRegister(assignedBaseRegister, cg);
       }

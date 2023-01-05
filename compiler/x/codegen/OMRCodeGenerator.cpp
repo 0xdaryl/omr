@@ -1311,7 +1311,10 @@ void OMR::X86::CodeGenerator::saveBetterSpillPlacements(TR::Instruction * branch
       if ((*regElement)->containsCollectedReference() || (*regElement)->containsInternalPointer() || (*regElement)->hasBetterSpillPlacement())
          continue;
 
-      self()->traceRegisterAssignment("Saved better spill placement for %R, mask = %x.", *regElement, freeRealRegisters);
+      if (self()->comp()->getOption(TR_TraceRA))
+         {
+         self()->traceRegisterAssignment("Saved better spill placement for %R, mask = %x.", *regElement, freeRealRegisters);
+         }
 
       TR_BetterSpillPlacement * info = new (self()->trHeapMemory()) TR_BetterSpillPlacement;
       info->_virtReg                = *regElement;
@@ -1339,8 +1342,11 @@ void OMR::X86::CodeGenerator::removeBetterSpillPlacementCandidate(TR::RealRegist
    uint32_t mask = ~TR::RealRegister::getRealRegisterMask(realReg->getKind(), realReg->getRegisterNumber()); // TODO:AMD64: Use the proper mask value
    TR_BetterSpillPlacement * info, * next;
 
-   if (_betterSpillPlacements)
-     self()->traceRegisterAssignment("Removed better spill placement candidate %d.", regNum);
+   if (self()->comp()->getOption(TR_TraceRA))
+      {
+      if (_betterSpillPlacements)
+         self()->traceRegisterAssignment("Removed better spill placement candidate %d.", regNum);
+      }
 
    for (info = _betterSpillPlacements, next = NULL; info; info = next)
       {
@@ -1361,7 +1367,10 @@ void OMR::X86::CodeGenerator::removeBetterSpillPlacementCandidate(TR::RealRegist
          // placement.
          //
          info->_virtReg->setHasBetterSpillPlacement(false);
-         self()->traceRegisterAssignment("%R is no longer a candidate for better spill placement.", info->_virtReg);
+         if (self()->comp()->getOption(TR_TraceRA))
+            {
+            self()->traceRegisterAssignment("%R is no longer a candidate for better spill placement.", info->_virtReg);
+            }
          }
       }
    }
@@ -1386,12 +1395,18 @@ OMR::X86::CodeGenerator::findBetterSpillPlacement(
    if (info && (info->_freeRealRegs & TR::RealRegister::getRealRegisterMask(virtReg->getKind(), (TR::RealRegister::RegNum)realRegNum)))
       {
       placement = info->_branchInstruction;
-      self()->traceRegisterAssignment("Successful better spill placement for %R at [" POINTER_PRINTF_FORMAT "].", virtReg, placement);
+      if (self()->comp()->getOption(TR_TraceRA))
+         {
+         self()->traceRegisterAssignment("Successful better spill placement for %R at [" POINTER_PRINTF_FORMAT "].", virtReg, placement);
+         }
       }
    else
       {
       placement = NULL;
-      self()->traceRegisterAssignment("Failed better spill placement for %R.", virtReg);
+      if (self()->comp()->getOption(TR_TraceRA))
+         {
+         self()->traceRegisterAssignment("Failed better spill placement for %R.", virtReg);
+         }
       }
 
    // Remove the better spill placement info from the list.

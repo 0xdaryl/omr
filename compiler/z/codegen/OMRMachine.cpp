@@ -155,7 +155,10 @@ OMR::Z::Machine::registerCopy(TR::CodeGenerator* cg,
          break;
       }
 
-   cg->traceRAInstruction(cursor);
+   if (cg->comp()->getOption(TR_TraceRA))
+      {
+      cg->traceRAInstruction(cursor);
+      }
 
    TR_Debug* debug = cg->getDebug();
 
@@ -199,11 +202,20 @@ OMR::Z::Machine::registerExchange(TR::CodeGenerator* cg,
          middleReg->setHasBeenAssignedInMethod(true);
 
          currentInstruction = machine->registerCopy(cg, rk, sourceReg, middleReg, precedingInstruction);
-         cg->traceRAInstruction(currentInstruction);
+         if (comp->getOption(TR_TraceRA))
+            {
+            cg->traceRAInstruction(currentInstruction);
+            }
          currentInstruction = machine->registerCopy(cg, rk, targetReg, sourceReg, precedingInstruction);
-         cg->traceRAInstruction(currentInstruction);
+         if (comp->getOption(TR_TraceRA))
+            {
+            cg->traceRAInstruction(currentInstruction);
+            }
          currentInstruction = machine->registerCopy(cg, rk, middleReg, targetReg, precedingInstruction);
-         cg->traceRAInstruction(currentInstruction);
+         if (comp->getOption(TR_TraceRA))
+            {
+            cg->traceRAInstruction(currentInstruction);
+            }
          }
       else
          {
@@ -214,12 +226,21 @@ OMR::Z::Machine::registerExchange(TR::CodeGenerator* cg,
          location->getSymbolReference()->getSymbol()->setSpillTempLoaded();
 
          currentInstruction = generateRXInstruction(cg, TR::InstOpCode::STD, currentNode, targetReg, tempMR, currentInstruction);
-         cg->traceRAInstruction(currentInstruction);
+         if (comp->getOption(TR_TraceRA))
+            {
+            cg->traceRAInstruction(currentInstruction);
+            }
          currentInstruction = generateRRInstruction(cg, TR::InstOpCode::LDR, currentNode, targetReg, sourceReg, currentInstruction);
-         cg->traceRAInstruction(currentInstruction);
+         if (comp->getOption(TR_TraceRA))
+            {
+            cg->traceRAInstruction(currentInstruction);
+            }
          TR::MemoryReference * tempMR2 = generateS390MemoryReference(*tempMR, 0, cg);
          currentInstruction = generateRXInstruction(cg, TR::InstOpCode::LD, currentNode, sourceReg, tempMR2, currentInstruction);
-         cg->traceRAInstruction(currentInstruction);
+         if (comp->getOption(TR_TraceRA))
+            {
+            cg->traceRAInstruction(currentInstruction);
+            }
 
          cg->freeSpill(location, 8, 0);
          }
@@ -235,11 +256,20 @@ OMR::Z::Machine::registerExchange(TR::CodeGenerator* cg,
          middleReg->setHasBeenAssignedInMethod(true);
 
          currentInstruction = machine->registerCopy(cg, rk, sourceReg, middleReg, precedingInstruction);
-         cg->traceRAInstruction(currentInstruction);
+         if (comp->getOption(TR_TraceRA))
+            {
+            cg->traceRAInstruction(currentInstruction);
+            }
          currentInstruction = machine->registerCopy(cg, rk, targetReg, sourceReg, precedingInstruction);
-         cg->traceRAInstruction(currentInstruction);
+         if (comp->getOption(TR_TraceRA))
+            {
+            cg->traceRAInstruction(currentInstruction);
+            }
          currentInstruction = machine->registerCopy(cg, rk, middleReg, targetReg, precedingInstruction);
-         cg->traceRAInstruction(currentInstruction);
+         if (comp->getOption(TR_TraceRA))
+            {
+            cg->traceRAInstruction(currentInstruction);
+            }
          }
       else
          {
@@ -249,12 +279,21 @@ OMR::Z::Machine::registerExchange(TR::CodeGenerator* cg,
          location->getSymbolReference()->getSymbol()->setSpillTempLoaded();
 
          currentInstruction = generateVRXInstruction(cg, TR::InstOpCode::VST, currentNode, targetReg, tempMR, 0, precedingInstruction);
-         cg->traceRAInstruction(currentInstruction);
+         if (comp->getOption(TR_TraceRA))
+            {
+            cg->traceRAInstruction(currentInstruction);
+            }
          currentInstruction = generateVRRaInstruction(cg, TR::InstOpCode::VLR, currentNode, targetReg, sourceReg, precedingInstruction);
-         cg->traceRAInstruction(currentInstruction);
+         if (comp->getOption(TR_TraceRA))
+            {
+            cg->traceRAInstruction(currentInstruction);
+            }
          TR::MemoryReference * tempMR2 = generateS390MemoryReference(*tempMR, 0, cg);
          currentInstruction = generateVRXInstruction(cg, TR::InstOpCode::VL, currentNode, sourceReg, tempMR2, 0, precedingInstruction);
-         cg->traceRAInstruction(currentInstruction);
+         if (comp->getOption(TR_TraceRA))
+            {
+            cg->traceRAInstruction(currentInstruction);
+            }
 
          cg->freeSpill(location, 16, 0);
          }
@@ -302,12 +341,21 @@ OMR::Z::Machine::registerExchange(TR::CodeGenerator* cg,
          location->getSymbolReference()->getSymbol()->setSpillTempLoaded();
 
          currentInstruction = generateRXInstruction(cg, opLoad, currentNode, sourceReg, tempMR, precedingInstruction);
-         cg->traceRAInstruction(currentInstruction);
+         if (comp->getOption(TR_TraceRA))
+            {
+            cg->traceRAInstruction(currentInstruction);
+            }
          currentInstruction = generateRRInstruction(cg, opLoadReg, currentNode, targetReg, sourceReg, precedingInstruction);
-         cg->traceRAInstruction(currentInstruction);
+         if (comp->getOption(TR_TraceRA))
+            {
+            cg->traceRAInstruction(currentInstruction);
+            }
          TR::MemoryReference * tempMR2 = generateS390MemoryReference(*tempMR, 0, cg);
          currentInstruction = generateRXInstruction(cg, opStore, currentNode, targetReg, tempMR2, precedingInstruction);
-         cg->traceRAInstruction(currentInstruction);
+         if (comp->getOption(TR_TraceRA))
+            {
+            cg->traceRAInstruction(currentInstruction);
+            }
 
          cg->freeSpill(location, TR::Compiler->om.sizeofReferenceAddress(), 0);
          }
@@ -317,7 +365,10 @@ OMR::Z::Machine::registerExchange(TR::CodeGenerator* cg,
 
          currentInstruction =
             generateRRInstruction(cg, opLoadReg, currentNode, sourceReg, middleReg, precedingInstruction);
-         cg->traceRAInstruction(currentInstruction);
+         if (comp->getOption(TR_TraceRA))
+            {
+            cg->traceRAInstruction(currentInstruction);
+            }
          if (debugObj)
             {
             debugObj->addInstructionComment(toS390RRInstruction(currentInstruction), REG_EXCHANGE);
@@ -325,7 +376,10 @@ OMR::Z::Machine::registerExchange(TR::CodeGenerator* cg,
 
          currentInstruction =
             generateRRInstruction(cg, opLoadReg, currentNode, targetReg, sourceReg, precedingInstruction);
-         cg->traceRAInstruction(currentInstruction);
+         if (comp->getOption(TR_TraceRA))
+            {
+            cg->traceRAInstruction(currentInstruction);
+            }
          if (debugObj)
             {
             debugObj->addInstructionComment(toS390RRInstruction(currentInstruction), REG_EXCHANGE);
@@ -333,7 +387,10 @@ OMR::Z::Machine::registerExchange(TR::CodeGenerator* cg,
 
          currentInstruction =
             generateRRInstruction(cg, opLoadReg, currentNode, middleReg, targetReg, precedingInstruction);
-         cg->traceRAInstruction(currentInstruction);
+         if (comp->getOption(TR_TraceRA))
+            {
+            cg->traceRAInstruction(currentInstruction);
+            }
          if (debugObj)
             {
             debugObj->addInstructionComment(toS390RRInstruction(currentInstruction), REG_EXCHANGE);
@@ -343,13 +400,16 @@ OMR::Z::Machine::registerExchange(TR::CodeGenerator* cg,
       cg->generateDebugCounter(precedingInstruction, "RegisterAllocator/Exchange/GPR", 1, TR::DebugCounter::Free);
       }
 
-   if (middleReg)
+   if (comp->getOption(TR_TraceRA))
       {
-      cg->traceRegisterAssignment("registerExchange: %R and %R via %R", targetReg, sourceReg, middleReg);
-      }
-   else
-      {
-      cg->traceRegisterAssignment("registerExchange: %R and %R via memory", targetReg, sourceReg);
+      if (middleReg)
+         {
+         cg->traceRegisterAssignment("registerExchange: %R and %R via %R", targetReg, sourceReg, middleReg);
+         }
+      else
+         {
+         cg->traceRegisterAssignment("registerExchange: %R and %R via memory", targetReg, sourceReg);
+         }
       }
 
    return currentInstruction;
@@ -708,13 +768,21 @@ OMR::Z::Machine::findBestLegalOddRegister(uint64_t availRegMask)
 
    if (freeRegister == NULL)
       {
-      if (lastOddReg)
-         self()->cg()->traceRegisterAssignment("BEST LEGAL ODD: %R", lastOddReg);
+      if (self()->cg()->comp()->getOption(TR_TraceRA))
+         {
+         if (lastOddReg)
+            {
+            self()->cg()->traceRegisterAssignment("BEST LEGAL ODD: %R", lastOddReg);
+            }
+         }
       return lastOddReg;
       }
    else
       {
-      self()->cg()->traceRegisterAssignment("BEST LEGAL ODD: %R", freeRegister);
+      if (self()->cg()->comp()->getOption(TR_TraceRA))
+         {
+         self()->cg()->traceRegisterAssignment("BEST LEGAL ODD: %R", freeRegister);
+         }
       return freeRegister;
       }
    }
@@ -773,7 +841,6 @@ OMR::Z::Machine::findBestLegalEvenRegister(uint64_t availRegMask)
          }
 
       lastEvenReg = _registerFile[i];
-      //self()->cg()->traceRegWeight(lastEvenReg, lastEvenReg->getWeight());
 
       if ((_registerFile[i + 0]->getState() == TR::RealRegister::Free || _registerFile[i + 0]->getState() == TR::RealRegister::Unlatched) &&
           (_registerFile[i + 1]->getState() == TR::RealRegister::Free || _registerFile[i + 1]->getState() == TR::RealRegister::Unlatched) &&
@@ -795,13 +862,19 @@ OMR::Z::Machine::findBestLegalEvenRegister(uint64_t availRegMask)
 
    if (freeRegister == NULL)
       {
-      if (lastEvenReg)
-         self()->cg()->traceRegisterAssignment("BEST LAST LEGAL EVEN: %R", lastEvenReg);
+      if (self()->cg()->comp()->getOption(TR_TraceRA))
+         {
+         if (lastEvenReg)
+            self()->cg()->traceRegisterAssignment("BEST LAST LEGAL EVEN: %R", lastEvenReg);
+         }
       return lastEvenReg;
       }
    else
       {
-      self()->cg()->traceRegisterAssignment("BEST LEGAL EVEN: %R", freeRegister);
+      if (self()->cg()->comp()->getOption(TR_TraceRA))
+         {
+         self()->cg()->traceRegisterAssignment("BEST LEGAL EVEN: %R", freeRegister);
+         }
       return freeRegister;
       }
    }
@@ -840,8 +913,6 @@ OMR::Z::Machine::findBestLegalSiblingFPRegister(bool isFirst, uint64_t availRegM
 
       lastSiblingFPReg = isFirst ? lastFirstOfPair : lastSecondOfPair;
 
-      //self()->cg()->traceRegWeight(lastSiblingFPReg, lastSiblingFPReg->getWeight());
-
       if ((lastFirstOfPair->getState() == TR::RealRegister::Free || lastFirstOfPair->getState() == TR::RealRegister::Unlatched)
          && (lastSecondOfPair->getState() == TR::RealRegister::Free || lastSecondOfPair->getState() == TR::RealRegister::Unlatched)
          && (lastSiblingFPReg->getWeight() < bestWeightSoFar))
@@ -861,12 +932,18 @@ OMR::Z::Machine::findBestLegalSiblingFPRegister(bool isFirst, uint64_t availRegM
 
    if (freeRegister == NULL)
       {
-      self()->cg()->traceRegisterAssignment("BEST LEGAL sibling FP Reg: %R", lastSiblingFPReg);
+      if (self()->cg()->comp()->getOption(TR_TraceRA))
+         {
+         self()->cg()->traceRegisterAssignment("BEST LEGAL sibling FP Reg: %R", lastSiblingFPReg);
+         }
       return lastSiblingFPReg;
       }
    else
       {
-      self()->cg()->traceRegisterAssignment("BEST LEGAL sibling FP Reg: %R", freeRegister);
+      if (self()->cg()->comp()->getOption(TR_TraceRA))
+         {
+         self()->cg()->traceRegisterAssignment("BEST LEGAL sibling FP Reg: %R", freeRegister);
+         }
       return freeRegister;
       }
    }
@@ -932,8 +1009,11 @@ OMR::Z::Machine::findBestRegisterForShuffle(TR::Instruction *currentInstruction,
    if (blockingRegister)
       targetRegister->getRealRegister()->unblock();
 
-   self()->cg()->traceRegisterAssignment("%R is assigned to invalid register in this instruction. Shuffling %R => %R...",
-                                currentAssignedRegister, currentAssignedRegister->getAssignedRegister(), newRegister);
+   if (self()->cg()->comp()->getOption(TR_TraceRA))
+      {
+      self()->cg()->traceRegisterAssignment("%R is assigned to invalid register in this instruction. Shuffling %R => %R...",
+                                   currentAssignedRegister, currentAssignedRegister->getAssignedRegister(), newRegister);
+      }
    return newRegister;
    }
 
@@ -1018,7 +1098,10 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
       assignedRegister->unblock();
       TR::Instruction *cursor=self()->registerCopy(self()->cg(), kindOfRegister, assignedRegister, newAssignedRegister, currInst);
       self()->cg()->setRegisterAssignmentFlag(TR_IndirectCoercion);
-      self()->cg()->traceRegAssigned(targetRegister,assignedRegister);
+      if (comp->getOption(TR_TraceRA))
+         {
+         self()->cg()->traceRegAssigned(targetRegister,assignedRegister);
+         }
       targetRegister->setAssignedRegister(newAssignedRegister);
       newAssignedRegister->setAssignedRegister(targetRegister);
       newAssignedRegister->setState(TR::RealRegister::Assigned);
@@ -1055,7 +1138,10 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
       assignedRegister->setAssignedRegister(targetRegister);
       assignedRegister->setState(TR::RealRegister::Assigned);
 
-      self()->cg()->traceRegAssigned(targetRegister, assignedRegister);
+      if (comp->getOption(TR_TraceRA))
+         {
+         self()->cg()->traceRegAssigned(targetRegister, assignedRegister);
+         }
       self()->cg()->clearRegisterAssignmentFlags();
       }
 
@@ -1093,7 +1179,10 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
 
       if ((targetRegister->getFutureUseCount() == 0) || killOOLReg)
          {
-         self()->cg()->traceRegFreed(targetRegister, assignedRegister);
+         if (comp->getOption(TR_TraceRA))
+            {
+            self()->cg()->traceRegFreed(targetRegister, assignedRegister);
+            }
          targetRegister->resetIsLive();
 
          if (assignedRegister->getState() == TR::RealRegister::Locked )
@@ -1162,12 +1251,15 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
    TR::RealRegister * freeRegisterLow = lastReg->getAssignedRealRegister();
    TR_RegisterKinds regPairKind = regPair->getKind();
 
-  self()->cg()->traceRegisterAssignment("attempt to assign components of register pair ( %R %R )", firstReg, lastReg);
+   if (comp->getOption(TR_TraceRA))
+      {
+      self()->cg()->traceRegisterAssignment("attempt to assign components of register pair ( %R %R )", firstReg, lastReg);
 
-   if (firstReg->is64BitReg())
-      self()->cg()->traceRegisterAssignment("%R is64BitReg", firstReg);
-   if (lastReg->is64BitReg())
-      self()->cg()->traceRegisterAssignment("%R is64BitReg", lastReg);
+      if (firstReg->is64BitReg())
+         self()->cg()->traceRegisterAssignment("%R is64BitReg", firstReg);
+      if (lastReg->is64BitReg())
+         self()->cg()->traceRegisterAssignment("%R is64BitReg", lastReg);
+      }
 
    if (freeRegisterHigh == NULL || freeRegisterLow == NULL)
       {
@@ -1548,7 +1640,10 @@ OMR::Z::Machine::findBestFreeRegisterPair(TR::RealRegister ** firstRegister, TR:
       *firstRegister = freeRegisterHigh;
       *lastRegister = freeRegisterLow;
 
-      self()->cg()->traceRegisterAssignment("BEST FREE PAIR: (%R, %R)", freeRegisterHigh, freeRegisterLow);
+      if (self()->cg()->comp()->getOption(TR_TraceRA))
+         {
+         self()->cg()->traceRegisterAssignment("BEST FREE PAIR: (%R, %R)", freeRegisterHigh, freeRegisterLow);
+         }
       return true;
       }
    else
@@ -1655,9 +1750,11 @@ OMR::Z::Machine::freeBestFPRegisterPair(TR::RealRegister ** firstReg, TR::RealRe
             if (locationLow->getMaxSpillDepth() != 1)
                locationLow->setMaxSpillDepth(2);
             }
-         if (debugObj)
+         if (comp->getOption(TR_TraceRA))
+            {
             self()->cg()->traceRegisterAssignment("OOL: adding reg pair low %s to the spilledRegisterList, maxSpillDepth = %d\n",
                                           debugObj->getName(bestVirtCandidateLow), locationLow->getMaxSpillDepth());
+            }
          }
       else
          {
@@ -1707,9 +1804,11 @@ OMR::Z::Machine::freeBestFPRegisterPair(TR::RealRegister ** firstReg, TR::RealRe
             if (locationHigh->getMaxSpillDepth() != 1)
                locationHigh->setMaxSpillDepth(2);
             }
-         if (debugObj)
+         if (comp->getOption(TR_TraceRA))
+            {
             self()->cg()->traceRegisterAssignment("OOL: adding reg pair high %s to the spilledRegisterList, maxSpillDepth = %d\n",
                                           debugObj->getName(bestVirtCandidateHigh), locationHigh->getMaxSpillDepth());
+            }
          }
       else
          {
@@ -1737,7 +1836,13 @@ void
 OMR::Z::Machine::freeBestRegisterPair(TR::RealRegister ** firstReg, TR::RealRegister ** lastReg, TR_RegisterKinds rk, TR::Instruction * currInst,
    uint64_t          availRegMask)
    {
-   self()->cg()->traceRegisterAssignment("FREE BEST REGISTER PAIR");
+   TR::Compilation *comp = self()->cg()->comp();
+
+   if (comp->getOption(TR_TraceRA))
+      {
+      self()->cg()->traceRegisterAssignment("FREE BEST REGISTER PAIR");
+      }
+
    if ( rk == TR_FPR )
      {
      self()->freeBestFPRegisterPair(firstReg,lastReg,currInst, availRegMask);
@@ -1746,7 +1851,6 @@ OMR::Z::Machine::freeBestRegisterPair(TR::RealRegister ** firstReg, TR::RealRegi
    TR::Node * currentNode = currInst->getNode();
 
    TR::Instruction * cursor = NULL;
-   TR::Compilation *comp = self()->cg()->comp();
    TR::Machine *machine = self()->cg()->machine();
 
    TR_BackingStore * locationLow;
@@ -1842,7 +1946,10 @@ OMR::Z::Machine::freeBestRegisterPair(TR::RealRegister ** firstReg, TR::RealRegi
          cursor = generateRXInstruction(self()->cg(), TR::InstOpCode::L, currentNode, bestCandidateLow, tempMRLow, currInst);
          }
 
-      self()->cg()->traceRAInstruction(cursor);
+      if (comp->getOption(TR_TraceRA))
+         {
+         self()->cg()->traceRAInstruction(cursor);
+         }
       if (debugObj)
          {
          debugObj->addInstructionComment(cursor, "Load Spill : reg pair even");
@@ -1875,9 +1982,11 @@ OMR::Z::Machine::freeBestRegisterPair(TR::RealRegister ** firstReg, TR::RealRegi
             if (locationLow->getMaxSpillDepth() != 1)
                locationLow->setMaxSpillDepth(2);
             }
-         if (debugObj)
+         if (comp->getOption(TR_TraceRA))
+            {
             self()->cg()->traceRegisterAssignment("OOL: adding reg pair low %s to the spilledRegisterList, maxSpillDepth = %d\n",
                                           debugObj->getName(bestVirtCandidateLow), locationLow->getMaxSpillDepth());
+            }
          }
       else
          {
@@ -1923,7 +2032,10 @@ OMR::Z::Machine::freeBestRegisterPair(TR::RealRegister ** firstReg, TR::RealRegi
          cursor = generateRXInstruction(self()->cg(), TR::InstOpCode::L, currentNode, bestCandidateHigh, tempMRHigh, currInst);
          }
 
-      self()->cg()->traceRAInstruction(cursor);
+      if (comp->getOption(TR_TraceRA))
+         {
+         self()->cg()->traceRAInstruction(cursor);
+         }
       if (debugObj)
          {
          debugObj->addInstructionComment(cursor, "Load Spill : reg pair odd");
@@ -1956,9 +2068,11 @@ OMR::Z::Machine::freeBestRegisterPair(TR::RealRegister ** firstReg, TR::RealRegi
             if (locationHigh->getMaxSpillDepth() != 1)
                locationHigh->setMaxSpillDepth(2);
             }
-         if (debugObj)
+         if (comp->getOption(TR_TraceRA))
+            {
             self()->cg()->traceRegisterAssignment("OOL: adding reg pair high %s to the spilledRegisterList, maxSpillDepth = %d\n",
                                           debugObj->getName(bestVirtCandidateHigh), locationHigh->getMaxSpillDepth());
+            }
          }
       else
          {
@@ -2287,10 +2401,13 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
 
          self()->cg()->setRegisterAssignmentFlag(TR_ByAssociation);
 
-         if (bestRegister != NULL)
-            self()->cg()->traceRegisterAssignment("BEST FREE REG by pref for %R is %R", virtualReg, bestRegister);
-         else
-            self()->cg()->traceRegisterAssignment("BEST FREE REG by pref for %R is NULL", virtualReg);
+         if (comp->getOption(TR_TraceRA))
+            {
+            if (bestRegister != NULL)
+               self()->cg()->traceRegisterAssignment("BEST FREE REG by pref for %R is %R", virtualReg, bestRegister);
+            else
+               self()->cg()->traceRegisterAssignment("BEST FREE REG by pref for %R is NULL", virtualReg);
+            }
 
          return bestRegister;
          }
@@ -2309,7 +2426,6 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
          {
          continue;
          }
-      //self()->cg()->traceRegWeight(_registerFile[i], _registerFile[i]->getWeight());
 
       iNew = interference & (1 << (i - maskI));
       if ((_registerFile[i]->getState() == TR::RealRegister::Free || (_registerFile[i]->getState() == TR::RealRegister::Unlatched)) &&
@@ -2337,11 +2453,13 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
       freeRegister->setState(TR::RealRegister::Free);
       }
 
-   if (freeRegister != NULL)
-      self()->cg()->traceRegisterAssignment("BEST FREE REG for %R is %R", virtualReg, freeRegister);
-   else
-      self()->cg()->traceRegisterAssignment("BEST FREE REG for %R is NULL (could not find one)", virtualReg);
-
+   if (comp->getOption(TR_TraceRA))
+      {
+      if (freeRegister != NULL)
+         self()->cg()->traceRegisterAssignment("BEST FREE REG for %R is %R", virtualReg, freeRegister);
+      else
+         self()->cg()->traceRegisterAssignment("BEST FREE REG for %R is NULL (could not find one)", virtualReg);
+      }
 
    return freeRegister;
    }
@@ -2441,11 +2559,14 @@ OMR::Z::Machine::spillAllVolatileHighRegisters(TR::Instruction *currentInstructi
 TR::RealRegister *
 OMR::Z::Machine::freeBestRegister(TR::Instruction * currentInstruction, TR::Register * virtReg, TR_RegisterKinds rk, bool allowNullReturn)
    {
-   self()->cg()->traceRegisterAssignment("FREE BEST REGISTER FOR %R", virtReg);
    TR::Compilation *comp = self()->cg()->comp();
+   if (comp->getOption(TR_TraceRA))
+      {
+      self()->cg()->traceRegisterAssignment("FREE BEST REGISTER FOR %R", virtReg);
+      if (virtReg->containsCollectedReference())
+         self()->cg()->traceRegisterAssignment("%R contains collected", virtReg);
+      }
 
-   if (virtReg->containsCollectedReference())
-      self()->cg()->traceRegisterAssignment("%R contains collected", virtReg);
    int32_t numCandidates = 0, interference = 0, first, last, maskI;
    TR::Register * candidates[TR::RealRegister::LastVRF];
    TR::Machine *machine = self()->cg()->machine();
@@ -2598,7 +2719,7 @@ OMR::Z::Machine::spillRegister(TR::Instruction * currentInstruction, TR::Registe
       {
       containsCollectedReg = true;
       }
-   if (debugObj)
+   if (comp->getOption(TR_TraceRA))
       {
       self()->cg()->traceRegisterAssignment("SPILLING REGISTER %R", virtReg);
       if (virtReg->is64BitReg())
@@ -2616,9 +2737,11 @@ OMR::Z::Machine::spillRegister(TR::Instruction * currentInstruction, TR::Registe
        if ((self()->cg()->isOutOfLineColdPath() || self()->cg()->isOutOfLineHotPath()) && virtReg->getBackingStorage())
          {
          // reuse the spill slot
-         if (debugObj)
-           self()->cg()->traceRegisterAssignment("\nOOL: Reuse backing store (%p) for %s inside OOL\n",
-                                         location,debugObj->getName(virtReg));
+         if (comp->getOption(TR_TraceRA))
+            {
+            self()->cg()->traceRegisterAssignment("\nOOL: Reuse backing store (%p) for %s inside OOL\n",
+                                          location,debugObj->getName(virtReg));
+            }
          }
        else if (!containsInternalPointer)
          {
@@ -2626,14 +2749,18 @@ OMR::Z::Machine::spillRegister(TR::Instruction * currentInstruction, TR::Registe
             self()->cg()->allocateSpill(8, virtReg->containsCollectedReference(), NULL, true) :
             self()->cg()->allocateSpill(4, virtReg->containsCollectedReference(), NULL, true);
 
-         if (debugObj)
+         if (comp->getOption(TR_TraceRA))
+             {
              self()->cg()->traceRegisterAssignment("\nSpilling %s to (%p)\n",debugObj->getName(virtReg),location);
+             }
          }
        else
          {
          location = self()->cg()->allocateInternalPointerSpill(virtReg->getPinningArrayPointer());
-         if (debugObj)
-           self()->cg()->traceRegisterAssignment("\nSpilling internal pointer %s to (%p)\n", debugObj->getName(virtReg),location);
+         if (comp->getOption(TR_TraceRA))
+            {
+            self()->cg()->traceRegisterAssignment("\nSpilling internal pointer %s to (%p)\n", debugObj->getName(virtReg),location);
+            }
          }
 
        opCode = virtReg->is64BitReg() ?
@@ -2645,23 +2772,29 @@ OMR::Z::Machine::spillRegister(TR::Instruction * currentInstruction, TR::Registe
        if ((self()->cg()->isOutOfLineColdPath() || self()->cg()->isOutOfLineHotPath()) && virtReg->getBackingStorage())
          {
          // reuse the spill slot
-         if (debugObj)
-           self()->cg()->traceRegisterAssignment("\nOOL: Reuse backing store (%p) for %s inside OOL\n",
-                                         location,debugObj->getName(virtReg));
+         if (comp->getOption(TR_TraceRA))
+            {
+            self()->cg()->traceRegisterAssignment("\nOOL: Reuse backing store (%p) for %s inside OOL\n",
+                                          location,debugObj->getName(virtReg));
+            }
          }
        else
          {
          location = self()->cg()->allocateSpill(8, false, NULL, true); // TODO: Use 4 for single-precision values
-         if (debugObj)
-           self()->cg()->traceRegisterAssignment("\nSpilling FPR %s to (%p)\n", debugObj->getName(virtReg),location);
+         if (comp->getOption(TR_TraceRA))
+            {
+            self()->cg()->traceRegisterAssignment("\nSpilling FPR %s to (%p)\n", debugObj->getName(virtReg),location);
+            }
          }
        opCode = TR::InstOpCode::LD;
        break;
      case TR_VRF:
        // Spill of size 16 has never been done before. The call hierarchy seems to support it but this should be watched closely.
        location = self()->cg()->allocateSpill(16, false, NULL, true);
-       if (debugObj)
+       if (comp->getOption(TR_TraceRA))
+          {
           self()->cg()->traceRegisterAssignment("\nSpilling VRF %s to (%p)\n", debugObj->getName(virtReg), location);
+          }
 
        opCode = TR::InstOpCode::VL;
        break;
@@ -2676,7 +2809,10 @@ OMR::Z::Machine::spillRegister(TR::Instruction * currentInstruction, TR::Registe
    else
       cursor = generateRXInstruction(self()->cg(), opCode, currentNode, best, tempMR, currentInstruction);
 
-   self()->cg()->traceRAInstruction(cursor);
+   if (comp->getOption(TR_TraceRA))
+      {
+      self()->cg()->traceRAInstruction(cursor);
+      }
    if (debugObj)
       {
       debugObj->addInstructionComment(cursor, "Load Spill");
@@ -2708,9 +2844,11 @@ OMR::Z::Machine::spillRegister(TR::Instruction * currentInstruction, TR::Registe
          if (location->getMaxSpillDepth() != 1)
             location->setMaxSpillDepth(2);
          }
-      if (debugObj)
+      if (comp->getOption(TR_TraceRA))
+         {
          self()->cg()->traceRegisterAssignment("OOL: adding %s to the spilledRegisterList, maxSpillDepth = %d\n",
                                        debugObj->getName(virtReg), location->getMaxSpillDepth());
+         }
       }
    else
       {
@@ -2751,7 +2889,10 @@ OMR::Z::Machine::reverseSpillState(TR::Instruction      *currentInstruction,
    //This may not actually need to be reversed if
    //this is a dummy register used for OOL dependencies
 
-   self()->cg()->traceRegisterAssignment("REVERSE SPILL STATE FOR %R", spilledRegister);
+   if (comp->getOption(TR_TraceRA))
+      {
+      self()->cg()->traceRegisterAssignment("REVERSE SPILL STATE FOR %R", spilledRegister);
+      }
 
    if (spilledRegister->isPlaceholderReg())
       {
@@ -2780,7 +2921,7 @@ OMR::Z::Machine::reverseSpillState(TR::Instruction      *currentInstruction,
       // in this case, assign a new register and return
       if (location == NULL)
          {
-         if (debugObj)
+         if (comp->getOption(TR_TraceRA))
             {
             self()->cg()->traceRegisterAssignment("OOL: Not generating reverse spill for (%s)\n", debugObj->getName(spilledRegister));
             }
@@ -2870,9 +3011,11 @@ OMR::Z::Machine::reverseSpillState(TR::Instruction      *currentInstruction,
          }
       else
          {
-         if (debugObj)
+         if (comp->getOption(TR_TraceRA))
+            {
             self()->cg()->traceRegisterAssignment("\nOOL: reverse spill %s in less dominant path (%d / 3), protect spill slot (%p)\n",
                                           debugObj->getName(spilledRegister), location->getMaxSpillDepth(), location);
+            }
          }
       }
    else if (self()->cg()->isOutOfLineHotPath())
@@ -2880,8 +3023,10 @@ OMR::Z::Machine::reverseSpillState(TR::Instruction      *currentInstruction,
       // the spilledRegisterList contains all registers that are spilled before entering
       // the OOL path (in backwards RA). Post dependencies will be generated using this list.
       // Any registers reverse spilled before entering OOL should be removed from the spilled list
-      if (debugObj)
+      if (comp->getOption(TR_TraceRA))
+         {
          self()->cg()->traceRegisterAssignment("\nOOL: removing %s from the spilledRegisterList)\n", debugObj->getName(spilledRegister));
+         }
       self()->cg()->getSpilledRegisterList()->remove(spilledRegister);
       if (location->getMaxSpillDepth() == 2)
          {
@@ -2891,16 +3036,20 @@ OMR::Z::Machine::reverseSpillState(TR::Instruction      *currentInstruction,
          }
       else
          {
-         if (debugObj)
+         if (comp->getOption(TR_TraceRA))
+            {
             self()->cg()->traceRegisterAssignment("\nOOL: reverse spilling %s in less dominant path (%d / 2), protect spill slot (%p)\n",
                                           debugObj->getName(spilledRegister), location->getMaxSpillDepth(), location);
+            }
          location->setMaxSpillDepth(0);
          }
       }
    else // main line
       {
-      if (debugObj)
+      if (comp->getOption(TR_TraceRA))
+         {
          self()->cg()->traceRegisterAssignment("\nOOL: removing %s from the spilledRegisterList)\n", debugObj->getName(spilledRegister));
+         }
       self()->cg()->getSpilledRegisterList()->remove(spilledRegister);
       location->setMaxSpillDepth(0);
       self()->cg()->freeSpill(location, dataSize, 0);
@@ -2912,7 +3061,10 @@ OMR::Z::Machine::reverseSpillState(TR::Instruction      *currentInstruction,
    else
       cursor = generateRXInstruction(self()->cg(), opCode, currentNode, targetRegister, tempMR, currentInstruction);
 
-   self()->cg()->traceRAInstruction(cursor);
+   if (comp->getOption(TR_TraceRA))
+      {
+      self()->cg()->traceRAInstruction(cursor);
+      }
 
    if (debugObj)
       {
@@ -2963,17 +3115,20 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
 
    virtualRegister->setIsLive();
 
-   self()->cg()->traceRegisterAssignment("COERCE %R into %R", virtualRegister, targetRegister);
-
-   if (rk != TR_FPR && rk != TR_VRF)
+   if (comp->getOption(TR_TraceRA))
       {
-      if (virtualRegister->is64BitReg())
+      self()->cg()->traceRegisterAssignment("COERCE %R into %R", virtualRegister, targetRegister);
+
+      if (rk != TR_FPR && rk != TR_VRF)
          {
-         self()->cg()->traceRegisterAssignment(" coerceRA: %R needs 64 bit reg ", virtualRegister);
-         }
-      else
-         {
-         self()->cg()->traceRegisterAssignment(" coerceRA: %R needs 32 bit reg ", virtualRegister);
+         if (virtualRegister->is64BitReg())
+            {
+            self()->cg()->traceRegisterAssignment(" coerceRA: %R needs 64 bit reg ", virtualRegister);
+            }
+         else
+            {
+            self()->cg()->traceRegisterAssignment(" coerceRA: %R needs 32 bit reg ", virtualRegister);
+            }
          }
       }
 
@@ -2988,7 +3143,11 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
       {
       if (virtualRegister->isPlaceholderReg())
         targetRegister->setIsAssignedMoreThanOnce(); // Register is killed invalidate it for moving spill out of loop
-      self()->cg()->traceRegisterAssignment("target %R is free", targetRegister);
+
+      if (comp->getOption(TR_TraceRA))
+         {
+         self()->cg()->traceRegisterAssignment("target %R is free", targetRegister);
+         }
 
       // the virtual register haven't be assigned to any real register yet
       if (currentAssignedRegister == NULL)
@@ -3023,7 +3182,10 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
    else if (targetRegister->getState() == TR::RealRegister::Blocked)
       {
       currentTargetVirtual = targetRegister->getAssignedRegister();
-      self()->cg()->traceRegisterAssignment("target %R is blocked, assigned to %R", targetRegister, currentTargetVirtual);
+      if (comp->getOption(TR_TraceRA))
+         {
+         self()->cg()->traceRegisterAssignment("target %R is blocked, assigned to %R", targetRegister, currentTargetVirtual);
+         }
       uint64_t regMask = 0xffffffff;
       if (currentTargetVirtual->isUsedInMemRef())
          regMask = ~TR::RealRegister::GPR0Mask;
@@ -3065,7 +3227,11 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                   {
                   comp->failCompilation<TR::CompilationException>("Abort compilation as we can not find a spareReg for blocked target real register");
                   }
-               self()->cg()->traceRegAssigned(currentTargetVirtual, spareReg);
+
+               if (comp->getOption(TR_TraceRA))
+                  {
+                  self()->cg()->traceRegAssigned(currentTargetVirtual, spareReg);
+                  }
 
                cursor = self()->registerCopy(self()->cg(), rk, targetRegister, spareReg, currentInstruction);
                cursor = self()->registerCopy(self()->cg(), rk, currentAssignedRegister, targetRegister, currentInstruction);
@@ -3083,7 +3249,10 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
             }
          else
             {
-            self()->cg()->traceRegAssigned(currentTargetVirtual, currentAssignedRegister);
+            if (comp->getOption(TR_TraceRA))
+               {
+               self()->cg()->traceRegAssigned(currentTargetVirtual, currentAssignedRegister);
+               }
 
             cursor = self()->registerExchange(self()->cg(), rk, targetRegister, currentAssignedRegister, spareReg, currentInstruction);
 
@@ -3094,7 +3263,10 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
          }
       else
          {
-         self()->cg()->traceRegAssigned(currentTargetVirtual, spareReg);
+         if (comp->getOption(TR_TraceRA))
+            {
+            self()->cg()->traceRegAssigned(currentTargetVirtual, spareReg);
+            }
 
          // virtual register is not assigned yet, copy register
          cursor = self()->registerCopy(self()->cg(), rk, targetRegister, spareReg, currentInstruction);
@@ -3126,7 +3298,10 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
       {
       //  Since target is assigned, it must have a virtReg associated to it
       currentTargetVirtual = targetRegister->getAssignedRegister();
-      self()->cg()->traceRegisterAssignment("target %R is assigned, assigned to %R", targetRegister, currentTargetVirtual);
+      if (comp->getOption(TR_TraceRA))
+         {
+         self()->cg()->traceRegisterAssignment("target %R is assigned, assigned to %R", targetRegister, currentTargetVirtual);
+         }
 
       if (rk != TR_FPR && rk != TR_VRF && currentTargetVirtual)
          {
@@ -3134,7 +3309,10 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
          if (currentTargetVirtual == virtualRegister)
             {
             virtualRegister->setAssignedRegister(targetRegister);
-            self()->cg()->traceRegAssigned(virtualRegister, targetRegister);
+            if (comp->getOption(TR_TraceRA))
+               {
+               self()->cg()->traceRegAssigned(virtualRegister, targetRegister);
+               }
             self()->cg()->clearRegisterAssignmentFlags();
             return cursor;
             }
@@ -3193,7 +3371,10 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
             // to the spareReg, and move the source reg to the target.
             if (targetRegister->getRegisterNumber() != spareReg->getRegisterNumber() && !doNotRegCopy)
                {
-               self()->cg()->traceRegAssigned(currentTargetVirtual, spareReg);
+               if (comp->getOption(TR_TraceRA))
+                  {
+                  self()->cg()->traceRegAssigned(currentTargetVirtual, spareReg);
+                  }
 
                cursor = self()->registerCopy(self()->cg(), rk, targetRegister, spareReg, currentInstruction);
 
@@ -3229,7 +3410,10 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                {
                self()->spillRegister(currentInstruction, currentTargetVirtual);
 
-               self()->cg()->traceRegAssigned(currentTargetVirtual, currentAssignedRegister);
+               if (comp->getOption(TR_TraceRA))
+                  {
+                  self()->cg()->traceRegAssigned(currentTargetVirtual, currentAssignedRegister);
+                  }
                self()->cg()->setRegisterAssignmentFlag(TR_RegisterSpilled);
 
                cursor = self()->registerCopy(self()->cg(), rk, currentAssignedRegister, targetRegister, currentInstruction);
@@ -3298,7 +3482,10 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
             if (targetRegister->getRegisterNumber() != spareReg->getRegisterNumber() && !doNotRegCopy)
                {
                self()->cg()->resetRegisterAssignmentFlag(TR_RegisterSpilled);
-               self()->cg()->traceRegAssigned(currentTargetVirtual, spareReg);
+               if (comp->getOption(TR_TraceRA))
+                  {
+                  self()->cg()->traceRegAssigned(currentTargetVirtual, spareReg);
+                  }
 
                cursor = self()->registerCopy(self()->cg(), rk, targetRegister, spareReg, currentInstruction);
 
@@ -3379,7 +3566,10 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
 
    virtualRegister->setAssignedRegister(targetRegister);
 
-   self()->cg()->traceRegAssigned(virtualRegister, targetRegister);
+   if (comp->getOption(TR_TraceRA))
+      {
+      self()->cg()->traceRegAssigned(virtualRegister, targetRegister);
+      }
 
    self()->cg()->clearRegisterAssignmentFlags();
    return cursor;
@@ -4158,7 +4348,6 @@ OMR::Z::Machine::restoreRegisterStateFromSnapShot()
       // make sure to double link virt - real reg if assigned
       if (_registerFile[i]->getState() == TR::RealRegister::Assigned)
          {
-         //self()->cg()->traceRegisterAssignment("\nOOL: restoring %R : %R", _registerFile[i], _registerFile[i]->getAssignedRegister());
          _registerFile[i]->getAssignedRegister()->setAssignedRegister(_registerFile[i]);
          }
 

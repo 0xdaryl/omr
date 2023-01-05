@@ -147,7 +147,10 @@ TR::RealRegister *assignGPRegister(TR::Instruction   *instr,
    virtReg->setAssignedAsByteRegister(requestedRegSize == TR_ByteReg);
    assignedRegister->setAssignedRegister(virtReg);
    assignedRegister->setState(TR::RealRegister::Assigned, virtReg->isPlaceholderReg());
-   cg->traceRegAssigned(virtReg, assignedRegister);
+   if (cg->comp()->getOption(TR_TraceRA))
+      {
+      cg->traceRegAssigned(virtReg, assignedRegister);
+      }
 
    return assignedRegister;
    }
@@ -722,7 +725,10 @@ void TR::X86RegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned)
       if (getTargetRegister()->decFutureUseCount() == 0 &&
           assignedRegister->getState() != TR::RealRegister::Locked)
          {
-         cg()->traceRegFreed(getTargetRegister(), assignedRegister);
+         if (cg()->comp()->getOption(TR_TraceRA))
+            {
+            cg()->traceRegFreed(getTargetRegister(), assignedRegister);
+            }
          getTargetRegister()->setAssignedRegister(NULL);
          assignedRegister->setState(TR::RealRegister::Unlatched);
          }
@@ -905,7 +911,10 @@ void TR::X86RegRegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigne
       if (firstRegister->decFutureUseCount() == 0 &&
           assignedFirstRegister->getState() != TR::RealRegister::Locked)
          {
-         cg()->traceRegFreed(firstRegister, assignedFirstRegister);
+         if (cg()->comp()->getOption(TR_TraceRA))
+            {
+            cg()->traceRegFreed(firstRegister, assignedFirstRegister);
+            }
          firstRegister->setAssignedRegister(NULL);
          assignedFirstRegister->setState(TR::RealRegister::Unlatched);
          }
@@ -954,7 +963,11 @@ void TR::X86RegRegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigne
          secondRegister->setAssignedAsByteRegister(secondRequestedRegSize == TR_ByteReg);
          assignedSecondRegister->setAssignedRegister(secondRegister);
          assignedSecondRegister->setState(TR::RealRegister::Assigned, secondRegister->isPlaceholderReg());
-         cg()->traceRegAssigned(secondRegister, assignedSecondRegister);
+
+         if (cg()->comp()->getOption(TR_TraceRA))
+            {
+            cg()->traceRegAssigned(secondRegister, assignedSecondRegister);
+            }
          }
       else if (secondRequestedRegSize == TR_ByteReg)
          {
@@ -964,7 +977,10 @@ void TR::X86RegRegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigne
       if (secondRegister->decFutureUseCount() == 0 &&
           assignedSecondRegister->getState() != TR::RealRegister::Locked)
          {
-         cg()->traceRegFreed(secondRegister, assignedSecondRegister);
+         if (cg()->comp()->getOption(TR_TraceRA))
+            {
+            cg()->traceRegFreed(secondRegister, assignedSecondRegister);
+            }
          secondRegister->setAssignedRegister(NULL);
          assignedSecondRegister->setState(TR::RealRegister::Unlatched);
          }
@@ -1362,7 +1378,10 @@ void TR::X86RegRegRegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssi
           assignedFirstRegister->getState() != TR::RealRegister::Locked &&
           firstRegister == getTargetRegister())
          {
-         cg()->traceRegFreed(firstRegister, assignedFirstRegister);
+         if (cg()->comp()->getOption(TR_TraceRA))
+            {
+            cg()->traceRegFreed(firstRegister, assignedFirstRegister);
+            }
          firstRegister->setAssignedRegister(NULL);
          assignedFirstRegister->setState(TR::RealRegister::Unlatched);
          }
@@ -1398,14 +1417,20 @@ void TR::X86RegRegRegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssi
          if (secondRegister->getFutureUseCount() == 0 &&
              assignedSecondRegister->getState() != TR::RealRegister::Locked)
             {
-            cg()->traceRegFreed(secondRegister, assignedSecondRegister);
+            if (cg()->comp()->getOption(TR_TraceRA))
+                {
+                cg()->traceRegFreed(secondRegister, assignedSecondRegister);
+                }
             secondRegister->setAssignedRegister(NULL);
             assignedSecondRegister->setState(TR::RealRegister::Unlatched);
             }
          if (firstRegister->getFutureUseCount() == 0 &&
              assignedFirstRegister->getState() != TR::RealRegister::Locked)
             {
-            cg()->traceRegFreed(firstRegister, assignedFirstRegister);
+            if (cg()->comp()->getOption(TR_TraceRA))
+               {
+               cg()->traceRegFreed(firstRegister, assignedFirstRegister);
+               }
             firstRegister->setAssignedRegister(NULL);
             assignedFirstRegister->setState(TR::RealRegister::Unlatched);
             }
@@ -1428,7 +1453,10 @@ void TR::X86RegRegRegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssi
       if (thirdRegister->decFutureUseCount() == 0 &&
           assignedThirdRegister->getState() != TR::RealRegister::Locked)
          {
-         cg()->traceRegFreed(thirdRegister, assignedThirdRegister);
+         if (cg()->comp()->getOption(TR_TraceRA))
+            {
+            cg()->traceRegFreed(thirdRegister, assignedThirdRegister);
+            }
          thirdRegister->setAssignedRegister(NULL);
          assignedThirdRegister->setState(TR::RealRegister::Unlatched);
          }
@@ -1438,14 +1466,20 @@ void TR::X86RegRegRegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssi
          if (secondRegister->getFutureUseCount() == 0 &&
              assignedSecondRegister->getState() != TR::RealRegister::Locked)
             {
-            cg()->traceRegFreed(secondRegister, assignedSecondRegister);
+            if (cg()->comp()->getOption(TR_TraceRA))
+               {
+               cg()->traceRegFreed(secondRegister, assignedSecondRegister);
+               }
             secondRegister->setAssignedRegister(NULL);
             assignedSecondRegister->setState(TR::RealRegister::Unlatched);
             }
          if (thirdRegister->getFutureUseCount() == 0 &&
              assignedThirdRegister->getState() != TR::RealRegister::Locked)
             {
-            cg()->traceRegFreed(thirdRegister, assignedThirdRegister);
+            if (cg()->comp()->getOption(TR_TraceRA))
+               {
+               cg()->traceRegFreed(thirdRegister, assignedThirdRegister);
+               }
             thirdRegister->setAssignedRegister(NULL);
             assignedThirdRegister->setState(TR::RealRegister::Unlatched);
             }
@@ -1563,7 +1597,10 @@ void TR::X86RegMaskRegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAss
           assignedMaskRegister->getState() != TR::RealRegister::Locked &&
           maskRegister == getMaskRegister())
          {
-         cg()->traceRegFreed(maskRegister, assignedMaskRegister);
+         if (cg()->comp()->getOption(TR_TraceRA))
+            {
+            cg()->traceRegFreed(maskRegister, assignedMaskRegister);
+            }
          maskRegister->setAssignedRegister(NULL);
          assignedMaskRegister->setState(TR::RealRegister::Unlatched);
          }
@@ -1609,7 +1646,10 @@ void TR::X86RegMaskRegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAss
       if (firstRegister->decFutureUseCount() == 0 &&
           assignedFirstRegister->getState() != TR::RealRegister::Locked)
          {
-         cg()->traceRegFreed(firstRegister, assignedFirstRegister);
+         if (cg()->comp()->getOption(TR_TraceRA))
+            {
+            cg()->traceRegFreed(firstRegister, assignedFirstRegister);
+            }
          firstRegister->setAssignedRegister(NULL);
          assignedFirstRegister->setState(TR::RealRegister::Unlatched);
          }
@@ -1658,13 +1698,19 @@ void TR::X86RegMaskRegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAss
          secondRegister->setAssignedAsByteRegister(secondRequestedRegSize == TR_ByteReg);
          assignedSecondRegister->setAssignedRegister(secondRegister);
          assignedSecondRegister->setState(TR::RealRegister::Assigned, secondRegister->isPlaceholderReg());
-         cg()->traceRegAssigned(secondRegister, assignedSecondRegister);
+         if (cg()->comp()->getOption(TR_TraceRA))
+            {
+            cg()->traceRegAssigned(secondRegister, assignedSecondRegister);
+            }
          }
 
       if (secondRegister->decFutureUseCount() == 0 &&
           assignedSecondRegister->getState() != TR::RealRegister::Locked)
          {
-         cg()->traceRegFreed(secondRegister, assignedSecondRegister);
+         if (cg()->comp()->getOption(TR_TraceRA))
+            {
+            cg()->traceRegFreed(secondRegister, assignedSecondRegister);
+            }
          secondRegister->setAssignedRegister(NULL);
          assignedSecondRegister->setState(TR::RealRegister::Unlatched);
          }
@@ -1789,7 +1835,10 @@ void TR::X86RegMaskRegRegInstruction::assignRegisters(TR_RegisterKinds kindsToBe
           assignedMaskRegister->getState() != TR::RealRegister::Locked &&
           maskRegister == getMaskRegister())
          {
-         cg()->traceRegFreed(maskRegister, assignedMaskRegister);
+         if (cg()->comp()->getOption(TR_TraceRA))
+            {
+            cg()->traceRegFreed(maskRegister, assignedMaskRegister);
+            }
          maskRegister->setAssignedRegister(NULL);
          assignedMaskRegister->setState(TR::RealRegister::Unlatched);
          }
@@ -1837,7 +1886,10 @@ void TR::X86RegMaskRegRegInstruction::assignRegisters(TR_RegisterKinds kindsToBe
           assignedFirstRegister->getState() != TR::RealRegister::Locked &&
           firstRegister == getTargetRegister())
          {
-         cg()->traceRegFreed(firstRegister, assignedFirstRegister);
+         if (cg()->comp()->getOption(TR_TraceRA))
+            {
+            cg()->traceRegFreed(firstRegister, assignedFirstRegister);
+            }
          firstRegister->setAssignedRegister(NULL);
          assignedFirstRegister->setState(TR::RealRegister::Unlatched);
          }
@@ -1873,14 +1925,20 @@ void TR::X86RegMaskRegRegInstruction::assignRegisters(TR_RegisterKinds kindsToBe
          if (secondRegister->getFutureUseCount() == 0 &&
              assignedSecondRegister->getState() != TR::RealRegister::Locked)
             {
-            cg()->traceRegFreed(secondRegister, assignedSecondRegister);
+            if (cg()->comp()->getOption(TR_TraceRA))
+               {
+               cg()->traceRegFreed(secondRegister, assignedSecondRegister);
+               }
             secondRegister->setAssignedRegister(NULL);
             assignedSecondRegister->setState(TR::RealRegister::Unlatched);
             }
          if (firstRegister->getFutureUseCount() == 0 &&
              assignedFirstRegister->getState() != TR::RealRegister::Locked)
             {
-            cg()->traceRegFreed(firstRegister, assignedFirstRegister);
+            if (cg()->comp()->getOption(TR_TraceRA))
+               {
+               cg()->traceRegFreed(firstRegister, assignedFirstRegister);
+               }
             firstRegister->setAssignedRegister(NULL);
             assignedFirstRegister->setState(TR::RealRegister::Unlatched);
             }
@@ -1903,7 +1961,10 @@ void TR::X86RegMaskRegRegInstruction::assignRegisters(TR_RegisterKinds kindsToBe
       if (thirdRegister->decFutureUseCount() == 0 &&
           assignedThirdRegister->getState() != TR::RealRegister::Locked)
          {
-         cg()->traceRegFreed(thirdRegister, assignedThirdRegister);
+         if (cg()->comp()->getOption(TR_TraceRA))
+            {
+            cg()->traceRegFreed(thirdRegister, assignedThirdRegister);
+            }
          thirdRegister->setAssignedRegister(NULL);
          assignedThirdRegister->setState(TR::RealRegister::Unlatched);
          }
@@ -1913,14 +1974,20 @@ void TR::X86RegMaskRegRegInstruction::assignRegisters(TR_RegisterKinds kindsToBe
          if (secondRegister->getFutureUseCount() == 0 &&
              assignedSecondRegister->getState() != TR::RealRegister::Locked)
             {
-            cg()->traceRegFreed(secondRegister, assignedSecondRegister);
+            if (cg()->comp()->getOption(TR_TraceRA))
+               {
+               cg()->traceRegFreed(secondRegister, assignedSecondRegister);
+               }
             secondRegister->setAssignedRegister(NULL);
             assignedSecondRegister->setState(TR::RealRegister::Unlatched);
             }
          if (thirdRegister->getFutureUseCount() == 0 &&
              assignedThirdRegister->getState() != TR::RealRegister::Locked)
             {
-            cg()->traceRegFreed(thirdRegister, assignedThirdRegister);
+            if (cg()->comp()->getOption(TR_TraceRA))
+               {
+               cg()->traceRegFreed(thirdRegister, assignedThirdRegister);
+               }
             thirdRegister->setAssignedRegister(NULL);
             assignedThirdRegister->setState(TR::RealRegister::Unlatched);
             }
@@ -2564,7 +2631,10 @@ void TR::X86MemRegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigne
          if (getSourceRegister()->decFutureUseCount() == 0 &&
              assignedRegister->getState() != TR::RealRegister::Locked)
             {
-            cg()->traceRegFreed(getSourceRegister(), assignedRegister);
+            if (cg()->comp()->getOption(TR_TraceRA))
+               {
+               cg()->traceRegFreed(getSourceRegister(), assignedRegister);
+               }
             getSourceRegister()->setAssignedRegister(NULL);
             assignedRegister->setState(TR::RealRegister::Unlatched);
             }
@@ -2692,7 +2762,10 @@ void TR::X86MemMaskRegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAss
           assignedMaskRegister->getState() != TR::RealRegister::Locked &&
           maskRegister == getMaskRegister())
          {
-         cg()->traceRegFreed(maskRegister, assignedMaskRegister);
+         if (cg()->comp()->getOption(TR_TraceRA))
+            {
+            cg()->traceRegFreed(maskRegister, assignedMaskRegister);
+            }
          maskRegister->setAssignedRegister(NULL);
          assignedMaskRegister->setState(TR::RealRegister::Unlatched);
          }
@@ -2786,7 +2859,10 @@ void TR::X86MemMaskRegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAss
          if (getSourceRegister()->decFutureUseCount() == 0 &&
              assignedRegister->getState() != TR::RealRegister::Locked)
             {
-            cg()->traceRegFreed(getSourceRegister(), assignedRegister);
+            if (cg()->comp()->getOption(TR_TraceRA))
+               {
+               cg()->traceRegFreed(getSourceRegister(), assignedRegister);
+               }
             getSourceRegister()->setAssignedRegister(NULL);
             assignedRegister->setState(TR::RealRegister::Unlatched);
             }
@@ -3041,7 +3117,10 @@ void TR::X86RegMemInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigne
       if (getTargetRegister()->decFutureUseCount() == 0 &&
           assignedRegister->getState() != TR::RealRegister::Locked)
          {
-         cg()->traceRegFreed(getTargetRegister(), assignedRegister);
+         if (cg()->comp()->getOption(TR_TraceRA))
+            {
+            cg()->traceRegFreed(getTargetRegister(), assignedRegister);
+            }
          getTargetRegister()->setAssignedRegister(NULL);
          assignedRegister->setState(TR::RealRegister::Unlatched);
          }
@@ -3263,7 +3342,10 @@ void TR::X86RegRegMemInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssi
             if (getTargetRegister()->decFutureUseCount() == 0 &&
                 assignedTargetRegister->getState() != TR::RealRegister::Locked)
                {
-               cg()->traceRegFreed(getTargetRegister(), assignedTargetRegister);
+               if (cg()->comp()->getOption(TR_TraceRA))
+                  {
+                  cg()->traceRegFreed(getTargetRegister(), assignedTargetRegister);
+                  }
                getTargetRegister()->setAssignedRegister(NULL);
                assignedTargetRegister->setState(TR::RealRegister::Unlatched);
                }
@@ -3271,7 +3353,10 @@ void TR::X86RegRegMemInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssi
             if (getSource2ndRegister()->decFutureUseCount() == 0 &&
                 assignedSource2ndRegister->getState() != TR::RealRegister::Locked)
                {
-               cg()->traceRegFreed(getSource2ndRegister(), assignedSource2ndRegister);
+               if (cg()->comp()->getOption(TR_TraceRA))
+                  {
+                  cg()->traceRegFreed(getSource2ndRegister(), assignedSource2ndRegister);
+                  }
                getSource2ndRegister()->setAssignedRegister(NULL);
                assignedSource2ndRegister->setState(TR::RealRegister::Unlatched);
                }
@@ -3371,7 +3456,10 @@ void TR::X86RegMaskMemInstruction::assignRegisters(TR_RegisterKinds kindsToBeAss
           assignedMaskRegister->getState() != TR::RealRegister::Locked &&
           maskRegister == getMaskRegister())
          {
-         cg()->traceRegFreed(maskRegister, assignedMaskRegister);
+         if (cg()->comp()->getOption(TR_TraceRA))
+            {
+            cg()->traceRegFreed(maskRegister, assignedMaskRegister);
+            }
          maskRegister->setAssignedRegister(NULL);
          assignedMaskRegister->setState(TR::RealRegister::Unlatched);
          }
@@ -3415,7 +3503,10 @@ void TR::X86RegMaskMemInstruction::assignRegisters(TR_RegisterKinds kindsToBeAss
       if (getTargetRegister()->decFutureUseCount() == 0 &&
           assignedRegister->getState() != TR::RealRegister::Locked)
          {
-         cg()->traceRegFreed(getTargetRegister(), assignedRegister);
+         if (cg()->comp()->getOption(TR_TraceRA))
+            {
+            cg()->traceRegFreed(getTargetRegister(), assignedRegister);
+            }
          getTargetRegister()->setAssignedRegister(NULL);
          assignedRegister->setState(TR::RealRegister::Unlatched);
          }

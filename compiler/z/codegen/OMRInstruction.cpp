@@ -771,7 +771,10 @@ static void handleLoadWithRegRanges(TR::Instruction *inst, TR::CodeGenerator *cg
 
             if (isMatchingStoreRestore(inst, cursor, cg))
                {
-               cg->traceRegisterAssignment("Skip spilling %R--restored on load", virtualReg);
+               if (comp->getOption(TR_TraceRA))
+                  {
+                  cg->traceRegisterAssignment("Skip spilling %R--restored on load", virtualReg);
+                  }
                found = true;
                break; // found matching store--do nothing since load will restore value
                }
@@ -782,7 +785,10 @@ static void handleLoadWithRegRanges(TR::Instruction *inst, TR::CodeGenerator *cg
          // start of range will be NULL in some cases, we are cautious and spill (def# 100246)
          if (!found)
             {
-            cg->traceRegisterAssignment("trying to free %R for killed reg %R by loadmultiple \n", virtualReg, reg);
+            if (comp->getOption(TR_TraceRA))
+               {
+               cg->traceRegisterAssignment("trying to free %R for killed reg %R by loadmultiple \n", virtualReg, reg);
+               }
             TR::RealRegister *shuffle = cg->machine()->shuffleOrSpillRegister(inst, virtualReg, availForShuffle);
             if (shuffle != NULL)
                {
@@ -1113,7 +1119,10 @@ OMR::Z::Instruction::assignRegisterNoDependencies(TR::Register * reg)
          realReg->setAssignedRegister(NULL);
          realReg->setState(TR::RealRegister::Free);
 
-         self()->cg()->traceRegFreed(virtReg, realReg);
+         if (comp->getOption(TR_TraceRA))
+            {
+            self()->cg()->traceRegFreed(virtReg, realReg);
+            }
          }
 
       return reg;
@@ -1135,7 +1144,10 @@ OMR::Z::Instruction::assignRegisterNoDependencies(TR::Register * reg)
          realRegHigh->setAssignedRegister(NULL);
          realRegHigh->setState(TR::RealRegister::Free);
 
-         self()->cg()->traceRegFreed(virtRegHigh, realRegHigh);
+         if (comp->getOption(TR_TraceRA))
+            {
+            self()->cg()->traceRegFreed(virtRegHigh, realRegHigh);
+            }
          }
 
       if (realRegLow->getState() != TR::RealRegister::Locked &&
@@ -1145,7 +1157,10 @@ OMR::Z::Instruction::assignRegisterNoDependencies(TR::Register * reg)
          realRegLow->setAssignedRegister(NULL);
          realRegLow->setState(TR::RealRegister::Free);
 
-         self()->cg()->traceRegFreed(virtRegLow, realRegLow);
+         if (comp->getOption(TR_TraceRA))
+            {
+            self()->cg()->traceRegFreed(virtRegLow, realRegLow);
+            }
          }
 
       return reg;

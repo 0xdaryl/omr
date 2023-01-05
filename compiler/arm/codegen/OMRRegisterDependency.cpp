@@ -375,9 +375,11 @@ void OMR::ARM::RegisterDependencyGroup::assignRegisters(TR::Instruction  *curren
             virtReg->setAssignedRegister(NULL);
             assignedReg->setState(TR::RealRegister::Free);
 
-            if (comp->getDebug())
+            if (comp->getOption(TR_TraceRA))
+               {
                cg->traceRegisterAssignment("Generate reload of virt %s due to spillRegIndex dep at inst %p\n", cg->comp()->getDebug()->getName(virtReg),currentInstruction);
-            cg->traceRAInstruction(inst);
+               cg->traceRAInstruction(inst);
+               }
             }
          if (!(std::find(cg->getSpilledRegisterList()->begin(), cg->getSpilledRegisterList()->end(), virtReg) != cg->getSpilledRegisterList()->end()))
             cg->getSpilledRegisterList()->push_front(virtReg);
@@ -402,7 +404,7 @@ void OMR::ARM::RegisterDependencyGroup::assignRegisters(TR::Instruction  *curren
             }
          }
       }
-      
+
    for (i = 0; i < numberOfRegisters; i++)
       {
       virtReg = _dependencies[i].getRegister();

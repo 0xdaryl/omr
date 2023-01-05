@@ -232,6 +232,7 @@ OMR::X86::Machine::findBestFreeGPRegister(TR::Instruction   *currentInstruction,
                                       TR_RegisterSizes  requestedRegSize,
                                       bool              considerUnlatched)
    {
+   TR::Compilation *comp = self()->cg()->comp();
    int first, last, i;
 
    struct TR_Candidate
@@ -293,7 +294,7 @@ OMR::X86::Machine::findBestFreeGPRegister(TR::Instruction   *currentInstruction,
 
    if (virtReg->getKind() == TR_VMR)
       {
-      TR_ASSERT_FATAL(cg()->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F), "Cannot assign mask register on unsupported CPU");
+      TR_ASSERT_FATAL(comp->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F), "Cannot assign mask register on unsupported CPU");
       // k0 is reserved for unmasked operations
       first = TR::RealRegister::k1;
       last = TR::RealRegister::k7;
@@ -312,7 +313,10 @@ OMR::X86::Machine::findBestFreeGPRegister(TR::Instruction   *currentInstruction,
       //
       if (_registerFile[i]->getState() == TR::RealRegister::Locked)
          {
-         self()->cg()->traceRegWeight(_registerFile[i], 0xdead1);
+         if (comp->getOption(TR_TraceRA))
+            {
+            self()->cg()->traceRegWeight(_registerFile[i], 0xdead1);
+            }
          interference >>= 1;
          continue;
          }
@@ -365,7 +369,10 @@ OMR::X86::Machine::findBestFreeGPRegister(TR::Instruction   *currentInstruction,
            (considerUnlatched &&
             _registerFile[i]->getState() == TR::RealRegister::Unlatched)))
          {
-         self()->cg()->traceRegWeight(_registerFile[i], weight);
+         if (comp->getOption(TR_TraceRA))
+            {
+            self()->cg()->traceRegWeight(_registerFile[i], weight);
+            }
 
          if (weight < bestWeightSoFar)
             {
@@ -386,10 +393,16 @@ OMR::X86::Machine::findBestFreeGPRegister(TR::Instruction   *currentInstruction,
                }
             }
          }
-      else if (_registerFile[i]->getAssignedRegister() == NULL)
-         self()->cg()->traceRegWeight(_registerFile[i], 0xdead2);
       else
-         self()->cg()->traceRegWeight(_registerFile[i], 0xdead3);
+         {
+         if (comp->getOption(TR_TraceRA))
+            {
+            if (_registerFile[i]->getAssignedRegister() == NULL)
+               self()->cg()->traceRegWeight(_registerFile[i], 0xdead2);
+            else
+               self()->cg()->traceRegWeight(_registerFile[i], 0xdead3);
+            }
+         }
 
       interference >>= 1;
       }
@@ -415,7 +428,10 @@ OMR::X86::Machine::findBestFreeGPRegister(TR::Instruction   *currentInstruction,
             {
             if (cursor->refsRegister(candidates[i]._virtual))
                {
-               self()->cg()->traceRegInterference(virtReg, candidates[i]._virtual, distance);
+               if (comp->getOption(TR_TraceRA))
+                  {
+                  self()->cg()->traceRegInterference(virtReg, candidates[i]._virtual, distance);
+                  }
                candidates[i] = candidates[--numCandidates];
                }
             }
@@ -510,10 +526,14 @@ TR::RealRegister *OMR::X86::Machine::freeBestGPRegister(TR::Instruction         
       "interfering register"
       };
 
-   if (targetRegister)
-      self()->cg()->traceRegisterAssignment("Spill candidates for %R (target %R):", virtReg, _registerFile[targetRegister]);
-   else
-      self()->cg()->traceRegisterAssignment("Spill candidates for %R:", virtReg);
+
+   if (comp->getOption(TR_TraceRA))
+      {
+      if (targetRegister)
+         self()->cg()->traceRegisterAssignment("Spill candidates for %R (target %R):", virtReg, _registerFile[targetRegister]);
+      else
+         self()->cg()->traceRegisterAssignment("Spill candidates for %R:", virtReg);
+      }
 
    for (i = 0; i < NumBestRegisters; i++)
       {
@@ -749,10 +769,13 @@ TR::RealRegister *OMR::X86::Machine::freeBestGPRegister(TR::Instruction         
 
    if (bestType >= 0)
       {
-      for (i = 0; i < NumBestRegisters; i++)
+      if (comp->getOption(TR_TraceRA))
          {
-         if (bestRegisters[i])
-            self()->cg()->traceRegisterAssignment("   (best %s %R at distance %d)", bestRegisters[i], bestRegisterTypes[i], bestDistances[i]);
+         for (i = 0; i < NumBestRegisters; i++)
+            {
+            if (bestRegisters[i])
+               self()->cg()->traceRegisterAssignment("   (best %s %R at distance %d)", bestRegisters[i], bestRegisterTypes[i], bestDistances[i]);
+            }
          }
 
       // See if there is a candidate with higher priority close enough to the
@@ -842,7 +865,10 @@ TR::RealRegister *OMR::X86::Machine::freeBestGPRegister(TR::Instruction         
             }
          }
 
-      self()->cg()->traceRAInstruction(instr);
+      if (comp->getOption(TR_TraceRA))
+         {
+         self()->cg()->traceRAInstruction(instr);
+         }
       if (comp->getDebug())
          comp->getDebug()->addInstructionComment(instr, "$REMAT");
 
@@ -940,18 +966,17 @@ TR::RealRegister *OMR::X86::Machine::freeBestGPRegister(TR::Instruction         
                // backing store wasn't returned to the free list and it can be used.
                //
                location = bestRegister->getBackingStorage();
-               location->setMaxSpillDepth(self()->cg()->getCurrentPathDepth());
-               if (self()->cg()->getDebug())
-                  self()->cg()->traceRegisterAssignment("find or create free backing store (%p) for %s with initial max spill depth of %d and adding to list\n",
-                                                location,self()->cg()->getDebug()->getName(bestRegister),self()->cg()->getCurrentPathDepth());
                }
             else
                {
                location = self()->cg()->allocateSpill(static_cast<int32_t>(TR::Compiler->om.sizeofReferenceAddress()), bestRegister->containsCollectedReference(), &offset);
-               location->setMaxSpillDepth(self()->cg()->getCurrentPathDepth());
-               if (self()->cg()->getDebug())
-                  self()->cg()->traceRegisterAssignment("find or create free backing store (%p) for %s with initial max spill depth of %d and adding to list\n",
-                                                location,self()->cg()->getDebug()->getName(bestRegister),self()->cg()->getCurrentPathDepth());
+               }
+
+            location->setMaxSpillDepth(self()->cg()->getCurrentPathDepth());
+            if (comp->getOption(TR_TraceRA))
+               {
+               self()->cg()->traceRegisterAssignment("find or create free backing store (%p) for %s with initial max spill depth of %d and adding to list\n",
+                                             location,self()->cg()->getDebug()->getName(bestRegister),self()->cg()->getCurrentPathDepth());
                }
             }
          }
@@ -961,8 +986,10 @@ TR::RealRegister *OMR::X86::Machine::freeBestGPRegister(TR::Instruction         
          TR_ASSERT(bestRegister, "did not find bestRegister");
          TR_ASSERT(self()->cg()->getSpilledRegisterList(), "no spilled reg list allocated");
 
-         if (self()->getDebug())
+         if (comp->getOption(TR_TraceRA))
+            {
             self()->cg()->traceRegisterAssignment("adding %s to the spilledRegisterList)\n", self()->getDebug()->getName(bestRegister));
+            }
 
          self()->cg()->getSpilledRegisterList()->push_front(bestRegister);
          }
@@ -995,8 +1022,11 @@ TR::RealRegister *OMR::X86::Machine::freeBestGPRegister(TR::Instruction         
          }
       instr = new (self()->cg()->trHeapMemory()) TR::X86RegMemInstruction(currentInstruction, op, best, tempMR, self()->cg());
 
-      self()->cg()->traceRegFreed(bestRegister, best);
-      self()->cg()->traceRAInstruction(instr);
+      if (comp->getOption(TR_TraceRA))
+         {
+         self()->cg()->traceRegFreed(bestRegister, best);
+         self()->cg()->traceRAInstruction(instr);
+         }
       }
 
    if (enableRematerialisation)
@@ -1164,7 +1194,10 @@ TR::RealRegister *OMR::X86::Machine::reverseGPRSpillState(TR::Instruction     *c
          }
       }
 
-   self()->cg()->traceRAInstruction(instr);
+   if (self()->cg()->comp()->getOption(TR_TraceRA))
+      {
+      self()->cg()->traceRAInstruction(instr);
+      }
 
    return targetRegister;
    }
@@ -1208,9 +1241,12 @@ void OMR::X86::Machine::coerceGPRegisterAssignment(TR::Instruction      *current
       if (self()->cg()->enableBetterSpillPlacements())
          self()->cg()->removeBetterSpillPlacementCandidate(targetRegister);
 
-      self()->cg()->traceRegAssigned(virtualRegister, targetRegister);
-      if (instr)
-         self()->cg()->traceRAInstruction(instr);
+      if (self()->cg()->comp()->getOption(TR_TraceRA))
+         {
+         self()->cg()->traceRegAssigned(virtualRegister, targetRegister);
+         if (instr)
+            self()->cg()->traceRAInstruction(instr);
+         }
       }
    else if (targetRegister->getState() == TR::RealRegister::Blocked ||
             targetRegister->getState() == TR::RealRegister::Assigned)
@@ -1231,8 +1267,11 @@ void OMR::X86::Machine::coerceGPRegisterAssignment(TR::Instruction      *current
             currentAssignedRegister->setState(TR::RealRegister::Assigned, currentTargetVirtual->isPlaceholderReg());
          currentAssignedRegister->setAssignedRegister(currentTargetVirtual);
          currentTargetVirtual->setAssignedRegister(currentAssignedRegister);
-         self()->cg()->traceRegAssigned(currentTargetVirtual, currentAssignedRegister);
-         self()->cg()->traceRAInstruction(instr);
+         if (self()->cg()->comp()->getOption(TR_TraceRA))
+            {
+            self()->cg()->traceRegAssigned(currentTargetVirtual, currentAssignedRegister);
+            self()->cg()->traceRAInstruction(instr);
+            }
          }
       else
          {
@@ -1261,8 +1300,11 @@ void OMR::X86::Machine::coerceGPRegisterAssignment(TR::Instruction      *current
             currentTargetVirtual->setAssignedRegister(candidate);
             candidate->setAssignedRegister(currentTargetVirtual);
             candidate->setState(targetRegister->getState());
-            self()->cg()->traceRegAssigned(currentTargetVirtual, candidate);
-            self()->cg()->traceRAInstruction(instr);
+            if (self()->cg()->comp()->getOption(TR_TraceRA))
+               {
+               self()->cg()->traceRegAssigned(currentTargetVirtual, candidate);
+               self()->cg()->traceRAInstruction(instr);
+               }
             self()->cg()->resetRegisterAssignmentFlag(TR_RegisterSpilled); // the spill (if any) has been traced
             }
 
@@ -1280,7 +1322,10 @@ void OMR::X86::Machine::coerceGPRegisterAssignment(TR::Instruction      *current
          }
 
       self()->cg()->resetRegisterAssignmentFlag(TR_IndirectCoercion);
-      self()->cg()->traceRegAssigned(virtualRegister, targetRegister);
+      if (self()->cg()->comp()->getOption(TR_TraceRA))
+         {
+         self()->cg()->traceRegAssigned(virtualRegister, targetRegister);
+         }
       }
 
    targetRegister->setState(TR::RealRegister::Assigned, virtualRegister->isPlaceholderReg());
@@ -1294,6 +1339,7 @@ void OMR::X86::Machine::coerceXMMRegisterAssignment(TR::Instruction          *cu
                                                 TR::RealRegister::RegNum  regNum,
                                                 bool                     coerceToSatisfyRegDeps)
    {
+   TR::Compilation *comp = self()->cg()->comp();
    TR::RealRegister *targetRegister          = _registerFile[regNum];
    TR::RealRegister    *currentAssignedRegister = virtualRegister->getAssignedRealRegister();
    TR::Instruction     *instr                   = NULL;
@@ -1313,8 +1359,8 @@ void OMR::X86::Machine::coerceXMMRegisterAssignment(TR::Instruction          *cu
          if (virtualRegister->getKind() == TR_VRF)
             {
             TR::InstOpCode::Mnemonic movOpcode;
-            movOpcode = self()->cg()->comp()->target().cpu.supportsAVX() ? InstOpCode::VMOVDQUYmmYmm : TR::InstOpCode::MOVDQURegReg;
-            movOpcode = self()->cg()->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F) ? InstOpCode::VMOVDQUZmmZmm : movOpcode;
+            movOpcode = comp->target().cpu.supportsAVX() ? InstOpCode::VMOVDQUYmmYmm : TR::InstOpCode::MOVDQURegReg;
+            movOpcode = comp->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F) ? InstOpCode::VMOVDQUZmmZmm : movOpcode;
 
             instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction,
                                                 movOpcode,
@@ -1340,9 +1386,12 @@ void OMR::X86::Machine::coerceXMMRegisterAssignment(TR::Instruction          *cu
          }
       self()->cg()->removeBetterSpillPlacementCandidate(targetRegister);
 
-      self()->cg()->traceRegAssigned(virtualRegister, targetRegister);
-      if (instr)
-         self()->cg()->traceRAInstruction(instr);
+      if (comp->getOption(TR_TraceRA))
+         {
+         self()->cg()->traceRegAssigned(virtualRegister, targetRegister);
+         if (instr)
+            self()->cg()->traceRAInstruction(instr);
+         }
       }
    else if (targetRegister->getState() == TR::RealRegister::Blocked)
       {
@@ -1360,21 +1409,33 @@ void OMR::X86::Machine::coerceXMMRegisterAssignment(TR::Instruction          *cu
             }
          else if (virtualRegister->getKind() == TR_VRF)
             {
-            xchgOp = self()->cg()->comp()->target().cpu.supportsAVX() ? InstOpCode::VXORPDYmmYmm : TR::InstOpCode::XORPDRegReg;
-            xchgOp = self()->cg()->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F) ? InstOpCode::VPXORDZmmZmm : xchgOp;
+            xchgOp = comp->target().cpu.supportsAVX() ? InstOpCode::VXORPDYmmYmm : TR::InstOpCode::XORPDRegReg;
+            xchgOp = comp->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F) ? InstOpCode::VPXORDZmmZmm : xchgOp;
             }
          else
             {
             xchgOp = TR::InstOpCode::XORPDRegReg;
             }
 
-         self()->cg()->traceRegAssigned(currentTargetVirtual, currentAssignedRegister);
+         if (comp->getOption(TR_TraceRA))
+            {
+            self()->cg()->traceRegAssigned(currentTargetVirtual, currentAssignedRegister);
+            }
          instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, xchgOp, currentAssignedRegister, targetRegister, self()->cg());
-         self()->cg()->traceRAInstruction(instr);
+         if (comp->getOption(TR_TraceRA))
+            {
+            self()->cg()->traceRAInstruction(instr);
+            }
          instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, xchgOp, targetRegister, currentAssignedRegister, self()->cg());
-         self()->cg()->traceRAInstruction(instr);
+         if (comp->getOption(TR_TraceRA))
+            {
+            self()->cg()->traceRAInstruction(instr);
+            }
          instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, xchgOp, currentAssignedRegister, targetRegister, self()->cg());
-         self()->cg()->traceRAInstruction(instr);
+         if (comp->getOption(TR_TraceRA))
+            {
+            self()->cg()->traceRAInstruction(instr);
+            }
          currentAssignedRegister->setState(TR::RealRegister::Blocked);
          currentAssignedRegister->setAssignedRegister(currentTargetVirtual);
          currentTargetVirtual->setAssignedRegister(currentAssignedRegister);
@@ -1401,8 +1462,8 @@ void OMR::X86::Machine::coerceXMMRegisterAssignment(TR::Instruction          *cu
             if (virtualRegister->getKind() == TR_VRF)
                {
                TR::InstOpCode::Mnemonic movOpcode;
-               movOpcode = self()->cg()->comp()->target().cpu.supportsAVX() ? InstOpCode::VMOVDQUYmmYmm : TR::InstOpCode::MOVDQURegReg;
-               movOpcode = self()->cg()->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F) ? InstOpCode::VMOVDQUZmmZmm : movOpcode;
+               movOpcode = comp->target().cpu.supportsAVX() ? InstOpCode::VMOVDQUYmmYmm : TR::InstOpCode::MOVDQURegReg;
+               movOpcode = comp->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F) ? InstOpCode::VMOVDQUZmmZmm : movOpcode;
                instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, movOpcode, targetRegister, candidate, self()->cg());
                }
             else if (currentTargetVirtual->isSinglePrecision())
@@ -1416,8 +1477,11 @@ void OMR::X86::Machine::coerceXMMRegisterAssignment(TR::Instruction          *cu
             candidate->setState(TR::RealRegister::Blocked);
             candidate->setAssignedRegister(currentTargetVirtual);
             currentTargetVirtual->setAssignedRegister(candidate);
-            self()->cg()->traceRegAssigned(currentTargetVirtual, candidate);
-            self()->cg()->traceRAInstruction(instr);
+            if (comp->getOption(TR_TraceRA))
+               {
+               self()->cg()->traceRegAssigned(currentTargetVirtual, candidate);
+               self()->cg()->traceRAInstruction(instr);
+               }
             self()->cg()->resetRegisterAssignmentFlag(TR_RegisterSpilled); // the spill (if any) has been traced
             }
 
@@ -1430,7 +1494,10 @@ void OMR::X86::Machine::coerceXMMRegisterAssignment(TR::Instruction          *cu
 
       self()->cg()->removeBetterSpillPlacementCandidate(targetRegister);
       self()->cg()->resetRegisterAssignmentFlag(TR_IndirectCoercion);
-      self()->cg()->traceRegAssigned(virtualRegister, targetRegister);
+      if (comp->getOption(TR_TraceRA))
+         {
+         self()->cg()->traceRegAssigned(virtualRegister, targetRegister);
+         }
       }
    else if (targetRegister->getState() == TR::RealRegister::Assigned)
       {
@@ -1446,21 +1513,33 @@ void OMR::X86::Machine::coerceXMMRegisterAssignment(TR::Instruction          *cu
             }
          else if (virtualRegister->getKind() == TR_VRF)
             {
-            xchgOp = self()->cg()->comp()->target().cpu.supportsAVX() ? InstOpCode::VXORPDYmmYmm : TR::InstOpCode::XORPDRegReg;
-            xchgOp = self()->cg()->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F) ? InstOpCode::VPXORDZmmZmm : xchgOp;
+            xchgOp = comp->target().cpu.supportsAVX() ? InstOpCode::VXORPDYmmYmm : TR::InstOpCode::XORPDRegReg;
+            xchgOp = comp->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F) ? InstOpCode::VPXORDZmmZmm : xchgOp;
             }
          else
             {
             xchgOp = TR::InstOpCode::XORPDRegReg;
             }
 
-         self()->cg()->traceRegAssigned(currentTargetVirtual, currentAssignedRegister);
+         if (comp->getOption(TR_TraceRA))
+            {
+            self()->cg()->traceRegAssigned(currentTargetVirtual, currentAssignedRegister);
+            }
          instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, xchgOp, currentAssignedRegister, targetRegister, self()->cg());
-         self()->cg()->traceRAInstruction(instr);
+         if (comp->getOption(TR_TraceRA))
+            {
+            self()->cg()->traceRAInstruction(instr);
+            }
          instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, xchgOp, targetRegister, currentAssignedRegister, self()->cg());
-         self()->cg()->traceRAInstruction(instr);
+         if (comp->getOption(TR_TraceRA))
+            {
+            self()->cg()->traceRAInstruction(instr);
+            }
          instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, xchgOp, currentAssignedRegister, targetRegister, self()->cg());
-         self()->cg()->traceRAInstruction(instr);
+         if (comp->getOption(TR_TraceRA))
+            {
+            self()->cg()->traceRAInstruction(instr);
+            }
          currentAssignedRegister->setState(TR::RealRegister::Assigned, currentTargetVirtual->isPlaceholderReg());
          currentAssignedRegister->setAssignedRegister(currentTargetVirtual);
          currentTargetVirtual->setAssignedRegister(currentAssignedRegister);
@@ -1486,8 +1565,8 @@ void OMR::X86::Machine::coerceXMMRegisterAssignment(TR::Instruction          *cu
             if (virtualRegister->getKind() == TR_VRF)
                {
                TR::InstOpCode::Mnemonic movOpcode;
-               movOpcode = self()->cg()->comp()->target().cpu.supportsAVX() ? InstOpCode::VMOVDQUYmmYmm : TR::InstOpCode::MOVDQURegReg;
-               movOpcode = self()->cg()->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F) ? InstOpCode::VMOVDQUZmmZmm : movOpcode;
+               movOpcode = comp->target().cpu.supportsAVX() ? InstOpCode::VMOVDQUYmmYmm : TR::InstOpCode::MOVDQURegReg;
+               movOpcode = comp->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F) ? InstOpCode::VMOVDQUZmmZmm : movOpcode;
                instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, movOpcode, targetRegister, candidate, self()->cg());
                }
             else if (currentTargetVirtual->isSinglePrecision())
@@ -1501,8 +1580,11 @@ void OMR::X86::Machine::coerceXMMRegisterAssignment(TR::Instruction          *cu
             candidate->setState(TR::RealRegister::Assigned, currentTargetVirtual->isPlaceholderReg());
             candidate->setAssignedRegister(currentTargetVirtual);
             currentTargetVirtual->setAssignedRegister(candidate);
-            self()->cg()->traceRegAssigned(currentTargetVirtual, candidate);
-            self()->cg()->traceRAInstruction(instr);
+            if (comp->getOption(TR_TraceRA))
+               {
+               self()->cg()->traceRegAssigned(currentTargetVirtual, candidate);
+               self()->cg()->traceRAInstruction(instr);
+               }
             self()->cg()->setRegisterAssignmentFlag(TR_RegisterSpilled); // the spill (if any) has been traced
             }
 
@@ -1514,7 +1596,10 @@ void OMR::X86::Machine::coerceXMMRegisterAssignment(TR::Instruction          *cu
          }
 
       self()->cg()->resetRegisterAssignmentFlag(TR_IndirectCoercion);
-      self()->cg()->traceRegAssigned(virtualRegister, targetRegister);
+      if (comp->getOption(TR_TraceRA))
+         {
+         self()->cg()->traceRegAssigned(virtualRegister, targetRegister);
+         }
       }
 
    targetRegister->setState(TR::RealRegister::Assigned, virtualRegister->isPlaceholderReg());
@@ -1539,9 +1624,12 @@ void OMR::X86::Machine::swapGPRegisters(TR::Instruction          *currentInstruc
    realReg1->setAssignedRegister(virtReg2);
    realReg2->setAssignedRegister(virtReg1);
 
-   self()->cg()->traceRegAssigned(virtReg1, realReg2);
-   self()->cg()->traceRegAssigned(virtReg2, realReg1);
-   self()->cg()->traceRAInstruction(instr);
+   if (self()->cg()->comp()->getOption(TR_TraceRA))
+      {
+      self()->cg()->traceRegAssigned(virtReg1, realReg2);
+      self()->cg()->traceRegAssigned(virtReg2, realReg1);
+      self()->cg()->traceRAInstruction(instr);
+      }
    }
 
 void OMR::X86::Machine::coerceGPRegisterAssignment(TR::Instruction   *currentInstruction,
@@ -1569,7 +1657,10 @@ void OMR::X86::Machine::coerceGPRegisterAssignment(TR::Instruction   *currentIns
    virtualRegister->setAssignedRegister(candidate);
    virtualRegister->setAssignedAsByteRegister(false);
 
-   self()->cg()->traceRegAssigned(virtualRegister, candidate);
+   if (self()->cg()->comp()->getOption(TR_TraceRA))
+      {
+      self()->cg()->traceRegAssigned(virtualRegister, candidate);
+      }
    }
 
 

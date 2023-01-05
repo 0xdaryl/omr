@@ -773,7 +773,10 @@ OMR::Z::RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstr
             // the reverse spill so we could re-spill to the same slot now
             TR::Node *currentNode = currentInstruction->getNode();
             TR::RealRegister *assignedReg = toRealRegister(virtReg->getAssignedRegister());
-            cg->traceRegisterAssignment ("\nOOL: Found %R spilled in main line and reused inside OOL", virtReg);
+            if (comp->getOption(TR_TraceRA))
+               {
+               cg->traceRegisterAssignment ("\nOOL: Found %R spilled in main line and reused inside OOL", virtReg);
+               }
             TR::MemoryReference * tempMR = generateS390MemoryReference(currentNode, virtReg->getBackingStorage()->getSymbolReference(), cg);
             TR::InstOpCode::Mnemonic opCode;
             TR_RegisterKinds rk = virtReg->getKind();
@@ -804,7 +807,10 @@ OMR::Z::RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstr
 
             TR::Instruction *inst = isVector ? generateVRXInstruction(cg, opCode, currentNode, assignedReg, tempMR, 0, currentInstruction) :
                                                    generateRXInstruction (cg, opCode, currentNode, assignedReg, tempMR, currentInstruction);
-            cg->traceRAInstruction(inst);
+            if (comp->getOption(TR_TraceRA))
+               {
+               cg->traceRAInstruction(inst);
+               }
 
             assignedReg->setAssignedRegister(NULL);
             virtReg->setAssignedRegister(NULL);
@@ -1402,7 +1408,11 @@ OMR::Z::RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstr
               assignedRealRegister->setState(TR::RealRegister::Unlatched);
               if (assignedRealRegister->getState() == TR::RealRegister::Locked)
                  assignedRealRegister->setAssignedRegister(NULL);
-              cg->traceRegFreed(dependentRegister, assignedRealRegister);
+
+              if (comp->getOption(TR_TraceRA))
+                 {
+                 cg->traceRegFreed(dependentRegister, assignedRealRegister);
+                 }
               }
             }
          }
@@ -1429,7 +1439,10 @@ OMR::Z::RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstr
             if (assignedRegister->getState() == TR::RealRegister::Locked)
                assignedRegister->setAssignedRegister(NULL);
 
-            cg->traceRegFreed(dependentRegisterHigh, assignedRegister);
+            if (comp->getOption(TR_TraceRA))
+               {
+               cg->traceRegFreed(dependentRegisterHigh, assignedRegister);
+               }
             }
 
          TR::Register * dependentRegisterLow = dependentRegister->getLowOrder();
@@ -1454,7 +1467,10 @@ OMR::Z::RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstr
             assignedRegister->setState(TR::RealRegister::Unlatched);
             if (assignedRegister->getState() == TR::RealRegister::Locked)
                assignedRegister->setAssignedRegister(NULL);
-            cg->traceRegFreed(dependentRegisterLow, assignedRegister);
+            if (comp->getOption(TR_TraceRA))
+               {
+               cg->traceRegFreed(dependentRegisterLow, assignedRegister);
+               }
             }
          }
       }

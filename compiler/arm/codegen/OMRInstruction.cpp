@@ -256,12 +256,18 @@ void TR::ARMConditionalBranchInstruction::assignRegisters(TR_RegisterKinds kindT
       //
       TR_ARMOutOfLineCodeSection *oi = cg()->findOutLinedInstructionsFromLabel(getLabelSymbol());
       TR_ASSERT(oi, "Could not find ARMOutOfLineCodeSection stream from label.  instr=%p, label=%p\n", this, getLabelSymbol());
-      if (cg()->getDebug())
-            cg()->traceRegisterAssignment("\nOOL: Start register assignment in OOL section");
+      if (cg()->comp()->getOption(TR_TraceRA))
+         {
+         cg()->traceRegisterAssignment("\nOOL: Start register assignment in OOL section");
+         }
+
       if (!oi->hasBeenRegisterAssigned())
          oi->assignRegisters(kindToBeAssigned);
-      if (cg()->getDebug())
-            cg()->traceRegisterAssignment("\nOOL: Finished register assignment in OOL section");
+
+      if (cg()->comp()->getOption(TR_TraceRA))
+         {
+         cg()->traceRegisterAssignment("\nOOL: Finished register assignment in OOL section");
+         }
 
       // Unlock the free spill list.
       //
