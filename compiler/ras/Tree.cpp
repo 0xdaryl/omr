@@ -935,17 +935,22 @@ TR_Debug::formattedString(char *buf, uint32_t bufLen, const char *format, va_lis
    return buf;
    }
 
-void TR_PrettyPrinterString::appendf(const char* format, ...)
+int32_t TR_PrettyPrinterString::appendf(const char* format, ...)
    {
+   int32_t appendLen = 0;
    va_list args;
    va_start (args, format);
-   len += vsnprintf(buffer+len, maxBufferLength-len, format, args);
+   appendLen = vsnprintf(buffer+len, maxBufferLength-len, format, args);
+   len += appendLen;
    va_end(args);
 
+   return appendLen;
    }
 
-void TR_PrettyPrinterString::appends(char const *str)
+int32_t TR_PrettyPrinterString::appends(char const *str)
    {
+   int32_t appendLen = 0;
+
    size_t const strLen0 = strlen(str) + 1; // include terminating '\0'
    size_t const bufLenBytes = maxBufferLength-len;
 
@@ -954,14 +959,17 @@ void TR_PrettyPrinterString::appends(char const *str)
    if (strLen0 < bufLenBytes)
       {
       memcpy(buf, str, strLen0);
-      len += static_cast<int32_t>(strLen0 - 1);
+      appendLen = static_cast<int32_t>(strLen0 - 1);
       }
    else if (bufLenBytes != 0)
       {
       memcpy(buf, str, bufLenBytes-1);
       buf[bufLenBytes-1] = '\0';
-      len += static_cast<int32_t>(bufLenBytes - 1);
+      appendLen = static_cast<int32_t>(bufLenBytes - 1);
       }
+
+   len += appendLen;
+   return appendLen;
    }
 
 int32_t

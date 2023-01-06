@@ -1263,30 +1263,29 @@ TR_Debug::print(TR::SymbolReference * symRef, TR_PrettyPrinterString& output, bo
          otherInfo.appendf( " [flags 0x%x 0x%x ]", sym->getFlags(),sym->getFlags2());
       }
 
-   numSpaces = getNumSpacesAfterIndex( symRef->getReferenceNumber(), getIntLength(_comp->getSymRefTab()->baseArray.size()) );
-
    symRefNum.appendf("#%d", symRef->getReferenceNumber());
 
    if (verbose)
       {
-       output.appendf("%s:%*s", symRefNum.getStr(), numSpaces, "");
+      numSpaces = getNumSpacesAfterIndex( symRef->getReferenceNumber(), getIntLength(_comp->getSymRefTab()->baseArray.size()) );
+      output.appendf("%s:%*s", symRefNum.getStr(), numSpaces, "");
 
-       if (hideHelperMethodInfo)
-          output.appendf(" %s[%s]%s", labelSymbol.getStr(), symRefOffset.getStr(), symRefObjIndex.getStr());
-       else
-          output.appendf(" %s%s[%s%s%s]%s%s", symRefName.getStr(), labelSymbol.getStr(), symRefKind.getStr(), symRefOffset.isEmpty() ? "" : " ",
-                symRefOffset.getStr(), symRefObjIndex.getStr(), otherInfo.getStr());
+      if (hideHelperMethodInfo)
+         output.appendf(" %s[%s]%s", labelSymbol.getStr(), symRefOffset.getStr(), symRefObjIndex.getStr());
+      else
+         output.appendf(" %s%s[%s%s%s]%s%s", symRefName.getStr(), labelSymbol.getStr(), symRefKind.getStr(), symRefOffset.isEmpty() ? "" : " ",
+               symRefOffset.getStr(), symRefObjIndex.getStr(), otherInfo.getStr());
 
-       output.appendf(" [%s]", symRefAddress.getStr());
+      output.appendf(" [%s]", symRefAddress.getStr());
 
-       if(sym)
-          {
-          output.appendf(" (%s)",TR::DataType::getName(sym->getDataType()));
-          if (sym->isVolatile())
-             {
-             output.appends(" [volatile]");
-             }
-          }
+      if (sym)
+         {
+         output.appendf(" (%s)",TR::DataType::getName(sym->getDataType()));
+         if (sym->isVolatile())
+            {
+            output.appends(" [volatile]");
+            }
+         }
       }
    else
       {
@@ -5150,4 +5149,67 @@ void TR_Debug::printDebugCounters(TR::DebugCounterGroup *counterGroup, const cha
          }
       }
 
+   }
+
+const char *TR_Debug::cachedIndentationStrings[] =
+   {
+   "",                                 // 0
+   " ",                                // 1
+   "  ",                               // 2
+   "   ",                              // 3
+   "    ",                             // 4
+   "     ",                            // 5
+   "      ",                           // 6
+   "       ",                          // 7
+   "        ",                         // 8
+   "         ",                        // 9
+   "          ",                       // 10
+   "           ",                      // 11
+   "            ",                     // 12
+   "             ",                    // 13
+   "              ",                   // 14
+   "               ",                  // 15
+   "                ",                 // 16
+   "                 ",                // 17
+   "                  ",               // 18
+   "                   ",              // 19
+   "                    ",             // 20
+   "                     ",            // 21
+   "                      ",           // 22
+   "                       ",          // 23
+   "                        ",         // 24
+   "                         ",        // 25
+   "                          ",       // 26
+   "                           ",      // 27
+   "                            ",     // 28
+   "                             ",    // 29
+   "                              ",   // 30
+   "                               ",  // 31
+   "                                "  // 32
+   };
+
+void
+TR_Debug::addIndentation(TR::Logger *log, uint32_t indentation)
+   {
+   if (indentation <= maxCachedIndentationStringLength)
+      {
+      log->prints(cachedIndentationStrings[indentation]);
+      }
+   else
+      {
+      log->printf("%*s", indentation, "");
+      }
+   }
+
+void
+TR_Debug::addIndentation(TR_PrettyPrinterString &output, uint32_t indentation)
+   {
+   if (indentation <= maxCachedIndentationStringLength)
+      {
+      output.appends(cachedIndentationStrings[indentation]);
+      }
+   else
+      {
+      output.appendf("%*s", indentation, "");
+      }
    }

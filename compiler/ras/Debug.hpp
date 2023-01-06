@@ -794,6 +794,11 @@ public:
    // Number of spaces that must be inserted after index when index's length < maxIndexLength so the information following it will be aligned
    uint32_t getNumSpacesAfterIndex( uint32_t index, uint32_t maxIndexLength ) const;
 
+   void addIndentation(TR::Logger *log, uint32_t indentation);
+   void addIndentation(TR_PrettyPrinterString &output, uint32_t indentation);
+
+   static const char *cachedIndentationStrings[];
+
 #if defined(TR_TARGET_X86)
    void printPrefix(TR::Logger *log, TR::Instruction *instr);
    int32_t printPrefixAndMnemonicWithoutBarrier(TR::Logger *log, TR::Instruction *instr, int32_t barrier);
@@ -1289,8 +1294,10 @@ class TR_PrettyPrinterString
        *
        * @param[in] format : null-terminated string to append with optional format specifiers
        * @param[in] ... : optional arguments for format specifiers
+       *
+       * @return The number of characters written excluding the trailing '\0'.
        */
-      void appendf(char const *format, ...);
+      int32_t appendf(char const *format, ...);
 
       /**
        * @brief Append a null-terminated string to the buffer.  No format specifiers
@@ -1298,8 +1305,10 @@ class TR_PrettyPrinterString
        *        null-terminated.
        *
        * @param[in] str : null-terminated string to append
+       *
+       * @return The number of characters written excluding the trailing '\0'.
        */
-      void appends(char const *str);
+      int32_t appends(char const *str);
 
       const char* getStr() {return buffer;}
       int32_t getLength() {return len;}
