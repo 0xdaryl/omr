@@ -986,7 +986,10 @@ TR_Debug::print(TR::Logger *log, TR::Node *node, uint32_t indentation, bool prin
       if (node->getOpCode().isLoadConst())
          printLoadConst(log, node);
 #ifdef J9_PROJECT_SPECIFIC
-      printBCDNodeInfo(log, node);
+      if (comp()->cg()->getSupportsBCDILOpcodes())
+         {
+         printBCDNodeInfo(log, node);
+         }
 #endif
       log->prints("\n");
       log->flush();
@@ -1218,7 +1221,10 @@ TR_Debug::printWithFixedPrefix(TR::Logger *log, TR::Node *node, uint32_t indenta
       if (node->getOpCode().isLoadConst())
          printLoadConst(log, node);
 #ifdef J9_PROJECT_SPECIFIC
-      printBCDNodeInfo(log, node);
+      if (comp()->cg()->getSupportsBCDILOpcodes())
+         {
+         printBCDNodeInfo(log, node);
+         }
 #endif
 
       if (_comp->cg()->getAppendInstruction() != NULL && node->getDataType() != TR::NoType && node->getRegister() != NULL)
@@ -1715,7 +1721,10 @@ TR_Debug::printNodeInfo(TR::Node *node, TR_PrettyPrinterString& output, bool pre
       }
 
 #ifdef J9_PROJECT_SPECIFIC
-   printBCDNodeInfo(node, output);
+   if (comp()->cg()->getSupportsBCDILOpcodes())
+      {
+      printBCDNodeInfo(node, output);
+      }
 #endif
    }
 
