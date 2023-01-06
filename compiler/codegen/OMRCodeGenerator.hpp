@@ -1721,6 +1721,9 @@ public:
    bool getSupportsCompactedLocals() {return _flags1.testAny(SupportsCompactedLocals);}
    void setSupportsCompactedLocals() {_flags1.set(SupportsCompactedLocals);}
 
+   bool getSupportsBCDILOpCodes() {return _flags1.testAny(SupportsBCDILOpCodes);}
+   void setSupportsBCDILOpCodes() {_flags1.set(SupportsBCDILOpCodes);}
+
    bool getSupportsCurrentTimeMaxPrecision() {return _flags2.testAny(SupportsCurrentTimeMaxPrecision);}
    void setSupportsCurrentTimeMaxPrecision() {_flags2.set(SupportsCurrentTimeMaxPrecision);}
 
@@ -1825,7 +1828,7 @@ public:
       SupportsByteswap                                   = 0x00400000,
       SupportsScaledIndexAddressing                      = 0x00800000,
       SupportsCompactedLocals                            = 0x01000000,
-      // AVAILABLE                                       = 0x02000000,
+      SupportsBCDILOpCodes                               = 0x02000000,
       UsesRegisterPairsForLongs                          = 0x04000000,
       SupportsArraySet                                   = 0x08000000,
       // AVAILABLE                                       = 0x10000000,
