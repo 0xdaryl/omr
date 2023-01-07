@@ -5151,7 +5151,7 @@ void TR_Debug::printDebugCounters(TR::DebugCounterGroup *counterGroup, const cha
 
    }
 
-const int32_t TR::Debug::maxCachedIndentationStringLength = 32;
+const int32_t TR_Debug::maxCachedIndentationStringLength = 32;
 
 const char *TR_Debug::cachedIndentationStrings[] =
    {
