@@ -1233,7 +1233,10 @@ TR_Debug::printWithFixedPrefix(TR::Logger *log, TR::Node *node, uint32_t indenta
          }
 
       if (node->getOpCode().isLoadConst())
+         {
          printLoadConst(log, node);
+         }
+
 #ifdef J9_PROJECT_SPECIFIC
       if (comp()->cg()->getSupportsBCDILOpCodes())
          {
