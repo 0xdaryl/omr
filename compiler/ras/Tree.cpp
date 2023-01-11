@@ -1225,7 +1225,7 @@ TR_Debug::printWithFixedPrefix(TR::Logger *log, TR::Node *node, uint32_t indenta
          log->prints(prefix);
          int32_t len = log->printf("n%dn", globalIndex);
          int32_t indexPadding = len > (MAX_GLOBAL_INDEX_LENGTH+2) ? 0 : (MAX_GLOBAL_INDEX_LENGTH+2-len);
-         log->printf("%s(%3d)%s==>%s", whitespace(indexPadding), node->getReferenceCount(), whiteSpace(indentation), getName(node->getOpCode()));
+         log->printf("%*s(%3d)%*s==>%s", indexPadding, "", node->getReferenceCount(), indentation, "", getName(node->getOpCode()));
          }
       else
          {
