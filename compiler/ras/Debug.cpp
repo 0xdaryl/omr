@@ -5191,7 +5191,7 @@ const char *TR_Debug::cachedWhitespaceStrings[] =
    };
 
 void
-TR_Debug::insertWhitespace(TR::Logger *log, uint32_t indentation)
+TR_Debug::whitespace(TR::Logger *log, uint32_t indentation)
    {
    if (indentation <= maxCachedWhitespaceStringLength)
       {
@@ -5204,7 +5204,7 @@ TR_Debug::insertWhitespace(TR::Logger *log, uint32_t indentation)
    }
 
 void
-TR_Debug::insertWhitespace(TR_PrettyPrinterString &output, uint32_t indentation)
+TR_Debug::whitespace(TR_PrettyPrinterString &output, uint32_t indentation)
    {
    if (indentation <= maxCachedWhitespaceStringLength)
       {

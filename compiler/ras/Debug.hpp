@@ -794,8 +794,8 @@ public:
    // Number of spaces that must be inserted after index when index's length < maxIndexLength so the information following it will be aligned
    uint32_t getNumSpacesAfterIndex( uint32_t index, uint32_t maxIndexLength ) const;
 
-   void addIndentation(TR::Logger *log, uint32_t indentation);
-   void addIndentation(TR_PrettyPrinterString &output, uint32_t indentation);
+   void whitespace(TR::Logger *log, uint32_t indentation);
+   void whitespace(TR_PrettyPrinterString &output, uint32_t indentation);
 
    static const char *cachedWhitespaceStrings[];
    static const int32_t maxCachedWhitespaceStringLength;
