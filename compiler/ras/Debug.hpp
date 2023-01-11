@@ -797,8 +797,8 @@ public:
    void addIndentation(TR::Logger *log, uint32_t indentation);
    void addIndentation(TR_PrettyPrinterString &output, uint32_t indentation);
 
-   static const char *cachedIndentationStrings[];
-   static const int32_t maxCachedIndentationStringLength;
+   static const char *cachedWhitespaceStrings[];
+   static const int32_t maxCachedWhitespaceStringLength;
 
 #if defined(TR_TARGET_X86)
    void printPrefix(TR::Logger *log, TR::Instruction *instr);

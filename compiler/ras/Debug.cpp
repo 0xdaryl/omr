@@ -1267,8 +1267,8 @@ TR_Debug::print(TR::SymbolReference * symRef, TR_PrettyPrinterString& output, bo
 
    if (verbose)
       {
-      numSpaces = getNumSpacesAfterIndex( symRef->getReferenceNumber(), getIntLength(_comp->getSymRefTab()->baseArray.size()) );
-      output.appendf("%s:%*s", symRefNum.getStr(), numSpaces, "");
+      const int32_t numSpaces = 6;
+      output.appendf("%*s:", numSpaces, symRefNum.getStr());
 
       if (hideHelperMethodInfo)
          output.appendf(" %s[%s]%s", labelSymbol.getStr(), symRefOffset.getStr(), symRefObjIndex.getStr());
@@ -5151,9 +5151,9 @@ void TR_Debug::printDebugCounters(TR::DebugCounterGroup *counterGroup, const cha
 
    }
 
-const int32_t TR_Debug::maxCachedIndentationStringLength = 32;
+const int32_t TR_Debug::maxCachedWhitespaceStringLength = 32;
 
-const char *TR_Debug::cachedIndentationStrings[] =
+const char *TR_Debug::cachedWhitespaceStrings[] =
    {
    "",                                 // 0
    " ",                                // 1
@@ -5187,15 +5187,15 @@ const char *TR_Debug::cachedIndentationStrings[] =
    "                             ",    // 29
    "                              ",   // 30
    "                               ",  // 31
-   "                                "  // 32 (maxCachedIndentationStringLength)
+   "                                "  // 32 (maxCachedWhitespaceStringLength)
    };
 
 void
-TR_Debug::addIndentation(TR::Logger *log, uint32_t indentation)
+TR_Debug::insertWhitespace(TR::Logger *log, uint32_t indentation)
    {
-   if (indentation <= maxCachedIndentationStringLength)
+   if (indentation <= maxCachedWhitespaceStringLength)
       {
-      log->prints(cachedIndentationStrings[indentation]);
+      log->prints(cachedWhitespaceStrings[indentation]);
       }
    else
       {
@@ -5204,11 +5204,11 @@ TR_Debug::addIndentation(TR::Logger *log, uint32_t indentation)
    }
 
 void
-TR_Debug::addIndentation(TR_PrettyPrinterString &output, uint32_t indentation)
+TR_Debug::insertWhitespace(TR_PrettyPrinterString &output, uint32_t indentation)
    {
-   if (indentation <= maxCachedIndentationStringLength)
+   if (indentation <= maxCachedWhitespaceStringLength)
       {
-      output.appends(cachedIndentationStrings[indentation]);
+      output.appends(cachedWhitespaceStrings[indentation]);
       }
    else
       {

@@ -1219,7 +1219,13 @@ TR_Debug::printWithFixedPrefix(TR::Logger *log, TR::Node *node, uint32_t indenta
       {
       if (printRefCounts)
          {
-         log->printf("%s%s%dn%*s  (%3d) %*s==>%s", prefix, globalIndexPrefix, globalIndex, numSpaces, "", node->getReferenceCount(), indentation, " ", getName(node->getOpCode()));
+         log->printf("KKK1 %s%s%dn%*s  (%3d) %*s==>%s", prefix, globalIndexPrefix, globalIndex, numSpaces, "", node->getReferenceCount(), indentation, " ", getName(node->getOpCode()));
+
+         log->prints("KKK2 ");
+         log->prints(prefix);
+         int32_t len = log->printf("n%dn", globalIndex);
+         int32_t indexPadding = len > (MAX_GLOBAL_INDEX_LENGTH+2) ? 0 : (MAX_GLOBAL_INDEX_LENGTH+2-len);
+         log->printf("%s(%3d)%s==>%s", insertWhitespace(indexPadding), node->getReferenceCount(), insertWhiteSpace(indentation), getName(node->getOpCode()));
          }
       else
          {
@@ -1242,6 +1248,7 @@ TR_Debug::printWithFixedPrefix(TR::Logger *log, TR::Node *node, uint32_t indenta
          log->prints(output.getStr());
          output.reset();
          }
+
       if (!debug("disableDumpNodeFlags"))
          printNodeFlags(log, node);
 
