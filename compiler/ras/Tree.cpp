@@ -1221,7 +1221,7 @@ TR_Debug::printWithFixedPrefix(TR::Logger *log, TR::Node *node, uint32_t indenta
          {
          log->printf("KKK1 %s%s%dn%*s  (%3d) %*s==>%s", prefix, globalIndexPrefix, globalIndex, numSpaces, "", node->getReferenceCount(), indentation, " ", getName(node->getOpCode()));
 
-         log->prints("KKK2 ");
+         log->prints("\nKKK2 ");
          log->prints(prefix);
          int32_t len = log->printf("n%dn", globalIndex);
          int32_t indexPadding = len > (MAX_GLOBAL_INDEX_LENGTH+2) ? 0 : (MAX_GLOBAL_INDEX_LENGTH+2-len);
