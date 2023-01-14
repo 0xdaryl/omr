@@ -1219,7 +1219,7 @@ TR_Debug::printWithFixedPrefix(TR::Logger *log, TR::Node *node, uint32_t indenta
       {
       if (printRefCounts)
          {
-         log->printf("KKK1 %s%s%dn%*s  (%3d) %*s==>%s", prefix, globalIndexPrefix, globalIndex, numSpaces, "", node->getReferenceCount(), indentation, " ", getName(node->getOpCode()));
+         log->printf("\nKKK1 %s%s%dn%*s  (%3d) %*s==>%s", prefix, globalIndexPrefix, globalIndex, numSpaces, "", node->getReferenceCount(), indentation, " ", getName(node->getOpCode()));
 
          log->prints("\nKKK2 ");
          log->prints(prefix);
