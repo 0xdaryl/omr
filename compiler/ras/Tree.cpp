@@ -1213,6 +1213,14 @@ TR_Debug::printWithFixedPrefix(TR::Logger *log, TR::Node *node, uint32_t indenta
    globalIndex = node->getGlobalIndex();
    numSpaces = getNumSpacesAfterIndex( globalIndex, MAX_GLOBAL_INDEX_LENGTH );
 
+   // Number of characters printed via logging output
+   //
+   int32_t len = 0;
+
+   // Amount of whitespace padding to insert
+   //
+   int32_t whitespaceChars = 0;
+
    // If this node has already been printed, just print a reference to it.
    //
    if (_nodeChecklist.isSet(node->getGlobalIndex()))
@@ -1223,13 +1231,20 @@ TR_Debug::printWithFixedPrefix(TR::Logger *log, TR::Node *node, uint32_t indenta
 
          log->prints("\nKKK2 ");
          log->prints(prefix);
-         int32_t len = log->printf("n%dn", globalIndex);
-         int32_t indexPadding = len > (MAX_GLOBAL_INDEX_LENGTH+2) ? 0+2 : (MAX_GLOBAL_INDEX_LENGTH+2-len+2);
-         log->printf("%*s(%3d)%*s==>%s", indexPadding, "", node->getReferenceCount(), indentation, "", getName(node->getOpCode()));
+         len = log->printf("n%dn", globalIndex);
+         whitespaceChars = len > (MAX_GLOBAL_INDEX_LENGTH+2) ? 0+3 : (MAX_GLOBAL_INDEX_LENGTH+2-len+3);
+         log->printf("%*s(%3d)%*s==>%s", whitespaceChars, "", node->getReferenceCount(), indentation, "", getName(node->getOpCode()));
          }
       else
          {
-         log->printf("%s%s%dn%*s  %*s==>%s", prefix, globalIndexPrefix, globalIndex, numSpaces, "", indentation, " ", getName(node->getOpCode()));
+         log->printf("\nKKK3 %s%s%dn%*s  %*s==>%s", prefix, globalIndexPrefix, globalIndex, numSpaces, "", indentation, " ", getName(node->getOpCode()));
+
+         log->prints("\nKKK4 ");
+         log->prints(prefix);
+         len = log->printf("n%dn", globalIndex);
+         whitespaceChars = len > (MAX_GLOBAL_INDEX_LENGTH+2) ? 0+3 : (MAX_GLOBAL_INDEX_LENGTH+2-len+3);
+         whitespaceChars += indentation;
+         log->printf("%*s==>%s", whitespaceChars, "", getName(node->getOpCode()));
          }
 
       if (node->getOpCode().isLoadConst())
