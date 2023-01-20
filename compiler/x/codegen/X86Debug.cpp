@@ -1737,6 +1737,39 @@ TR_RegisterSizes
 TR_Debug::getTargetSizeFromInstruction(TR::Instruction  *instr)
    {
 TIMER_FUNC(WW_TR_Debug_getTargetSizeFromInstruction, comp())
+
+   if (instr->getOpCode().hasIntTarget() != 0)
+      return TR_WordReg;
+   else if (instr->getOpCode().hasShortTarget() != 0)
+      return TR_HalfWordReg;
+   else if (instr->getOpCode().hasByteTarget() != 0)
+      return TR_ByteReg;
+   else if ((instr->getOpCode().hasLongTarget() != 0) || (instr->getOpCode().doubleFPOp() != 0))
+      return TR_DoubleWordReg;
+
+   OMR::X86::Encoding encoding = instr->getEncodingMethod();
+
+   if (encoding == OMR::X86::Default)
+      {
+      encoding = static_cast<OMR::X86::Encoding>(instr->getOpCode().info().vex_l);
+      }
+
+   if (encoding == OMR::X86::VEX_L128 || encoding == OMR::X86::EVEX_L128)
+      return TR_VectorReg128;
+   else if (encoding == OMR::X86::VEX_L256 || encoding == OMR::X86::EVEX_L256)
+      return TR_VectorReg256;
+   else if (encoding == OMR::X86::EVEX_L512)
+      return TR_VectorReg512;
+   else if (instr->getOpCode().hasXMMTarget())
+      return TR_QuadWordReg;
+   else if (instr->getOpCode().hasYMMTarget())
+      return TR_VectorReg256;
+   else if (instr->getOpCode().hasZMMTarget())
+      return TR_VectorReg512;
+   else
+      return TR_WordReg;
+
+#if 0
    TR_RegisterSizes targetSize;
 
    OMR::X86::Encoding encoding = instr->getEncodingMethod();
@@ -1770,12 +1803,46 @@ TIMER_FUNC(WW_TR_Debug_getTargetSizeFromInstruction, comp())
       targetSize = TR_WordReg;
 
    return targetSize;
+#endif
    }
 
 TR_RegisterSizes
 TR_Debug::getSourceSizeFromInstruction(TR::Instruction  *instr)
    {
 TIMER_FUNC(WW_TR_Debug_getSourceSizeFromInstruction, comp())
+
+   if (instr->getOpCode().hasIntSource() != 0)
+      return TR_WordReg;
+   else if (instr->getOpCode().hasShortSource() != 0)
+      return TR_HalfWordReg;
+   else if ((&instr->getOpCode())->hasByteSource())
+      return TR_ByteReg;
+   else if ((instr->getOpCode().hasLongSource() != 0) || (instr->getOpCode().doubleFPOp() != 0))
+      return TR_DoubleWordReg;
+
+   OMR::X86::Encoding encoding = instr->getEncodingMethod();
+
+   if (encoding == OMR::X86::Default)
+      {
+      encoding = static_cast<OMR::X86::Encoding>(instr->getOpCode().info().vex_l);
+      }
+
+   if (encoding == OMR::X86::VEX_L128 || encoding == OMR::X86::EVEX_L128)
+      return TR_VectorReg128;
+   else if (encoding == OMR::X86::VEX_L256 || encoding == OMR::X86::EVEX_L256)
+      return TR_VectorReg256;
+   else if (encoding == OMR::X86::EVEX_L512)
+      return TR_VectorReg512;
+   else if (instr->getOpCode().hasXMMSource())
+      return TR_QuadWordReg;
+   else if (instr->getOpCode().hasYMMSource())
+      return TR_VectorReg256;
+   else if (instr->getOpCode().hasZMMSource())
+      return TR_VectorReg512;
+   else
+      return TR_WordReg;
+
+#if 0
    TR_RegisterSizes sourceSize;
 
    OMR::X86::Encoding encoding = instr->getEncodingMethod();
@@ -1809,6 +1876,8 @@ TIMER_FUNC(WW_TR_Debug_getSourceSizeFromInstruction, comp())
       sourceSize = TR_WordReg;
 
    return sourceSize;
+#endif
+
    }
 
 TR_RegisterSizes
