@@ -1283,8 +1283,8 @@ TR_Debug::printWithFixedPrefix(TR::Logger *log, TR::Node *node, uint32_t indenta
       log->prints("\nKKK3b ");
       log->prints(prefix);
       len = log->printf("n%dn", globalIndex);
-      whitespaceChars = len > (MAX_GLOBAL_INDEX_LENGTH+2) ? 0+3 : (MAX_GLOBAL_INDEX_LENGTH+2-len+3);
-      log->printf("%*s(%3d)%*sX", whitespaceChars, "", node->getReferenceCount(), indentation, "");
+      whitespaceChars = len > (MAX_GLOBAL_INDEX_LENGTH+2) ? 0+2 : (MAX_GLOBAL_INDEX_LENGTH+2-len+2);
+      log->printf("%*s(%3d)%*sX", whitespaceChars, "", node->getReferenceCount(), indentation+1, "");
       }
    else
       {
