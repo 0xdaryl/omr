@@ -1278,24 +1278,24 @@ TR_Debug::printWithFixedPrefix(TR::Logger *log, TR::Node *node, uint32_t indenta
 
    if (printRefCounts)
       {
-      log->printf("\nKKK3a %s%s%dn%*s  (%3d) %*s",prefix, globalIndexPrefix, globalIndex, numSpaces, "", node->getReferenceCount(), indentation, " ");
+      log->printf("\nKKK3a %s%s%dn%*s  (%3d) %*sX",prefix, globalIndexPrefix, globalIndex, numSpaces, "", node->getReferenceCount(), indentation, " ");
 
       log->prints("\nKKK3b ");
       log->prints(prefix);
       len = log->printf("n%dn", globalIndex);
-      whitespaceChars = len > (MAX_GLOBAL_INDEX_LENGTH+2) ? 0+3 : (MAX_GLOBAL_INDEX_LENGTH+2-len+3);
-      log->printf("%*s  (%3d)%*s", whitespaceChars, "", node->getReferenceCount(), indentation, "");
+      whitespaceChars = len > (MAX_GLOBAL_INDEX_LENGTH+2) ? 0+2 : (MAX_GLOBAL_INDEX_LENGTH+2-len+2);
+      log->printf("%*s(%3d)%*sX", whitespaceChars, "", node->getReferenceCount(), indentation, "");
       }
    else
       {
-      log->printf("\nKKK4a %s%s%dn%*s  %*s",prefix, globalIndexPrefix, globalIndex, numSpaces, "", indentation, " ");
+      log->printf("\nKKK4a %s%s%dn%*s  %*sX",prefix, globalIndexPrefix, globalIndex, numSpaces, "", indentation, " ");
 
       log->prints("\nKKK4b ");
       log->prints(prefix);
       len = log->printf("n%dn", globalIndex);
       whitespaceChars = len > (MAX_GLOBAL_INDEX_LENGTH+2) ? 0+3 : (MAX_GLOBAL_INDEX_LENGTH+2-len+3);
       whitespaceChars += indentation;
-      log->printf("%*s", whitespaceChars, "");
+      log->printf("%*sX", whitespaceChars, "");
       }
 
    int32_t nodeCount = 1; // Count this node
