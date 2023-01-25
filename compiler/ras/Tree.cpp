@@ -1324,7 +1324,16 @@ TR_Debug::printWithFixedPrefix(TR::Logger *log, TR::Node *node, uint32_t indenta
          globalIndex = node->getSecondChild()->getGlobalIndex();
          numSpaces = getNumSpacesAfterIndex( globalIndex, MAX_GLOBAL_INDEX_LENGTH );
 
-         log->printf("\n%s%s%dn%*s  %*s",prefix, globalIndexPrefix, globalIndex, numSpaces, "", indentation, " ");
+//         log->printf("\n%s%s%dn%*s  %*s",prefix, globalIndexPrefix, globalIndex, numSpaces, "", indentation, " ");
+         log->printf("\nKKK5a %s%s%dn%*s  %*sX",prefix, globalIndexPrefix, globalIndex, numSpaces, "", indentation, " ");
+
+         log->prints("\nKKK5b ");
+         log->prints(prefix);
+         len = log->printf("n%dn", globalIndex);
+         whitespaceChars = len > (MAX_GLOBAL_INDEX_LENGTH+2) ? 0+2 : (MAX_GLOBAL_INDEX_LENGTH+2-len+2);
+         whitespaceChars += indentation;
+         log->printf("%*sX", whitespaceChars, "");
+
          nodeCount++;
          output.appends("default ");
          _comp->incrNodeOpCodeLength( output.getLength() );
@@ -1346,7 +1355,16 @@ TR_Debug::printWithFixedPrefix(TR::Logger *log, TR::Node *node, uint32_t indenta
                globalIndex = node->getChild(i)->getGlobalIndex();
                numSpaces = getNumSpacesAfterIndex( globalIndex, MAX_GLOBAL_INDEX_LENGTH );
 
-               log->printf("\n%s%s%dn%*s  %*s",prefix, globalIndexPrefix, globalIndex, numSpaces, "", indentation, " ");
+//               log->printf("\n%s%s%dn%*s  %*s",prefix, globalIndexPrefix, globalIndex, numSpaces, "", indentation, " ");
+               log->printf("\nKKK6a %s%s%dn%*s  %*sX",prefix, globalIndexPrefix, globalIndex, numSpaces, "", indentation, " ");
+
+               log->prints("\nKKK6b ");
+               log->prints(prefix);
+               len = log->printf("n%dn", globalIndex);
+               whitespaceChars = len > (MAX_GLOBAL_INDEX_LENGTH+2) ? 0+2 : (MAX_GLOBAL_INDEX_LENGTH+2-len+2);
+               whitespaceChars += indentation;
+               log->printf("%*sX", whitespaceChars, "");
+
                nodeCount++;
 
                char const *fmtStr;
@@ -1380,7 +1398,17 @@ TR_Debug::printWithFixedPrefix(TR::Logger *log, TR::Node *node, uint32_t indenta
                globalIndex = node->getChild(i)->getGlobalIndex();
                numSpaces = getNumSpacesAfterIndex( globalIndex, MAX_GLOBAL_INDEX_LENGTH );
 
-               log->printf("\n%s%s%dn%*s  %*s",prefix, globalIndexPrefix, globalIndex, numSpaces, "", indentation, " ");
+//               log->printf("\n%s%s%dn%*s  %*s",prefix, globalIndexPrefix, globalIndex, numSpaces, "", indentation, " ");
+               log->printf("\nKKK7a %s%s%dn%*s  %*sX",prefix, globalIndexPrefix, globalIndex, numSpaces, "", indentation, " ");
+
+               log->prints("\nKKK7b ");
+               log->prints(prefix);
+               len = log->printf("n%dn", globalIndex);
+               whitespaceChars = len > (MAX_GLOBAL_INDEX_LENGTH+2) ? 0+2 : (MAX_GLOBAL_INDEX_LENGTH+2-len+2);
+               whitespaceChars += indentation;
+               log->printf("%*sX", whitespaceChars, "");
+
+
                nodeCount++;
                output.appendf("%d", i-2);
                _comp->incrNodeOpCodeLength( output.getLength() );
