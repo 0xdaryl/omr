@@ -39,6 +39,7 @@ namespace OMR { typedef OMR::X86::InstructionDelegate InstructionDelegateConnect
 #include <stdint.h>
 
 namespace TR { class X86ImmInstruction; }
+namespace TR { class X86ImmSnippetInstruction; }
 
 namespace OMR
 {
@@ -55,6 +56,7 @@ protected:
 public:
 
    static void createMetaDataForCodeAddress(TR::X86ImmInstruction *instr, uint8_t *cursor);
+   static void createMetaDataForCodeAddress(TR::X86ImmSnippetInstruction *instr, uint8_t *cursor);
    };
 
 }

@@ -917,21 +917,6 @@ int32_t TR::X86ImmInstruction::estimateBinaryLength(int32_t currentEstimate)
 // -----------------------------------------------------------------------------
 // TR::X86ImmSnippetInstruction:: member functions
 
-void
-TR::X86ImmSnippetInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
-   {
-
-   if (getOpCode().hasIntImmediate())
-      {
-      if (std::find(cg()->comp()->getStaticHCRPICSites()->begin(), cg()->comp()->getStaticHCRPICSites()->end(), this) != cg()->comp()->getStaticHCRPICSites()->end())
-         {
-         cg()->jitAdd32BitPicToPatchOnClassRedefinition(((void *)(uintptr_t) getSourceImmediateAsAddress()), (void *) cursor);
-         }
-      }
-
-   }
-
-
 uint8_t* TR::X86ImmSnippetInstruction::generateOperand(uint8_t* cursor)
    {
    uint8_t *immediateCursor = cursor;
@@ -962,7 +947,7 @@ uint8_t* TR::X86ImmSnippetInstruction::generateOperand(uint8_t* cursor)
       cursor += 2;
       }
 
-   addMetaDataForCodeAddress(immediateCursor);
+   TR::InstructionDelegate::createMetaDataForCodeAddress(this, immediateCursor);
    return cursor;
    }
 
