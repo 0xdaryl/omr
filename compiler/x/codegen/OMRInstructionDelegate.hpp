@@ -36,6 +36,10 @@ namespace OMR { typedef OMR::X86::InstructionDelegate InstructionDelegateConnect
 #include "compiler/codegen/OMRInstructionDelegate.hpp"
 #include "infra/Annotations.hpp"
 
+#include <stdint.h>
+
+namespace TR { class X86ImmInstruction; }
+
 namespace OMR
 {
 
@@ -48,6 +52,9 @@ protected:
 
    InstructionDelegate() {}
 
+public:
+
+   static void createMetaDataForCodeAddress(TR::X86ImmInstruction *instr, uint8_t *cursor);
    };
 
 }

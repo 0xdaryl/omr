@@ -26,6 +26,7 @@
 #include "codegen/CodeGenerator.hpp"
 #include "env/FrontEnd.hpp"
 #include "codegen/Instruction.hpp"
+#include "codegen/InstructionDelegate.hpp"
 #include "codegen/Linkage.hpp"
 #include "codegen/Linkage_inlines.hpp"
 #include "codegen/Machine.hpp"
@@ -856,97 +857,6 @@ uint8_t *TR::X86VirtualGuardNOPInstruction::generateBinaryEncoding()
 // -----------------------------------------------------------------------------
 // TR::X86ImmInstruction:: member functions
 
-void
-TR::X86ImmInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
-   {
-
-   if (getOpCode().hasIntImmediate())
-      {
-      if (needsAOTRelocation())
-         {
-         cg()->addExternalRelocation(
-            TR::ExternalRelocation::create(cursor, 0, TR_BodyInfoAddress, cg()),
-            __FILE__,
-            __LINE__,
-            getNode());
-         }
-
-      if (getReloKind() != -1) // TODO: need to change Body info one to use this
-         {
-         TR::SymbolType symbolKind = TR::SymbolType::typeClass;
-         switch (getReloKind())
-            {
-            case TR_StaticRamMethodConst:
-            case TR_VirtualRamMethodConst:
-            case TR_SpecialRamMethodConst:
-               cg()->addExternalRelocation(
-                  TR::ExternalRelocation::create(
-                     cursor,
-                     (uint8_t *)getNode()->getSymbolReference(),
-                     (uint8_t *)(intptr_t)getNode()->getInlinedSiteIndex(),
-                     (TR_ExternalRelocationTargetKind) getReloKind(),
-                     cg()),
-                  __FILE__,
-                  __LINE__,
-                  getNode());
-               break;
-            case TR_MethodPointer:
-               if (getNode() && getNode()->getInlinedSiteIndex() == -1 &&
-                  (void *)(uintptr_t) getSourceImmediate() == cg()->comp()->getCurrentMethod()->resolvedMethodAddress())
-                  setReloKind(TR_RamMethod);
-               // intentional fall-through
-            case TR_RamMethod:
-               symbolKind = TR::SymbolType::typeMethod;
-               // intentional fall-through
-            case TR_ClassPointer:
-               if (cg()->comp()->getOption(TR_UseSymbolValidationManager))
-                  {
-                  cg()->addExternalRelocation(
-                     TR::ExternalRelocation::create(
-                        cursor,
-                        (uint8_t *)(uintptr_t)getSourceImmediate(),
-                        (uint8_t *)symbolKind,
-                        TR_SymbolFromManager,
-                        cg()),
-                     __FILE__,
-                     __LINE__,
-                     getNode());
-                  }
-               else
-                  {
-                  cg()->addExternalRelocation(
-                     TR::ExternalRelocation::create(
-                        cursor,
-                        (uint8_t*)getNode(),
-                        (TR_ExternalRelocationTargetKind) _reloKind,
-                        cg()),
-                     __FILE__,
-                     __LINE__,
-                     getNode());
-                  }
-                  break;
-            default:
-               cg()->addExternalRelocation(
-                  TR::ExternalRelocation::create(
-                     cursor,
-                     0,
-                     (TR_ExternalRelocationTargetKind)getReloKind(),
-                     cg()),
-                  __FILE__,
-                  __LINE__,
-                  getNode());
-            }
-         }
-
-      if (std::find(cg()->comp()->getStaticHCRPICSites()->begin(), cg()->comp()->getStaticHCRPICSites()->end(), this) != cg()->comp()->getStaticHCRPICSites()->end())
-         {
-         cg()->jitAdd32BitPicToPatchOnClassRedefinition(((void *)(uintptr_t) getSourceImmediateAsAddress()), (void *) cursor);
-         }
-      }
-
-   }
-
-
 uint8_t* TR::X86ImmInstruction::generateOperand(uint8_t* cursor)
    {
    uint8_t *immediateCursor = cursor;
@@ -971,7 +881,7 @@ uint8_t* TR::X86ImmInstruction::generateOperand(uint8_t* cursor)
       cursor += 2;
       }
 
-   addMetaDataForCodeAddress(immediateCursor);
+   TR::InstructionDelegate::createMetaDataForCodeAddress(this, immediateCursor);
    return cursor;
    }
 

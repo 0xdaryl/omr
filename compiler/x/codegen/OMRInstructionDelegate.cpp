@@ -20,3 +20,10 @@
  *******************************************************************************/
 
 #include "codegen/InstructionDelegate.hpp"
+#include "codegen/X86Instruction.hpp"
+
+void
+OMR::X86::InstructionDelegate::createMetaDataForCodeAddress(TR::X86ImmInstruction *instr, uint8_t *cursor)
+   {
+
+   }

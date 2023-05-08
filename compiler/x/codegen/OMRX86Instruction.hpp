@@ -608,8 +608,6 @@ class X86ImmInstruction : public TR::Instruction
    virtual int32_t  estimateBinaryLength(int32_t currentEstimate);
    virtual uint8_t  getBinaryLengthLowerBound();
 
-   virtual void addMetaDataForCodeAddress(uint8_t *cursor);
-
 #if defined(DEBUG) || defined(PROD_WITH_ASSUMES)
    // The following safe virtual downcast method is used under debug only
    // for assertion checking.
