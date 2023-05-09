@@ -1119,8 +1119,6 @@ class X86RegImmInstruction : public TR::X86RegInstruction
    virtual int32_t  estimateBinaryLength(int32_t currentEstimate);
    virtual uint8_t  getBinaryLengthLowerBound();
 
-   virtual void addMetaDataForCodeAddress(uint8_t *cursor);
-
    virtual void adjustVFPState(TR_VFPState *state, TR::CodeGenerator *cg);
 
    int32_t getReloKind()               { return _reloKind;     }
