@@ -1158,10 +1158,7 @@ class X86RegImmSymInstruction : public TR::X86RegImmInstruction
       return (_symbolReference = sr);
       }
 
-
    virtual uint8_t* generateOperand(uint8_t* cursor);
-
-   virtual void addMetaDataForCodeAddress(uint8_t *cursor);
    };
 
 
