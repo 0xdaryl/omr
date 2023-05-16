@@ -695,8 +695,6 @@ class X86ImmSymInstruction : public TR::X86ImmInstruction
       return (_symbolReference = sr);
       }
 
-   void addMetaDataForCodeAddress(uint8_t *cursor);
-
    virtual uint8_t* generateOperand(uint8_t* cursor);
    virtual int32_t  estimateBinaryLength(int32_t currentEstimate);
    };
