@@ -66,3 +66,8 @@ void
 OMR::X86::InstructionDelegate::createMetaDataForCodeAddress(TR::X86MemRegImmInstruction *instr, uint8_t *cursor)
    {
    }
+
+void
+OMR::X86::InstructionDelegate::createMetaDataForCodeAddress(TR::X86RegMemImmInstruction *instr, uint8_t *cursor)
+   {
+   }
