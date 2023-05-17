@@ -1901,7 +1901,6 @@ class X86MemImmSymInstruction : public TR::X86MemImmInstruction
       }
 
    virtual uint8_t* generateOperand(uint8_t* cursor);
-   virtual void addMetaDataForCodeAddress(uint8_t *cursor);
    };
 
 
