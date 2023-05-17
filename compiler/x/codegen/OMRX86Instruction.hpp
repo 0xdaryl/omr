@@ -2100,7 +2100,6 @@ class X86MemRegImmInstruction : public TR::X86MemRegInstruction
    virtual uint8_t* generateOperand(uint8_t* cursor);
    virtual int32_t  estimateBinaryLength(int32_t currentEstimate);
    virtual uint8_t  getBinaryLengthLowerBound();
-   virtual void addMetaDataForCodeAddress(uint8_t *cursor);
 
    };
 

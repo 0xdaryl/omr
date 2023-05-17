@@ -1766,18 +1766,6 @@ uint8_t* TR::X86MemMaskRegInstruction::generateOperand(uint8_t* cursor)
 // -----------------------------------------------------------------------------
 // TR::X86MemRegImmInstruction:: member functions
 
-void TR::X86MemRegImmInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
-   {
-   if (getOpCode().hasIntImmediate())
-      {
-      if (std::find(cg()->comp()->getStaticHCRPICSites()->begin(), cg()->comp()->getStaticHCRPICSites()->end(), this) != cg()->comp()->getStaticHCRPICSites()->end())
-         {
-         cg()->jitAdd32BitPicToPatchOnClassRedefinition(((void *)(uintptr_t) getSourceImmediateAsAddress()), (void *) cursor);
-         }
-      }
-   }
-
-
 uint8_t* TR::X86MemRegImmInstruction::generateOperand(uint8_t* cursor)
    {
    toRealRegister(getSourceRegister())->setRegisterFieldInModRM(cursor - 1);
@@ -1802,8 +1790,9 @@ uint8_t* TR::X86MemRegImmInstruction::generateOperand(uint8_t* cursor)
          cursor += 2;
          }
 
-      addMetaDataForCodeAddress(immediateCursor);
+      TR::InstructionDelegate::createMetaDataForCodeAddress(this, immediateCursor);
       }
+
    return cursor;
    }
 
