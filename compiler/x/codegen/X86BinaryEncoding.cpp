@@ -2188,135 +2188,6 @@ int32_t TR::AMD64RegImm64Instruction::estimateBinaryLength(int32_t currentEstima
 // TR::AMD64RegImm64SymInstruction:: member functions
 //
 
-void
-TR::AMD64RegImm64SymInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
-   {
-   TR::Compilation *comp = cg()->comp();
-
-   if (getSymbolReference()->getSymbol()->isLabel())
-      {
-      // Assumes a 64-bit absolute relocation (i.e., not relative).
-      //
-      cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelAbsoluteRelocation(cursor, getSymbolReference()->getSymbol()->castToLabelSymbol()));
-
-      switch (getReloKind())
-         {
-         case TR_AbsoluteMethodAddress:
-            cg()->addExternalRelocation(
-               TR::ExternalRelocation::create(
-                  cursor,
-                  NULL,
-                  TR_AbsoluteMethodAddress,
-                  cg()),
-               __FILE__,
-               __LINE__,
-               getNode());
-            break;
-         default:
-            break;
-         }
-
-      }
-   else
-      {
-      switch (getReloKind())
-         {
-         case TR_ConstantPool:
-            cg()->addExternalRelocation(
-               TR::ExternalRelocation::create(
-                  cursor,
-                  (uint8_t *)getSymbolReference()->getOwningMethod(comp)->constantPool(),
-                  getNode() ? (uint8_t *)(intptr_t)getNode()->getInlinedSiteIndex() : (uint8_t *)-1,
-                  (TR_ExternalRelocationTargetKind) getReloKind(),
-                  cg()),
-               __FILE__,
-               __LINE__,
-               getNode());
-            break;
-
-         case TR_DataAddress:
-         case TR_StaticDefaultValueInstance:
-            {
-            if (cg()->needRelocationsForStatics())
-               {
-               cg()->addExternalRelocation(
-                  TR::ExternalRelocation::create(
-                     cursor,
-                     (uint8_t *) getSymbolReference(),
-                     (uint8_t *)getNode() ? (uint8_t *)(intptr_t) getNode()->getInlinedSiteIndex() : (uint8_t *)-1,
-                     (TR_ExternalRelocationTargetKind) getReloKind(),
-                     cg()),
-                  __FILE__,
-                  __LINE__,
-                  getNode());
-               }
-            break;
-            }
-         case TR_NativeMethodAbsolute:
-            {
-            if (cg()->comp()->getOption(TR_EmitRelocatableELFFile))
-               {
-               TR_ResolvedMethod *target = getSymbolReference()->getSymbol()->castToResolvedMethodSymbol()->getResolvedMethod();
-               cg()->addStaticRelocation(TR::StaticRelocation(cursor, target->externalName(cg()->trMemory()), TR::StaticRelocationSize::word64, TR::StaticRelocationType::Absolute));
-               }
-            break;
-            }
-
-         case TR_DebugCounter:
-            {
-            if (cg()->needRelocationsForStatics())
-               {
-               TR::DebugCounterBase *counter = cg()->comp()->getCounterFromStaticAddress(getSymbolReference());
-               if (counter == NULL)
-                  {
-                  cg()->comp()->failCompilation<TR::CompilationException>("Could not generate relocation for debug counter in TR::AMD64RegImm64SymInstruction::addMetaDataForCodeAddress\n");
-                  }
-               TR::DebugCounter::generateRelocation(cg()->comp(),
-                                                    cursor,
-                                                    getNode(),
-                                                    counter);
-               }
-            }
-            break;
-         case TR_BlockFrequency:
-            {
-            TR_RelocationRecordInformation *recordInfo = ( TR_RelocationRecordInformation *)comp->trMemory()->allocateMemory(sizeof( TR_RelocationRecordInformation), heapAlloc);
-            recordInfo->data1 = (uintptr_t)getSymbolReference();
-            recordInfo->data2 = 0; // seqKind
-            cg()->addExternalRelocation(
-               TR::ExternalRelocation::create(
-                  cursor,
-                  (uint8_t *)recordInfo,
-                  TR_BlockFrequency,
-                  cg()),
-               __FILE__,
-               __LINE__,
-               getNode());
-            }
-            break;
-         case TR_RecompQueuedFlag:
-            {
-            cg()->addExternalRelocation(
-               TR::ExternalRelocation::create(
-                  cursor,
-                  NULL,
-                  TR_RecompQueuedFlag,
-                  cg()),
-               __FILE__,
-               __LINE__,
-               getNode());
-            }
-            break;
-
-         default:
-            ;
-         }
-
-      }
-
-   }
-
-
 uint8_t* TR::AMD64RegImm64SymInstruction::generateOperand(uint8_t* cursor)
    {
    uint8_t *modRM = cursor - 1;
@@ -2330,7 +2201,7 @@ uint8_t* TR::AMD64RegImm64SymInstruction::generateOperand(uint8_t* cursor)
    TR_ASSERT(getSymbolReference(), "expecting a symbol reference for this instruction class");
    *(uint64_t *)cursor = getSourceImmediate();
 
-   addMetaDataForCodeAddress(cursor);
+   TR::InstructionDelegate::createMetaDataForCodeAddress(this, cursor);
 
    cursor += 8;
 

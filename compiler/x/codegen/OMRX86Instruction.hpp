@@ -2576,8 +2576,6 @@ class AMD64RegImm64SymInstruction : public TR::AMD64RegImm64Instruction
    TR::SymbolReference *setSymbolReference(TR::SymbolReference *sr) {return (_symbolReference = sr);}
 
    virtual uint8_t* generateOperand(uint8_t* cursor);
-
-   virtual void addMetaDataForCodeAddress(uint8_t *cursor);
    };
 
 

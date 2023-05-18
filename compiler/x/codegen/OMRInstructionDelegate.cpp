@@ -76,3 +76,97 @@ void
 OMR::X86::InstructionDelegate::createMetaDataForCodeAddress(TR::AMD64RegImm64Instruction *instr, uint8_t *cursor)
    {
    }
+
+void
+OMR::X86::InstructionDelegate::createMetaDataForCodeAddress(TR::AMD64RegImm64SymInstruction *instr, uint8_t *cursor)
+   {
+   TR::CodeGenerator *cg = instr->cg();
+   TR::Compilation *comp = cg->comp();
+   TR::Node *instrNode = instr->getNode();
+   TR::SymbolReference *instrSymRef = instr->getSymbolReference();
+
+   if (instrSymRef->getSymbol()->isLabel())
+      {
+      // Assumes a 64-bit absolute relocation (i.e., not relative).
+      //
+      cg->addRelocation(new (cg->trHeapMemory()) TR::LabelAbsoluteRelocation(cursor, instrSymRef->getSymbol()->castToLabelSymbol()));
+
+      switch (instr->getReloKind())
+         {
+         case TR_AbsoluteMethodAddress:
+            cg->addExternalRelocation(
+               TR::ExternalRelocation::create(
+                  cursor,
+                  NULL,
+                  TR_AbsoluteMethodAddress,
+                  cg),
+               __FILE__,
+               __LINE__,
+               instrNode);
+            break;
+
+         default:
+            break;
+         }
+      }
+   else
+      {
+      switch (instr->getReloKind())
+         {
+         case TR_DataAddress:
+            {
+            if (cg->needRelocationsForStatics())
+               {
+               cg->addExternalRelocation(
+                  TR::ExternalRelocation::create(
+                     cursor,
+                     (uint8_t *)instrSymRef,
+                     (uint8_t *)instrNode ? (uint8_t *)(intptr_t) instrNode->getInlinedSiteIndex() : (uint8_t *)-1,
+                     (TR_ExternalRelocationTargetKind) instr->getReloKind(),
+                     cg),
+                  __FILE__,
+                  __LINE__,
+                  instrNode);
+               }
+
+            break;
+            }
+
+         case TR_NativeMethodAbsolute:
+            {
+            if (comp->getOption(TR_EmitRelocatableELFFile))
+               {
+               TR_ResolvedMethod *target = instrSymRef->getSymbol()->castToResolvedMethodSymbol()->getResolvedMethod();
+               cg->addStaticRelocation(
+                  TR::StaticRelocation(
+                     cursor,
+                     target->externalName(cg->trMemory()),
+                     TR::StaticRelocationSize::word64,
+                     TR::StaticRelocationType::Absolute));
+               }
+
+            break;
+            }
+
+         case TR_DebugCounter:
+            {
+            if (cg->needRelocationsForStatics())
+               {
+               TR::DebugCounterBase *counter = comp->getCounterFromStaticAddress(instrSymRef);
+               if (counter == NULL)
+                  {
+                  comp->failCompilation<TR::CompilationException>("Could not generate relocation for debug counter for a TR::AMD64RegImm64SymInstruction\n");
+                  }
+
+               TR::DebugCounter::generateRelocation(comp, cursor, instrNode, counter);
+               }
+
+            break;
+            }
+
+         default:
+            break;
+         }
+      }
+   }
+
