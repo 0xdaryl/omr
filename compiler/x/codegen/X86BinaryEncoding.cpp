@@ -2213,26 +2213,13 @@ uint8_t* TR::AMD64RegImm64SymInstruction::generateOperand(uint8_t* cursor)
 // TR::AMD64Imm64Instruction:: member functions
 //
 
-void
-TR::AMD64Imm64Instruction::addMetaDataForCodeAddress(uint8_t *cursor)
-   {
-   if (needsAOTRelocation())
-      {
-      cg()->addProjectSpecializedRelocation(cursor, 0, NULL, TR_BodyInfoAddress,
-                             __FILE__,
-                             __LINE__,
-                             getNode());
-      }
-   }
-
-
 uint8_t* TR::AMD64Imm64Instruction::generateOperand(uint8_t* cursor)
    {
    // Always assume this is an 8-byte immediate.
    //
    *(int64_t *)cursor = (int64_t)getSourceImmediate();
 
-   addMetaDataForCodeAddress(cursor);
+   TR::InstructionDelegate::createMetaDataForCodeAddress(this, cursor);
    cursor += 8;
 
    return cursor;

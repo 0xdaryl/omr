@@ -170,3 +170,7 @@ OMR::X86::InstructionDelegate::createMetaDataForCodeAddress(TR::AMD64RegImm64Sym
       }
    }
 
+void
+OMR::X86::InstructionDelegate::createMetaDataForCodeAddress(TR::AMD64Imm64Instruction *instr, uint8_t *cursor)
+   {
+   }
