@@ -1528,7 +1528,6 @@ class X86RegMaskRegRegImmInstruction : public TR::X86RegMaskRegRegInstruction
    virtual uint8_t* generateOperand(uint8_t* cursor);
    virtual int32_t  estimateBinaryLength(int32_t currentEstimate);
    virtual uint8_t  getBinaryLengthLowerBound();
-   virtual void addMetaDataForCodeAddress(uint8_t *cursor);
 
 #ifdef DEBUG
    virtual uint32_t getNumOperandReferencedGPRegisters() { return 2; }

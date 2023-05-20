@@ -1253,11 +1253,6 @@ uint8_t* TR::X86RegMaskRegRegInstruction::generateOperand(uint8_t* cursor)
 // -----------------------------------------------------------------------------
 // TR::X86RegMaskRegRegImmInstruction:: member functions
 
-void TR::X86RegMaskRegRegImmInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
-   {
-   TR_ASSERT_FATAL(getOpCode().hasByteImmediate(), "Unsupported operation");
-   }
-
 uint8_t* TR::X86RegMaskRegRegImmInstruction::generateOperand(uint8_t* cursor)
    {
    TR_ASSERT_FATAL(getEncodingMethod() != OMR::X86::Bad && getEncodingMethod() >= OMR::X86::EVEX_L128, "Masks can be be used on AVX-512 instructions");
@@ -1299,8 +1294,6 @@ uint8_t* TR::X86RegMaskRegRegImmInstruction::generateOperand(uint8_t* cursor)
       *(int16_t *)cursor = (int16_t)getSourceImmediate();
       cursor += 2;
       }
-
-   addMetaDataForCodeAddress(immediateCursor);
 
    return cursor;
    }
