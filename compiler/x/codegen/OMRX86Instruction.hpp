@@ -449,9 +449,6 @@ class X86FenceInstruction : public TR::Instruction
    TR::Node * getFenceNode() { return _fenceNode; }
 
    virtual uint8_t *generateBinaryEncoding();
-
-   virtual void addMetaDataForCodeAddress(uint8_t *cursor);
-
    };
 
 

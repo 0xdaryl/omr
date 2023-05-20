@@ -184,3 +184,8 @@ void
 OMR::X86::InstructionDelegate::createMetaDataForCodeAddress(TR::X86LabelInstruction *instr, uint8_t *cursor)
    {
    }
+
+void
+OMR::X86::InstructionDelegate::createMetaDataForCodeAddress(TR::X86FenceInstruction *instr, uint8_t *cursor)
+   {
+   }

@@ -638,16 +638,6 @@ int32_t TR::X86LabelInstruction::estimateBinaryLength(int32_t currentEstimate)
 // -----------------------------------------------------------------------------
 // TR::X86FenceInstruction:: member functions
 
-void
-TR::X86FenceInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
-   {
-
-   cg()->addProjectSpecializedRelocation( cursor, 0, NULL, TR_AbsoluteMethodAddress,
-      __FILE__, __LINE__, _fenceNode);
-
-   }
-
-
 uint8_t *TR::X86FenceInstruction::generateBinaryEncoding()
    {
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
@@ -664,7 +654,7 @@ uint8_t *TR::X86FenceInstruction::generateBinaryEncoding()
       for (auto i = 0U; i < _fenceNode->getNumRelocations(); ++i)
          {
          *(uint8_t **)(_fenceNode->getRelocationDestination(i)) = instructionStart;
-         addMetaDataForCodeAddress( (uint8_t *)_fenceNode->getRelocationDestination(i) );
+         TR::InstructionDelegate::createMetaDataForCodeAddress(this, (uint8_t *)_fenceNode->getRelocationDestination(i) );
          }
       }
    else if (_fenceNode->getRelocationType() == TR_EntryRelative32Bit)
