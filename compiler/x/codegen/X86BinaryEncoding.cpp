@@ -419,21 +419,6 @@ uint8_t *TR::X86AlignmentInstruction::generateBinaryEncoding()
 // -----------------------------------------------------------------------------
 // TR::X86LabelInstruction:: member functions
 
-void
-TR::X86LabelInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
-   {
-
-   if (!getOpCode().hasRelativeBranchDisplacement() &&
-       !(getOpCodeValue() == TR::InstOpCode::label))
-      {
-      if (getReloType() == TR_AbsoluteMethodAddress)
-         {
-         cg()->addProjectSpecializedRelocation(cursor, NULL, NULL, TR_AbsoluteMethodAddress, __FILE__, __LINE__, getNode());
-         }
-      }
-   }
-
-
 uint8_t *TR::X86LabelInstruction::generateBinaryEncoding()
    {
 
@@ -552,7 +537,7 @@ uint8_t *TR::X86LabelInstruction::generateBinaryEncoding()
       cursor += 4;
       }
 
-   addMetaDataForCodeAddress(immediateCursor);
+   TR::InstructionDelegate::createMetaDataForCodeAddress(this, immediateCursor);
 
    setBinaryLength(static_cast<int8_t>(cursor - instructionStart));
    cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - getBinaryLength());

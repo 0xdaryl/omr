@@ -336,8 +336,6 @@ class X86LabelInstruction : public TR::Instruction
    virtual uint8_t     getBinaryLengthLowerBound();
    virtual OMR::X86::EnlargementResult  enlarge(int32_t requestedEnlargementSize, int32_t maxEnlargementSize, bool allowPartialEnlargement);
 
-   virtual void addMetaDataForCodeAddress(uint8_t *cursor);
-
    virtual TR::X86LabelInstruction  *getX86LabelInstruction();
 
    void assignOutlinedInstructions(TR_RegisterKinds kindsToBeAssigned, TR::X86LabelInstruction *labelInstruction);
