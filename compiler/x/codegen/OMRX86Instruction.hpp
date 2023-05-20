@@ -2704,7 +2704,6 @@ class AMD64Imm64SymInstruction : public TR::AMD64Imm64Instruction
 
    virtual uint8_t* generateOperand(uint8_t* cursor);
    virtual int32_t  estimateBinaryLength(int32_t currentEstimate);
-   virtual void addMetaDataForCodeAddress(uint8_t *cursor);
    };
 
 

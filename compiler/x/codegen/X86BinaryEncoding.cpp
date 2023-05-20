@@ -2247,25 +2247,12 @@ int32_t TR::AMD64Imm64SymInstruction::estimateBinaryLength(int32_t currentEstima
    return currentEstimate;
    }
 
-void
-TR::AMD64Imm64SymInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
-   {
-   if (getOpCodeValue() == TR::InstOpCode::DQImm64)
-      {
-      cg()->addProjectSpecializedRelocation(cursor, (uint8_t *)(uint64_t)getSourceImmediate(), getNode() ? (uint8_t *)(intptr_t)getNode()->getInlinedSiteIndex() : (uint8_t *)-1, TR_Thunks,
-                             __FILE__,
-                             __LINE__,
-                             getNode());
-      }
-   }
-
-
 uint8_t* TR::AMD64Imm64SymInstruction::generateOperand(uint8_t* cursor)
    {
    TR_ASSERT(getOpCodeValue() == TR::InstOpCode::DQImm64, "TR::AMD64Imm64SymInstruction expected to be TR::InstOpCode::DQImm64 only");
 
    *(int64_t *)cursor = (int64_t)getSourceImmediate();
-   addMetaDataForCodeAddress(cursor);
+   TR::InstructionDelegate::createMetaDataForCodeAddress(this, cursor);
    cursor += 8;
 
    return cursor;
