@@ -342,7 +342,7 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
 
    virtual uint8_t *generateBinaryEncoding(uint8_t *modRM, TR::Instruction  *containingInstruction, TR::CodeGenerator *cg);
 
-   void addMetaDataForCodeAddress(
+   void createMetaDataForCodeAddress(
       uint32_t addressTypes,
       uint8_t *cursor,
       TR::Node *node,

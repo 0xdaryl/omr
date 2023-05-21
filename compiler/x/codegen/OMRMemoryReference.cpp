@@ -1185,13 +1185,12 @@ OMR::X86::EnlargementResult OMR::X86::MemoryReference::enlarge(TR::CodeGenerator
 
 
 void
-OMR::X86::MemoryReference::addMetaDataForCodeAddress(
+OMR::X86::MemoryReference::createMetaDataForCodeAddress(
       uint32_t addressTypes,
       uint8_t *cursor,
       TR::Node *node,
       TR::CodeGenerator *cg)
    {
-
    switch (addressTypes)
       {
       case 6:
@@ -1204,18 +1203,6 @@ OMR::X86::MemoryReference::addMetaDataForCodeAddress(
                   cursor,
                   0,
                   TR_AbsoluteMethodAddress,
-                  cg),
-               __FILE__,
-               __LINE__,
-               node);
-            }
-         else if (self()->getReloKind() == TR_ACTIVE_CARD_TABLE_BASE)
-            {
-            cg->addExternalRelocation(
-               TR::ExternalRelocation::create(
-                  cursor,
-                  (uint8_t*)TR_ActiveCardTableBase,
-                  TR_GlobalValue,
                   cg),
                __FILE__,
                __LINE__,
@@ -1234,142 +1221,35 @@ OMR::X86::MemoryReference::addMetaDataForCodeAddress(
 
             if (staticSym)
                {
-               if (self()->getUnresolvedDataSnippet() == NULL)
+               if (symbol->isDebugCounter())
                   {
-                  if (symbol->isConst())
+                  TR::DebugCounterBase *counter = cg->comp()->getCounterFromStaticAddress(&(self()->getSymbolReference()));
+                  if (counter == NULL)
                      {
-                     cg->addExternalRelocation(
-                        TR::ExternalRelocation::create(
-                           cursor,
-                           (uint8_t *)self()->getSymbolReference().getOwningMethod(cg->comp())->constantPool(),
-                           node ? (uint8_t *)(intptr_t)node->getInlinedSiteIndex() : (uint8_t *)-1,
-                           TR_ConstantPool,
-                           cg),
-                        __FILE__,
-                        __LINE__,
-                        node);
+                     cg->comp()->failCompilation<TR::CompilationException>("Could not generate relocation for debug counter in OMR::X86::MemoryReference::createMetaDataForCodeAddress\n");
                      }
-                  else if (symbol->isClassObject())
-                     {
-                     if (cg->needClassAndMethodPointerRelocations())
-                        {
-                        *(int32_t *)cursor = (int32_t)(TR::Compiler->cls.persistentClassPointerFromClassPointer(cg->comp(), (TR_OpaqueClassBlock*)(self()->getSymbolReference().getOffset() + (intptr_t)staticSym->getStaticAddress())));
-                        if (cg->comp()->getOption(TR_UseSymbolValidationManager))
-                           {
-                           cg->addExternalRelocation(
-                              TR::ExternalRelocation::create(
-                                 cursor,
-                                 (uint8_t *)(self()->getSymbolReference().getOffset() + (intptr_t)staticSym->getStaticAddress()),
-                                 (uint8_t *)TR::SymbolType::typeClass,
-                                 TR_SymbolFromManager,
-                                 cg),
-                              __FILE__,
-                              __LINE__,
-                              node);
-                           }
-                        else
-                           {
-                           cg->addExternalRelocation(
-                              TR::ExternalRelocation::create(
-                                 cursor,
-                                 (uint8_t *)&self()->getSymbolReference(),
-                                 node ? (uint8_t *)(intptr_t)node->getInlinedSiteIndex() : (uint8_t *)-1,
-                                 TR_ClassAddress,
-                                 cg),
-                              __FILE__,
-                              __LINE__,
-                              node);
-                           }
-                        }
-                     }
-                  else
-                     {
-                     if (staticSym->isCountForRecompile())
-                        {
-                        cg->addExternalRelocation(
-                           TR::ExternalRelocation::create(
-                              cursor,
-                              (uint8_t *) TR_CountForRecompile,
-                              TR_GlobalValue,
-                              cg),
-                           __FILE__,
-                           __LINE__,
-                           node);
-                        }
-                     else if (staticSym->isRecompilationCounter())
-                        {
-                        cg->addExternalRelocation(
-                           TR::ExternalRelocation::create(
-                              cursor,
-                              0,
-                              TR_BodyInfoAddress,
-                              cg),
-                           __FILE__,
-                           __LINE__,
-                           node);
-                        }
-                     else if (staticSym->isCatchBlockCounter())
-                        {
-                        cg->addExternalRelocation(
-                           TR::ExternalRelocation::create(
-                              cursor,
-                              0,
-                              TR_CatchBlockCounter,
-                              cg),
-                           __FILE__,
-                           __LINE__,
-                           node);
-                        }
-                     else if (staticSym->isGCRPatchPoint())
-                        {
-                        cg->addExternalRelocation(
-                           TR::ExternalRelocation::create(
-                              cursor,
-                              0,
-                              TR_AbsoluteMethodAddress,
-                              cg),
-                           __FILE__,
-                           __LINE__,
-                           node);
-                        }
-                     else if (symbol->isDebugCounter())
-                        {
-                        TR::DebugCounterBase *counter = cg->comp()->getCounterFromStaticAddress(&(self()->getSymbolReference()));
-                        if (counter == NULL)
-                           {
-                           cg->comp()->failCompilation<TR::CompilationException>("Could not generate relocation for debug counter in OMR::X86::MemoryReference::addMetaDataForCodeAddress\n");
-                           }
-                        TR::DebugCounter::generateRelocation(cg->comp(),
-                                                             cursor,
-                                                             node,
-                                                             counter);
-                        }
-                     else
-                        {
-                        cg->addExternalRelocation(
-                           TR::ExternalRelocation::create(
-                              cursor,
-                              (uint8_t *)&self()->getSymbolReference(),
-                              node ? (uint8_t *)(uintptr_t)node->getInlinedSiteIndex() : (uint8_t *)-1,
-                              TR_DataAddress,
-                              cg),
-                           __FILE__,
-                           __LINE__,
-                           node);
-                        }
-                     }
+
+                  TR::DebugCounter::generateRelocation(cg->comp(), cursor, node, counter);
+                  }
+               else
+                  {
+                  cg->addExternalRelocation(
+                     TR::ExternalRelocation::create(
+                        cursor,
+                        (uint8_t *)&self()->getSymbolReference(),
+                        node ? (uint8_t *)(uintptr_t)node->getInlinedSiteIndex() : (uint8_t *)-1,
+                        TR_DataAddress,
+                        cg),
+                     __FILE__,
+                     __LINE__,
+                     node);
                   }
                }
             }
          else
             {
-            TR::X86DataSnippet* cds = self()->getDataSnippet();
-            TR::LabelSymbol *label = NULL;
-
-            if (cds)
-               label = cds->getSnippetLabel();
-            else
-               label = self()->getLabel();
+            TR::X86DataSnippet *cds = self()->getDataSnippet();
+            TR::LabelSymbol *label = cds ? cds->getSnippetLabel() : self()->getLabel();
 
             if (label != NULL)
                {
@@ -1398,7 +1278,6 @@ OMR::X86::MemoryReference::addMetaDataForCodeAddress(
          break;
          }
       }
-
    }
 
 
@@ -1766,7 +1645,7 @@ OMR::X86::MemoryReference::generateBinaryEncoding(
          }
       }
 
-   self()->addMetaDataForCodeAddress(addressTypes, immediateCursor, containingInstruction->getNode(), cg);
+   self()->createMetaDataForCodeAddress(addressTypes, immediateCursor, containingInstruction->getNode(), cg);
 
    return cursor;
    }
