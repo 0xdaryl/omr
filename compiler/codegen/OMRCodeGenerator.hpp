@@ -459,7 +459,21 @@ public:
 
    void prepareNodeForInstructionSelection(TR::Node*node);
    void remapGCIndicesInInternalPtrFormat();
+
+   /**
+    * @brief Process all relocations created during compilation of this method
+    */
    void processRelocations();
+
+   /**
+    * @brief Process local relocations creating during compilation of this method
+    */
+   void processLocalRelocations();
+
+   /**
+    * @brief Process external relocations created during compilation of this method
+    */
+   void processExternalRelocations();
 
    void findAndFixCommonedReferences();
    void findCommonedReferences(TR::Node*node, TR::TreeTop *treeTop);

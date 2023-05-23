@@ -2041,16 +2041,26 @@ OMR::CodeGenerator::isMemoryUpdate(TR::Node *node)
    }
 
 void
-OMR::CodeGenerator::processRelocations()
+OMR::CodeGenerator::processLocalRelocations()
    {
-   //
-   auto iterator = _relocationList.begin();
-   while(iterator != _relocationList.end())
+   auto iterator = self()->getRelocationList().begin();
+   while (iterator != self()->getRelocationList().end())
       {
-      // Traverse the non-AOT/non-external labels first
       (*iterator)->apply(self());
       ++iterator;
       }
+   }
+
+void
+OMR::CodeGenerator::processExternalRelocations()
+   {
+   }
+
+void
+OMR::CodeGenerator::processRelocations()
+   {
+   self()->processLocalRelocations();
+   self()->processExternalRelocations();
    }
 
 #if defined(TR_HOST_ARM)
