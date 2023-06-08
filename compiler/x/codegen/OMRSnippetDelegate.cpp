@@ -20,6 +20,7 @@
  *******************************************************************************/
 
 #include "codegen/SnippetDelegate.hpp"
+#include "codegen/DataSnippet.hpp"
 #include "codegen/HelperCallSnippet.hpp"
 #include "il/Node.hpp"
 
@@ -35,5 +36,12 @@ OMR::X86::SnippetDelegate::createMetaDataForLoadaddrArg(
       TR::X86HelperCallSnippet *snippet,
       uint8_t *cursor,
       TR::Node *loadAddrNode)
+   {
+   }
+
+void
+OMR::X86::SnippetDelegate::createMetaDataForCodeAddress(
+      TR::X86DataSnippet *snippet,
+      uint8_t *cursor)
    {
    }

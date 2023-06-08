@@ -48,7 +48,6 @@ class X86DataSnippet : public TR::Snippet
    virtual uint8_t*               emitSnippetBody();
    virtual void                   print(TR::FILE* pOutFile, TR_Debug* debug);
    virtual void                   printValue(TR::FILE* pOutFile, TR_Debug* debug);
-   void                           addMetaDataForCodeAddress(uint8_t *cursor);
 
    private:
    bool                _isClassAddress;
