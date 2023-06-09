@@ -74,8 +74,6 @@ class X86HelperCallSnippet : public TR::X86RestartSnippet
    bool getAlignCallDisplacementForPatching() {return _alignCallDisplacementForPatching;}
    void setAlignCallDisplacementForPatching(bool a) {_alignCallDisplacementForPatching = a;}
 
-   void addMetaDataForLoadAddrArg(uint8_t *buffer, TR::Node *child);
-
    virtual uint8_t *genHelperCall(uint8_t *buffer);
 
    virtual uint8_t *emitSnippetBody();

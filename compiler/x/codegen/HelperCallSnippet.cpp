@@ -34,6 +34,7 @@
 #include "codegen/RegisterDependency.hpp"
 #include "codegen/RegisterDependencyStruct.hpp"
 #include "codegen/Snippet.hpp"
+#include "codegen/SnippetDelegate.hpp"
 #include "codegen/SnippetGCMap.hpp"
 #include "compile/Compilation.hpp"
 #include "compile/SymbolReferenceTable.hpp"
@@ -118,26 +119,6 @@ uint8_t *TR::X86HelperCallSnippet::emitSnippetBody()
 
    return grm;
    }
-
-
-void
-TR::X86HelperCallSnippet::addMetaDataForLoadAddrArg(
-      uint8_t *buffer,
-      TR::Node *child)
-   {
-   TR::StaticSymbol *sym = child->getSymbol()->getStaticSymbol();
-
-   if (cg()->comp()->getOption(TR_EnableHCR)
-       && !child->getSymbol()->isClassObject())
-      {
-      if (cg()->comp()->target().is64Bit())
-         cg()->jitAddPicToPatchOnClassRedefinition(((void *) (uintptr_t)sym->getStaticAddress()), (void *) buffer);
-      else
-         cg()->jitAdd32BitPicToPatchOnClassRedefinition(((void *) (uintptr_t)sym->getStaticAddress()), (void *) buffer);
-      }
-
-   }
-
 
 uint8_t *TR::X86HelperCallSnippet::genHelperCall(uint8_t *buffer)
    {
@@ -227,7 +208,7 @@ uint8_t *TR::X86HelperCallSnippet::genHelperCall(uint8_t *buffer)
                *buffer++ = 0x68; // push   imm4   argValue
                *(uint32_t *)buffer = (uint32_t)(uintptr_t)sym->getStaticAddress();
 
-               addMetaDataForLoadAddrArg(buffer, child);
+               TR::SnippetDelegate::createMetaDataForLoadaddrArg(this, buffer, child);
 
                buffer += 4;
                continue;
@@ -287,7 +268,7 @@ uint8_t *TR::X86HelperCallSnippet::genHelperCall(uint8_t *buffer)
    *buffer++ = 0xe8; // CallImm4
    *(int32_t *)buffer = branchDisplacementToHelper(callInstructionAddress, getDestination(), cg());
 
-   cg()->addProjectSpecializedRelocation(buffer,(uint8_t *)getDestination(), NULL, TR_HelperAddress, __FILE__, __LINE__, _callNode);
+   TR::SnippetDelegate::createMetaDataForCodeAddress(this, buffer);
 
    buffer += 4;
 

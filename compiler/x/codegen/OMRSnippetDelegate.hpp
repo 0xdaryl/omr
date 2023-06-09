@@ -36,6 +36,9 @@ namespace OMR { typedef OMR::X86::SnippetDelegate SnippetDelegateConnector; }
 #include "compiler/codegen/OMRSnippetDelegate.hpp"
 #include "infra/Annotations.hpp"
 
+namespace TR { class Node; }
+namespace TR { class X86HelperCallSnippet; }
+
 namespace OMR
 {
 
@@ -47,6 +50,17 @@ class OMR_EXTENSIBLE SnippetDelegate : public OMR::SnippetDelegate
 protected:
 
    SnippetDelegate() {}
+
+public:
+
+   static void createMetaDataForCodeAddress(
+      TR::X86HelperCallSnippet *snippet,
+      uint8_t *cursor);
+
+   static void createMetaDataForLoadaddrArg(
+      TR::X86HelperCallSnippet *snippet,
+      uint8_t *cursor,
+      TR::Node *loadAddrNode);
 
    };
 
