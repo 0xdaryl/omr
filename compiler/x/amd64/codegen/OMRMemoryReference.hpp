@@ -167,7 +167,22 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::X86::MemoryReference
       OMR::X86::MemoryReference::unblockRegisters();
       }
 
-   void addMetaDataForCodeAddressWithLoad(uint8_t *displacementLocation, TR::Instruction *containingInstruction, TR::CodeGenerator *cg, TR::SymbolReference *srCopy);
+   /**
+    * @brief Creates any necessary metadata for a MOVRegImm64 instruction required
+    *        for this memory reference.
+    *
+    * @param[in] imm64CodeAddress : code address of the Imm64 part of the MOV instruction
+    * @param]in] containingInstruction : \c TR::Instruction containing this \c TR::MemoryReference
+    * @param[in] symRef : \c TR::SymbolReference relevant for the \p containingInstruction
+    * @param[in] cg : \c TR::CodeGenerator object
+    */
+   void createMetaDataForLoadImm64AddressInstruction(
+         uint8_t *imm64CodeAddress,
+         TR::Instruction *containingInstruction,
+         TR::SymbolReference *symRef,
+         TR::CodeGenerator *cg)
+      {
+      }
 
    protected:
 
