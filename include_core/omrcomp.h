@@ -617,4 +617,20 @@ typedef struct U_128 {
 #endif /* defined(__GNUC__) && (__GNUC__ < 5) */
 #endif /* defined(__cplusplus) && (__cplusplus >= 201103L) */
 
+#if defined(__cplusplus) && (__cplusplus >= 201103L)
+#if defined(__GNUC__) && (__GNUC__ < 5) /* GCC<=5 claims C++11 support but doesn't actually provide this trait; it does however provide a close enough extension. */
+#define OMR_IS_TRIVIAL(t) __is_trivial(t)
+#else /* C++>=11 && (!GCC || GCC>=5) */
+#define OMR_IS_TRIVIAL(t) std::is_trivial<t>::value
+#endif /* defined(__GNUC__) && (__GNUC__ < 5) */
+#endif /* defined(__cplusplus) && (__cplusplus >= 201103L) */
+
+#if defined(__cplusplus) && (__cplusplus >= 201103L)
+#if defined(__GNUC__) && (__GNUC__ < 5) /* GCC<=5 claims C++11 support but doesn't actually provide this trait; it does however provide a close enough extension. */
+#define OMR_IS_STANDARD_LAYOUT(t) __is_standard_layout(t)
+#else /* C++>=11 && (!GCC || GCC>=5) */
+#define OMR_IS_STANDARD_LAYOUT(t) std::is_standard_layout<t>::value
+#endif /* defined(__GNUC__) && (__GNUC__ < 5) */
+#endif /* defined(__cplusplus) && (__cplusplus >= 201103L) */
+
 #endif /* OMRCOMP_H */
