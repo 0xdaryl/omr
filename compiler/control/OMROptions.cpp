@@ -671,6 +671,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"enableClassChainSharing",            "M\tenable class sharing", SET_OPTION_BIT(TR_EnableClassChainSharing), "F", NOT_IN_SUBSET},
    {"enableClassChainValidationCaching",  "M\tenable class chain validation caching", SET_OPTION_BIT(TR_EnableClassChainValidationCaching), "F", NOT_IN_SUBSET},
    {"enableCodeCacheConsolidation",       "M\tenable code cache consolidation", SET_OPTION_BIT(TR_EnableCodeCacheConsolidation), "F", NOT_IN_SUBSET},
+   {"enableCodeMetaDataManager",          "M\tenable code meta data manager", SET_OPTION_BIT(TR_EnableCodeMetaDataManager), "F", NOT_IN_SUBSET},
    {"enableColdCheapTacticalGRA",         "O\tenable cold cheap tactical GRA", SET_OPTION_BIT(TR_EnableColdCheapTacticalGRA), "F"},
    {"enableCompilationBeforeCheckpoint",  "C\tenable compilation before checkpoint", RESET_OPTION_BIT(TR_DisableCompilationBeforeCheckpoint), "F", NOT_IN_SUBSET},
    {"enableCompilationSpreading",         "C\tenable adding spreading invocations to methods before compiling", SET_OPTION_BIT(TR_EnableCompilationSpreading), "F", NOT_IN_SUBSET},
