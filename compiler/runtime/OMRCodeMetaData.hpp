@@ -32,6 +32,7 @@ namespace OMR { typedef OMR::CodeMetaData CodeMetaDataConnector; }
 #endif
 
 #include "env/jittypes.h"
+#include "compile/CompilationTypes.hpp"
 #include "infra/Annotations.hpp"
 
 namespace TR { class CodeMetaData; }
@@ -51,59 +52,75 @@ class OMR_EXTENSIBLE CodeMetaData
    TR::CodeMetaData *self();
 
    /**
-    * @brief Constructor method to create metadata for a method.
+    * @brief Initialize CodeMetaData for a given identifier from \c TR::Compilation object
+    *
+    * @param id : An environment-specific identifier for this code.  It could be a
+    *    numeric identifier or the address of some object that uniquely identifies this
+    *    code in the context of some language environment.
+    * @param comp : \c TR::Compilation object
     */
-   CodeMetaData(TR::Compilation *comp);
+   void initialize(uintptr_t id, TR::Compilation *comp);
 
    /**
-    * @brief Returns the address of allocated code memory within a code
-    * cache for a method.
+    * @brief Returns the environment-specific identifier for this code
     */
-   uintptr_t codeAllocStart() { return _codeAllocStart; }
+   uintptr_t getIdentifier() { return _id; }
 
    /**
-    * @brief Returns the total size of code memory allocated for a method 
+    * @brief Returns the first address of code cache allocated memory for a method
+    */
+   uintptr_t getCodeAllocStart() { return _codeAllocStart; }
+
+   /**
+    * @brief Returns the last address of code cache allocated memory for a method
+    */
+   uintptr_t getCodeAllocEnd() { return _codeAllocEnd; }
+
+   /**
+    * @brief Returns the total size of code memory allocated for a method
     * within a code cache.
     */
-   uint32_t codeAllocSize() { return _codeAllocSize; }
+   uint32_t getCodeAllocSize() { return _codeAllocEnd - _codeAllocStart + 1; }
 
    /**
     * @brief Returns the starting address of compiled code for a
     * method when invoked from an interpreter.
     *
-    * Interpreter entry PC may preceed compiled entry PC and may point 
-    * to code necessary for proper execution of this method if invoked 
-    * from an interpreter. For example, it may need to marshall method 
+    * Interpreter entry PC may preceed compiled entry PC and may point
+    * to code necessary for proper execution of this method if invoked
+    * from an interpreter. For example, it may need to marshall method
     * arguments from an interpreter linkage to a compiled method linkage.
     *
-    * By default, the interpreter entry PC and compiled entry PC point 
+    * By default, the interpreter entry PC and compiled entry PC point
     * to the same address.
     */
-   uintptr_t interpreterEntryPC() { return _interpreterEntryPC; }
+   uintptr_t getInterpreterEntryPC() { return _interpreterEntryPC; }
 
    /**
     * @brief Returns the starting address of compiled code for a
     * method when invoked from compiled code.
-    * 
-    * By default, the interpreter entry PC and compiled entry PC point 
+    *
+    * By default, the interpreter entry PC and compiled entry PC point
     * to the same address.
     */
-   uintptr_t compiledEntryPC() { return _compiledEntryPC; }
+   uintptr_t getCompiledEntryPC() { return _compiledEntryPC; }
 
    /**
     * @brief Returns the end address of compiled code for a method.
     */
-   uintptr_t compiledEndPC() { return _compiledEndPC; }
+   uintptr_t getCompiledEndPC() { return _compiledEndPC; }
 
    /**
     * @brief Returns the compilation hotness level of a compiled method.
     */
-   TR_Hotness codeHotness() { return _hotness; }
+   TR_Hotness getCodeHotness() { return _hotness; }
 
    protected:
 
+   uintptr_t _id;
+
    uintptr_t _codeAllocStart;
-   uint32_t _codeAllocSize;
+   uintptr_t _codeAllocEnd;
 
    uintptr_t _interpreterEntryPC;
    uintptr_t _compiledEntryPC;

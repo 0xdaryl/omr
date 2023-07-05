@@ -21,9 +21,13 @@
 
 #include "runtime/CodeMetaData.hpp"
 
+#include "codegen/CodeGenerator.hpp"
 #include "compile/Compilation.hpp"
 #include "compile/ResolvedMethod.hpp"
+#include "omrcomp.h"
 
+static_assert(OMR_IS_TRIVIAL(TR::CodeMetaData), "TR::CodeMetaData must be a trivial class");
+static_assert(OMR_IS_STANDARD_LAYOUT(TR::CodeMetaData), "TR::CodeMetaData must be a standard layout class");
 
 TR::CodeMetaData *
 OMR::CodeMetaData::self()
@@ -31,16 +35,21 @@ OMR::CodeMetaData::self()
    return static_cast<TR::CodeMetaData *>(this);
    }
 
-OMR::CodeMetaData::CodeMetaData(TR::Compilation *comp)
+void
+OMR::CodeMetaData::initialize(uintptr_t id, TR::Compilation *comp)
    {
-   _codeAllocStart = comp->cg()->getBinaryBufferStart();
-   _codeAllocSize = comp->cg()->getEstimatedCodeLength();
+   TR::CodeGenerator *cg = comp->cg();
 
-   _interpreterEntryPC = comp->cg()->getCodeStart();
-   
+   _id = id;
+
+   _codeAllocStart = reinterpret_cast<uintptr_t>(cg->getBinaryBufferStart());
+   _codeAllocEnd = reinterpret_cast<uintptr_t>(cg->getCodeEnd());
+
+   _interpreterEntryPC = reinterpret_cast<uintptr_t>(cg->getCodeStart());
+
    _compiledEntryPC = _interpreterEntryPC;
-   _compiledEndPC = comp->cg()->getCodeEnd();
+   _compiledEndPC = reinterpret_cast<uintptr_t>(cg->getCodeEnd());
 
-   _hotness = comp->cg()->getMethodHotness();
+   _hotness = comp->getMethodHotness();
    }
 

@@ -370,7 +370,7 @@ compileMethodFromDetails(
          {
 
          // not ready yet...
-         //OMR::MethodMetaDataPOD *metaData = fe.createMethodMetaData(&compiler);
+         //TR::CodeMetaData *metaData = fe.createMethodMetaData(&compiler);
 
          startPC = (uint8_t*)compiler.getMethodSymbol()->getMethodAddress();
          uint64_t translationTime = TR::Compiler->vm.getUSecClock() - translationStartTime;

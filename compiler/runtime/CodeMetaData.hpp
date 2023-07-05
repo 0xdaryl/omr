@@ -30,10 +30,6 @@ namespace TR
 
 class OMR_EXTENSIBLE CodeMetaData : public OMR::CodeMetaDataConnector
    {
-public:
-
-   CodeMetaData(TR::Compilation *comp) : OMR::CodeMetaDataConnector(comp) {}
-
    };
 
 }

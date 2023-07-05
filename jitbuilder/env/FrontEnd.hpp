@@ -30,7 +30,7 @@
 #include "runtime/JBJitConfig.hpp"
 
 namespace TR { class GCStackAtlas; }
-namespace OMR { struct MethodMetaDataPOD; }
+namespace TR { class CodeMetaData; }
 class TR_ResolvedMethod;
 
 namespace TR

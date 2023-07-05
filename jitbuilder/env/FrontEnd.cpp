@@ -36,7 +36,7 @@
 #include "env/jittypes.h"
 #include "il/DataTypes.hpp"
 #include "il/ILOps.hpp"
-#include "runtime/CodeMetaDataPOD.hpp"
+#include "runtime/CodeMetaData.hpp"
 #include "runtime/StackAtlasPOD.hpp"
 
 //#include "util_api.h"

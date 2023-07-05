@@ -31,40 +31,35 @@ namespace OMR { class CodeMetaDataManager; }
 namespace OMR { typedef OMR::CodeMetaDataManager CodeMetaDataManagerConnector; }
 #endif
 
-#ifndef OMR_METADATA_HASHTABLE_CONNECTOR
-#define OMR_METADATA_HASHTABLE_CONNECTOR
-namespace OMR { class MetaDataHashTable; }
-namespace OMR { typedef OMR::MetaDataHashTable MetaDataHashTableConnector; }
-#endif
-
 #include <stdint.h>
 #include "env/TRMemory.hpp"
 #include "infra/Annotations.hpp"
 #include "j9nongenerated.h"
 
+namespace OMR { typedef ::J9JITHashTable MetaDataHashTable; }
 namespace TR { class CodeCache; }
 namespace TR { class CodeMetaDataManager; }
-namespace TR { class MetaDataHashTable; }
-namespace TR { struct MethodMetaDataPOD; }
+namespace TR { class CodeMetaData; }
 
 namespace OMR
 {
+
 /**
  * Manages metadata about code produced by the compiler.
  *
  * This class is built around a singleton, that can be initialized and verified
- * by calling initializeCodeMetaDataManager.
+ * by calling \c create().
  *
  * The class assumes that each code cache is registered with the
- * CodeMetaDataManager usign addCodeCache.
+ * \c TR::CodeMetaDataManager using \c addCodeCache().
  *
- * The CodeMetaDataManager only manages pointers; It takes no ownership of the
- * POD pointers provided to it.
+ * The \c TR::CodeMetaDataManager only manages pointers.  It takes no ownership
+ * of the \c TR::CodeMetaData pointers provided to it.
  */
 class OMR_EXTENSIBLE CodeMetaDataManager
    {
 
-   public:
+public:
 
    TR_PERSISTENT_ALLOC(TR_Memory::CodeMetaData);
 
@@ -72,75 +67,92 @@ class OMR_EXTENSIBLE CodeMetaDataManager
 
    static TR::CodeMetaDataManager *codeMetaDataManager() { return _codeMetaDataManager; }
 
-   bool initializeCodeMetaDataManager();
-
    /**
-    * @brief For a given method's MethodMetaDataPOD, finds the appropriate
-    * hashtable in the AVL tree and inserts the data pointer.
-
-    * Note, insertMetaData does not check to verify that an metadata's given range
-    * is not already occupied by an existing metadata.  This is because metadata  
-    * ranges represent the virtual memory actually occupied by compiled code.
-    * Thus, if two metadata ranges overlap, then two pieces of compiled code
-    * co-exist on top of each other, which is inherently incorrect.  If the
-    * possiblity occurs that two metadata may legitimately have range values that
-    * overlap, checks will need to be added.
-
-    * @param metaData The MetaDataPOD to insert into the metadata.
-    * @return Returns true if successful, and false otherwise.
-   */
-   bool insertMetaData(TR::MethodMetaDataPOD *metaData);
-
-   /**
-    * @brief Determines if the metadata manager contain a reference to a particular
-    * MethodMetaDataPOD.
-
-    * Note: Just because the metadata manager return an metadata for a particular
-    * startPC does not mean that it is the same metadata being searched for.
-    * The method could have been recompiled, and then subsequently unloaded and
-    * another method compiled to the same location before the recompilation-based
-    * reclamation could occur.  This will result in the metadata manager containing a
-    * different MethodMetaDataPOD for a given startPC.
-
-    * @param  metadata The metadata for which to search for.
-    * @return Returns true if the same metadata is found for the metadata 's startPC
-    *         and false otherwise.
-   */
-   bool containsMetaData(const TR::MethodMetaDataPOD *metaData);
-
-   /**
-    * @brief Remove a given metadata from the metadata manager if it is found therein.
+    * @brief Factor method to create singleton \c TR::CodeMetaDataManager
     *
-    * @param  compiledMethod The MethodMetaDataPOD representing the method to
-    *         remove from the JIT metadata .
-    * @return Returns true if the metadata is found within, and successfully
-    *         removed from, the JIT metadata and false otherwise.
-   */
-   bool removeMetaData(const TR::MethodMetaDataPOD *metaData);
-
-
-   /**
-    * @brief Attempts to find a registered metadata for a given metadata's startPC.
-    * 
-    * Note: findMetaDataForPC does not locally acquire the JIT metadata monitor.
-    * Users must first manually acquire the monitor or go through another function
-    * that does.
-    *
-    * @param pc The PC for which we require the JIT metadata .
-    * @return If an metadata for a given startPC is successfully found, returns
-    * that metadata , returns NULL otherwise.
+    * @return true if a new \c TR::CodeMetaDataManager was created; false otherwise
     */
-   const TR::MethodMetaDataPOD *findMetaDataForPC(uintptr_t pc);
-
+   static bool create();
 
    /**
-    * @brief Register code cache with metadata manager. 
+    * @brief
+    *    For a given method's \c TR::CodeMetaData, finds the appropriate
+    *    hashtable in the AVL tree and inserts the new meta data.
     *
-    * Whenever a new codecache is allocated, register it with this metadata
-    * manager so that subsequent insertion and query is aware of the contents.
+    * @note
+    *    This function does not check to verify that a metadata's given range
+    *    is not already occupied by an existing metadata.  This is because metadata
+    *    ranges represent the virtual memory actually occupied by compiled code.
+    *    Thus, if two metadata ranges overlap, then two pieces of compiled code
+    *    co-exist on top of each other, which is inherently incorrect.  If the
+    *    possiblity occurs that two metadata may legitimately have range values that
+    *    overlap, checks will need to be added.
+    *
+    * @note
+    *    It is important that the range for the metadata be > 0.  Inserting a zero
+    *    width range will fail because lookups will fail.
+    *
+    * @param[in] metaData : the \c TR::CodeMetaData to insert
+    *
+    * @return Returns true if successful; false otherwise
     */
-   TR::MetaDataHashTable *addCodeCache(TR::CodeCache *codeCache);
+   bool insertMetaData(TR::CodeMetaData *metaData);
 
+   /**
+    * @brief
+    *    Determines if the metadata manager contains a reference to a particular
+    *    CodeMetaData.
+    *
+    * @note
+    *    Just because the metadata manager returns a metadata for a particular
+    *    startPC does not mean that it is the same metadata being searched for.
+    *    The method could have been recompiled, and then subsequently unloaded and
+    *    another method compiled to the same location before the recompilation-based
+    *    reclamation could occur.  This will result in the metadata manager containing
+    *    a different CodeMetaData for a given startPC.
+    *
+    * @param[in] metadata: the metadata to search for
+    *
+    * @return true if the same metadata is found for the metadata's startPC; false otherwise
+    */
+   bool containsMetaData(TR::CodeMetaData *metaData);
+
+   /**
+    * @brief Remove the given metadata from the metadata manager if it is found therein.
+    *
+    * @param[in] metaData : the \c TR::CodeMetaData for the code to remove from
+    *    the metadata.
+    *
+    * @return true if the metadata is successfully removed; false otherwise
+    */
+   bool removeMetaData(TR::CodeMetaData *metaData);
+
+   /**
+    * @brief
+    *    Attempts to find the metadata associated with a given code address
+    *
+    * @note
+    *    \c findMetaDataForPC() does not locally acquire the JIT metadata monitor.
+    *    Users must first manually acquire the monitor or go through another function
+    *    that does.
+    *
+    * @param[in] pc : the PC for which we require the metadata
+    *
+    * @return the \c TR::CodeMetaData if found; NULL otherwise
+    */
+   TR::CodeMetaData *findMetaDataForPC(uintptr_t pc);
+
+   /**
+    * @brief
+    *    Register the given code cache with the metadata manager.
+    *    Whenever a new codecache is allocated, register it with this metadata
+    *    manager so that subsequent insertion and query is aware of the contents.
+    *
+    * @param[in] codeCache : the \c TR::CodeCache to register
+    *
+    * @return the \c OMR::MetaDataHashTable created for the new code cache
+    */
+   OMR::MetaDataHashTable *addCodeCache(TR::CodeCache *codeCache);
 
    protected:
 
@@ -148,92 +160,92 @@ class OMR_EXTENSIBLE CodeMetaDataManager
     * @brief Initializes the translation metadata manager's members.
     *
     * The non-cache members are pointers to types instantiated externally.  The
-    * constructor simply copies the pointers into the objects private members.
+    * constructor simply copies the pointers into the object's private members.
     */
    CodeMetaDataManager();
 
-
    /**
-    * @brief Inserts an metadata into the metadata manager causing it to represent a
+    * @brief Inserts a metadata into the metadata manager causing it to represent a
     * given memory range.
     *
-    * Note this method expects to be called via another method in the metadata  
-    * manager and thus does not acquire the metadata manager's monitor.
+    * @note
+    *    This method expects to be called via another method in the metadata
+    *    manager and thus does not acquire the metadata manager's monitor.
     *
-    * @param metadata The MethodMetaDataPOD which will represent the given memory
-    * range.
-    * @param startPC The beginning of the memory range to represent.
-    * @param endPC The end of the memory range to represent.
-    * @return Returns true if the metadata was successfully inserted as
-    * representing the given range, false otherwise.
+    * @param[in] metadata : the \c TR::CodeMetaData which will represent the given
+    *    memory range.
+    * @param[in] startPC : the beginning of the memory range to represent
+    * @param[in] endPC : the end of the memory range to represent
+    *
+    * @return true if the metadata was successfully inserted; false otherwise
     */
-   bool insertRange(TR::MethodMetaDataPOD *metaData, uintptr_t startPC, uintptr_t endPC);
+   bool insertRange(TR::CodeMetaData *metaData, uintptr_t startPC, uintptr_t endPC);
 
    /**
-    * @brief Removes an metadata from the metadata manager  causing it to no longer
-    * represent a given memory range.
+    * @brief Removes a metadata from the metadata manager
     *
-    * Note this method expects to be called via another method in the metadata  
-    * manager and thus does not acquire the metadata manager's monitor.
+    * @note
+    *    This method expects to be called via another method in the metadata
+    *    manager and thus does not acquire the metadata manager's monitor.
     *
-    * @param metadata The MethodMetaDataPOD to remove from representing the given
-    * memory range.
-    * @param startPC The beginning of the memory range the metadata represents.
-    * @param endPC The end of the memory range the metadata represents.
-    * @return Returns true if the metadata was successfully removed from
-    * representing the given range, false otherwise.
+    * @param[in] metadata : the \c TR::CodeMetaData to remove
+    * @param[in] startPC : the beginning of the memory range the metadata represents
+    * @param[in] endPC : the end of the memory range the metadata represents
+    *
+    * @return true if the metadata was successfully removed; false otherwise
     */
-   bool removeRange(const TR::MethodMetaDataPOD *metaData, uintptr_t startPC, uintptr_t endPC);
-
+   bool removeRange(TR::CodeMetaData *metaData, uintptr_t startPC, uintptr_t endPC);
 
    /**
-    * @brief Determines if the current metadataManager query is using the same
-    * metadata as the previous query, and if not, searches for and retrieves the
-    * new metadata's code cache's hash table.
+    * @brief
+    *    Determines if the current metadataManager query is using the same
+    *    metadata as the previous query, and if not, searches for and retrieves the
+    *    new metadata's code cache's hash table.
     *
-    * Note this method expects to be called via another method in the metadata  
-    * manager and thus does not acquire the metadata manager's monitor.
+    * @note
+    *    This method expects to be called via another method in the metadata
+    *    manager and thus does not acquire the metadata manager's monitor.
     *
-    * @param currentPC The PC we are currently inquiring about.
+    * @param[in] currentPC : the PC we are currently inquiring about
     */
    void updateCache(uintptr_t currentPC);
 
-   TR::MethodMetaDataPOD *findMetaDataInHash(
-      TR::MetaDataHashTable *table,
+   TR::CodeMetaData *findMetaDataInHash(
+      OMR::MetaDataHashTable *table,
       uintptr_t searchValue);
 
    uintptr_t insertMetaDataRangeInHash(
-      TR::MetaDataHashTable *table,
-      TR::MethodMetaDataPOD *dataToInsert,
+      OMR::MetaDataHashTable *table,
+      TR::CodeMetaData *dataToInsert,
       uintptr_t startPC,
       uintptr_t endPC);
 
-   TR::MethodMetaDataPOD **insertMetaDataArrayInHash(
-      TR::MetaDataHashTable *table,
-      TR::MethodMetaDataPOD **array,
-      TR::MethodMetaDataPOD *dataToInsert,
+   TR::CodeMetaData **insertMetaDataArrayInHash(
+      OMR::MetaDataHashTable *table,
+      TR::CodeMetaData **array,
+      TR::CodeMetaData *dataToInsert,
       uintptr_t startPC);
 
-   TR::MethodMetaDataPOD **allocateMethodStoreInHash(TR::MetaDataHashTable *table);
+   TR::CodeMetaData **allocateMethodStoreInHash(OMR::MetaDataHashTable *table);
 
    uintptr_t removeMetaDataRangeFromHash(
-      TR::MetaDataHashTable *table,
-      const TR::MethodMetaDataPOD *dataToRemove,
+      OMR::MetaDataHashTable *table,
+      TR::CodeMetaData *dataToRemove,
       uintptr_t startPC,
       uintptr_t endPC);
 
-   TR::MethodMetaDataPOD **removeMetaDataArrayFromHash(
-      TR::MethodMetaDataPOD **array,
-      const TR::MethodMetaDataPOD *dataToRemove);
+   TR::CodeMetaData **removeMetaDataArrayFromHash(
+      TR::CodeMetaData **array,
+      TR::CodeMetaData *dataToRemove);
 
-   TR::MetaDataHashTable *allocateCodeMetaDataHash(
+   OMR::MetaDataHashTable *allocateCodeMetaDataHash(
       uintptr_t start,
       uintptr_t end);
 
    J9AVLTree *allocateMetaDataAVL();
 
-   // Singleton: Protected to allow manipulation of singleton pointer 
-   // in test cases. 
+   // Singleton: Protected to allow manipulation of singleton pointer
+   // in test cases.
    static TR::CodeMetaDataManager *_codeMetaDataManager;
 
    J9AVLTree *_metaDataAVL;
@@ -241,33 +253,18 @@ class OMR_EXTENSIBLE CodeMetaDataManager
    private:
 
    mutable uintptr_t _cachedPC;
-   mutable TR::MetaDataHashTable *_cachedHashTable;
-   mutable TR::MethodMetaDataPOD *_retrievedMetaDataCache;
+   mutable OMR::MetaDataHashTable *_cachedHashTable;
+   mutable TR::CodeMetaData *_retrievedMetaDataCache;
 
-
-   };
-
-
-struct OMR_EXTENSIBLE MetaDataHashTable
-   {
-   J9AVLTreeNode parentAVLTreeNode;
-   uintptr_t *buckets;
-   uintptr_t start;
-   uintptr_t end;
-   uintptr_t flags;
-   uintptr_t *methodStoreStart;
-   uintptr_t *methodStoreEnd;
-   uintptr_t *currentAllocate;
    };
 
 
 extern "C"
 {
-intptr_t avl_jit_metadata_insertionCompare(J9AVLTree *tree, TR::MetaDataHashTable *insertNode, TR::MetaDataHashTable *walkNode);
+intptr_t avl_jit_metadata_insertionCompare(J9AVLTree *tree, OMR::MetaDataHashTable *insertNode, OMR::MetaDataHashTable *walkNode);
 
-intptr_t avl_jit_metadata_searchCompare(J9AVLTree *tree, uintptr_t searchValue, TR::MetaDataHashTable *walkNode);
+intptr_t avl_jit_metadata_searchCompare(J9AVLTree *tree, uintptr_t searchValue, OMR::MetaDataHashTable *walkNode);
 }
-
 
 }
 

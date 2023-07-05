@@ -37,10 +37,6 @@ class OMR_EXTENSIBLE CodeMetaDataManager : public OMR::CodeMetaDataManagerConnec
       OMR::CodeMetaDataManagerConnector() {}
    };
 
-class OMR_EXTENSIBLE MetaDataHashTable : public OMR::MetaDataHashTableConnector
-   {
-   };
-
 }
 
 #endif

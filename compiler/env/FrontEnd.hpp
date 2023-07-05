@@ -52,7 +52,7 @@ class TR_Debug;
 class TR_FrontEnd;
 class TR_Memory;
 class TR_ResolvedMethod;
-namespace OMR { struct MethodMetaDataPOD; }
+namespace TR { class CodeMetaData; }
 namespace TR { class Compilation; }
 namespace TR { class Options; }
 namespace TR { class PersistentInfo; }
@@ -110,7 +110,7 @@ public:
    // --------------------------------------------------------------------------
 
    virtual TR_ResolvedMethod * createResolvedMethod(TR_Memory *, TR_OpaqueMethodBlock *, TR_ResolvedMethod * = 0, TR_OpaqueClassBlock * = 0);
-   virtual OMR::MethodMetaDataPOD *createMethodMetaData(TR::Compilation *comp) { return NULL; }
+   virtual TR::CodeMetaData *createMethodMetaData(TR::Compilation *comp) { return NULL; }
 
    virtual TR_OpaqueMethodBlock * getMethodFromName(char * className, char *methodName, char *signature);
    virtual uint32_t offsetOfIsOverriddenBit();
