@@ -32,7 +32,9 @@
 #include "ilgen/IlGeneratorMethodDetails_inlines.hpp"
 #include "ilgen/MethodBuilder.hpp"
 #include "ilgen/TypeDictionary.hpp"
+#include "infra/Assert.hpp"
 #include "runtime/CodeCache.hpp"
+#include "runtime/CodeMetaDataManager.hpp"
 #include "runtime/Runtime.hpp"
 #include "runtime/JBJitConfig.hpp"
 #include "control/CompilationController.hpp"
@@ -103,7 +105,7 @@ initializeCodeCache(TR::CodeCacheManager & codeCacheManager)
    codeCacheConfig._largeCodePageFlags = 0;
    codeCacheConfig._maxNumberOfCodeCaches = 96;
    codeCacheConfig._canChangeNumCodeCaches = true;
-   codeCacheConfig._emitExecutableELF = TR::Options::getCmdLineOptions()->getOption(TR_PerfTool) 
+   codeCacheConfig._emitExecutableELF = TR::Options::getCmdLineOptions()->getOption(TR_PerfTool)
                                     ||  TR::Options::getCmdLineOptions()->getOption(TR_EmitExecutableELFFile);
    codeCacheConfig._emitRelocatableELF = TR::Options::getCmdLineOptions()->getOption(TR_EmitRelocatableELFFile);
 
@@ -146,6 +148,11 @@ initializeJitBuilder(TR_RuntimeHelper *helperIDs, void **helperAddresses, int32_
 
    initializeCodeCache(fe.codeCacheManager());
 
+   if (TR::Options::getCmdLineOptions()->getOption(TR_EnableCodeMetaDataManager))
+      {
+      TR_ASSERT_FATAL(TR::CodeMetaDataManager::create(), "Unable to create TR::CodeMetaDataManager");
+      }
+
    return true;
    }
 
@@ -182,7 +189,7 @@ internal_initializeJitWithOptions(char *options)
 bool
 internal_initializeJit()
    {
-   return initializeJitBuilder(0, 0, 0, (char *)"-Xjit:acceptHugeMethods,enableBasicBlockHoisting,omitFramePointer,useILValidator");
+   return initializeJitBuilder(0, 0, 0, (char *)"-Xjit:acceptHugeMethods,enableBasicBlockHoisting,omitFramePointer,useILValidator,enableCodeMetaDataManager");
    }
 
 int32_t
