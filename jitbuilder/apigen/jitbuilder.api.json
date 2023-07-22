@@ -1657,7 +1657,7 @@
                     {"name":"type","type":"IlType"}
                     ]
                 },
-		{ "name": "DefineGlobal"
+                { "name": "DefineGlobal"
                 , "overloadsuffix": ""
                 , "flags": []
                 , "return": "none"
@@ -1708,6 +1708,12 @@
                 , "flags": []
                 , "return": "none"
                 , "parms": [ {"name":"vmState","type":"VirtualMachineState"} ]
+                },
+                { "name": "symbolDefined"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "boolean"
+                , "parms": [ {"name":"name","type":"constString"} ]
                 }
                 ]
         },
