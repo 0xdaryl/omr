@@ -52,6 +52,14 @@ target_compile_definitions(omrutil_obj
 
 list(APPEND VPATH .)
 
+if(OMR_ARCH_X86)
+   # Filter for Windows, macOS, and 32-bit
+   # nasm dependency?
+	list(APPEND OBJECTS memset0NT.s)
+	list(APPEND VPATH unix/linux/x86/64)
+	target_include_directories(omrutil_obj PRIVATE unix/linux/x86/64)
+endif()
+
 if(OMR_ARCH_S390)
 	if(OMR_OS_ZOS)
 		if(OMR_ENV_DATA64)

@@ -24,7 +24,7 @@
 #include "omr.h"
 #include "omrutil.h"
 
-#if defined(J9ZOS390) || (defined(LINUX) && defined(S390))
+#if (defined(J9ZOS390) || (defined(LINUX) && defined(S390))) || (defined(LINUX) && defined(OMR_ARCH_X86))
 #include <stdlib.h>
 #endif /* defined(J9ZOS390) || (defined(LINUX) && defined(S390)) */
 #include <string.h>
@@ -55,6 +55,8 @@ struct IHAPSA {
 	unsigned int FLCFGIEF : 1;	/* General-Instructions-Extension Facility offset X'CC' */
 };
 #endif
+
+extern "C" void memset0NT(void *ptr, size_t length);
 
 void
 OMRZeroMemory(void *ptr, uintptr_t length)
@@ -141,6 +143,27 @@ OMRZeroMemory(void *ptr, uintptr_t length)
 	} else {
 		memset(ptr, 0, (size_t)length);
 	}
+#elif (defined(LINUX) && defined(OMR_ARCH_X86))
+
+	static BOOLEAN useNonTemporalZeroInit = (NULL != getenv("OMR_NonTemporalZeroInit"));
+	static BOOLEAN printZeroInit = (NULL != getenv("OMR_PrintZeroInit"));
+
+	static char *ntzit = getenv("OMR_NonTemporalZeroInitThreshold");
+	static uint32_t nonTemporalZeroInitThreshold = ntzit ? atoi(ntzit) : 0;
+
+        if (useNonTemporalZeroInit && length > nonTemporalZeroInitThreshold) {
+		if (printZeroInit) {
+			printf("NTZERO : %p , %ld\n", ptr, length);
+		}
+
+        	memset0NT(ptr, (size_t)length);
+	} else {
+		if (printZeroInit) {
+			printf("ZERO : %p , %ld\n", ptr, length);
+		}
+		memset(ptr, 0, (size_t)length);
+	}
+
 #else /* (defined (LINUX) && defined(S390)) && !defined(OMRZTPF) */
 	memset(ptr, 0, (size_t)length);
 #endif
