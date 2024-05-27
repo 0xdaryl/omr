@@ -70,7 +70,19 @@
 #define CPUID_FAMILYCODE_INTEL_CORE                       0x06
 #define CPUID_FAMILYCODE_INTEL_PENTIUM4                   0x0F
 
-#define CPUID_MODELCODE_INTEL_SKYLAKE                     0x55
+#define CPUID_MODELCODE_INTEL_EMERALDRAPIDS_X             0xCF
+
+#define CPUID_MODELCODE_INTEL_SAPPHIRERAPIDS_X            0x8F
+
+#define CPUID_MODELCODE_INTEL_ICELAKE_X                   0x6A
+#define CPUID_MODELCODE_INTEL_ICELAKE_D                   0x6C
+#define CPUID_MODELCODE_INTEL_ICELAKE                     0x7D
+#define CPUID_MODELCODE_INTEL_ICELAKE_L                   0x7E
+
+#define CPUID_MODELCODE_INTEL_SKYLAKE_L                   0x4E
+#define CPUID_MODELCODE_INTEL_SKYLAKE                     0x5E
+#define CPUID_MODELCODE_INTEL_SKYLAKE_X                   0x55
+
 #define CPUID_MODELCODE_INTEL_BROADWELL                   0x4F
 #define CPUID_MODELCODE_INTEL_HASWELL_1                   0x3F
 #define CPUID_MODELCODE_INTEL_HASWELL_2                   0x3C
@@ -272,6 +284,20 @@ omrsysinfo_get_x86_description(struct OMRPortLibrary *portLibrary, OMRProcessorD
 			uint32_t totalModelCode = modelCode + (extendedModelCode << 4);
 
 			switch (totalModelCode) {
+			case CPUID_MODELCODE_INTEL_EMERALDRAPIDS_X:
+				desc->processor = OMR_PROCESSOR_X86_INTEL_EMERALDRAPIDS;
+				break;
+			case CPUID_MODELCODE_INTEL_SAPPHIRERAPIDS_X:
+				desc->processor = OMR_PROCESSOR_X86_INTEL_SAPPHIRERAPIDS;
+				break;
+			case CPUID_MODELCODE_INTEL_ICELAKE_X:
+			case CPUID_MODELCODE_INTEL_ICELAKE_D:
+			case CPUID_MODELCODE_INTEL_ICELAKE_L:
+			case CPUID_MODELCODE_INTEL_ICELAKE:
+				desc->processor = OMR_PROCESSOR_X86_INTEL_ICELAKE;
+				break;
+			case CPUID_MODELCODE_INTEL_SKYLAKE_X:
+			case CPUID_MODELCODE_INTEL_SKYLAKE_L:
 			case CPUID_MODELCODE_INTEL_SKYLAKE:
 				desc->processor = OMR_PROCESSOR_X86_INTEL_SKYLAKE;
 				break;
