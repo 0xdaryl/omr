@@ -169,6 +169,7 @@ void TR_X86ProcessorInfo::initialize(bool force)
          case 0x06:
             {
             uint32_t extended_model = getCPUModel(_processorSignature) + (getCPUExtendedModel(_processorSignature) << 4);
+            uint32_t processorStepping = getCPUStepping(_processorSignature);
             switch (extended_model)
                {
                case 0xcf:
@@ -181,6 +182,15 @@ void TR_X86ProcessorInfo::initialize(bool force)
                case 0x7e:  // IceLake_L
                   _processorDescription |= TR_ProcessorIntelIceLake; break;
                case 0x55:  // Skylake_X
+                  if (processorStepping == 7)
+                     {
+                     _processorDescription |= TR_ProcessorIntelCascadeLake;
+                     }
+                  else
+                     {
+                     _processorDescription |= TR_ProcessorIntelSkylake;
+                     }
+                  break;
                case 0x4e:  // Skylake_L
                case 0x5e:  // Skylake
                   _processorDescription |= TR_ProcessorIntelSkylake; break;

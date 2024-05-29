@@ -289,6 +289,8 @@ OMR::X86::CPU::is_test(OMRProcessorArchitecture p)
          return TR::CodeGenerator::getX86ProcessorInfo().isIntelBroadwell() == (_processorDescription.processor == p);
       case OMR_PROCESSOR_X86_INTEL_SKYLAKE:
          return TR::CodeGenerator::getX86ProcessorInfo().isIntelSkylake() == (_processorDescription.processor == p);
+      case OMR_PROCESSOR_X86_INTEL_CASCADELAKE:
+         return TR::CodeGenerator::getX86ProcessorInfo().isIntelCascadeLake() == (_processorDescription.processor == p);
       case OMR_PROCESSOR_X86_INTEL_ICELAKE:
          return TR::CodeGenerator::getX86ProcessorInfo().isIntelIceLake() == (_processorDescription.processor == p);
       case OMR_PROCESSOR_X86_INTEL_SAPPHIRERAPIDS:
@@ -460,6 +462,9 @@ OMR::X86::CPU::is_old_api(OMRProcessorArchitecture p)
          break;
       case OMR_PROCESSOR_X86_INTEL_SKYLAKE:
          ans = TR::CodeGenerator::getX86ProcessorInfo().isIntelSkylake();
+         break;
+      case OMR_PROCESSOR_X86_INTEL_CASCADELAKE:
+         ans = TR::CodeGenerator::getX86ProcessorInfo().isIntelCascadeLake();
          break;
       case OMR_PROCESSOR_X86_INTEL_ICELAKE:
          ans = TR::CodeGenerator::getX86ProcessorInfo().isIntelIceLake();
@@ -698,6 +703,10 @@ OMR::X86::CPU::getProcessorName()
 
       case OMR_PROCESSOR_X86_INTEL_SKYLAKE:
          returnString = "X86 Intel Skylake";
+         break;
+
+      case OMR_PROCESSOR_X86_INTEL_CASCADELAKE:
+         returnString = "X86 Intel Cascade Lake";
          break;
 
       case OMR_PROCESSOR_X86_INTEL_ICELAKE:
