@@ -17,18 +17,18 @@ memset0NT:
 	vpxorq	%zmm0, %zmm0, %zmm0
 	xor	%ecx, %ecx
 .Lwhile:
-	cmpl	$0, %esi
+	testq	%rsi, %rsi
 	je	.L10
 .L64byte:
 	movq	%rdi, %rax
 	andl	$63, %eax
 	testq	%rax, %rax
 	jne	.L3
-	cmpl	$63, %esi
+	cmpq	$63, %rsi
 	jle	.L3
 	vmovntpd %zmm0, (%rdi)
 	addq	$64, %rdi
-	subl	$64, %esi
+	subq	$64, %rsi
 	jmp	.Lwhile
 .L32byte:
 .L3:
@@ -36,11 +36,11 @@ memset0NT:
 	andl	$31, %eax
 	testq	%rax, %rax
 	jne	.L5
-	cmpl	$31, %esi
+	cmpq	$31, %rsi
 	jle	.L5
 	vmovntpd %ymm0, (%rdi)
 	addq	$32, %rdi
-	subl	$32, %esi
+	subq	$32, %rsi
 	jmp	.Lwhile
 .L16byte:
 .L5:
@@ -48,11 +48,11 @@ memset0NT:
 	andl	$15, %eax
 	testq	%rax, %rax
 	jne	.L6
-	cmpl	$15, %esi
+	cmpq	$15, %rsi
 	jle	.L6
 	vmovntpd %xmm0, (%rdi)
 	addq	$16, %rdi
-	subl	$16, %esi
+	subq	$16, %rsi
 	jmp	.Lwhile
 .L8byte:
 .L6:
@@ -60,18 +60,18 @@ memset0NT:
 	andl	$7, %eax
 	testq	%rax, %rax
 	jne	.L7
-	cmpl	$7, %esi
+	cmpq	$7, %rsi
 	jle	.L7
 	movnti	%rcx, (%rdi)
 	addq	$8, %rdi
-	subl	$8, %esi
+	subq	$8, %rsi
 	jmp	.Lwhile
 .L4byte:
 .L7:
-	cmpl	$4, %esi
+	cmpq	$4, %rsi
 	jne	.L8
 	addq	$4, %rdi
-	subl	$4, %esi
+	subq	$4, %rsi
 	movnti	%ecx, (%rdi)
 	jmp	.Lwhile
 .L8:
