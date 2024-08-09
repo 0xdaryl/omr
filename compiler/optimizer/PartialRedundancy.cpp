@@ -67,6 +67,7 @@
 #include "optimizer/Structure.hpp"
 #include "optimizer/TransformUtil.hpp"
 #include "ras/Debug.hpp"
+#include "ras/Logger.hpp"
 #ifdef J9_PROJECT_SPECIFIC
 #include "runtime/J9Profiler.hpp"
 #endif
@@ -252,7 +253,7 @@ int32_t TR_PartialRedundancy::perform()
       TR::TreeTop *currentTree = comp()->getStartTree();
       while (!(currentTree == NULL))
          {
-         getDebug()->print(comp()->getOutFile(), currentTree);
+         getDebug()->print(comp()->getLogger(), currentTree);
          currentTree = currentTree->getNextTreeTop();
          }
       }
@@ -275,7 +276,7 @@ int32_t TR_PartialRedundancy::perform()
    TR_ASSERT(_numNodes > 0, "Partial Redundancy, node numbers not assigned");
 
    if (trace())
-      comp()->dumpMethodTrees("Trees after PRE node numbering\n");
+      comp()->dumpMethodTrees(comp()->getLogger(), "Trees after PRE node numbering\n");
 
    int i;
    _numberOfBits = _isolatedness->_latestness->_numberOfBits;
@@ -379,10 +380,10 @@ int32_t TR_PartialRedundancy::perform()
       if (trace())
          {
          traceMsg(comp(), "\nOptimality info for block : %d \n", i);
-         (*(_optSetInfo+i))->print(comp());
+         (*(_optSetInfo+i))->print(comp()->getLogger(), comp());
 
          traceMsg(comp(), "\nRedundancy info for block : %d \n", i);
-         (*(_rednSetInfo+i))->print(comp());
+         (*(_rednSetInfo+i))->print(comp()->getLogger(), comp());
 
          }
       }
@@ -411,10 +412,10 @@ int32_t TR_PartialRedundancy::perform()
       if (trace())
          {
          traceMsg(comp(), "\nSelective Optimality info for block : %d \n", i);
-         (*(_optSetInfo+i))->print(comp());
+         (*(_optSetInfo+i))->print(comp()->getLogger(), comp());
 
          traceMsg(comp(), "\nSelective Redundancy info for block : %d \n", i);
-         (*(_rednSetInfo+i))->print(comp());
+         (*(_rednSetInfo+i))->print(comp()->getLogger(), comp());
          }
       }
 
@@ -476,13 +477,13 @@ int32_t TR_PartialRedundancy::perform()
       if (trace())
          {
          traceMsg(comp(), "\nFinal Selective Optimality info for block : %d \n", i);
-         (*(_optSetInfo+i))->print(comp());
+         (*(_optSetInfo+i))->print(comp()->getLogger(), comp());
 
          traceMsg(comp(), "\nFinal Selective Redundancy info for block : %d \n", i);
-         (*(_rednSetInfo+i))->print(comp());
+         (*(_rednSetInfo+i))->print(comp()->getLogger(), comp());
 
          traceMsg(comp(), "\nFinal Unavailable info for block : %d \n", i);
-         (*(_unavailableSetInfo+i))->print(comp());
+         (*(_unavailableSetInfo+i))->print(comp()->getLogger(), comp());
 
          traceMsg(comp(), "\nGlobal Register weight for block : %d is %d\n", i, _globalRegisterWeights[i]);
          }
@@ -706,7 +707,7 @@ int32_t TR_PartialRedundancy::perform()
       {
       traceMsg(comp(), "\nEnding PartialRedundancy\n");
       printTrees();
-      comp()->dumpMethodTrees("Trees after PRE done\n");
+      comp()->dumpMethodTrees(comp()->getLogger(), "Trees after PRE done\n");
       }
 
    if (manager()->getAlteredCode())
@@ -1853,7 +1854,7 @@ void TR_PartialRedundancy::printTrees()
    while (!(currentTree == NULL))
       {
       if (trace())
-         getDebug()->print(comp()->getOutFile(), currentTree);
+         getDebug()->print(comp()->getLogger(), currentTree);
 
       currentTree = currentTree->getNextTreeTop();
       }
@@ -2612,7 +2613,7 @@ int32_t TR_ExceptionCheckMotion::perform()
       TR::TreeTop *currentTree = comp()->getStartTree();
       while (!(currentTree == NULL))
          {
-         getDebug()->print(comp()->getOutFile(), currentTree);
+         getDebug()->print(comp()->getLogger(), currentTree);
          currentTree = currentTree->getNextTreeTop();
          }
       }
@@ -4634,7 +4635,7 @@ bool TR_ExceptionCheckMotion::analyzeBlockStructure(TR_BlockStructure *blockStru
    *_unresolvedAccessesThatSurvive = *_knownUnresolvedAccessesThatSurvive;
 
    ////dumpOptDetails(comp(), "Nodes that survive\n");
-   ////_nodesThatSurvive->print(comp());
+   ////_nodesThatSurvive->print(comp()->getLogger(), comp());
 
    // Use the information about this block collected earlier (during gen/kill list
    // generation) to prune the incoming ordered list from the successors.
@@ -5526,9 +5527,9 @@ bool TR_ExceptionCheckMotion::analyzeBlockStructure(TR_BlockStructure *blockStru
    if (trace())
       {
       traceMsg(comp(), "Following gen exprs for block_%d cannot survive\n", blockNum);
-      _killedGenExprs[blockNum]->print(comp());
+      _killedGenExprs[blockNum]->print(comp()->getLogger(), comp());
       traceMsg(comp(), "Known indirect exprs for block_%d that survive\n", blockNum);
-      _knownIndirectAccessesThatSurvive->print(comp());
+      _knownIndirectAccessesThatSurvive->print(comp()->getLogger(), comp());
       }
 
    // This is the list for this block; note that this is not what we can flow backwards from this point
@@ -6048,7 +6049,7 @@ TR_RedundantExpressionAdjustment::TR_RedundantExpressionAdjustment(TR::Compilati
          if (_blockAnalysisInfo[i])
             {
             traceMsg(comp, "\nAvailable optimal expressions for block_%d: ",i);
-            _blockAnalysisInfo[i]->print(comp);
+            _blockAnalysisInfo[i]->print(comp->getLogger(), comp);
             }
          }
       traceMsg(comp, "\nEnding Redundant expression adjustment\n");
@@ -6069,22 +6070,22 @@ bool TR_RedundantExpressionAdjustment::postInitializationProcessing()
          if (_regularGenSetInfo[i])
             {
             traceMsg(comp(), " gen set ");
-            _regularGenSetInfo[i]->print(comp());
+            _regularGenSetInfo[i]->print(comp()->getLogger(), comp());
             }
          if (_regularKillSetInfo[i])
             {
             traceMsg(comp(), " kill set ");
-            _regularKillSetInfo[i]->print(comp());
+            _regularKillSetInfo[i]->print(comp()->getLogger(), comp());
             }
          if (_exceptionGenSetInfo[i])
             {
             traceMsg(comp(), " exception gen set ");
-            _exceptionGenSetInfo[i]->print(comp());
+            _exceptionGenSetInfo[i]->print(comp()->getLogger(), comp());
             }
          if (_exceptionKillSetInfo[i])
             {
             traceMsg(comp(), " exception kill set ");
-            _exceptionKillSetInfo[i]->print(comp());
+            _exceptionKillSetInfo[i]->print(comp()->getLogger(), comp());
             }
          }
       }
@@ -6139,7 +6140,7 @@ void TR_RedundantExpressionAdjustment::initializeGenAndKillSetInfo()
          *_regularKillSetInfo[i] |= *_optSetHelper;
 
          /////dumpOptDetails(comp(), "Kill set info for block_%d\n", i);
-         /////_regularKillSetInfo[i]->print(comp());
+         /////_regularKillSetInfo[i]->print(comp()->getLogger(), comp());
          }
       }
    }
@@ -6372,13 +6373,13 @@ bool TR_RedundantExpressionAdjustment::analyzeBlockStructure(TR_BlockStructure *
   if (trace())
       {
       traceMsg(comp(), "\nIn Set Info for Block : %p numbered %d is : \n", blockStructure, blockStructure->getNumber());
-      analysisInfo->_inSetInfo->print(comp());
+      analysisInfo->_inSetInfo->print(comp()->getLogger(), comp());
       traceMsg(comp(), "\nOut Set Info for Block : %p numbered %d is : \n", blockStructure, blockStructure->getNumber());
       TR_BasicDFSetAnalysis<ContainerType*>::TR_ContainerNodeNumberPair *pair;
       for (pair = analysisInfo->_outSetInfo->getFirst(); pair; pair = pair->getNext())
          {
          traceMsg(comp(), "Exit or Succ numbered %d : ", pair->_nodeNumber);
-         pair->_container->print(comp());
+         pair->_container->print(comp()->getLogger(), comp());
          traceMsg(comp(), "\n");
          }
       traceMsg(comp(), "\n");

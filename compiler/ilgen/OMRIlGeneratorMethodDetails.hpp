@@ -39,6 +39,7 @@ class TR_FrontEnd;
 class TR_ResolvedMethod;
 namespace TR { class IlGeneratorMethodDetails; }
 namespace TR { class IlVerifier; }
+namespace TR { class Logger; }
 
 namespace OMR
 {
@@ -59,7 +60,7 @@ public:
    virtual bool isMethodInProgress() const { return false; }
    bool supportsInvalidation() { return false; }
    bool sameAs(TR::IlGeneratorMethodDetails & other) { return false; }
-   void print(TR_FrontEnd *fe, TR::FILE *file) { }
+   void print(TR::Logger *log, TR_FrontEnd *fe) { }
 
    inline static TR::IlGeneratorMethodDetails & create(TR::IlGeneratorMethodDetails & target, TR_ResolvedMethod *method);
 

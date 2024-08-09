@@ -112,6 +112,7 @@
 #include "optimizer/RecognizedCallTransformer.hpp"
 #include "optimizer/SwitchAnalyzer.hpp"
 #include "env/RegionProfiler.hpp"
+#include "ras/Logger.hpp"
 
 namespace TR { class AutomaticSymbol; }
 
@@ -1012,7 +1013,7 @@ void OMR::Optimizer::optimize()
          }
 
       if (comp()->getOption(TR_TraceTrees) && (comp()->isOutermostMethod() || comp()->trace(inlining) || comp()->getOption(TR_DebugInliner)))
-         comp()->dumpMethodTrees("Pre IlGenOpt Trees", getMethodSymbol());
+         comp()->dumpMethodTrees(comp()->getLogger(), "Pre IlGenOpt Trees", getMethodSymbol());
       }
 
    LexicalTimer t("optimize", comp()->signature(), comp()->phaseTimer());
@@ -1099,7 +1100,7 @@ void OMR::Optimizer::optimize()
    TR_SingleTimer myTimer;
    TR_FrontEnd * fe = comp()->fe();
    bool doTiming = comp()->getOption(TR_Timing);
-   if (doTiming && comp()->getOutFile() != NULL)
+   if (doTiming && comp()->getLoggingEnabled())
       {
       myTimer.initialize("all optimizations", trMemory());
       }
@@ -1164,7 +1165,7 @@ void OMR::Optimizer::dumpPostOptTrees()
 
    TR::Method *method = comp()->getMethodSymbol()->getMethod();
    if ((debug("dumpPostLocalOptTrees") || comp()->getOption(TR_TraceTrees)))
-      comp()->dumpMethodTrees("Post Optimization Trees");
+      comp()->dumpMethodTrees(comp()->getLogger(), "Post Optimization Trees");
    }
 
 static bool hasMoreThanOneBlock( TR::Compilation *comp)
@@ -1653,7 +1654,7 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
       if (comp()->getOption(TR_TraceOptDetails))
          {
          if (comp()->isOutermostMethod())
-            getDebug()->printOptimizationHeader(comp()->signature(), manager->name(), optIndex, optimization->_options == MustBeDone);
+            getDebug()->printOptimizationHeader(comp()->getLogger(), comp()->signature(), manager->name(), optIndex, optimization->_options == MustBeDone);
          }
 
       if (comp()->getOption(TR_TraceOpts))
@@ -2091,12 +2092,11 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
 #endif
 
    #ifdef DEBUG
-      if (manager->getDumpStructure() && debug("dumpStructure"))
+      if (manager->getDumpStructure() && debug("dumpStructure") && comp()->getLoggingEnabled())
          {
          traceMsg(comp(), "\nStructures:\n");
-         getDebug()->print(comp()->getOutFile(), comp()->getFlowGraph()->getStructure(), 6);
+         getDebug()->print(comp()->getLogger(), comp()->getFlowGraph()->getStructure(), 6);
          }
-
    #endif
 
    if ((optIndex >= _firstDumpOptPhaseTrees && optIndex <= _lastDumpOptPhaseTrees) &&
@@ -2106,14 +2106,14 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
          {
          dumpOptDetails(comp(), "Trivial opt -- omitting lisitings\n");
          }
-      else if (needTreeDump || (finalOptMsgIndex != origOptMsgIndex))
-         comp()->dumpMethodTrees("Trees after ", manager->name(), getMethodSymbol());
+      else if ((needTreeDump || (finalOptMsgIndex != origOptMsgIndex)) && comp()->getLoggingEnabled())
+         comp()->dumpMethodTrees(comp()->getLogger(), "Trees after ", manager->name(), getMethodSymbol());
       else if (finalOptMsgIndex == origOptMsgIndex)
          {
          dumpOptDetails(comp(), "No transformations done by this pass -- omitting listings\n");
-         if (needStructureDump && comp()->getDebug() && comp()->getFlowGraph()->getStructure())
+         if (needStructureDump && comp()->getLoggingEnabled() && comp()->getFlowGraph()->getStructure())
             {
-            comp()->getDebug()->print(comp()->getOutFile(), comp()->getFlowGraph()->getStructure(), 6);
+            comp()->getDebug()->print(comp()->getLogger(), comp()->getFlowGraph()->getStructure(), 6);
             }
          }
       }
@@ -2199,10 +2199,10 @@ int32_t OMR::Optimizer::doStructuralAnalysis()
       rootStructure = TR_RegionAnalysis::getRegions(comp());
       comp()->getFlowGraph()->setStructure(rootStructure);
 
-      if (debug("dumpStructure"))
+      if (debug("dumpStructure") && comp()->getLoggingEnabled())
          {
          traceMsg(comp(), "\nStructures:\n");
-         getDebug()->print(comp()->getOutFile(), rootStructure, 6);
+         getDebug()->print(comp()->getLogger(), rootStructure, 6);
          }
       }
 

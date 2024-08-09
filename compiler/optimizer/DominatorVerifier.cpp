@@ -40,6 +40,7 @@
 #include "optimizer/DominatorsChk.hpp"
 #include "optimizer/Dominators.hpp"
 #include "ras/Debug.hpp"
+#include "ras/Logger.hpp"
 
 TR_DominatorVerifier::TR_DominatorVerifier(TR_Dominators &findDominators)
    : _compilation(findDominators.comp())
@@ -52,7 +53,7 @@ TR_DominatorVerifier::TR_DominatorVerifier(TR_Dominators &findDominators)
    _visitCount = comp()->incVisitCount();
    _numBlocks = cfg->getNumberOfNodes()+1;
 
-   if (debug("traceVER"))
+   if (debug("traceVER") && comp()->getLoggingEnabled())
       {
       dumpOptDetails(comp(), "Printing out the TreeTops from DominatorVerifier\n");
 
@@ -60,13 +61,13 @@ TR_DominatorVerifier::TR_DominatorVerifier(TR_Dominators &findDominators)
 
       while (!(currentTree == NULL))
          {
-         comp()->getDebug()->print(comp()->getOutFile(), currentTree);
+         comp()->getDebug()->print(comp()->getLogger(), currentTree);
          currentTree = currentTree->getNextTreeTop();
          }
 
       dumpOptDetails(comp(), "Printing out the CFG from DominatorVerifier\n");
       if (cfg != NULL)
-         comp()->getDebug()->print(comp()->getOutFile(), cfg);
+         comp()->getDebug()->print(comp()->getLogger(), cfg);
       }
 
    TR_DominatorsChk expensiveAlgorithm(comp());

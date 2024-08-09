@@ -31,6 +31,7 @@
 #include "control/Options_inlines.hpp"
 #include "infra/List.hpp"
 #include "ras/Debug.hpp"
+#include "ras/Logger.hpp"
 
 namespace TR { class AutomaticSymbol; }
 
@@ -50,7 +51,7 @@ OMR::GCStackAtlas::close(TR::CodeGenerator *cg)
 
    if (comp->getOption(TR_TraceCG))
       {
-      comp->getDebug()->print(comp->getOutFile(), self());
+      comp->getDebug()->print(comp->getLogger(), self());
       }
 
    // Merge adjacent similar maps

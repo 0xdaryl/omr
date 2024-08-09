@@ -58,6 +58,7 @@ class TR_OptimizationPlan;
 class TR_ResolvedMethod;
 namespace TR { class SimpleRegex; }
 namespace OMR { class Compilation; }
+namespace OMR { class Logger; }
 namespace TR  { class Options;     }
 struct J9JITConfig;
 
@@ -1354,6 +1355,7 @@ public:
       _logFileName = NULL;
       _suffixLogsFormat = NULL;
       _logFile = NULL;
+      _logger = NULL;
       _optFileName = NULL;
       _customStrategy = NULL;
       _customStrategySize = 0;
@@ -1550,9 +1552,13 @@ public:
 
    static bool     useCompressedPointers();
 
-   TR::FILE *          getLogFile()          {return _logFile;}
+   TR::FILE *      getLogFile() {return _logFile;}
    void            setLogFile(TR::FILE * f)  {_logFile = f;}
-   char *          getLogFileName()      {return _logFileName;}
+   TR::Logger *    getLogger() { return _logger; }
+   void            setLogger(TR::Logger *log) { _logger = log; }
+   char *          getLogFileName() {return _logFileName;}
+
+   TR::Logger *createLoggerForLogFile(TR::FILE *file);
 
    char *    getBlockShufflingSequence(){ return _blockShufflingSequence; }
 
@@ -2122,7 +2128,7 @@ private:
 
 protected:
    void  openLogFile (int32_t idSuffix = -1);
-   static void  closeLogFile(TR_FrontEnd *fe, TR::FILE * file);
+   static void  closeLogFile(TR_FrontEnd *fe, TR::FILE * file, TR::Logger *log);
 
 private:
    // Standard option processing methods
@@ -2342,7 +2348,8 @@ protected:
    //
    char                       *_logFileName;
    char                       *_suffixLogsFormat;
-   TR::FILE *                      _logFile;
+   TR::FILE *                  _logFile;
+   TR::Logger *                _logger;
 
 
    char                       *_optFileName;
@@ -2556,11 +2563,14 @@ class TR_MCTLogs
          _next(NULL),
          _compThreadID(compThreadID),
          _options(options),
-         _logFile(NULL)
+         _logFile(NULL),
+         _logger(NULL)
    {}
 
    TR::FILE *       getLogFile() const          {return _logFile;}
    void             setLogFile(TR::FILE * f)    {_logFile = f;}
+   TR::Logger *     getLogger() const           {return _logger;}
+   void             setLogger(TR::Logger *log)  {_logger = log;}
    TR_MCTLogs *     next() const                { return _next; }
    void             setNext(TR_MCTLogs *l)      { _next = l; }
    int32_t          getID() const               { return _compThreadID; }
@@ -2569,6 +2579,7 @@ class TR_MCTLogs
    private:
    TR_MCTLogs*      _next;         ///< logs are linked
    TR::FILE *       _logFile;      ///< file descriptor for this log; comp thread will create these
+   TR::Logger *     _logger;       ///< Logger object for this log
    TR::Options*     _options;      ///< pointer back to the TR::Options obj that contains this list
    int32_t          _compThreadID; ///< the ID of the compilation thread that can use this log
 

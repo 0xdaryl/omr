@@ -38,6 +38,7 @@ class TR_OSRSlotSharingInfo;
 namespace TR { class Block; }
 namespace TR { class Compilation; }
 namespace TR { class Instruction; }
+namespace TR { class Logger; }
 namespace TR { class Node; }
 namespace TR { class ResolvedMethodSymbol; }
 namespace TR { class SymbolReference; }
@@ -218,7 +219,7 @@ class TR_OSRCompilationData
    int32_t getNumOfSymsThatShareSlot() {return numOfSymsThatShareSlot;}
    void updateNumOfSymsThatShareSlot(int32_t value) {numOfSymsThatShareSlot += value;}
    void buildSymRefOrderMap();
-      
+
    int32_t getSymRefOrder(int32_t symRefNumber);
    TR_OSRSlotSharingInfo* getSlotsInfo(const TR_ByteCodeInfo &bcInfo);
 
@@ -243,7 +244,7 @@ class TR_OSRCompilationData
    void buildFinalMap(int32_t callerIndex,
                       DefiningMap *finalMap,
                       DefiningMap *workingCatchBlockMap,
-                      DefiningMaps &definingSymRefsMapAtOSRCodeBlocks, 
+                      DefiningMaps &definingSymRefsMapAtOSRCodeBlocks,
                       DefiningMaps &symRefNumberMapForPrepareForOSRCalls
                       );
    /**
@@ -255,9 +256,10 @@ class TR_OSRCompilationData
 
    /**
     * \brief Debug dump of \ref DefiningMap
+    * \param log The \c TR::Logger object to write to
     * \param map The \c DefiningMap to print out
     */
-   void printMap(DefiningMap *map);
+   void printMap(TR::Logger *log, DefiningMap *map);
 
    class TR_ScratchBufferInfo
       {
@@ -412,7 +414,7 @@ class TR_OSRMethodData
 
    TR_BCLiveRangeInfoHashTable  bcLiveRangeInfoHashTab;
    TR_BCLiveRangeInfoHashTable  bcPendingPushLivenessInfoHashTab;
-   DefiningMap                  *_symRefDefiningMap; 
+   DefiningMap                  *_symRefDefiningMap;
    TR_BitVector                 *_symRefs;
 
    TR_ArgInfoHashTable argInfoHashTab;

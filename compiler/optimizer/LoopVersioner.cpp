@@ -85,6 +85,7 @@
 #include "optimizer/VPConstraint.hpp"
 #include "ras/Debug.hpp"
 #include "ras/DebugCounter.hpp"
+#include "ras/Logger.hpp"
 
 #ifdef J9_PROJECT_SPECIFIC
 #include "runtime/J9ValueProfiler.hpp"
@@ -108,34 +109,6 @@
 
 const int HIGH_FREQ_THRESHOLD = 5000;
 
-/*
-void printNode(TR::Node *node, TR_BitVector &visitedNodes, int32_t indentation)
-   {
-   if (visitedNodes.isSet(node->getGlobalIndex()))
-      {
-      traceMsg(comp(), "\t\t\t%p %5d %*s ==>%s\n",  node,
-              node->getLocalIndex(), indentation, " ",
-              comp()->getDebug()->getName(node->getOpCode()));
-      }
-   else
-      {
-      traceMsg(comp(), "\t\t\t%p %5d %*s %s %s\n", node,
-              node->getLocalIndex(),
-              indentation, " ", comp()->getDebug()->getName(node->getOpCode()),
-              node->getOpCode().hasSymbolReference() ?
-              comp()->getDebug()->getName(node->getSymbolReference()): "");
-
-      //comp()->getDebug()->printNodeInfo(comp()->getDebug()->getOutFile(), node);
-
-      visitedNodes.set(node->getGlobalIndex());
-
-      for (int32_t i = 0; i < node->getNumChildren(); ++i)
-         {
-         printNode(node->getChild(i), visitedNodes, indentation+2);
-         }
-      }
-   }
-   */
 
 TR_LoopSpecializer::TR_LoopSpecializer(TR::OptimizationManager *manager)
    : TR_LoopVersioner(manager, true)
@@ -187,7 +160,8 @@ int32_t TR_LoopVersioner::performWithDominators()
       }
    else
       {
-         printf("WARNING: method may have infinite loops\n");
+      if (trace())
+         traceMsg(comp(), "WARNING: method may have infinite loops\n");
       }
    auto result = performWithoutDominators();
 
@@ -311,7 +285,7 @@ int32_t TR_LoopVersioner::performWithoutDominators()
       {
       traceMsg(comp(), "Starting LoopVersioning\n");
       traceMsg(comp(), "\nCFG before loop versioning:\n");
-      getDebug()->print(comp()->getOutFile(), _cfg);
+      getDebug()->print(comp()->getLogger(), _cfg);
       }
 
    // printTrees();
@@ -423,7 +397,7 @@ int32_t TR_LoopVersioner::performWithoutDominators()
       TR_ASSERT(naturalLoop && naturalLoop->isNaturalLoop(),"Loop versioner, expecting natural loop");
 
       if (trace())
-         comp()->dumpMethodTrees("Trees after this versioning");
+         comp()->dumpMethodTrees(comp()->getLogger(), "Trees after this versioning");
 
       TR::Region curLoopMemRegion(stackMemoryRegion);
       CurLoop curLoop(comp(), curLoopMemRegion, naturalLoop);
@@ -793,11 +767,9 @@ int32_t TR_LoopVersioner::performWithoutDominators()
    if (trace())
       {
       traceMsg(comp(), "\nCFG after loop versioning:\n");
-      getDebug()->print(comp()->getOutFile(), _cfg);
+      getDebug()->print(comp()->getLogger(), _cfg);
       traceMsg(comp(), "Ending LoopVersioner\n");
       }
-
-   //comp()->dumpMethodTrees("Trees after this versioning");
 
    if (_invalidateAliasSets)
       optimizer()->setAliasSetsAreValid(false);
@@ -3421,8 +3393,6 @@ void TR_LoopVersioner::updateDefinitionsAndCollectProfiledExprs(TR::Node *parent
          }
       }
 
-   //dumpOptDetails(comp(), "After examining node %p\n", node);
-   //dumpOptDetails(comp(), "seenDefined is : "); _seenDefinedSymbolReferences->print(comp());
    if (node == _nullCheckReference)
       _inNullCheckReference = true;
 
@@ -6483,13 +6453,13 @@ void TR_LoopVersioner::copyOnWriteNode(TR::Node *original, TR::Node **current)
 
    // Later calls to dumpOptDetails() may refer to these nodes, so show this
    // output even without trace().
-   if (comp()->getOutFile() != NULL && (trace() || comp()->getOption(TR_TraceOptDetails)))
+   if (comp()->getLoggingEnabled() && (trace() || comp()->getOption(TR_TraceOptDetails)))
       {
       comp()->getDebug()->clearNodeChecklist();
       dumpOptDetails(comp(), "Copy on write:\n\toriginal node:\n");
-      comp()->getDebug()->printWithFixedPrefix(comp()->getOutFile(), original, 1, true, false, "\t\t");
+      comp()->getDebug()->printWithFixedPrefix(comp()->getLogger(), original, 1, true, false, "\t\t");
       dumpOptDetails(comp(), "\n\tduplicate node:\n");
-      comp()->getDebug()->printWithFixedPrefix(comp()->getOutFile(), *current, 1, true, false, "\t\t");
+      comp()->getDebug()->printWithFixedPrefix(comp()->getLogger(), *current, 1, true, false, "\t\t");
       dumpOptDetails(comp(), "\n");
       }
    }
@@ -7960,7 +7930,7 @@ void TR_LoopVersioner::collectAllExpressionsToBeChecked(TR::Node *node, List<TR:
    // the log so that other dumpOptDetails() messages that refer to its
    // descendants make sense.
    bool optDetails =
-      comp()->getOutFile() != NULL
+      comp()->getLoggingEnabled()
       && (trace() || comp()->getOption(TR_TraceOptDetails));
 
    if (optDetails)
@@ -7968,7 +7938,7 @@ void TR_LoopVersioner::collectAllExpressionsToBeChecked(TR::Node *node, List<TR:
       dumpOptDetails(comp(), "collectAllExpressionsToBeChecked on tree:\n");
       comp()->getDebug()->clearNodeChecklist();
       comp()->getDebug()->printWithFixedPrefix(
-         comp()->getOutFile(),
+         comp()->getLogger(),
          node,
          1,
          true,
@@ -8824,7 +8794,7 @@ int32_t TR_LoopVersioner::detectCanonicalizedPredictableLoops(TR_Structure *loop
                 {
                 dumpOptDetails(comp(), "\nDetected a predictable loop %d\n", loopStructure->getNumber());
                 dumpOptDetails(comp(), "Possible new induction variable candidates :\n");
-                comp()->getDebug()->print(comp()->getOutFile(), &_writtenExactlyOnce);
+                comp()->getDebug()->print(comp()->getLogger(), &_writtenExactlyOnce);
                 dumpOptDetails(comp(), "\n");
                 }
 
@@ -10097,7 +10067,7 @@ TR_LoopVersioner::LoopEntryPrep *TR_LoopVersioner::createLoopEntryPrep(
    LoopEntryPrep *prev)
    {
    bool optDetails =
-      comp()->getOutFile() != NULL
+      comp()->getLoggingEnabled()
       && (trace() || comp()->getOption(TR_TraceOptDetails));
 
    if (visited == NULL)
@@ -10122,7 +10092,7 @@ TR_LoopVersioner::LoopEntryPrep *TR_LoopVersioner::createLoopEntryPrep(
          comp()->getDebug()->clearNodeChecklist();
 
       comp()->getDebug()->printWithFixedPrefix(
-         comp()->getOutFile(),
+         comp()->getLogger(),
          node,
          1,
          true,

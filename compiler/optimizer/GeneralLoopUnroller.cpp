@@ -51,6 +51,7 @@
 #include "optimizer/Structure.hpp"
 #include "optimizer/TransformUtil.hpp"
 #include "ras/Debug.hpp"
+#include "ras/Logger.hpp"
 
 #define OPT_DETAILS "O^O GENERAL LOOP UNROLLER: "
 #define OPT_DETAILS1 "O^O ARRAY ALIASING REFINER: "
@@ -414,9 +415,9 @@ void TR_LoopUnroller::unrollLoopOnce(TR_RegionStructure *loop, TR_StructureSubGr
    if (trace())
       {
       traceMsg(comp(), "\nstructure after cloning the loop for the %dth time:\n\n", _iteration);
-      getDebug()->print(comp()->getOutFile(), _rootStructure, 6);
-      getDebug()->print(comp()->getOutFile(), _cfg);
-      comp()->dumpMethodTrees("method trees:");
+      getDebug()->print(comp()->getLogger(), _rootStructure, 6);
+      getDebug()->print(comp()->getLogger(), _cfg);
+      comp()->dumpMethodTrees(comp()->getLogger(), "method trees:");
       }
    //We are done.
    }
@@ -684,8 +685,8 @@ void TR_LoopUnroller::modifyBranchTree(TR_RegionStructure *loop,
 
    if (trace())
       {
-      comp()->dumpMethodTrees("\nbefore adding the loopiter test");
-      getDebug()->print(comp()->getOutFile(), _rootStructure, 6);
+      comp()->dumpMethodTrees(comp()->getLogger(), "\nbefore adding the loopiter test");
+      getDebug()->print(comp()->getLogger(), _rootStructure, 6);
       }
 
    // add the minimum loop iteration test after the overflow test
@@ -830,8 +831,8 @@ void TR_LoopUnroller::modifyBranchTree(TR_RegionStructure *loop,
 
       if (trace())
          {
-         comp()->dumpMethodTrees("\nafter adding loopiter test");
-         getDebug()->print(comp()->getOutFile(), _rootStructure, 6);
+         comp()->dumpMethodTrees(comp()->getLogger(), "\nafter adding loopiter test");
+         getDebug()->print(comp()->getLogger(), _rootStructure, 6);
          }
       }
    }
@@ -1257,9 +1258,9 @@ void TR_LoopUnroller::modifyOriginalLoop(TR_RegionStructure *loop, TR_StructureS
    if (trace())
       {
       traceMsg(comp(), "\nstructure right before the new stuff:\n\n", loop->getNumber());
-      getDebug()->print(comp()->getOutFile(), _rootStructure, 6);
-      getDebug()->print(comp()->getOutFile(), _cfg);
-      comp()->dumpMethodTrees("Tree tops right before swapping the flow order:");
+      getDebug()->print(comp()->getLogger(), _rootStructure, 6);
+      getDebug()->print(comp()->getLogger(), _cfg);
+      comp()->dumpMethodTrees(comp()->getLogger(), "Tree tops right before swapping the flow order:");
       }
 
    processSwingQueue();
@@ -1831,9 +1832,9 @@ int32_t TR_LoopUnroller::unroll(TR_RegionStructure *loop, TR_StructureSubGraphNo
    if (trace())
       {
       traceMsg(comp(), "\nstructure after unrolling on loop %d is finished:\n\n", loop->getNumber());
-      getDebug()->print(comp()->getOutFile(), _rootStructure, 6);
-      getDebug()->print(comp()->getOutFile(), _cfg);
-      comp()->dumpMethodTrees(" xxxx Tree tops after unrolling:");
+      getDebug()->print(comp()->getLogger(), _rootStructure, 6);
+      getDebug()->print(comp()->getLogger(), _cfg);
+      comp()->dumpMethodTrees(comp()->getLogger(), " xxxx Tree tops after unrolling:");
       }
 
    return _unrollCount * 5;
@@ -1903,7 +1904,7 @@ void TR_LoopUnroller::generateSpillLoop(TR_RegionStructure *loop,
       {
       traceMsg(comp(), "trees after creating the spill loop %d for loop %d:\n",
              spillNode->getNumber(), loop->getNumber());
-      comp()->dumpMethodTrees("trees after creating spill loop");
+      comp()->dumpMethodTrees(comp()->getLogger(), "trees after creating spill loop");
       }
 
    _spillNode = spillNode;
@@ -1972,9 +1973,9 @@ void TR_LoopUnroller::generateSpillLoop(TR_RegionStructure *loop,
    if (trace())
       {
       traceMsg(comp(), "\nstructure after creating the spill loop %d:\n\n", loop->getNumber());
-      getDebug()->print(comp()->getOutFile(), _rootStructure, 6);
-      getDebug()->print(comp()->getOutFile(), _cfg);
-      comp()->dumpMethodTrees("method trees:");
+      getDebug()->print(comp()->getLogger(), _rootStructure, 6);
+      getDebug()->print(comp()->getLogger(), _cfg);
+      comp()->dumpMethodTrees(comp()->getLogger(), "method trees:");
       }
 
 
@@ -2054,9 +2055,9 @@ void TR_LoopUnroller::generateSpillLoop(TR_RegionStructure *loop,
    if (trace())
       {
       traceMsg(comp(), "\nstructure after including the spill loop %d:\n\n", loop->getNumber());
-      getDebug()->print(comp()->getOutFile(), _rootStructure, 6);
-      getDebug()->print(comp()->getOutFile(), _cfg);
-      comp()->dumpMethodTrees("method trees:");
+      getDebug()->print(comp()->getLogger(), _rootStructure, 6);
+      getDebug()->print(comp()->getLogger(), _cfg);
+      comp()->dumpMethodTrees(comp()->getLogger(), "method trees:");
       }
 
    _spillNode = spillNode;

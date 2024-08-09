@@ -75,6 +75,7 @@
 #include "optimizer/Optimizer.hpp"
 #include "optimizer/ValueNumberInfo.hpp"
 #include "ras/Debug.hpp"
+#include "ras/Logger.hpp"
 
 #ifdef J9_PROJECT_SPECIFIC
 #ifdef TR_TARGET_S390
@@ -1726,12 +1727,6 @@ OMR::Node::duplicateTree(bool duplicateChildren)
 
    //Would like to enable this, but some optimizations (e,g. Field Privatization) seem to rely on the old behaviour of duplicateTree
    //TR::Node *safeNode = safeDuplicateTree(duplicateChildren);
-
-   //traceMsg(TR::comp(), "--------------\n duplicateTree duplicating %p unsafeNode %p safeNode %p duplicateChildren = %d\n safeDuplicateTree:\n",this,unsafeNode,safeNode,duplicateChildren);
-   //TR::comp()->getDebug()->print(TR::comp()->getOutFile(),safeNode);
-   //traceMsg(TR::comp(), "original:\n");
-   //TR::comp()->getDebug()->print(TR::comp()->getOutFile(),unsafeNode);
-   //traceMsg(TR::comp(), "--------------\n");
 
    return unsafeNode;
    }
@@ -3952,7 +3947,7 @@ OMR::Node::printFullSubtree()
    TR_BitVector nodeChecklistBeforeDump(comp->getNodeCount(), comp->trMemory(), stackAlloc, notGrowable);
    comp->getDebug()->saveNodeChecklist(nodeChecklistBeforeDump);
    comp->getDebug()->clearNodeChecklist();
-   comp->getDebug()->print(comp->getOutFile(), self(), 2, true);
+   comp->getDebug()->print(comp->getLogger(), self(), 2, true);
    comp->getDebug()->restoreNodeChecklist(nodeChecklistBeforeDump);
    }
 

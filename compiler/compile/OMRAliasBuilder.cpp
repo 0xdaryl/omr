@@ -32,6 +32,7 @@
 #include "il/Node_inlines.hpp"
 #include "il/SymbolReference.hpp"
 #include "infra/BitVector.hpp"
+#include "ras/Logger.hpp"
 
 OMR::AliasBuilder::AliasBuilder(TR::SymbolReferenceTable *symRefTab, size_t sizeHint, TR::Compilation *c) :
      _addressShadowSymRefs(sizeHint, c->trMemory(), heapAlloc, growable),
@@ -168,9 +169,9 @@ OMR::AliasBuilder::createAliasInfo()
       callAliases->_methodSymbol->setHasVeryRefinedAliasSets(false);
    _callAliases.setFirst(0);
 
-   if (comp()->getOption(TR_TraceAliases))
+   if (comp()->getOption(TR_TraceAliases) && comp()->getLoggingEnabled())
       {
-      comp()->getDebug()->printAliasInfo(comp()->getOutFile(), symRefTab());
+      comp()->getDebug()->printAliasInfo(comp()->getLogger(), symRefTab());
       }
 
    }

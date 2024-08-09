@@ -26,6 +26,7 @@
 #endif
 #include "compile/Compilation.hpp"
 #include "env/CompilerEnv.hpp"
+#include "ras/Logger.hpp"
 
 
 OMR::KnownObjectTable::KnownObjectTable(TR::Compilation *comp) :
@@ -109,7 +110,7 @@ OMR::KnownObjectTable::isNull(Index index)
    }
 
 void
-OMR::KnownObjectTable::dumpTo(TR::FILE *file, TR::Compilation *comp)
+OMR::KnownObjectTable::dumpTo(TR::Logger *log, TR::Compilation *comp)
    {
    TR_UNIMPLEMENTED();
    }
