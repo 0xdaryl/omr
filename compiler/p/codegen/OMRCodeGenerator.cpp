@@ -101,6 +101,7 @@
 #include "p/codegen/PPCTableOfConstants.hpp"
 #include "ras/Debug.hpp"
 #include "ras/DebugCounter.hpp"
+#include "ras/Logger.hpp"
 #include "runtime/Runtime.hpp"
 
 #if defined(AIXPPC)
@@ -1474,11 +1475,9 @@ static bool               segmentInBlock;
 #endif
 
 #if DEBUG
-void OMR::Power::CodeGenerator::dumpDataSnippets(TR::FILE *outFile)
+void OMR::Power::CodeGenerator::dumpDataSnippets(TR::Logger *log)
    {
-   if (outFile == NULL)
-      return;
-   _constantData->print(outFile);
+   _constantData->print(log);
    }
 #endif
 
