@@ -32,6 +32,7 @@
 #include "il/LabelSymbol.hpp"
 #include "il/Node_inlines.hpp"
 #include "ras/Debug.hpp"
+#include "ras/Logger.hpp"
 #include "codegen/Relocation.hpp"
 
 namespace TR { class Node; }
@@ -164,38 +165,34 @@ uint8_t *TR::ARM64ConstantDataSnippet::emitSnippetBody()
    return cursor;
    }
 
-void TR::ARM64ConstantDataSnippet::print(TR::FILE* pOutFile, TR_Debug* debug)
+void TR::ARM64ConstantDataSnippet::print(TR::Logger *log, TR_Debug *debug)
    {
-   if (pOutFile == NULL)
-      return;
-
    uint8_t *bufferPos = getSnippetLabel()->getCodeLocation();
 
-   debug->printSnippetLabel(pOutFile, getSnippetLabel(), bufferPos, debug->getName(this));
-   debug->printPrefix(pOutFile, NULL, bufferPos, getDataSize());
+   debug->printSnippetLabel(log, getSnippetLabel(), bufferPos, debug->getName(this));
+   debug->printPrefix(log, NULL, bufferPos, getDataSize());
 
    switch (getDataSize())
       {
       case 2:
-         trfprintf(pOutFile, "0x%04x | %d",
+         log->printf("0x%04x | %d",
                    0xffff & (int32_t)getData<int16_t>(),
                    (int32_t)getData<int16_t>());
          break;
       case 4:
-         trfprintf(pOutFile, "0x%08x | %d | float %g",
+         log->printf("0x%08x | %d | float %g",
                    getData<int32_t>(),
                    getData<int32_t>(),
                    getData<float>());
          break;
       case 8:
-         trfprintf(pOutFile, "0x%016llx | %lld | double %g",
+         log->printf("0x%016llx | %lld | double %g",
                    getData<int64_t>(),
                    getData<int64_t>(),
                    getData<double>());
          break;
       default:
-         trfprintf(pOutFile, "VECTOR VALUE");
+         log->printf("VECTOR VALUE");
          break;
       }
-
    }

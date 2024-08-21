@@ -45,6 +45,7 @@ namespace TR { class ARM64LinkageProperties; }
 namespace TR { class ARM64ConstantDataSnippet; }
 namespace TR { class RegisterDependencyConditions; }
 namespace TR { class DebugCounterBase; }
+namespace TR { class Logger; }
 
 /**
  * @brief Answers if loading negated value is more concise
@@ -235,9 +236,9 @@ public:
 
    /**
     * @brief Dumps data snippets
-    * @param[in] outFile : FILE for output
+    * @param[in] log : TR::Logger for output
     */
-   void dumpDataSnippets(TR::FILE *outFile);
+   void dumpDataSnippets(TR::Logger *log);
 
    /**
     * @brief Generates switch-to-interpreter pre-prologue
