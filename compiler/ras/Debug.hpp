@@ -731,7 +731,7 @@ public:
    int32_t printRestartJump(TR::Logger *log, TR::X86RestartSnippet *, uint8_t *);
    int32_t printRestartJump(TR::Logger *log, TR::X86RestartSnippet *, uint8_t *, int32_t, const char *);
 
-   char * printSymbolName(TR::Logger *log, TR::Symbol *, TR::SymbolReference *, TR::MemoryReference *mr=NULL)  ;
+   void printSymbolName(TR::Logger *log, TR::Symbol *, TR::SymbolReference *, TR::MemoryReference *mr=NULL);
    bool isBranchToTrampoline(TR::SymbolReference *, uint8_t *, int32_t &);
 
    virtual void printDebugCounters(TR::DebugCounterGroup *counterGroup, const char *name);

@@ -1972,7 +1972,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::MemoryReference * mr, TR::Instruction * 
    trfflush(pOutFile);
    }
 
-char *
+void
 TR_Debug::printSymbolName(TR::FILE *pOutFile, TR::Symbol *sym,  TR::SymbolReference *symRef, TR::MemoryReference * mr)
    {
    char *str;
@@ -2042,19 +2042,7 @@ TR_Debug::printSymbolName(TR::FILE *pOutFile, TR::Symbol *sym,  TR::SymbolRefere
          }
       }
 
-
-   if (pOutFile != NULL)
-      {
-      trfprintf(pOutFile, "%s", outString);
-
-      return NULL;
-      }
-   else
-      {
-      char *str = (char *) _comp->trMemory()->allocateHeapMemory(2+strlen(outString));
-      strcpy(str, outString);
-      return str;
-      }
+   trfprintf(pOutFile, "%s", outString);
    }
 
 
