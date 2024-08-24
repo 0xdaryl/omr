@@ -38,6 +38,7 @@ namespace OMR { typedef OMR::Z::JitCodeRWXObjectFormat JitCodeRWXObjectFormatCon
 
 namespace TR { class Instruction; }
 namespace TR { class FunctionCallData; }
+namespace TR { class Logger; }
 namespace OMR
 {
 
@@ -57,7 +58,7 @@ public:
       return 14;
       }
 
-   virtual uint8_t* printEncodedFunctionCall(TR::FILE *pOutFile, TR::FunctionCallData &data);
+   virtual uint8_t* printEncodedFunctionCall(TR::Logger *log, TR::FunctionCallData &data);
    };
 
 }

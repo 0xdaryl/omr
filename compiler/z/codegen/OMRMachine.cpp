@@ -71,6 +71,7 @@
 #include "infra/Stack.hpp"
 #include "codegen/SystemLinkage.hpp"
 #include "ras/Debug.hpp"
+#include "ras/Logger.hpp"
 #include "z/codegen/S390GenerateInstructions.hpp"
 #include "z/codegen/S390Instruction.hpp"
 
@@ -1798,7 +1799,7 @@ OMR::Z::Machine::freeBestRegisterPair(TR::RealRegister ** firstReg, TR::RealRegi
       {
       if (self()->cg()->getDebug() != NULL)
          {
-         self()->cg()->getDebug()->printGPRegisterStatus(comp->getOutFile(), machine);
+         self()->cg()->getDebug()->printGPRegisterStatus(comp->getLogger(), machine);
          }
 
       TR_ASSERT_FATAL(0, "Ran out of register pairs to use as a pair on instruction [%p]", currInst);
@@ -2535,7 +2536,7 @@ OMR::Z::Machine::freeBestRegister(TR::Instruction * currentInstruction, TR::Regi
          {
          if (self()->cg()->getDebug() != NULL)
             {
-            self()->cg()->getDebug()->printGPRegisterStatus(comp->getOutFile(), machine);
+            self()->cg()->getDebug()->printGPRegisterStatus(comp->getLogger(), machine);
             }
 
          TR_ASSERT_FATAL(false, "Ran out of register candidates to free on instruction [%p]", currentInstruction);

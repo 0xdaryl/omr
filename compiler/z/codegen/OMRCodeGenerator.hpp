@@ -102,6 +102,7 @@ namespace OMR { class Linkage; }
 namespace TR { class CodeGenerator; }
 namespace TR { class Instruction; }
 namespace TR { class LabelSymbol; }
+namespace TR { class Logger; }
 namespace TR { class MemoryReference; }
 namespace TR { class Optimizer; }
 namespace TR { class RegStarRef; }
@@ -489,7 +490,7 @@ public:
 
    bool doRematerialization() {return true;}
 
-   void dumpDataSnippets(TR::FILE *outFile);
+   void dumpDataSnippets(TR::Logger *log);
 
    bool getSupportsBitOpCodes() { return true;}
 
