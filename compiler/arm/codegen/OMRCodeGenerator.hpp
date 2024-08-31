@@ -42,6 +42,7 @@ namespace OMR { typedef OMR::ARM::CodeGenerator CodeGeneratorConnector; }
 #include "env/jittypes.h"
 #include "optimizer/DataFlowAnalysis.hpp"
 
+namespace TR { class Logger; }
 namespace TR { class Register; }
 
 extern TR::Instruction *armLoadConstant(TR::Node     *node,
@@ -130,7 +131,7 @@ public:
    int32_t setEstimatedLocationsForDataSnippetLabels(int32_t estimatedSnippetStart);
 
 #ifdef DEBUG
-   void dumpDataSnippets(TR::FILE *outFile);
+   void dumpDataSnippets(TR::Logger *log);
 #endif
 
    TR::Instruction *generateSwitchToInterpreterPrePrologue(TR::Instruction *cursor, TR::Node *node);

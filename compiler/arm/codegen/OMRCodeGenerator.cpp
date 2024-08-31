@@ -50,6 +50,7 @@
 #include "il/Node_inlines.hpp"
 #include "il/ParameterSymbol.hpp"
 #include "il/TreeTop_inlines.hpp"
+#include "ras/Logger.hpp"
 
 TR_Processor OMR::ARM::CodeGenerator::_processor=TR_NullProcessor;
 
@@ -420,11 +421,9 @@ int32_t OMR::ARM::CodeGenerator::setEstimatedLocationsForDataSnippetLabels(int32
    }
 
 #ifdef DEBUG
-void OMR::ARM::CodeGenerator::dumpDataSnippets(TR::FILE *outFile)
+void OMR::ARM::CodeGenerator::dumpDataSnippets(TR::Logger *log)
    {
-   if (outFile == NULL)
-      return;
-   _constantData->print(outFile);
+   _constantData->print(log);
    }
 #endif
 
