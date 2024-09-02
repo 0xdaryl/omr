@@ -165,9 +165,10 @@ OMR::X86::I386::CodeGenerator::pickRegister(
       TR_GlobalRegisterNumber &highRegisterNumber,
       TR_LinkHead<TR::RegisterCandidate> *candidates)
    {
-   if (!self()->comp()->getOption(TR_DisableRegisterPressureSimulation))
+   TR::Compilation *comp = self()->comp();
+   if (!comp->getOption(TR_DisableRegisterPressureSimulation))
       {
-      if (self()->comp()->getOption(TR_AssignEveryGlobalRegister))
+      if (comp->getOption(TR_AssignEveryGlobalRegister))
          {
          // This is not really necessary except for testing purposes.
          // Conceptually, the common pickRegister code should be free to make
@@ -181,7 +182,7 @@ OMR::X86::I386::CodeGenerator::pickRegister(
          // this code is redundant.  It is only necessary when
          // TR_AssignEveryGlobalRegister is set.
          //
-         availableRegisters -= *self()->getGlobalRegisters(TR_vmThreadSpill, self()->comp()->getMethodSymbol()->getLinkageConvention());
+         availableRegisters -= *self()->getGlobalRegisters(TR_vmThreadSpill, comp->getMethodSymbol()->getLinkageConvention());
          }
       return OMR::CodeGenerator::pickRegister(rc, allBlocks, availableRegisters, highRegisterNumber, candidates);
       }
@@ -207,7 +208,7 @@ OMR::X86::I386::CodeGenerator::pickRegister(
 
 
    if (!_assignedGlobalRegisters)
-      _assignedGlobalRegisters = new (self()->trStackMemory()) TR_BitVector(self()->comp()->getSymRefCount(), self()->trMemory(), stackAlloc, growable);
+      _assignedGlobalRegisters = new (self()->trStackMemory()) TR_BitVector(comp->getSymRefCount(), self()->trMemory(), stackAlloc, growable);
 
    if (availableRegisters.get(5))
       return 5; // esi
@@ -220,7 +221,7 @@ OMR::X86::I386::CodeGenerator::pickRegister(
       return 1;
 
 #ifdef J9_PROJECT_SPECIFIC
-   TR::RecognizedMethod rm = self()->comp()->getMethodSymbol()->getRecognizedMethod();
+   TR::RecognizedMethod rm = comp->getMethodSymbol()->getRecognizedMethod();
    if (rm == TR::java_util_HashtableHashEnumerator_hasMoreElements)
       {
       if (availableRegisters.get(4))
@@ -234,7 +235,7 @@ OMR::X86::I386::CodeGenerator::pickRegister(
       int32_t numExtraRegs = 0;
       int32_t maxRegisterPressure = 0;
 
-      vcount_t visitCount = self()->comp()->incVisitCount();
+      vcount_t visitCount = comp->incVisitCount();
       TR_BitVectorIterator bvi(rc->getBlocksLiveOnEntry());
       int32_t maxFrequency = 0;
       while (bvi.hasMoreElements())
