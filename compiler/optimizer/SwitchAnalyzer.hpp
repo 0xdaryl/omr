@@ -37,6 +37,7 @@ class TR_BitVector;
 class TR_FrontEnd;
 namespace TR { class CFG; }
 namespace TR { class Block; }
+namespace TR { class Logger; }
 namespace TR { class Node; }
 namespace TR { class SymbolReference; }
 namespace TR { class TreeTop; }
@@ -72,7 +73,7 @@ class SwitchAnalyzer : public TR::Optimization
 	   _cost(cost) {}
 
       bool operator >(SwitchInfo &other);
-      void print(TR_FrontEnd *, TR::FILE *pOutFile, int32_t indent);
+      void print(TR::Logger *log, TR_FrontEnd *, int32_t indent);
 
       NodeKind _kind;
       float    _freq;
@@ -87,7 +88,7 @@ class SwitchAnalyzer : public TR::Optimization
 	 };
       };
 
-   void print(TR_FrontEnd *, TR::FILE *pOutFile);
+   void print(TR::Logger *log, TR_FrontEnd *);
    void chainInsert(TR_LinkHead<SwitchInfo> *chain, SwitchInfo *info);
    void denseInsert(SwitchInfo *dense, SwitchInfo *info);
    void denseMerge (SwitchInfo *to, SwitchInfo *from);
@@ -119,7 +120,7 @@ class SwitchAnalyzer : public TR::Optimization
 
    bool keepAsUnique(SwitchInfo *info, int32_t itemNumber);
 
-   void printInfo(TR_FrontEnd *, TR::FILE *pOutFile, TR_LinkHead<SwitchInfo> *head);
+   void printInfo(TR::Logger *log, TR_FrontEnd *, TR_LinkHead<SwitchInfo> *head);
    private:
    void fixUpUnsigned(TR_LinkHead<SwitchInfo> *chain);
    TR::CFG *_cfg;

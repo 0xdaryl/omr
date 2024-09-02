@@ -41,6 +41,7 @@ class TR_ResolvedMethod;
 class TR_IlGenerator;
 namespace TR { class Compilation; }
 namespace TR { class IlVerifier; }
+namespace TR { class Logger; }
 namespace TR { class ResolvedMethod; }
 namespace TR { class ResolvedMethodSymbol; }
 namespace TR { class SymbolReferenceTable; }
@@ -72,7 +73,7 @@ public:
 
    bool sameAs(TR::IlGeneratorMethodDetails & other, TR_FrontEnd *fe);
 
-   void print(TR_FrontEnd *fe, TR::FILE *file);
+   void print(TR::Logger *log, TR_FrontEnd *fe);
 
    virtual TR_IlGenerator *getIlGenerator(TR::ResolvedMethodSymbol *methodSymbol,
                                           TR_FrontEnd * fe,

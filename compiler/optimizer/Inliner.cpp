@@ -103,6 +103,7 @@
 #include "optimizer/StructuralAnalysis.hpp"
 #include "ras/Debug.hpp"
 #include "ras/DebugCounter.hpp"
+#include "ras/Logger.hpp"
 #include "ras/LogTracer.hpp"
 #include "runtime/Runtime.hpp"
 
@@ -469,7 +470,7 @@ TR_InlinerBase::performInlining(TR::ResolvedMethodSymbol * callerSymbol)
    cleanup(callerSymbol, inlinedSite);
 
    if (debug("dumpInitialTrees") || comp()->getOption(TR_TraceTrees))
-      comp()->dumpMethodTrees("Post Inlining Trees");
+      comp()->dumpMethodTrees(comp()->getLogger(), "Post Inlining Trees");
    }
 
 void
@@ -1640,8 +1641,11 @@ void TR_InlinerBase::rematerializeCallArguments(TR_TransformInlinedFunction & ti
          if (argStore->chkIsPrivatizedInlinerArg())
             {
             debugTrace(tracer(),"  considering priv arg store node [%p] - %d - for remat",argStore,argStore->getGlobalIndex());
-            if (dumpRematTrees)
-               comp()->getDebug()->print(comp()->getOutFile(),argStoreTree);
+            if (dumpRematTrees && comp()->getLoggingEnabled())
+               {
+               comp()->getDebug()->print(comp()->getLogger(), argStoreTree);
+               }
+
             TR::SparseBitVector argSymRefsToCheck(comp()->allocator());
             TR_YesNoMaybe result = RematTools::gatherNodesToCheck(comp(), argStore, argStore->getFirstChild(), scanTargets, argSymRefsToCheck, tracer()->debugLevel());
             if (result == TR_yes)
@@ -4819,7 +4823,7 @@ bool TR_InlinerBase::inlineCallTarget2(TR_CallStack * callStack, TR_CallTarget *
    getUtil()->calleeTreeTopPreMergeActions(calleeSymbol, calltarget);
 
    if (tracer()->heuristicLevel())
-      comp()->dumpMethodTrees("calleeSymbol: after genIL", calleeSymbol);
+      comp()->dumpMethodTrees(comp()->getLogger(), "calleeSymbol: after genIL", calleeSymbol);
 
    if (!genILSucceeded)
       return false;
@@ -4837,7 +4841,7 @@ bool TR_InlinerBase::inlineCallTarget2(TR_CallStack * callStack, TR_CallTarget *
 
    if (comp()->getOption(TR_TraceBFGeneration))
       {
-      comp()->dumpMethodTrees("Frequencies dump", calleeSymbol);
+      comp()->dumpMethodTrees(comp()->getLogger(), "Frequencies dump", calleeSymbol);
       }
 
    getUtil()->computeMethodBranchProfileInfo (cfgBlock, calltarget,  callerSymbol);
@@ -4860,7 +4864,7 @@ bool TR_InlinerBase::inlineCallTarget2(TR_CallStack * callStack, TR_CallTarget *
    if (debug("inliningTrees"))
       {
       dumpOptDetails(comp(), "Inliner: trees for %s\n", calleeSymbol->signature(trMemory()));
-      comp()->dumpMethodTrees("after ilGen while inlining", calleeSymbol);
+      comp()->dumpMethodTrees(comp()->getLogger(), "after ilGen while inlining", calleeSymbol);
       }
 
 
@@ -4880,7 +4884,7 @@ bool TR_InlinerBase::inlineCallTarget2(TR_CallStack * callStack, TR_CallTarget *
       if (comp()->trace(OMR::inlining))
          {
          dumpOptDetails(comp(), "Inliner: trees for %s\n", calleeSymbol->signature(trMemory()));
-         comp()->dumpMethodTrees("after inlining while inlining", calleeSymbol);
+         comp()->dumpMethodTrees(comp()->getLogger(), "after inlining while inlining", calleeSymbol);
          }
       }
 
@@ -5510,7 +5514,7 @@ bool TR_InlinerBase::inlineCallTarget2(TR_CallStack * callStack, TR_CallTarget *
    if (debug("inliningTrees"))
       {
       dumpOptDetails(comp(), "Inliner: trees for %s\n", callerSymbol->signature(trMemory()));
-      //comp()->dumpMethodTrees("after inlining a call site", callerSymbol);
+      //comp()->dumpMethodTrees(comp()->getLogger(), "after inlining a call site", callerSymbol);
       }
    // printf("*****INLINERCALLSITE2: END*****\n");
    return true;

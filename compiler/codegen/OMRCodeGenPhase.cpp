@@ -75,6 +75,7 @@
 #include "optimizer/DataFlowAnalysis.hpp"
 #include "optimizer/StructuralAnalysis.hpp"
 #include "ras/Debug.hpp"
+#include "ras/Logger.hpp"
 #include "runtime/Runtime.hpp"
 
 #include <map>
@@ -225,10 +226,10 @@ OMR::CodeGenPhase::performProcessRelocationsPhase(TR::CodeGenerator * cg, TR::Co
    if (comp->getOption(TR_TraceCG))
       {
       const char * title = "Post Relocation Instructions";
-      comp->getDebug()->dumpMethodInstrs(comp->getOutFile(), title, false, true);
+      comp->getDebug()->dumpMethodInstrs(comp->getLogger(), title, false, true);
 
       traceMsg(comp,"<snippets>");
-      comp->getDebug()->print(comp->getOutFile(), cg->getSnippetList());
+      comp->getDebug()->print(comp->getLogger(), cg->getSnippetList());
       traceMsg(comp,"\n</snippets>\n");
 
       auto iterator = cg->getSnippetList().begin();
@@ -274,14 +275,13 @@ OMR::CodeGenPhase::performEmitSnippetsPhase(TR::CodeGenerator * cg, TR::CodeGenP
 
    if (comp->getOption(TR_TraceCG))
       {
-      diagnostic("\nbuffer start = %8x, code start = %8x, buffer length = %d", cg->getBinaryBufferStart(), cg->getCodeStart(), cg->getEstimatedCodeLength());
-      diagnostic("\n");
+      diagnostic("\nbuffer start = %8x, code start = %8x, buffer length = %d\n", cg->getBinaryBufferStart(), cg->getCodeStart(), cg->getEstimatedCodeLength());
       const char * title = "Post Binary Instructions";
 
-      comp->getDebug()->dumpMethodInstrs(comp->getOutFile(), title, false, true);
+      comp->getDebug()->dumpMethodInstrs(comp->getLogger(), title, false, true);
 
       traceMsg(comp,"<snippets>");
-      comp->getDebug()->print(comp->getOutFile(), cg->getSnippetList());
+      comp->getDebug()->print(comp->getLogger(), cg->getSnippetList());
       traceMsg(comp,"\n</snippets>\n");
 
       auto iterator = cg->getSnippetList().begin();
@@ -346,7 +346,7 @@ OMR::CodeGenPhase::performPeepholePhase(TR::CodeGenerator * cg, TR::CodeGenPhase
       bool performed = peephole.perform();
 
       if (performed && comp->getOption(TR_TraceCG))
-         comp->getDebug()->dumpMethodInstrs(comp->getOutFile(), "Post Peephole Instructions", false);
+         comp->getDebug()->dumpMethodInstrs(comp->getLogger(), "Post Peephole Instructions", false);
       }
    }
 
@@ -355,7 +355,7 @@ OMR::CodeGenPhase::performPeepholePhase(TR::CodeGenerator * cg, TR::CodeGenPhase
 
 
 void
-OMR::CodeGenPhase::performMapStackPhase(TR::CodeGenerator * cg, TR::CodeGenPhase * phase)
+OMR::CodeGenPhase::performMapStackPhase(TR::CodeGenerator *cg, TR::CodeGenPhase *phase)
    {
    TR::Compilation* comp = cg->comp();
    cg->remapGCIndicesInInternalPtrFormat();
@@ -366,7 +366,7 @@ OMR::CodeGenPhase::performMapStackPhase(TR::CodeGenerator * cg, TR::CodeGenPhase
      cg->getLinkage()->mapStack(comp->getJittedMethodSymbol());
 
      if (comp->getOption(TR_TraceCG))
-        comp->getDebug()->dumpMethodInstrs(comp->getOutFile(), "Post Stack Map", false);
+        comp->getDebug()->dumpMethodInstrs(comp->getLogger(), "Post Stack Map", false);
      }
    cg->setMappingAutomatics();
 
@@ -398,7 +398,7 @@ OMR::CodeGenPhase::performRegisterAssigningPhase(TR::CodeGenerator * cg, TR::Cod
       }
 
    if (comp->getOption(TR_TraceCG))
-      comp->getDebug()->dumpMethodInstrs(comp->getOutFile(), "Post Register Assignment Instructions", false, true);
+      comp->getDebug()->dumpMethodInstrs(comp->getLogger(), "Post Register Assignment Instructions", false, true);
    }
 
 
@@ -419,7 +419,7 @@ OMR::CodeGenPhase::performInstructionSelectionPhase(TR::CodeGenerator * cg, TR::
    phase->reportPhase(InstructionSelectionPhase);
 
    if (comp->getOption(TR_TraceCG))
-      comp->dumpMethodTrees("Pre Instruction Selection Trees");
+      comp->dumpMethodTrees(comp->getLogger(), "Pre Instruction Selection Trees");
 
    TR::LexicalMemProfiler mp(phase->getName(), comp->phaseMemProfiler());
    LexicalTimer pt(phase->getName(), comp->phaseTimer());
@@ -427,7 +427,7 @@ OMR::CodeGenPhase::performInstructionSelectionPhase(TR::CodeGenerator * cg, TR::
    cg->doInstructionSelection();
 
    if (comp->getOption(TR_TraceCG))
-      comp->getDebug()->dumpMethodInstrs(comp->getOutFile(), "Post Instruction Selection Instructions", false, true);
+      comp->getDebug()->dumpMethodInstrs(comp->getLogger(), "Post Instruction Selection Instructions", false, true);
 
    // check reference counts
 #if defined(DEBUG) || defined(PROD_WITH_ASSUMES)
@@ -497,7 +497,7 @@ OMR::CodeGenPhase::performLowerTreesPhase(TR::CodeGenerator * cg, TR::CodeGenPha
    cg->lowerTrees();
 
    if (comp->getOption(TR_TraceCG))
-      comp->dumpMethodTrees("Post Lower Trees");
+      comp->dumpMethodTrees(comp->getLogger(), "Post Lower Trees");
    }
 
 
@@ -515,7 +515,7 @@ OMR::CodeGenPhase::performUncommonCallConstNodesPhase(TR::CodeGenerator * cg, TR
    phase->reportPhase(UncommonCallConstNodesPhase);
 
    if (comp->getOption(TR_TraceCG))
-      comp->dumpMethodTrees("Pre Uncommon Call Constant Node Trees");
+      comp->dumpMethodTrees(comp->getLogger(), "Pre Uncommon Call Constant Node Trees");
 
    TR::LexicalMemProfiler mp(phase->getName(), comp->phaseMemProfiler());
    LexicalTimer pt(phase->getName(), comp->phaseTimer());
@@ -523,7 +523,7 @@ OMR::CodeGenPhase::performUncommonCallConstNodesPhase(TR::CodeGenerator * cg, TR
    cg->uncommonCallConstNodes();
 
    if (comp->getOption(TR_TraceCG))
-      comp->dumpMethodTrees("Post Uncommon Call Constant Node Trees");
+      comp->dumpMethodTrees(comp->getLogger(), "Post Uncommon Call Constant Node Trees");
   }
 
 void
@@ -584,7 +584,7 @@ OMR::CodeGenPhase::performExpandInstructionsPhase(TR::CodeGenerator * cg, TR::Co
    cg->expandInstructions();
 
    if (comp->getOption(TR_TraceCG))
-      comp->getDebug()->dumpMethodInstrs(comp->getOutFile(), "Post Instruction Expansion Instructions", false, true);
+      comp->getDebug()->dumpMethodInstrs(comp->getLogger(), "Post Instruction Expansion Instructions", false, true);
    }
 
 const char *

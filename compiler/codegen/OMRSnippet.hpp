@@ -43,6 +43,7 @@ namespace TR { class Block; }
 namespace TR { class CodeGenerator; }
 namespace TR { class Node; }
 namespace TR { class LabelSymbol; }
+namespace TR { class Logger; }
 namespace TR { class Snippet; }
 
 namespace OMR
@@ -74,7 +75,7 @@ class OMR_EXTENSIBLE Snippet
    virtual uint32_t getLength(int32_t estimatedSnippetStart) = 0;
    virtual uint8_t *emitSnippetBody() = 0;
 
-   virtual void print(TR::FILE *, TR_Debug *debug);
+   virtual void print(TR::Logger *log, TR_Debug *debug);
 
    void prepareSnippetForGCSafePoint();
 

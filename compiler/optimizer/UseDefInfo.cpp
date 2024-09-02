@@ -58,6 +58,7 @@
 #include "optimizer/Optimizer.hpp"
 #include "optimizer/DataFlowAnalysis.hpp"
 #include "optimizer/ValueNumberInfo.hpp"
+#include "ras/Logger.hpp"
 
 
 #define MAX_EXPANDED_DEF_OR_USE_NODES         (65000)
@@ -136,7 +137,7 @@ void TR_UseDefInfo::prepareUseDefInfo(bool requiresGlobals, bool prefersGlobals,
    if (trace())
       {
       traceMsg(comp(), "started initialization of use/def info\n");
-      comp()->dumpMethodTrees("Pre Use Def Trees");
+      comp()->dumpMethodTrees(comp()->getLogger(), "Pre Use Def Trees");
       }
 
    bool canBuild = false;
@@ -835,7 +836,7 @@ bool TR_UseDefInfo::indexSymbolsAndNodes(AuxiliaryData &aux)
    if (trace())
       {
       traceMsg(comp(), "_neverReferencedSymbols[count = %d]: ", aux._neverReferencedSymbols.elementCount());
-      aux._neverReferencedSymbols.print(comp());
+      aux._neverReferencedSymbols.print(comp()->getLogger(), comp());
       traceMsg(comp(), "\n");
       }
 
@@ -1819,7 +1820,7 @@ void TR_UseDefInfo::buildUseDefs(void *vblockInfo, AuxiliaryData &aux)
             if (trace())
                {
                traceMsg(comp(), "In set:\n");
-               analysisInfo->print(comp());
+               analysisInfo->print(comp()->getLogger(), comp());
                traceMsg(comp(), "\n");
                }
             }
@@ -1836,7 +1837,7 @@ void TR_UseDefInfo::buildUseDefs(void *vblockInfo, AuxiliaryData &aux)
       if (trace())
          {
          traceMsg(comp(), "Found exit block_%d", _cfg->getEnd()->getNumber());
-         analysisInfo->print(comp());
+         analysisInfo->print(comp()->getLogger(), comp());
          traceMsg(comp(), " Use index %d\n", getLastUseIndex()-getFirstUseIndex());
          traceMsg(comp(), "\n");
          }
@@ -2110,7 +2111,7 @@ int32_t TR_UseDefInfo::setSingleDefiningLoad(int32_t useIndex, TR_UseDefInfo::Bi
  if (trace())
  {
  traceMsg(comp(), "   De-referencing use index %d : ",defIndex);
- useDefInfo->print(comp());
+ useDefInfo->print(comp()->getLogger(), comp());
  traceMsg(comp(), "\n");
  }
 
@@ -2357,7 +2358,7 @@ void TR_UseDefInfo::buildUseDefs(TR::Node *node, void *vanalysisInfo, TR_BitVect
          if (trace())
             {
             traceMsg(comp(), "defs for symbol %d node:%p \n", symIndex, node);
-            aux._defsForSymbol[symIndex]->print(comp());
+            aux._defsForSymbol[symIndex]->print(comp()->getLogger(), comp());
             traceMsg(comp(), "\n");
             }
 
@@ -2368,7 +2369,7 @@ void TR_UseDefInfo::buildUseDefs(TR::Node *node, void *vanalysisInfo, TR_BitVect
             if (trace())
                {
                traceMsg(comp(), "defs for memory symbol %d \n", memSymIndex);
-               aux._defsForSymbol[memSymIndex]->print(comp());
+               aux._defsForSymbol[memSymIndex]->print(comp()->getLogger(), comp());
                traceMsg(comp(), "\n");
                }
             *defs |= *(aux._defsForSymbol[memSymIndex]);
@@ -2525,7 +2526,7 @@ void TR_UseDefInfo::buildUseDefs(TR::Node *node, void *vanalysisInfo, TR_BitVect
    if (trace())
       {
       traceMsg(comp(), "updated reaching def:\n");
-      analysisInfo->print(comp());
+      analysisInfo->print(comp()->getLogger(), comp());
       traceMsg(comp(), "\n");
       }
 #endif
