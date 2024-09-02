@@ -289,7 +289,7 @@ class TR_ExpressionPropagation
                      {
                      if (trace() || comp()->cg()->traceBCDCodeGen())
                         {
-                        traceMsg(comp(), "reduce newPrecision %d->%d for odd to even truncation (origNode %s (%p) prec=%d, node %s (%p) prec=%d\n",
+                        comp()->getLogger()->printf("reduce newPrecision %d->%d for odd to even truncation (origNode %s (%p) prec=%d, node %s (%p) prec=%d\n",
                                 newPrecision, oldPrecision,
                                 newNode->getOpCode().getName(), newNode, newNode->getDecimalPrecision(),
                                 oldNode->getOpCode().getName(), oldNode, oldPrecision);
@@ -429,8 +429,10 @@ class TR_ExpressionPropagation
 
 int32_t TR_CopyPropagation::perform()
    {
+   TR::Logger *log = comp()->getLogger();
+
    if (trace())
-      traceMsg(comp(), "Starting CopyPropagation\n");
+      log->prints("Starting CopyPropagation\n");
 
    TR_UseDefInfo *useDefInfo = optimizer()->getUseDefInfo();
    _canMaintainUseDefs = true;
@@ -438,7 +440,7 @@ int32_t TR_CopyPropagation::perform()
       {
          {
          if (trace())
-            traceMsg(comp(), "Can't do CopyPropagation, no use/def information\n");
+            log->prints("Can't do CopyPropagation, no use/def information\n");
          return 0;
          }
       }
@@ -549,7 +551,7 @@ int32_t TR_CopyPropagation::perform()
                        (prevSymRefIsPreferred || (equivalentDefLookup != equivalentDefs.end()))))
                      {
                      if (trace())
-                        traceMsg(comp(), "000setting i %d to j %d\n", i, j);
+                        log->printf("000setting i %d to j %d\n", i, j);
                      if (equivalentDefLookup == equivalentDefs.end())
                         {
                         if (i != j)
@@ -567,7 +569,7 @@ int32_t TR_CopyPropagation::perform()
                   else if (equivalentDefs.find(j) == equivalentDefs.end())
                      {
                      if (trace())
-                         traceMsg(comp(), "111setting j %d to i %d\n", j, i);
+                         log->printf("111setting j %d to i %d\n", j, i);
                      if (i != j)
                         equivalentDefs[j] = i;
                      }
@@ -585,7 +587,7 @@ int32_t TR_CopyPropagation::perform()
                    (prevSymRefIsPreferred || (equivalentDefLookup != equivalentDefs.end()))))
                   {
                   if (trace())
-                     traceMsg(comp(), "000setting i %d to j %d\n", i, j);
+                     log->printf("000setting i %d to j %d\n", i, j);
 
                   if (equivalentDefLookup == equivalentDefs.end())
                      {
@@ -604,7 +606,7 @@ int32_t TR_CopyPropagation::perform()
                else if (equivalentDefs.find(j) == equivalentDefs.end())
                   {
                   if (trace())
-                     traceMsg(comp(), "111setting j %d to i %d\n", j, i);
+                     log->printf("111setting j %d to i %d\n", j, i);
                   if (i != j)
                      equivalentDefs[j] = i;
                   }
@@ -733,18 +735,11 @@ int32_t TR_CopyPropagation::perform()
 
             if (trace())
                {
-               traceMsg(comp(), "   Use #%d[%p] :\n",useNode->getUseDefIndex(),useNode);
-               traceMsg(comp(), "      Does NOT get Defined by #%d[%p] from now\n",defNode->getUseDefIndex(), defNode);
+               log->printf("   Use #%d[%p] :\n",useNode->getUseDefIndex(),useNode);
+               log->printf("      Does NOT get Defined by #%d[%p] from now\n",defNode->getUseDefIndex(), defNode);
+               log->printf("   Use #%d[%p] is defined by:\n",useNode->getUseDefIndex(), useNode);
+               log->printf("      Added New Def #%d[%p]\n\n",defIndex,useDefInfo->getNode(equivalentDefs[defIndex]));
                }
-
-            if (trace())
-               {
-               traceMsg(comp(), "   Use #%d[%p] is defined by:\n",useNode->getUseDefIndex(), useNode);
-               traceMsg(comp(), "      Added New Def #%d[%p]\n",defIndex,useDefInfo->getNode(equivalentDefs[defIndex]));
-               }
-
-            if (trace())
-               traceMsg(comp(), "\n");
             }
          }
       }
@@ -943,7 +938,7 @@ int32_t TR_CopyPropagation::perform()
                }
 
                if (trace())
-                  traceMsg(comp(), "\n");
+                  log->println();
             }
          }
       }
@@ -1010,7 +1005,7 @@ int32_t TR_CopyPropagation::perform()
 
    if (trace())
       {
-      traceMsg(comp(), "\nEnding CopyPropagation\n");
+      log->prints("\nEnding CopyPropagation\n");
       }
 
    if (donePropagation)
@@ -1150,6 +1145,7 @@ TR::treetop
 */
 void TR_CopyPropagation::replaceCopySymbolReferenceByOriginalIn(TR::SymbolReference *copySymbolReference, TR::Node *origNode, TR::Node *node, TR::Node *defNode, TR::Node * baseAddrNode, bool baseAddrAvail)
    {
+   TR::Logger *log = comp()->getLogger();
    vcount_t curVisit = comp()->getVisitCount();
 
 #ifdef J9_PROJECT_SPECIFIC
@@ -1158,7 +1154,7 @@ void TR_CopyPropagation::replaceCopySymbolReferenceByOriginalIn(TR::SymbolRefere
        cg()->IsInMemoryType(node->getType()))
       {
       if (cg()->traceBCDCodeGen() && _useTree->getNode()->chkOpsIsInMemoryCopyProp() && !_useTree->getNode()->isInMemoryCopyProp())
-         traceMsg(comp(),"\tset IsInMemoryCopyProp on %s (%p), useNode %s (%p)\n",
+         log->printf("\tset IsInMemoryCopyProp on %s (%p), useNode %s (%p)\n",
                  _useTree->getNode()->getOpCode().getName(),_useTree->getNode(),node->getOpCode().getName(),node);
       _useTree->getNode()->setIsInMemoryCopyProp(true);
       }
@@ -1223,7 +1219,7 @@ void TR_CopyPropagation::replaceCopySymbolReferenceByOriginalIn(TR::SymbolRefere
             else if (node->getType().isBCD())
                {
                if (trace() || comp()->cg()->traceBCDCodeGen())
-                  traceMsg(comp(),"node %s (%p) #%d->#%d, origNode %s (%p) #%d, defNode %s (%p) #%d,copySymRef #%d\n",
+                  log->printf("node %s (%p) #%d->#%d, origNode %s (%p) #%d, defNode %s (%p) #%d,copySymRef #%d\n",
                            node->getOpCode().getName(), node, symRef->getReferenceNumber(),
                            origNode->getOpCode().hasSymbolReference() ? origNode->getSymbolReference()->getReferenceNumber() : -1,
                            origNode->getOpCode().getName(),origNode,
@@ -1269,7 +1265,7 @@ void TR_CopyPropagation::replaceCopySymbolReferenceByOriginalIn(TR::SymbolRefere
                          nodeSize == origSymSize)  // 16 == 16
                         {
                         if (trace() || comp()->cg()->traceBCDCodeGen())
-                           traceMsg(comp(),"reduce newPrecision %d->%d for odd to even truncation (origNode %s (%p) prec=%d, node %s (%p) prec=%d\n",
+                           log->printf("reduce newPrecision %d->%d for odd to even truncation (origNode %s (%p) prec=%d, node %s (%p) prec=%d\n",
                                    newPrecision,nodePrecision,origNode->getOpCode().getName(),origNode,origNode->getDecimalPrecision(),
                                    node->getOpCode().getName(),node,nodePrecision);
                         newPrecision = nodePrecision; // 31->30 -- no correction needed for same byte odd to even truncation if the origNode was only storing out the even $ of digits
@@ -1284,7 +1280,7 @@ void TR_CopyPropagation::replaceCopySymbolReferenceByOriginalIn(TR::SymbolRefere
                bool needsPrecisionCorrection = currentPrecision != newPrecision;
 
                if (trace() || comp()->cg()->traceBCDCodeGen())
-                  traceMsg(comp(),"needsClean = %s, needsPrecisionCorrection = %s (cur %d, new %d)\n",
+                  log->printf("needsClean = %s, needsPrecisionCorrection = %s (cur %d, new %d)\n",
                           needsClean?"yes":"no",needsPrecisionCorrection?"yes":"no",currentPrecision,newPrecision);
 
 

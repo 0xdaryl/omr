@@ -26,6 +26,7 @@
 #include "infra/BitVector.hpp"
 #include "env/VerboseLog.hpp"
 #include "infra/String.hpp"
+#include "ras/Logger.hpp"
 
 TR::InliningProposal::InliningProposal(TR::Region& region, TR::IDT *idt):
    _region(region),
@@ -55,6 +56,7 @@ TR::InliningProposal::InliningProposal(const InliningProposal &proposal, TR::Reg
 
 void TR::InliningProposal::print(TR::Compilation* comp)
    {
+   TR::Logger *log = comp->getLogger();
    bool traceBIProposal = comp->getOption(TR_TraceBIProposal);
    bool verboseInlining = comp->getOptions()->getVerboseOption(TR_VerboseInlining);
 
@@ -66,7 +68,7 @@ void TR::InliningProposal::print(TR::Compilation* comp)
    if (!_nodes)
       {
       if (traceBIProposal)
-         traceMsg(comp, "Inlining Proposal is NULL\n");
+         log->prints("Inlining Proposal is NULL\n");
       if (verboseInlining)
          TR_VerboseLog::writeLine(TR_Vlog_BI, "%s", "Inlining Proposal is NULL");
       return;
@@ -80,7 +82,7 @@ void TR::InliningProposal::print(TR::Compilation* comp)
    line.appendf("#Proposal: %d methods inlined into %s, cost: %d", numMethodsToInline, _idt->getRoot()->getName(comp->trMemory()), getCost());
 
    if (traceBIProposal)
-      traceMsg(comp, "%s\n", line.text());
+      log->printf("%s\n", line.text());
    if (verboseInlining)
       TR_VerboseLog::writeLine(TR_Vlog_BI, "%s", line.text());
 
@@ -110,7 +112,7 @@ void TR::InliningProposal::print(TR::Compilation* comp)
          );
 
          if (traceBIProposal)
-            traceMsg(comp, "%s\n", line.text());
+            log->printf("%s\n", line.text());
          if (verboseInlining)
             TR_VerboseLog::writeLine(TR_Vlog_BI, "%s", line.text());
          }
@@ -123,7 +125,7 @@ void TR::InliningProposal::print(TR::Compilation* comp)
 
       }
    if (traceBIProposal)
-      traceMsg(comp, "\n");
+      log->println();
    }
 
 
