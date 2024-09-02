@@ -27,7 +27,7 @@
 #include "state.hpp"
 
 #define TraceEnabled    (state->comp()->getOption(TR_TraceILGen))
-#define TraceIL(m, ...) {if (TraceEnabled) {traceMsg(state->comp(), m, ##__VA_ARGS__);}}
+#define TraceIL(m, ...) {if (TraceEnabled) {state->comp()->getLogger()->printf(m, ##__VA_ARGS__);}}
 
 namespace Tril {
 
@@ -61,7 +61,7 @@ class ASTToTRNode {
          * @return TR::Node represented by the AST
          */
         virtual TR::Node* impl(const ASTNode* tree, IlGenState* state) = 0;
-    
+
     private:
         ASTToTRNode* next;
 };

@@ -69,7 +69,7 @@ TR_LiveOnAllPaths::TR_LiveOnAllPaths(TR::Compilation *comp,
    : TR_BackwardIntersectionBitVectorAnalysis(comp, comp->getFlowGraph(), optimizer, comp->getOption(TR_TraceLiveness))
    {
    if (trace())
-      traceMsg(comp, "Starting LiveOnAllPaths analysis\n");
+      comp->getLogger()->prints("Starting LiveOnAllPaths analysis\n");
 
    int32_t i;
 
@@ -103,11 +103,11 @@ TR_LiveOnAllPaths::TR_LiveOnAllPaths(TR::Compilation *comp,
          {
          if (_blockAnalysisInfo[i])
             {
-            traceMsg(comp, "\nLiveOnAllPaths variables for block_%d: ",i);
+            comp->getLogger()->printf("\nLiveOnAllPaths variables for block_%d: ",i);
             _blockAnalysisInfo[i]->print(comp->getLogger(), comp);
             }
          }
-      traceMsg(comp, "\nEnding LiveOnAllPaths analysis\n");
+      comp->getLogger()->prints("\nEnding LiveOnAllPaths analysis\n");
       }
    } // scope of the stack memory region
 
@@ -117,28 +117,29 @@ bool TR_LiveOnAllPaths::postInitializationProcessing()
    {
    if (trace())
       {
+      TR::Logger *log = comp()->getLogger();
       int32_t i;
       for (i = 1; i < _numberOfNodes; ++i)
          {
-         traceMsg(comp(), "\nGen and kill sets for block_%d: ",i);
+         log->printf("\nGen and kill sets for block_%d: ",i);
          if (_regularGenSetInfo[i])
             {
-            traceMsg(comp(), " gen set ");
+            log->prints(" gen set ");
             _regularGenSetInfo[i]->print(comp()->getLogger(), comp());
             }
          if (_regularKillSetInfo[i])
             {
-            traceMsg(comp(), " kill set ");
+            log->prints(" kill set ");
             _regularKillSetInfo[i]->print(comp()->getLogger(), comp());
             }
          if (_exceptionGenSetInfo[i])
             {
-            traceMsg(comp(), " exception gen set ");
+            log->prints(" exception gen set ");
             _exceptionGenSetInfo[i]->print(comp()->getLogger(), comp());
             }
          if (_exceptionKillSetInfo[i])
             {
-            traceMsg(comp(), " exception kill set ");
+            log->prints(" exception kill set ");
             _exceptionKillSetInfo[i]->print(comp()->getLogger(), comp());
             }
          }

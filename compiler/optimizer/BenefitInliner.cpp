@@ -23,6 +23,7 @@
 #include "optimizer/abstractinterpreter/IDTBuilder.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
+#include "ras/Logger.hpp"
 #include <algorithm>
 
 
@@ -166,7 +167,7 @@ void TR::BenefitInliner::inlinerPacking()
 
    if (comp()->getOption(TR_TraceBIProposal))
       {
-      traceMsg(comp(), "\n#inliner packing:\n");
+      comp()->getLogger()->prints("\n#inliner packing:\n");
       result->print(comp());
       }
 
@@ -193,7 +194,7 @@ bool TR::BenefitInlinerBase::inlineCallTargets(TR::ResolvedMethodSymbol *symbol,
       return false;
 
    if (comp()->getOption(TR_TraceBIProposal))
-      traceMsg(comp(), "#BenefitInliner: inlining into %s\n", _nextIDTNodeToInlineInto->getName(comp()->trMemory()));
+      comp()->getLogger()->printf("#BenefitInliner: inlining into %s\n", _nextIDTNodeToInlineInto->getName(comp()->trMemory()));
 
    TR_CallStack callStack(comp(), symbol, symbol->getResolvedMethod(), prevCallStack, 1500, true);
 

@@ -2769,12 +2769,14 @@ TR::VPConstraint *TR::VPEqual::merge1(TR::VPConstraint *other, OMR::ValuePropaga
 
 TR::VPConstraint * TR::VPConstraint::intersect(TR::VPConstraint *other, OMR::ValuePropagation *vp)
    {
+   TR::Logger *log = vp->comp()->getLogger();
+
    // If this is the same constraint, just return it
    //
    if (!other)
       {
       if (vp->trace())
-         traceMsg(vp->comp(), "setIntersectionFailed to true because NULL constraint found this = 0x%p, other = 0x%p\n", this, other);
+         log->printf("setIntersectionFailed to true because NULL constraint found this = 0x%p, other = 0x%p\n", this, other);
       vp->setIntersectionFailed(true);
       return NULL;
       }
@@ -2793,12 +2795,12 @@ TR::VPConstraint * TR::VPConstraint::intersect(TR::VPConstraint *other, OMR::Val
    if (vp->trace() && !result)
       {
       TR::Compilation *comp = vp->comp();
-      traceMsg(comp, "\nCannot intersect constraints:\n   ");
-      print(comp->getLogger(), comp);
-      traceMsg(comp, "\n   ");
-      other->print(comp->getLogger(), comp);
-      traceMsg(comp, "\n");
-      traceMsg(comp, "priority: %d; other->priority: %d\n", priority(), other->priority());
+      log->prints("\nCannot intersect constraints:\n   ");
+      print(log, comp);
+      log->prints("\n   ");
+      other->print(log, comp);
+      log->println();
+      log->printf("priority: %d; other->priority: %d\n", priority(), other->priority());
       }
 
    return result;
@@ -3027,6 +3029,8 @@ TR::VPConstraint *TR::VPClassType::typeIntersectLocation(
 // it is called directly by handlers for instanceOf, checkCast
 void TR::VPClass::typeIntersect(TR::VPClassPresence* &presence, TR::VPClassType* &type, TR::VPConstraint *other, OMR::ValuePropagation *vp)
    {
+   TR::Logger *log = vp->comp()->getLogger();
+
    if (type && TR::VPConstraint::isSpecialClass((uintptr_t)type->getClass()))
       type = NULL;
 
@@ -3087,9 +3091,9 @@ void TR::VPClass::typeIntersect(TR::VPClassPresence* &presence, TR::VPClassType*
                      {
                      if (vp->trace())
                         {
-                        traceMsg(vp->comp(), "   1Intersecting type is a class object\n");
-                        otherType->print(vp->comp()->getLogger(), vp->comp());
-                        traceMsg(vp->comp(), "\n");
+                        log->prints("   1Intersecting type is a class object\n");
+                        otherType->print(log, vp->comp());
+                        log->println();
                         }
 
                      // this means otherType could be a java/lang/Class
@@ -3111,9 +3115,9 @@ void TR::VPClass::typeIntersect(TR::VPClassPresence* &presence, TR::VPClassType*
                         {
                         if (vp->trace())
                            {
-                           traceMsg(vp->comp(), "   Current type is a class object\n");
-                           this->print(vp->comp()->getLogger(), vp->comp());
-                           traceMsg(vp->comp(), "\n");
+                           log->prints("   Current type is a class object\n");
+                           this->print(log, vp->comp());
+                           log->println();
                            }
                         // resulting type is this type
                         //////type = _type;
@@ -3131,9 +3135,9 @@ void TR::VPClass::typeIntersect(TR::VPClassPresence* &presence, TR::VPClassType*
                   {
                   if (vp->trace())
                      {
-                     traceMsg(vp->comp(), "   2Intersecting type is a class object\n");
-                     this->print(vp->comp()->getLogger(), vp->comp());
-                     traceMsg(vp->comp(), "\n");
+                     log->prints("   2Intersecting type is a class object\n");
+                     this->print(log, vp->comp());
+                     log->println();
                      }
                   // resulting type is this type
                   ///////type = _type;
@@ -3187,9 +3191,9 @@ void TR::VPClass::typeIntersect(TR::VPClassPresence* &presence, TR::VPClassType*
                   {
                   if (vp->trace())
                      {
-                     traceMsg(vp->comp(), "   Intersecting type is a class object\n");
-                     otherType->print(vp->comp()->getLogger(), vp->comp());
-                     traceMsg(vp->comp(), "\n");
+                     log->prints("   Intersecting type is a class object\n");
+                     otherType->print(log, vp->comp());
+                     log->println();
                      }
                   // resulting type is the otherType
                   //
@@ -3390,9 +3394,9 @@ TR::VPConstraint *TR::VPClass::intersect1(TR::VPConstraint *other, OMR::ValuePro
                   {
                   if (vp->trace())
                      {
-                     traceMsg(vp->comp(), "   Intersecting type is a class object\n");
+                     vp->comp()->getLogger()->prints("   Intersecting type is a class object\n");
                      otherType->print(vp->comp()->getLogger(), vp->comp()());
-                     traceMsg(vp->comp(), "\n");
+                     vp->comp()->getLogger()->println();
                      }
                   return other;
                   }
@@ -5479,12 +5483,14 @@ TR::VPConstraint *TR::VPRelation::propagateAbsoluteConstraint(TR::VPConstraint *
 
 TR::VPConstraint *TR::VPLessThanOrEqual::propagateAbsoluteConstraint(TR::VPConstraint *constraint, int32_t relative, OMR::ValuePropagation *vp)
    {
+   TR::Logger *log = vp->comp()->getLogger();
+
    // x <= y + I and x == (M to N)    ==> y == ((M-I) to TR::getMaxSigned<TR::Int32>())
    //
    if (vp->trace())
       {
-      traceMsg(vp->comp(), "      Propagating V <= value %d %+d and V is ", relative, increment());
-      constraint->print(vp->comp()->getLogger(), vp->comp());
+      log->printf("      Propagating V <= value %d %+d and V is ", relative, increment());
+      constraint->print(log, vp->comp());
       }
 
    if (constraint->asLongConstraint())
@@ -5515,10 +5521,10 @@ TR::VPConstraint *TR::VPLessThanOrEqual::propagateAbsoluteConstraint(TR::VPConst
       {
       if (constraint)
          {
-         traceMsg(vp->comp(), " ... value %d is ", relative);
-         constraint->print(vp->comp()->getLogger(), vp->comp());
+         log->printf(" ... value %d is ", relative);
+         constraint->print(log, vp->comp());
          }
-      traceMsg(vp->comp(), "\n");
+      log->println();
       }
 
    return constraint;
@@ -5526,12 +5532,14 @@ TR::VPConstraint *TR::VPLessThanOrEqual::propagateAbsoluteConstraint(TR::VPConst
 
 TR::VPConstraint *TR::VPGreaterThanOrEqual::propagateAbsoluteConstraint(TR::VPConstraint *constraint, int32_t relative, OMR::ValuePropagation *vp)
    {
+   TR::Logger *log = vp->comp()->getLogger();
+
    // x >= y + I and x == (M to N)    ==> y == (TR::getMinSigned<TR::Int32>() to (M-I))
    //
    if (vp->trace())
       {
-      traceMsg(vp->comp(), "      Propagating V >= value %d %+d and V is ", relative, increment());
-      constraint->print(vp->comp()->getLogger(), vp->comp());
+      log->printf("      Propagating V >= value %d %+d and V is ", relative, increment());
+      constraint->print(log, vp->comp());
       }
 
 
@@ -5563,10 +5571,10 @@ TR::VPConstraint *TR::VPGreaterThanOrEqual::propagateAbsoluteConstraint(TR::VPCo
       {
       if (constraint)
          {
-         traceMsg(vp->comp(), " ... value %d is ", relative);
-         constraint->print(vp->comp()->getLogger(), vp->comp());
+         log->printf(" ... value %d is ", relative);
+         constraint->print(log, vp->comp());
          }
-      traceMsg(vp->comp(), "\n");
+      log->println();
       }
 
    return constraint;
@@ -5574,12 +5582,14 @@ TR::VPConstraint *TR::VPGreaterThanOrEqual::propagateAbsoluteConstraint(TR::VPCo
 
 TR::VPConstraint *TR::VPEqual::propagateAbsoluteConstraint(TR::VPConstraint *constraint, int32_t relative, OMR::ValuePropagation *vp)
    {
+   TR::Logger *log = vp->comp()->getLogger();
+
    // x == y + I and x == (M to N)    ==> y == ((M-I) to N-I))
    //
    if (vp->trace())
       {
-      traceMsg(vp->comp(), "      Propagating V == value %d %+d and V is ", relative, increment());
-      constraint->print(vp->comp()->getLogger(), vp->comp());
+      log->printf("      Propagating V == value %d %+d and V is ", relative, increment());
+      constraint->print(log, vp->comp());
       }
 
    if (increment() != 0)
@@ -5597,10 +5607,10 @@ TR::VPConstraint *TR::VPEqual::propagateAbsoluteConstraint(TR::VPConstraint *con
       {
       if (constraint)
          {
-         traceMsg(vp->comp(), " ... value %d is ", relative);
-         constraint->print(vp->comp()->getLogger(), vp->comp());
+         log->printf(" ... value %d is ", relative);
+         constraint->print(log, vp->comp());
          }
-      traceMsg(vp->comp(), "\n");
+      log->println();
       }
 
    return constraint;
@@ -5608,12 +5618,14 @@ TR::VPConstraint *TR::VPEqual::propagateAbsoluteConstraint(TR::VPConstraint *con
 
 TR::VPConstraint *TR::VPNotEqual::propagateAbsoluteConstraint(TR::VPConstraint *constraint, int32_t relative, OMR::ValuePropagation *vp)
    {
+   TR::Logger *log = vp->comp()->getLogger();
+
    // x != y + I and x == N           ==> y != (N-I)
    //
    if (vp->trace())
       {
-      traceMsg(vp->comp(), "      Propagating V != value %d %+d and V is ", relative, increment());
-      constraint->print(vp->comp()->getLogger(), vp->comp());
+      log->printf("      Propagating V != value %d %+d and V is ", relative, increment());
+      constraint->print(log, vp->comp());
       }
 
    TR::VPConstraint *newConstraint = NULL;
@@ -5672,10 +5684,10 @@ TR::VPConstraint *TR::VPNotEqual::propagateAbsoluteConstraint(TR::VPConstraint *
       {
       if (newConstraint)
          {
-         traceMsg(vp->comp(), " ... value %d is ", relative);
-         newConstraint->print(vp->comp()->getLogger(), vp->comp());
+         log->printf(" ... value %d is ", relative);
+         newConstraint->print(log, vp->comp());
          }
-      traceMsg(vp->comp(), "\n");
+      log->println();
       }
 
    return newConstraint;
@@ -5719,8 +5731,9 @@ TR::VPConstraint *TR::VPLessThanOrEqual::propagateRelativeConstraint(TR::VPRelat
 
    if (vp->trace())
       {
-      traceMsg(vp->comp(), "      Propagating V <= value %d %+d and V >= value %d %+d", relative, increment(), otherRelative, other->increment());
-      traceMsg(vp->comp(), " ... value %d >= value %d %+d\n", relative, otherRelative, newIncr);
+      TR::Logger *log = vp->comp()->getLogger();
+      log->printf("      Propagating V <= value %d %+d and V >= value %d %+d", relative, increment(), otherRelative, other->increment());
+      log->printf(" ... value %d >= value %d %+d\n", relative, otherRelative, newIncr);
       }
    return constraint;
    }
@@ -5763,14 +5776,17 @@ TR::VPConstraint *TR::VPGreaterThanOrEqual::propagateRelativeConstraint(TR::VPRe
 
    if (vp->trace())
       {
-      traceMsg(vp->comp(), "      Propagating V >= value %d %+d and V <= value %d %+d", relative, increment(), otherRelative, other->increment());
-      traceMsg(vp->comp(), " ... value %d <= value %d %+d\n", relative, otherRelative, newIncr);
+      TR::Logger *log = vp->comp()->getLogger();
+      log->printf("      Propagating V >= value %d %+d and V <= value %d %+d", relative, increment(), otherRelative, other->increment());
+      log->printf(" ... value %d <= value %d %+d\n", relative, otherRelative, newIncr);
       }
    return constraint;
    }
 
 TR::VPConstraint *TR::VPEqual::propagateRelativeConstraint(TR::VPRelation *other, int32_t relative, int32_t otherRelative, OMR::ValuePropagation *vp)
    {
+   TR::Logger *log = vp->comp()->getLogger();
+
    // x == y + M and x <= z + N    ==> y <= z + (N-M)
    // x == y + M and x >= z + N    ==> y >= z + (N-M)
    // x == y + M and x != z + N    ==> y != z + (N-M)
@@ -5809,8 +5825,8 @@ TR::VPConstraint *TR::VPEqual::propagateRelativeConstraint(TR::VPRelation *other
 
       if (vp->trace())
          {
-         traceMsg(vp->comp(), "      Propagating V == value %d %+d and V <= value %d %+d", relative, increment(), otherRelative, other->increment());
-         traceMsg(vp->comp(), " ... value %d <= value %d %+d\n", relative, otherRelative, newIncr);
+         log->printf("      Propagating V == value %d %+d and V <= value %d %+d", relative, increment(), otherRelative, other->increment());
+         log->printf(" ... value %d <= value %d %+d\n", relative, otherRelative, newIncr);
          }
       }
    else if (other->asGreaterThanOrEqual())
@@ -5824,8 +5840,8 @@ TR::VPConstraint *TR::VPEqual::propagateRelativeConstraint(TR::VPRelation *other
 
       if (vp->trace())
          {
-         traceMsg(vp->comp(), "      Propagating V == value %d %+d and V >= value %d %+d", relative, increment(), otherRelative, other->increment());
-         traceMsg(vp->comp(), " ... value %d >= value %d %+d\n", relative, otherRelative, newIncr);
+         log->printf("      Propagating V == value %d %+d and V >= value %d %+d", relative, increment(), otherRelative, other->increment());
+         log->printf(" ... value %d >= value %d %+d\n", relative, otherRelative, newIncr);
          }
       }
    else if (other->asNotEqual())
@@ -5833,8 +5849,8 @@ TR::VPConstraint *TR::VPEqual::propagateRelativeConstraint(TR::VPRelation *other
       constraint = TR::VPNotEqual::create(vp, newIncr);
       if (vp->trace())
          {
-         traceMsg(vp->comp(), "      Propagating V == value %d %+d and V != value %d %+d", relative, increment(), otherRelative, other->increment());
-         traceMsg(vp->comp(), " ... value %d != value %d %+d\n", relative, otherRelative, newIncr);
+         log->printf("      Propagating V == value %d %+d and V != value %d %+d", relative, increment(), otherRelative, other->increment());
+         log->printf(" ... value %d != value %d %+d\n", relative, otherRelative, newIncr);
          }
       }
    else
@@ -5843,8 +5859,8 @@ TR::VPConstraint *TR::VPEqual::propagateRelativeConstraint(TR::VPRelation *other
       constraint = TR::VPEqual::create(vp, newIncr);
       if (vp->trace())
          {
-         traceMsg(vp->comp(), "      Propagating V == value %d %+d and V == value %d %+d", relative, increment(), otherRelative, other->increment());
-         traceMsg(vp->comp(), " ... value %d == value %d %+d\n", relative, otherRelative, newIncr);
+         log->printf("      Propagating V == value %d %+d and V == value %d %+d", relative, increment(), otherRelative, other->increment());
+         log->printf(" ... value %d == value %d %+d\n", relative, otherRelative, newIncr);
          }
       }
    return constraint;
@@ -5877,8 +5893,8 @@ TR::VPConstraint *TR::VPNotEqual::propagateRelativeConstraint(TR::VPRelation *ot
    constraint = TR::VPNotEqual::create(vp, newIncr);
    if (vp->trace())
       {
-      traceMsg(vp->comp(), "      Propagating V != value %d %+d and V == value %d %+d", relative, increment(), otherRelative, other->increment());
-      traceMsg(vp->comp(), " ... value %d != value %d %+d\n", relative, otherRelative, newIncr);
+      vp->comp()->getLogger()->printf("      Propagating V != value %d %+d and V == value %d %+d", relative, increment(), otherRelative, other->increment());
+      vp->comp()->getLogger()->printf(" ... value %d != value %d %+d\n", relative, otherRelative, newIncr);
       }
    return constraint;
    }
@@ -6291,14 +6307,16 @@ const char *TR::VPNotEqual::name()                   { return "NotEqual";       
 TR::VPConstraint::Tracer::Tracer(OMR::ValuePropagation *vpArg, TR::VPConstraint *self, TR::VPConstraint *other, const char *name)
    :_vp(vpArg), _self(self), _other(other), _name(name)
    {
+   TR::Logger *log = comp()->getLogger();
+
    if (comp()->getOption(TR_TraceVPConstraints))
       {
-      traceMsg(comp(), "{{{ %s.%s\n", _self->name(), _name);
-      traceMsg(comp(), "  self: ");
+      log->printf("{{{ %s.%s\n", _self->name(), _name);
+      log->prints("  self: ");
       _self->print(vp());
-      traceMsg(comp(), "\n  other: ");
+      log->prints("\n  other: ");
       _other->print(vp());
-      traceMsg(comp(), "\n");
+      log->println();
       }
    }
 
@@ -6306,7 +6324,7 @@ TR::VPConstraint::Tracer::~Tracer()
    {
    if (comp()->getOption(TR_TraceVPConstraints))
       {
-      traceMsg(comp(), "%s.%s }}}\n", _self->name(), _name);
+      comp()->getLogger()->printf("%s.%s }}}\n", _self->name(), _name);
       }
    }
 
