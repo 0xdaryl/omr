@@ -47,6 +47,7 @@
 #include "infra/Assert.hpp"
 #include "infra/Cfg.hpp"
 #include "infra/List.hpp"
+#include "ras/Logger.hpp"
 
 TR::Compilation& operator<< (TR::Compilation& out, const TR_OSRSlotSharingInfo* osrSlotSharingInfo);
 
@@ -520,14 +521,14 @@ uint32_t TR_OSRCompilationData::getOSRStackFrameSize(uint32_t methodIndex)
       return 0;
    }
 
-void TR_OSRCompilationData::printMap(DefiningMap *map)
+void TR_OSRCompilationData::printMap(TR::Logger *log, DefiningMap *map)
    {
    if (map)
       {
       for (auto it = map->begin(); it != map->end(); ++it)
          {
          traceMsg(comp, "# %d:", it->first);
-         it->second->print(comp);
+         it->second->print(log, comp);
          traceMsg(comp, "\n");
          }
       }
@@ -605,7 +606,7 @@ void TR_OSRCompilationData::buildDefiningMap(TR::Region &region)
          }
       }
 
-   if (comp->getOption(TR_TraceOSR))
+   if (comp->getOption(TR_TraceOSR) && comp->getLoggingEnabled())
       {
       for (auto i = 0U; i < methodDataArray.size(); ++i)
          {
@@ -616,7 +617,7 @@ void TR_OSRCompilationData::buildDefiningMap(TR::Region &region)
          if (osrMethodData->getOSRCatchBlock())
             {
             traceMsg(comp, "final map for OSRCatchBlock(block_%d): \n", osrMethodData->getOSRCatchBlock()->getNumber());
-            printMap(definingMap);
+            printMap(comp->getLogger(), definingMap);
             }
          }
       }
@@ -687,12 +688,12 @@ static void updateDefiningSymRefs(TR_BitVector *subTreeSymRefs, DefiningMap *def
  */
 static void mergeDefiningMaps(DefiningMap *firstMap, DefiningMap *secondMap, TR::Compilation *comp)
    {
-   if (comp->getOption(TR_TraceOSR))
+   if (comp->getOption(TR_TraceOSR) && comp->getLoggingEnabled())
       {
       traceMsg(comp, "mergeDefiningMaps: firstMap before\n");
-      comp->getOSRCompilationData()->printMap(firstMap);
+      comp->getOSRCompilationData()->printMap(comp->getLogger(), firstMap);
       traceMsg(comp, "mergeDefiningMaps: secondMap before\n");
-      comp->getOSRCompilationData()->printMap(secondMap);
+      comp->getOSRCompilationData()->printMap(comp->getLogger(), secondMap);
       }
 
    for (auto it = secondMap->begin(); it != secondMap->end(); ++it)
@@ -710,10 +711,10 @@ static void mergeDefiningMaps(DefiningMap *firstMap, DefiningMap *secondMap, TR:
       (*firstMap)[symRefNumber] = definingSymRefs;
       }
 
-   if (comp->getOption(TR_TraceOSR))
+   if (comp->getOption(TR_TraceOSR) && comp->getLoggingEnabled())
       {
       traceMsg(comp, "mergeDefiningMaps: firstMap after\n");
-      comp->getOSRCompilationData()->printMap(firstMap);
+      comp->getOSRCompilationData()->printMap(comp->getLogger(), firstMap);
       }
    }
 
@@ -753,10 +754,10 @@ TR_OSRCompilationData::buildFinalMap (int32_t callerIndex,
       TR_BitVector *result = new (comp->trHeapMemory()) TR_BitVector(0, comp->trMemory(), heapAlloc);
       updateDefiningSymRefs(definingSymbols, workingCatchBlockMap, result);
       TR_ASSERT(finalMap->find(symRefNum) == finalMap->end(), "same symbol reference shouldn't be written twice under different prepareForOSRCall");
-      if (comp->getOption(TR_TraceOSR))
+      if (comp->getOption(TR_TraceOSR) && comp->getLoggingEnabled())
          {
          traceMsg(comp, "adding symRef #%d and its defining symbols to finalMap\n", symRefNum);
-         result->print(comp);
+         result->print(comp->getLogger(), comp);
          traceMsg(comp, "\n");
          }
       (*finalMap)[symRefNum] = result;
@@ -847,10 +848,10 @@ TR_OSRMethodData::buildDefiningMap(TR::Block *block, DefiningMap *blockMap, Defi
             TR::NodeChecklist checklist(comp());
             collectSubTreeSymRefs(node->getFirstChild(), &subTreeSymRefs, checklist);
 
-            if (comp()->getOption(TR_TraceOSR))
+            if (comp()->getOption(TR_TraceOSR) && comp()->getLoggingEnabled())
                {
                traceMsg(comp(), "buildDefiningMap: node n%dn: defining symbol #%d: ", node->getGlobalIndex(), symRef->getReferenceNumber());
-               subTreeSymRefs.print(comp());
+               subTreeSymRefs.print(comp()->getLogger(), comp());
                traceMsg(comp(), "\n");
                }
 
@@ -891,10 +892,10 @@ TR_OSRMethodData::buildDefiningMap(TR::Block *block, DefiningMap *blockMap, Defi
             TR_BitVector subTreeSymRefs(comp()->trMemory()->currentStackRegion());
             TR::NodeChecklist checklist(comp());
             collectSubTreeSymRefs(loadNode, &subTreeSymRefs, checklist);
-            if (comp()->getOption(TR_TraceOSR))
+            if (comp()->getOption(TR_TraceOSR) && comp()->getLoggingEnabled())
                {
                traceMsg(comp(), "collect subTreeSymRefs of loadNode n%dn for original symRef #%d\n", loadNode->getGlobalIndex(), symRefNumber);
-               subTreeSymRefs.print(comp());
+               subTreeSymRefs.print(comp()->getLogger(), comp());
                traceMsg(comp(), "\n");
                }
 

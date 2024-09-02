@@ -56,6 +56,7 @@
 #include "infra/Assert.hpp"
 #include "infra/String.hpp"
 #include "ras/Debug.hpp"
+#include "ras/Logger.hpp"
 #include "env/SystemSegmentProvider.hpp"
 #include "env/DebugSegmentProvider.hpp"
 #include "omrformatconsts.h"
@@ -250,7 +251,7 @@ printCompFailureInfo(TR::JitConfig *jitConfig, TR::Compilation * comp, const cha
          TR_VerboseLog::writeLineLocked(TR_Vlog_COMPFAIL,"%s failed compilation", comp->signature());
          }
 
-      if (comp->getOutFile() != NULL && comp->getOption(TR_TraceAll))
+      if (comp->getOption(TR_TraceAll))
          traceMsg(comp, "<result success=\"false\">exception thrown by the compiler</result>\n");
       }
    }
@@ -334,7 +335,6 @@ compileMethodFromDetails(
 
    try
       {
-      //fprintf(stderr,"loading JIT debug\n");
       if (TR::Options::requiresDebugObject()
           || options.getLogFileName()
           || options.enableDebugCounters())
@@ -351,7 +351,7 @@ compileMethodFromDetails(
                                                           signature);
          }
 
-      if (compiler.getOutFile() != NULL && compiler.getOption(TR_TraceAll))
+      if (compiler.getOption(TR_TraceAll))
          {
          const char *signature = compilee.signature(&trMemory);
          traceMsg((&compiler), "<compile hotness=\"%s\" method=\"%s\">\n",
@@ -421,7 +421,7 @@ compileMethodFromDetails(
                }
             }
 
-         if (compiler.getOutFile() != NULL && compiler.getOption(TR_TraceAll))
+         if (compiler.getOption(TR_TraceAll))
             traceMsg((&compiler), "<result success=\"true\" startPC=\"%#p\" time=\"%lld.%lldms\"/>\n",
                                   startPC,
                                   translationTime/1000,

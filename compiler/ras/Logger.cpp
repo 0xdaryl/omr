@@ -59,6 +59,16 @@ TR::Logger::println()
    }
 
 int32_t
+TR::Logger::trprintf(const char *format, ...)
+   {
+   va_list args;
+   va_start(args, format);
+   int32_t length = ::vfprintf(stdout, format, args);
+   va_end(args);
+   return length;
+   }
+
+int32_t
 TR::Logger::vprintf(const char *format, va_list args)
    {
    return ::vfprintf(stdout, format, args);
@@ -113,6 +123,16 @@ TR::StreamLogger::println()
    {
    ::fputc('\n', _stream);
    return 0;
+   }
+
+int32_t
+TR::StreamLogger::trprintf(const char *format, ...)
+   {
+   va_list args;
+   va_start(args, format);
+   int32_t length = ::vfprintf(_stream, format, args);
+   va_end(args);
+   return length;
    }
 
 int32_t

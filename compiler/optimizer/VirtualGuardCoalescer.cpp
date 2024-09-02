@@ -52,6 +52,7 @@
 #include "optimizer/TransformUtil.hpp"
 #include "optimizer/ValueNumberInfo.hpp"
 #include "optimizer/LocalOpts.hpp"
+#include "ras/Logger.hpp"
 #ifdef J9_PROJECT_SPECIFIC
 #include "runtime/J9Profiler.hpp"
 #include "runtime/J9ValueProfiler.hpp"
@@ -100,7 +101,7 @@ int32_t TR_VirtualGuardTailSplitter::perform()
 
    if (trace())
       {
-      comp()->dumpMethodTrees("Trees after splitLinear");
+      comp()->dumpMethodTrees(comp()->getLogger(), "Trees after splitLinear");
       }
 
    return 0;
@@ -769,7 +770,9 @@ void TR_VirtualGuardTailSplitter::remergeGuard(TR_BlockCloner &cloner, VGInfo *i
    char fileName[20];
    sprintf(fileName, "split%d.vcg", block->getNumber());
    FILE *file = fopen(fileName, "w");
-   comp->getDebug()->printVCG(file, _cfg, fileName);
+   TR::Logger *vcgLog = TR::StreamLogger::create(file);
+   comp->getDebug()->printVCG(vcgLog, _cfg, fileName);
+   vcgLog->close();
    fclose(file);
 #endif
 
@@ -828,7 +831,7 @@ TR_InnerPreexistence::perform()
    TR::StackMemoryRegion stackMemoryRegion(*trMemory());
 
    if (trace())
-      comp()->dumpMethodTrees("Trees before InnerPreexistence");
+      comp()->dumpMethodTrees(comp()->getLogger(), "Trees before InnerPreexistence");
 
    int32_t candidates = initialize();
 

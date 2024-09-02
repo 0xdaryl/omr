@@ -59,6 +59,7 @@
 #include "optimizer/Optimization.hpp"
 #include "optimizer/Optimization_inlines.hpp"
 #include "optimizer/DataFlowAnalysis.hpp"
+#include "ras/Logger.hpp"
 
 
 #define MAX_NUMBER_OF_LOCALS 2000
@@ -196,10 +197,10 @@ int32_t TR_CompactLocals::perform()
 
       traceMsg(comp(), "SymInterferenceSets for %d locals\n", numLocals);
       traceMsg(comp(), "   %4d : ", referenceLocals->elementCount());
-      referenceLocals->print(comp());
+      referenceLocals->print(comp()->getLogger(), comp());
       traceMsg(comp(), "\n");
       traceMsg(comp(), "   %4d : ", nonReferenceLocals->elementCount());
-      nonReferenceLocals->print(comp());
+      nonReferenceLocals->print(comp()->getLogger(), comp());
       traceMsg(comp(), "\n");
       }
 
@@ -280,7 +281,7 @@ int32_t TR_CompactLocals::perform()
             if (trace())
                {
                traceMsg(comp(), "BB_End for block_%d: live vars = ", block->getNumber());
-               _liveVars->print(comp());
+               _liveVars->print(comp()->getLogger(), comp());
                traceMsg(comp(), "\n");
                }
 
@@ -293,9 +294,9 @@ int32_t TR_CompactLocals::perform()
       if (trace())
          {
          traceMsg(comp(), "Computed entry vector: ");
-         _liveVars->print(comp());
+         _liveVars->print(comp()->getLogger(), comp());
          traceMsg(comp(), "\nLiveness entry vector: ");
-         liveLocals._blockAnalysisInfo[block->getNumber()]->print(comp());
+         liveLocals._blockAnalysisInfo[block->getNumber()]->print(comp()->getLogger(), comp());
          traceMsg(comp(), "\n");
          }
 

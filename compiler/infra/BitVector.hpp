@@ -32,6 +32,7 @@
 class TR_BitVector;
 class TR_BitVectorCursor;
 namespace TR { class Compilation; }
+namespace TR { class Logger; }
 
 #if defined(BITVECTOR_64BIT)
 typedef uint64_t chunk_t;
@@ -136,7 +137,7 @@ class TR_SingleBitContainer
    int32_t numUsedChunks() { return 1; }
    int32_t numNonZeroChunks() { return _value ? 1 : 0; }
 
-   void print(TR::Compilation *comp, TR::FILE *file = NULL);
+   void print(TR::Logger *log, TR::Compilation *comp);
 
    private:
    bool _value;
@@ -318,7 +319,7 @@ class TR_BitVector
          default:
             TR_ASSERT(false, "Unhandled allocation type!");
          }
-      
+
       _growable = growable;
       _chunks = NULL;
       _numChunks = 0;
@@ -832,7 +833,7 @@ class TR_BitVector
 
    // Print the bit vector to the log file
    //
-   void print(TR::Compilation *comp, TR::FILE *file = NULL);
+   void print(TR::Logger *log, TR::Compilation *comp);
 
    // Find the number of used chunks
    //

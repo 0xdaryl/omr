@@ -45,6 +45,11 @@ public:
 
    virtual int32_t println();
 
+   /**
+    * @brief Print with Testarossa interpolation of format specifier
+    */
+   virtual int32_t trprintf(const char *format, ...);
+
    virtual int32_t vprintf(const char *format, va_list args);
 
    virtual int64_t tell() { return -1; }
@@ -88,6 +93,11 @@ public:
    virtual int32_t printc(char c);
 
    virtual int32_t println();
+
+   /**
+    * @brief Print with Testarossa interpolation of format specifier
+    */
+   virtual int32_t trprintf(const char *format, ...);
 
    virtual int32_t vprintf(const char *format, va_list args);
 

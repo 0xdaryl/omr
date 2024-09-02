@@ -48,6 +48,7 @@
 #include "infra/String.hpp"
 #include "ras/Debug.hpp"
 #include "ras/IgnoreLocale.hpp"
+#include "ras/Logger.hpp"
 
 #if !defined(J9_PROJECT_SPECIFIC)
 #include "env/JitConfig.hpp"
@@ -1947,7 +1948,10 @@ OMR::Options::Options(
    if(optimizationPlan->isLogCompilation())
       {
       if (_debug || TR::Options::createDebug())
+         {
          _logFile = optimizationPlan->getLogCompilation();
+         _logger = optimizationPlan->getLogger();
+         }
       }
 
    /*
@@ -1956,7 +1960,10 @@ OMR::Options::Options(
     * and thus we don't want to suppress the log.
     */
    if (_suppressLogFileBecauseDebugObjectNotCreated && !optimizationPlan->isLogCompilation())
+      {
       _logFile = NULL;
+      _logger = NULL;
+      }
 
    }
 
@@ -1968,7 +1975,10 @@ OMR::Options::Options(TR::Options &other) :
    {
    *this = other;
    if (_suppressLogFileBecauseDebugObjectNotCreated)
+      {
       _logFile = NULL;
+      _logger = NULL;
+      }
    }
 
 void
@@ -2379,6 +2389,7 @@ OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void * jitConfig)
    else // option set processing
       {
       _logFile = NULL;
+      _logger = NULL;
 
       if (_logFileName)
          {
@@ -2395,7 +2406,7 @@ OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void * jitConfig)
 
          if (_debug)
             {
-            _logFile = _debug->findLogFile(TR::Options::getAOTCmdLineOptions(), TR::Options::getJITCmdLineOptions(), optionSet, _logFileName);
+            _logFile = _debug->findLogFile(TR::Options::getAOTCmdLineOptions(), TR::Options::getJITCmdLineOptions(), optionSet, _logFileName, _logger);
             if (_logFile == NULL)
                self()->openLogFile();
             else
@@ -2890,7 +2901,7 @@ OMR::Options::shutdown(TR_FrontEnd * fe)
    if (TR::Options::isFullyInitialized())
       {
       if (TR::Options::getAOTCmdLineOptions() && TR::Options::getAOTCmdLineOptions()->getLogFile())
-         TR::Options::closeLogFile(fe, TR::Options::getAOTCmdLineOptions()->getLogFile());
+         TR::Options::closeLogFile(fe, TR::Options::getAOTCmdLineOptions()->getLogFile(), TR::Options::getAOTCmdLineOptions()->getLogger());
 
       if (TR::Options::getAOTCmdLineOptions())
          {
@@ -2898,6 +2909,7 @@ OMR::Options::shutdown(TR_FrontEnd * fe)
          for (optionSet = TR::Options::getAOTCmdLineOptions()->_optionSets; optionSet; optionSet = optionSet->getNext())
             {
             TR::FILE *logFile = optionSet->getOptions()->getLogFile();
+            TR::Logger *logger = optionSet->getOptions()->getLogger();
             if (logFile == NULL || logFile == TR::Options::getAOTCmdLineOptions()->getLogFile())
                continue;
             for (prev = TR::Options::getAOTCmdLineOptions()->_optionSets; prev != optionSet; prev = prev->getNext())
@@ -2905,11 +2917,12 @@ OMR::Options::shutdown(TR_FrontEnd * fe)
                if (prev->getOptions()->getLogFile() == logFile)
                   {
                   logFile = NULL;
+                  logger = NULL;
                   break;
                   }
                }
             if (logFile != NULL)
-               TR::Options::closeLogFile(fe, logFile);
+               TR::Options::closeLogFile(fe, logFile, logger);
             }
          }
 
@@ -2920,11 +2933,13 @@ OMR::Options::shutdown(TR_FrontEnd * fe)
          if (TR::Options::getJITCmdLineOptions()->getLogFile())
             {
             TR::FILE *logFile = TR::Options::getJITCmdLineOptions()->getLogFile();
+            TR::Logger *logger = TR::Options::getJITCmdLineOptions()->getLogger();
             if (TR::Options::getAOTCmdLineOptions())
                {
                if (logFile ==TR::Options::getAOTCmdLineOptions()->getLogFile())
                   {
                   logFile = NULL;
+                  logger = NULL;
                   }
                else
                   {
@@ -2936,6 +2951,7 @@ OMR::Options::shutdown(TR_FrontEnd * fe)
                      if (aotLogFile == logFile)
                         {
                         logFile = NULL;
+                        logger = NULL;
                         break;
                         }
                      }
@@ -2943,12 +2959,13 @@ OMR::Options::shutdown(TR_FrontEnd * fe)
                }
             if (logFile != NULL)
                {
-               TR::Options::closeLogFile(fe, logFile);
+               TR::Options::closeLogFile(fe, logFile, logger);
                }
             }
          for (optionSet = TR::Options::getJITCmdLineOptions()->_optionSets; optionSet; optionSet = optionSet->getNext())
             {
             TR::FILE *logFile = optionSet->getOptions()->getLogFile();
+            TR::Logger *logger = optionSet->getOptions()->getLogger();
             if (logFile == NULL || logFile == TR::Options::getJITCmdLineOptions()->getLogFile())
                continue;
             for (prev = TR::Options::getJITCmdLineOptions()->_optionSets; prev != optionSet; prev = prev->getNext())
@@ -2956,6 +2973,7 @@ OMR::Options::shutdown(TR_FrontEnd * fe)
                if (prev->getOptions()->getLogFile() == logFile)
                   {
                   logFile = NULL;
+                  logger = NULL;
                   break;
                   }
                }
@@ -2965,6 +2983,7 @@ OMR::Options::shutdown(TR_FrontEnd * fe)
                if (logFile == TR::Options::getAOTCmdLineOptions()->getLogFile())
                   {
                   logFile = NULL;
+                  logger = NULL;
                   continue;
                   }
                for (aotOptionSet = TR::Options::getAOTCmdLineOptions()->_optionSets; aotOptionSet; aotOptionSet = aotOptionSet->getNext())
@@ -2973,13 +2992,14 @@ OMR::Options::shutdown(TR_FrontEnd * fe)
                   if (aotLogFile == logFile)
                      {
                      logFile = NULL;
+                     logger = NULL;
                      break;
                      }
                   }
                }
             if (logFile != NULL)
                {
-               TR::Options::closeLogFile(fe, logFile);
+               TR::Options::closeLogFile(fe, logFile, logger);
                }
             }
          }
@@ -3010,7 +3030,7 @@ void OMR::Options::safelyCloseLogs(TR::Options *options, TR_MCTLogs * &closedLog
       if (!logEntry1)
          {
          // This log was not yet closed
-         TR::Options::closeLogFile(fe, logEntry->getLogFile());
+         TR::Options::closeLogFile(fe, logEntry->getLogFile(), logEntry->getLogger());
          // Add to list of closed logs
          logEntry->setNext(closedLogs);
          closedLogs = logEntry;
@@ -3898,6 +3918,12 @@ void getTimeInSeconds(char *buf, size_t size);
 void getTRPID(char *buf, size_t size);
 
 
+TR::Logger *
+OMR::Options::createLoggerForLogFile(TR::FILE *file)
+   {
+   return TR::StreamLogger::create(file);
+   }
+
 void OMR::Options::openLogFile(int32_t idSuffix)
    {
    _logFile = NULL;
@@ -3956,35 +3982,47 @@ void OMR::Options::openLogFile(int32_t idSuffix)
          _logFile = trfopen(fn, fmodeString, false);
          }
 
+      /**
+       * If a log file was opened successfully then create a StreamLogger
+       * wrapper for it.
+       */
+      if (_logFile)
+         {
+         _logger = self()->createLoggerForLogFile(_logFile);
+         TR_ASSERT_FATAL(_logger, "Unable to create required Logger object");
+         }
+
 #undef FN_BUF_SIZE
       }
 
    if (_logFile != NULL)
       {
-      trfprintf(_logFile,
+      _logger->prints(
                 "<?xml version=\"1.0\" standalone=\"no\"?>\n"
                 "<jitlog>\n");
 
       if (_numUsableCompilationThreads > 1)
          {
-         trfprintf(_logFile,
+         _logger->prints(
                 "<!--\n"
                 "MULTIPLE LOG FILES MAY EXIST\n"
                 "Please check for ADDITIONAL log files named:");
          for (int i = 1; i < _numUsableCompilationThreads; i++)
-             trfprintf(_logFile, "  %s.%d", _logFileName, i);
-         trfprintf(_logFile, "\n-->\n");
+             _logger->printf("  %s.%d", _logFileName, i);
+         _logger->prints("\n-->\n");
          }
       }
    }
 
 
-void OMR::Options::closeLogFile(TR_FrontEnd *fe, TR::FILE *file)
+void OMR::Options::closeLogFile(TR_FrontEnd *fe, TR::FILE *file, TR::Logger *log)
    {
    if (file != NULL)
-      trfprintf(file, "</jitlog>\n");
+      log->prints("</jitlog>\n");
 
    trfclose(file);
+
+   log->close();
    }
 
 
@@ -4009,7 +4047,7 @@ TR_MCTLogs *OMR::Options::findLogFileForCompilationThread(int32_t compThreadID)
    }
 
 
-// Side effect this->_logFile is set
+// Side effect this->_logFile and this->_logger are set
 // compThreadID must be greater than 0
 void OMR::Options::setLogForCompilationThread(int32_t compThreadID, TR::Options *mainOptions)
    {
@@ -4021,6 +4059,7 @@ void OMR::Options::setLogForCompilationThread(int32_t compThreadID, TR::Options 
    if (optionLogEntry)
       {
       _logFile = optionLogEntry->getLogFile(); // overwrite the file descriptor for the log
+      _logger = optionLogEntry->getLogger(); // overwrite the Logger object
       _fe->releaseLogMonitor();
       return;
       }
@@ -4046,6 +4085,7 @@ void OMR::Options::setLogForCompilationThread(int32_t compThreadID, TR::Options 
                if (optionLogEntry)
                   {
                   _logFile = optionLogEntry->getLogFile(); // overwrite the file descriptor for the log
+                  _logger = optionLogEntry->getLogger(); // overwrite the Logger object
                   _fe->releaseLogMonitor();
                   return;
                   }
@@ -4054,11 +4094,13 @@ void OMR::Options::setLogForCompilationThread(int32_t compThreadID, TR::Options 
          else // TODO: try to allocate an array of reqSize entries
             {
             _logFile = NULL; // error case
+            _logger = NULL;
             }
          }
       else
          {
          _logFile = NULL; // error case
+         _logger = NULL;
          _fe->releaseLogMonitor();
          return;
          }
@@ -4073,6 +4115,8 @@ void OMR::Options::setLogForCompilationThread(int32_t compThreadID, TR::Options 
          {
          // Cache the open log file in the mainOptions
          optionLogEntry->setLogFile(_logFile);
+         optionLogEntry->setLogger(_logger);
+
          // Attach the new logInfo to the list
          optionLogEntry->setNext(mainOptions->getLogListForOtherCompThreads());
          mainOptions->setLogListForOtherCompThreads(optionLogEntry);
@@ -4087,6 +4131,7 @@ void OMR::Options::setLogForCompilationThread(int32_t compThreadID, TR::Options 
    else
       {
       _logFile = NULL; // error
+      _logger = NULL;
       }
 
    _fe->releaseLogMonitor();

@@ -38,6 +38,7 @@
 #include "ilgen/IlGeneratorMethodDetails_inlines.hpp"
 #include "il/ResolvedMethodSymbol.hpp"
 
+namespace TR { class Logger; }
 
 namespace TRTest {
 
@@ -55,9 +56,8 @@ public:
         throw std::runtime_error("The mock JIT environment does not support calling TR::IlGenRequest::getIlGenerator");
     }
 
-    virtual void print(TR_FrontEnd *fe, TR::FILE *file, const char *suffix) {}
+    virtual void print(TR::Logger *log, TR_FrontEnd *fe, const char *suffix) {}
 
-    
 };
 
 class JitInitializer {
