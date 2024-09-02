@@ -48,6 +48,7 @@
 #include "infra/String.hpp"
 #include "ras/Debug.hpp"
 #include "ras/IgnoreLocale.hpp"
+#include "ras/Logger.hpp"
 
 #if !defined(J9_PROJECT_SPECIFIC)
 #include "env/JitConfig.hpp"
@@ -1579,7 +1580,7 @@ OMR::Options::setStaticString(const char *option, void *base, TR::OptionTable *e
 const char *
 OMR::Options::setDebug(const char *option, void *base, TR::OptionTable *entry)
    {
-   if(strcmp((char*)entry->name,"trdebug="))
+   if (strcmp((char*)entry->name,"trdebug="))
       {
       addDebug((char*)entry->parm1);
       return option;
@@ -1587,26 +1588,26 @@ OMR::Options::setDebug(const char *option, void *base, TR::OptionTable *entry)
    else
       {
       char *position = (char *)option;
-      if(*position == '{')
+      if (*position == '{')
          {
          for(;*position;++position)
             {
-            if(*position == '}')
+            if (*position == '}')
                {
                ++position;
                break;
                }
-            else if(*position == ',')
+            else if (*position == ',')
                {//replace ',' separators with spaces so addDebug can parse them properly
                *position = ' ';
                }
             }
          }
       int32_t len = static_cast<int32_t>(position - option-2);
-      if(len > 0)
+      if (len > 0)
          {
          entry->parm1 = (intptr_t)TR::Options::jitPersistentAlloc(len+1);
-         if(entry->parm1)
+         if (entry->parm1)
             {
             memcpy((char*)(entry->parm1),(option+1), len);
             ((char*)entry->parm1)[len] = 0;
@@ -1813,6 +1814,10 @@ bool OMR::Options::createDebug()
    return _debug != 0;
    }
 
+TR::Logger *OMR::Options::getDefaultLogger()
+   {
+   return TR::NullLogger::create();
+   }
 
 bool
 OMR::Options::requiresDebugObject()
@@ -1929,7 +1934,7 @@ OMR::Options::Options(
       }
 #endif
 
-   if(_optLevel != -1) // has been set intentionally--respect it
+   if (_optLevel != -1) // has been set intentionally--respect it
       {
       optimizationPlan->setOptLevel((TR_Hotness)_optLevel);
       if (self()->allowRecompilation())
@@ -1962,10 +1967,14 @@ OMR::Options::Options(
    //
    _optLevel = optimizationPlan->getOptLevel();
    _optLevelDowngraded = optimizationPlan->isOptLevelDowngraded();
-   if(optimizationPlan->isLogCompilation())
+
+   if (optimizationPlan->isLogCompilation())
       {
       if (_debug || TR::Options::createDebug())
+         {
          _logFile = optimizationPlan->getLogCompilation();
+         _logger = optimizationPlan->getLogger();
+         }
       }
 
    /*
@@ -1974,7 +1983,10 @@ OMR::Options::Options(
     * and thus we don't want to suppress the log.
     */
    if (_suppressLogFileBecauseDebugObjectNotCreated && !optimizationPlan->isLogCompilation())
+      {
       _logFile = NULL;
+      _logger = TR::Options::getDefaultLogger();
+      }
 
    }
 
@@ -1986,8 +1998,179 @@ OMR::Options::Options(TR::Options &other) :
    {
    *this = other;
    if (_suppressLogFileBecauseDebugObjectNotCreated)
+      {
       _logFile = NULL;
+      _logger = TR::Options::getDefaultLogger();
+      }
    }
+
+
+void
+OMR::Options::init()
+   {
+   _optionSets = NULL;
+   _postRestoreOptionSets = NULL;
+   _startOptions = NULL;
+   _envOptions = NULL;
+   _logFileName = NULL;
+   _suffixLogsFormat = NULL;
+   _logFile = NULL;
+   _logger = TR::Options::getDefaultLogger();
+   _optFileName = NULL;
+   _customStrategy = NULL;
+   _customStrategySize = 0;
+   _optLevel = 0;
+   _initialOptLevel = 0;
+   _countString = NULL;
+   _initialCount = 0;
+   _initialBCount = 0;
+   _initialMILCount = 0;
+   _initialColdRunCount = 0;
+   _initialColdRunBCount = 0;
+   _maxSpreadCountLoopless = 0;
+   _maxSpreadCountLoopy = 0;
+   _GCRCount = 0;
+   _GCRDecCount = 0;
+   _GCRResetCount = 0;
+   _firstOptIndex = 0;
+   _lastOptIndex = 0;
+   _lastOptSubIndex = 0;
+   _lastSearchCount = 0;
+   _lastIpaOptTransformationIndex = 0;
+   _firstOptTransformationIndex = 0;
+   _lastOptTransformationIndex = 0;
+   _largeNumberOfLoops = 0;
+   _stackPCDumpNumberOfBuffers = 0;
+   _stackPCDumpNumberOfFrames = 0;
+   _tracingOptimization = false;
+   _delayCompileWithCPUBurn = 0;
+   _disabledOptTransformations = NULL;
+   _disabledInlineSites = NULL;
+   _disabledOpts = NULL;
+   _optsToTrace = NULL;
+   _optsToDumpTrees = NULL;
+   _dontInline = NULL;
+   _onlyInline = NULL;
+   _tryToInline = NULL;
+   _slipTrap = NULL;
+   _lockReserveClass = NULL;
+   _breakOnOpts = NULL;
+   _breakOnCreate = NULL;
+   _debugOnCreate = NULL;
+   _breakOnThrow = NULL;
+   _breakOnPrint = NULL;
+   _enabledStaticCounterNames = NULL;
+   _enabledDynamicCounterNames = NULL;
+   _counterHistogramNames = NULL;
+   _verboseOptTransformationsRegex = NULL;
+   _packedTest = NULL;
+   _memUsage = NULL;
+   _classesWithFolableFinalFields = NULL;
+   _disabledIdiomPatterns = NULL;
+   _suppressEA = NULL;
+   _dontFoldStaticFinalFields = NULL;
+   _gcCardSize = 0;
+   _heapBase = 0;
+   _heapTop = 0;
+   _heapAddressToCardAddressShift = 0;
+   _heapBaseForBarrierRange0 = 0;
+   _heapSizeForBarrierRange0 = 0;
+   _activeCardTableBase = 0;
+   _isVariableHeapBaseForBarrierRange0 = false;
+   _isVariableHeapSizeForBarrierRange0 = false;
+   _isVariableActiveCardTableBase = false;
+   _osVersionString = NULL;
+   _allowRecompilation = false;
+   _anOptionSetContainsACountValue = false;
+   _anOptionSetContainsADltOptLevel = false;
+   _numInterfaceCallCacheSlots = 0;
+   _numInterfaceCallStaticSlots = 0;
+   _storeSinkingLastOpt = 0;
+   _test390StackBuffer = 0;
+   _test390LitPoolBuffer = 0;
+   _addressToEnumerate = 0;
+   _debugEnableFlags = 0;
+   _optLevelDowngraded = false;
+   _compileExcludedmethods = false;
+   _maxUnloadedAddressRanges = 0;
+   _maxStaticPICSlots = 0;
+   _hotMaxStaticPICSlots = 0;
+   _newAotrtDebugLevel = 0;
+   _disableDLTBytecodeIndex = -1;
+   _enableDLTBytecodeIndex = -1;
+   _dltOptLevel = -1;
+   _profilingCount = 0;
+   _profilingFrequency = 0;
+   _counterBucketGranularity = 0;
+   _minCounterFidelity = 0;
+   _debugCounterWarmupSeconds = 0;
+   _insertDebuggingCounters = 0;
+   _inlineCntrCalleeTooBigBucketSize = 0;
+   _inlineCntrColdAndNotTinyBucketSize = 0;
+   _inlineCntrWarmCalleeTooBigBucketSize = 0;
+   _inlineCntrRanOutOfBudgetBucketSize = 0;
+   _inlineCntrCalleeTooDeepBucketSize = 0;
+   _inlineCntrWarmCallerHasTooManyNodesBucketSize = 0;
+   _inlineCntrWarmCalleeHasTooManyNodesBucketSize = 0;
+   _inlineCntrDepthExceededBucketSize = 0;
+   _inlineCntrAllBucketSize = 0;
+   _maxInlinedCalls = 0;
+   _dumbInlinerBytecodeSizeMaxCutoff = 0;
+   _dumbInlinerBytecodeSizeMinCutoff = 0;
+   _dumbInlinerBytecodeSizeCutoff = 0;
+   _dumbInlinerBytecodeSizeDivisor = 0;
+   _trivialInlinerMaxSize = 0;
+   _inlinerArgumentHeuristicFractionUpToWarm = 0;
+   _inlinerArgumentHeuristicFractionBeyondWarm = 0;
+   _inlinerVeryColdBorderFrequencyAtCold = 0;
+   _inlinerBorderFrequency = 0;
+   _inlinerColdBorderFrequency = 0;
+   _inlinerVeryColdBorderFrequency = 0;
+   _inlinerCGBorderFrequency = 0;
+   _inlinerCGColdBorderFrequency = 0;
+   _inlinerCGVeryColdBorderFrequency = 0;
+   _alwaysWorthInliningThreshold = 0;
+   _initialSCount = 0;
+   _enableSCHintFlags = 0;
+   _insertGCRTrees = false;
+   _maxLimitedGRACandidates = 0;
+   _maxLimitedGRARegs = 0;
+   _enableGPU = 0;
+   _isAOTCompile = false;
+   _jProfilingMethodRecompThreshold = 0;
+   _jProfilingLoopRecompThreshold = 0;
+   _blockShufflingSequence = NULL;
+   _randomSeed = 0;
+   _logListForOtherCompThreads = NULL;
+   _induceOSR = NULL;
+   _bigCalleeThreshold = 0;
+   _bigCalleeThresholdForColdCallsAtWarm = 0;
+   _bigCalleeFreqCutoffAtWarm = 0;
+   _bigCalleeHotOptThreshold = 0;
+   _bigCalleeThresholdForColdCallsAtHot = 0;
+   _bigCalleeFreqCutoffAtHot = 0;
+   _bigCalleeScorchingOptThreshold = 0;
+   _inlinerVeryLargeCompiledMethodThreshold = 0;
+   _inlinerVeryLargeCompiledMethodFaninThreshold = 0;
+   _largeCompiledMethodExemptionFreqCutoff = 0;
+   _maxSzForVPInliningWarm = 0;
+   _loopyAsyncCheckInsertionMaxEntryFreq = 0;
+   _objectFileName = 0;
+   _edoRecompSizeThreshold = 0;
+   _edoRecompSizeThresholdInStartupMode = 0;
+   _catchBlockCounterThreshold = 0;
+   _arraycopyRepMovsByteArrayThreshold = 32;
+   _arraycopyRepMovsCharArrayThreshold = 32;
+   _arraycopyRepMovsIntArrayThreshold = 32;
+   _arraycopyRepMovsLongArrayThreshold = 32;
+   _arraycopyRepMovsReferenceArrayThreshold = 32;
+   _codeCacheKind = TR::CodeCacheKind::DEFAULT_CC;
+
+   memset(_options, 0, sizeof(_options));
+   memset(_disabledOptimizations, false, sizeof(_disabledOptimizations));
+   memset(_traceOptimizations, false, sizeof(_traceOptimizations));
+   }
+
 
 void
 OMR::Options::setRealTimeGC(bool m)
@@ -2348,7 +2531,7 @@ OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void * jitConfig)
          || _lastOptSubIndex != INT_MAX)
          {
          self()->setOption(TR_CountOptTransformations);
-         if(!_debug)
+         if (!_debug)
             TR::Options::createDebug();
          }
 
@@ -2397,6 +2580,7 @@ OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void * jitConfig)
    else // option set processing
       {
       _logFile = NULL;
+      _logger = TR::Options::getDefaultLogger();
 
       if (_logFileName)
          {
@@ -2413,7 +2597,7 @@ OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void * jitConfig)
 
          if (_debug)
             {
-            _logFile = _debug->findLogFile(TR::Options::getAOTCmdLineOptions(), TR::Options::getJITCmdLineOptions(), optionSet, _logFileName);
+            _logFile = _debug->findLogFile(TR::Options::getAOTCmdLineOptions(), TR::Options::getJITCmdLineOptions(), optionSet, _logFileName, _logger);
             if (_logFile == NULL)
                self()->openLogFile();
             else
@@ -2772,7 +2956,7 @@ OMR::Options::jitPreProcess()
           ((TR::Compiler->target.cpu.isX86() && TR::Compiler->target.isLinux()) && TR::Compiler->target.numberOfProcessors() >= 4))
           self()->setOption(TR_TurnOffSelectiveNoOptServerIfNoStartupHint);
 
-      if(TR::Compiler->target.cpu.isX86() && TR::Compiler->target.is32Bit())
+      if (TR::Compiler->target.cpu.isX86() && TR::Compiler->target.is32Bit())
          self()->setOption(TR_DisableJProfilingInProfilingCompilations);
       self()->setOption(TR_DisableHeapAllocOOL);
       if (!(TR::Compiler->target.cpu.isZ() && TR::Compiler->target.isLinux()))
@@ -2918,7 +3102,7 @@ OMR::Options::shutdown(TR_FrontEnd * fe)
    if (TR::Options::isFullyInitialized())
       {
       if (TR::Options::getAOTCmdLineOptions() && TR::Options::getAOTCmdLineOptions()->getLogFile())
-         TR::Options::closeLogFile(fe, TR::Options::getAOTCmdLineOptions()->getLogFile());
+         TR::Options::closeLogFile(fe, TR::Options::getAOTCmdLineOptions()->getLogFile(), TR::Options::getAOTCmdLineOptions()->getLogger());
 
       if (TR::Options::getAOTCmdLineOptions())
          {
@@ -2926,6 +3110,7 @@ OMR::Options::shutdown(TR_FrontEnd * fe)
          for (optionSet = TR::Options::getAOTCmdLineOptions()->_optionSets; optionSet; optionSet = optionSet->getNext())
             {
             TR::FILE *logFile = optionSet->getOptions()->getLogFile();
+            TR::Logger *logger = optionSet->getOptions()->getLogger();
             if (logFile == NULL || logFile == TR::Options::getAOTCmdLineOptions()->getLogFile())
                continue;
             for (prev = TR::Options::getAOTCmdLineOptions()->_optionSets; prev != optionSet; prev = prev->getNext())
@@ -2933,11 +3118,12 @@ OMR::Options::shutdown(TR_FrontEnd * fe)
                if (prev->getOptions()->getLogFile() == logFile)
                   {
                   logFile = NULL;
+                  logger = NULL;
                   break;
                   }
                }
             if (logFile != NULL)
-               TR::Options::closeLogFile(fe, logFile);
+               TR::Options::closeLogFile(fe, logFile, logger);
             }
          }
 
@@ -2948,11 +3134,13 @@ OMR::Options::shutdown(TR_FrontEnd * fe)
          if (TR::Options::getJITCmdLineOptions()->getLogFile())
             {
             TR::FILE *logFile = TR::Options::getJITCmdLineOptions()->getLogFile();
+            TR::Logger *logger = TR::Options::getJITCmdLineOptions()->getLogger();
             if (TR::Options::getAOTCmdLineOptions())
                {
                if (logFile ==TR::Options::getAOTCmdLineOptions()->getLogFile())
                   {
                   logFile = NULL;
+                  logger = NULL;
                   }
                else
                   {
@@ -2964,6 +3152,7 @@ OMR::Options::shutdown(TR_FrontEnd * fe)
                      if (aotLogFile == logFile)
                         {
                         logFile = NULL;
+                        logger = NULL;
                         break;
                         }
                      }
@@ -2971,12 +3160,13 @@ OMR::Options::shutdown(TR_FrontEnd * fe)
                }
             if (logFile != NULL)
                {
-               TR::Options::closeLogFile(fe, logFile);
+               TR::Options::closeLogFile(fe, logFile, logger);
                }
             }
          for (optionSet = TR::Options::getJITCmdLineOptions()->_optionSets; optionSet; optionSet = optionSet->getNext())
             {
             TR::FILE *logFile = optionSet->getOptions()->getLogFile();
+            TR::Logger *logger = optionSet->getOptions()->getLogger();
             if (logFile == NULL || logFile == TR::Options::getJITCmdLineOptions()->getLogFile())
                continue;
             for (prev = TR::Options::getJITCmdLineOptions()->_optionSets; prev != optionSet; prev = prev->getNext())
@@ -2984,6 +3174,7 @@ OMR::Options::shutdown(TR_FrontEnd * fe)
                if (prev->getOptions()->getLogFile() == logFile)
                   {
                   logFile = NULL;
+                  logger = NULL;
                   break;
                   }
                }
@@ -2993,6 +3184,7 @@ OMR::Options::shutdown(TR_FrontEnd * fe)
                if (logFile == TR::Options::getAOTCmdLineOptions()->getLogFile())
                   {
                   logFile = NULL;
+                  logger = NULL;
                   continue;
                   }
                for (aotOptionSet = TR::Options::getAOTCmdLineOptions()->_optionSets; aotOptionSet; aotOptionSet = aotOptionSet->getNext())
@@ -3001,13 +3193,14 @@ OMR::Options::shutdown(TR_FrontEnd * fe)
                   if (aotLogFile == logFile)
                      {
                      logFile = NULL;
+                     logger = NULL;
                      break;
                      }
                   }
                }
             if (logFile != NULL)
                {
-               TR::Options::closeLogFile(fe, logFile);
+               TR::Options::closeLogFile(fe, logFile, logger);
                }
             }
          }
@@ -3054,7 +3247,7 @@ void OMR::Options::safelyCloseLogs(TR::Options *options, TR_MCTLogs * &closedLog
       if (!logEntry1)
          {
          // This log was not yet closed
-         TR::Options::closeLogFile(fe, logEntry->getLogFile());
+         TR::Options::closeLogFile(fe, logEntry->getLogFile(), logEntry->getLogger());
          // Add to list of closed logs
          logEntry->setNext(closedLogs);
          closedLogs = logEntry;
@@ -3962,93 +4155,117 @@ void getTimeInSeconds(char *buf, size_t size);
 void getTRPID(char *buf, size_t size);
 
 
+TR::Logger *
+OMR::Options::createLoggerForLogFile(TR::FILE *file)
+   {
+   TR::Logger *logger = TR::CStdIOStreamLogger::create((::FILE *)file);
+
+   if (_traceFileLengthInMiB > 0)
+      {
+      // Wrap the logger in a CircularLogger if requested
+      //
+      logger = TR::CircularLogger::create(logger, _traceFileLengthInMiB << 20);
+      }
+
+   return logger;
+   }
+
 void OMR::Options::openLogFile(int32_t idSuffix)
    {
    _logFile = NULL;
 
-   if (_logFile == NULL)
-      {
-      TR_ASSERT(_logFileName, "assertion failure");
+   TR_ASSERT_FATAL(_logFileName, "assertion failure");
 
-      if (_suffixLogsFormat)
-         self()->setOption(TR_EnablePIDExtension);
+   if (_suffixLogsFormat)
+      self()->setOption(TR_EnablePIDExtension);
 
 #define FN_BUF_SIZE 1025
-      char buf0[FN_BUF_SIZE];
-      char buf1[FN_BUF_SIZE];
-      char *destBuf = buf0;
-      char *otherBuf = buf1;
+   char buf0[FN_BUF_SIZE];
+   char buf1[FN_BUF_SIZE];
+   char *destBuf = buf0;
+   char *otherBuf = buf1;
 
-      char *fn = _logFileName;
+   char *fn = _logFileName;
 
-      if (idSuffix >= 0) // Must add the suffix to the name
+   if (idSuffix >= 0) // Must add the suffix to the name
+      {
+      size_t len = strlen(_logFileName);
+      bool truncated = TR::snprintfTrunc(
+         destBuf, FN_BUF_SIZE, "%s.%d", _logFileName, idSuffix);
+      if (truncated)
+         return;
+      fn = destBuf;
+      std::swap(destBuf, otherBuf);
+      }
+
+   const char *fmodeString = "wb+";
+   if (self()->getOption(TR_EnablePIDExtension))
+      {
+      if (!_suffixLogsFormat)
          {
-         size_t len = strlen(_logFileName);
+         // Append time id. TPO may invoke TR multiple times with different partition
+         size_t len = strlen(fn);
+         char pid_buf[20];
+         char time_buf[20];
+         getTRPID(pid_buf, sizeof(pid_buf));
+         getTimeInSeconds(time_buf, sizeof(time_buf));
          bool truncated = TR::snprintfTrunc(
-            destBuf, FN_BUF_SIZE, "%s.%d", _logFileName, idSuffix);
+            destBuf, FN_BUF_SIZE, "%s.%s.%s", fn, pid_buf, time_buf);
          if (truncated)
             return;
          fn = destBuf;
          std::swap(destBuf, otherBuf);
          }
 
-      const char *fmodeString = "wb+";
-      if (self()->getOption(TR_EnablePIDExtension))
-         {
-         if (!_suffixLogsFormat)
-            {
-            // Append time id. TPO may invoke TR multiple times with different partition
-            size_t len = strlen(fn);
-            char pid_buf[20];
-            char time_buf[20];
-            getTRPID(pid_buf, sizeof(pid_buf));
-            getTimeInSeconds(time_buf, sizeof(time_buf));
-            bool truncated = TR::snprintfTrunc(
-               destBuf, FN_BUF_SIZE, "%s.%s.%s", fn, pid_buf, time_buf);
-            if (truncated)
-               return;
-            fn = destBuf;
-            std::swap(destBuf, otherBuf);
-            }
-
-         fn = _fe->getFormattedName(destBuf, FN_BUF_SIZE, fn, _suffixLogsFormat, true);
-         _logFile = trfopen(fn, fmodeString, false);
-         }
-      else
-         {
-         fn = _fe->getFormattedName(destBuf, FN_BUF_SIZE, fn, NULL, false);
-         _logFile = trfopen(fn, fmodeString, false);
-         }
-
-#undef FN_BUF_SIZE
+      fn = _fe->getFormattedName(destBuf, FN_BUF_SIZE, fn, _suffixLogsFormat, true);
+      _logFile = trfopen(fn, fmodeString, false);
+      }
+   else
+      {
+      fn = _fe->getFormattedName(destBuf, FN_BUF_SIZE, fn, NULL, false);
+      _logFile = trfopen(fn, fmodeString, false);
       }
 
-   if (_logFile != NULL)
+#undef FN_BUF_SIZE
+
+   /**
+    * Prepare a TR::Logger wrapper for the newly opened log file and add the
+    * boilerplate header.
+    */
+   if (_logFile)
       {
-      trfprintf(_logFile,
+      _logger = self()->createLoggerForLogFile(_logFile);
+      TR_ASSERT_FATAL(_logger, "Unable to create required Logger object");
+      _logger->setEnabled(true);
+
+      _logger->prints(
                 "<?xml version=\"1.0\" standalone=\"no\"?>\n"
                 "<jitlog>\n");
 
       if (_numUsableCompilationThreads > 1)
          {
-         trfprintf(_logFile,
+         _logger->prints(
                 "<!--\n"
                 "MULTIPLE LOG FILES MAY EXIST\n"
                 "Please check for ADDITIONAL log files named:");
+
          for (int i = 1; i < _numUsableCompilationThreads; i++)
-             trfprintf(_logFile, "  %s.%d", _logFileName, i);
-         trfprintf(_logFile, "\n-->\n");
+             _logger->printf("  %s.%d", _logFileName, i);
+
+         _logger->prints("\n-->\n");
          }
       }
    }
 
 
-void OMR::Options::closeLogFile(TR_FrontEnd *fe, TR::FILE *file)
+void OMR::Options::closeLogFile(TR_FrontEnd *fe, TR::FILE *file, TR::Logger *log)
    {
    if (file != NULL)
-      trfprintf(file, "</jitlog>\n");
+      log->prints("</jitlog>\n");
 
    trfclose(file);
+
+   log->close();
    }
 
 
@@ -4079,7 +4296,7 @@ TR_MCTLogs *OMR::Options::findLogFileForCompilationThread(int32_t compThreadID)
    }
 
 
-// Side effect this->_logFile is set
+// Side effect this->_logFile and this->_logger are set
 // compThreadID must be greater than 0
 void OMR::Options::setLogForCompilationThread(int32_t compThreadID, TR::Options *mainOptions)
    {
@@ -4091,6 +4308,7 @@ void OMR::Options::setLogForCompilationThread(int32_t compThreadID, TR::Options 
    if (optionLogEntry)
       {
       _logFile = optionLogEntry->getLogFile(); // overwrite the file descriptor for the log
+      _logger = optionLogEntry->getLogger(); // overwrite the Logger object
       _fe->releaseLogMonitor();
       return;
       }
@@ -4116,6 +4334,7 @@ void OMR::Options::setLogForCompilationThread(int32_t compThreadID, TR::Options 
                if (optionLogEntry)
                   {
                   _logFile = optionLogEntry->getLogFile(); // overwrite the file descriptor for the log
+                  _logger = optionLogEntry->getLogger(); // overwrite the Logger object
                   _fe->releaseLogMonitor();
                   return;
                   }
@@ -4124,11 +4343,13 @@ void OMR::Options::setLogForCompilationThread(int32_t compThreadID, TR::Options 
          else // TODO: try to allocate an array of reqSize entries
             {
             _logFile = NULL; // error case
+            _logger = TR::Options::getDefaultLogger();
             }
          }
       else
          {
          _logFile = NULL; // error case
+         _logger = TR::Options::getDefaultLogger();
          _fe->releaseLogMonitor();
          return;
          }
@@ -4143,6 +4364,8 @@ void OMR::Options::setLogForCompilationThread(int32_t compThreadID, TR::Options 
          {
          // Cache the open log file in the mainOptions
          optionLogEntry->setLogFile(_logFile);
+         optionLogEntry->setLogger(_logger);
+
          // Attach the new logInfo to the list
          optionLogEntry->setNext(mainOptions->getLogListForOtherCompThreads());
          mainOptions->setLogListForOtherCompThreads(optionLogEntry);
@@ -4157,17 +4380,24 @@ void OMR::Options::setLogForCompilationThread(int32_t compThreadID, TR::Options 
    else
       {
       _logFile = NULL; // error
+      _logger = TR::Options::getDefaultLogger();
       }
 
    _fe->releaseLogMonitor();
    }
 
+TR_MCTLogs::TR_MCTLogs(int32_t compThreadID, TR::Options *options) :
+      _next(NULL),
+      _compThreadID(compThreadID),
+      _options(options),
+      _logFile(NULL),
+      _logger(TR::Options::getDefaultLogger())
+   {}
 
 char * TR_MCTLogs::getLogFileName()
    {
    return _options->getLogFileName();
    }
-
 
 #include <ctime>
 void getTimeInSeconds(char *buf, size_t size)

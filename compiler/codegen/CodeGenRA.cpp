@@ -733,7 +733,7 @@ OMR::CodeGenerator::findAndFixCommonedReferences()
    if (debug("traceSpill"))
       {
       diagnostic("Start spilling at GC safe points\n");
-      self()->comp()->dumpMethodTrees("Trees before spilling");
+      self()->comp()->dumpMethodTrees(self()->comp()->getLogger(), "Trees before spilling");
       }
 
    self()->comp()->incVisitCount();
@@ -1073,7 +1073,7 @@ OMR::CodeGenerator::prepareForGRA()
    TR_ASSERT(self()->getSupportsGlRegDeps(), "assertion failure");
    if (self()->getDebug() && self()->comp()->getOptions()->trace(OMR::tacticalGlobalRegisterAllocator))
       {
-      self()->getDebug()->dumpGlobalRegisterTable();
+      self()->getDebug()->dumpGlobalRegisterTable(self()->comp()->getLogger());
       }
    return true;
    }
@@ -1216,11 +1216,12 @@ OMR::CodeGenerator::pickRegister(TR::RegisterCandidate     *rc,
 
       if (self()->terseSimulateTreeEvaluation())
          {
+         TR::Logger *log = self()->comp()->getLogger();
          traceMsg(self()->comp(), "         { Picking register for %s%s candidate #%d %s\n",
             highRegisterNumber? "high word of " : "",
             usesFPR? "FPR" : (usesVRF ? "VRF" : "GPR"), rc->getSymbolReference()->getReferenceNumber(), self()->getDebug()->getName(rc->getSymbolReference()));
          traceMsg(self()->comp(), "            Available regs: ");
-         self()->getDebug()->print(self()->comp()->getOptions()->getLogFile(), &availableRegisters);
+         self()->getDebug()->print(log, &availableRegisters);
          traceMsg(self()->comp(), "\n");
          if (debug("dumpAllSpillKinds"))
             {
@@ -1228,7 +1229,7 @@ OMR::CodeGenerator::pickRegister(TR::RegisterCandidate     *rc,
                {
                TR_SpillKinds sk = (TR_SpillKinds)i;
                traceMsg(self()->comp(), "            %s regs: ", self()->getDebug()->getSpillKindName(sk));
-               self()->getDebug()->print(self()->comp()->getOptions()->getLogFile(), self()->getGlobalRegisters(sk, TR_Private));
+               self()->getDebug()->print(log, self()->getGlobalRegisters(sk, TR_Private));
                traceMsg(self()->comp(), "\n");
                }
             }
@@ -1252,7 +1253,7 @@ OMR::CodeGenerator::pickRegister(TR::RegisterCandidate     *rc,
             TR_BitVector regsToPrint = remainingRegisters;
             regsToPrint &= *spilledRegisters;
             traceMsg(self()->comp(), "            vmThread register not enabled; rejected: ");
-            self()->getDebug()->print(self()->comp()->getOptions()->getLogFile(), &regsToPrint);
+            self()->getDebug()->print(self()->comp()->getLogger(), &regsToPrint);
             traceMsg(self()->comp(), "\n");
             }
          remainingRegisters -= *spilledRegisters;
@@ -1271,7 +1272,7 @@ OMR::CodeGenerator::pickRegister(TR::RegisterCandidate     *rc,
       if (self()->traceSimulateTreeEvaluation())
          {
          traceMsg(self()->comp(), "                Blocks to visit: ");
-         self()->getDebug()->print(self()->comp()->getOptions()->getLogFile(), &blocksToVisit);
+         self()->getDebug()->print(self()->comp()->getLogger(), &blocksToVisit);
          traceMsg(self()->comp(), "\n");
          }
 
@@ -1285,7 +1286,7 @@ OMR::CodeGenerator::pickRegister(TR::RegisterCandidate     *rc,
       if (self()->terseSimulateTreeEvaluation())
          {
          traceMsg(self()->comp(), "            Ext blocks to visit: ");
-         self()->getDebug()->print(self()->comp()->getOptions()->getLogFile(), &blocksToVisit);
+         self()->getDebug()->print(self()->comp()->getLogger(), &blocksToVisit);
          traceMsg(self()->comp(), "\n");
          }
 
@@ -1427,11 +1428,12 @@ OMR::CodeGenerator::pickRegister(TR::RegisterCandidate     *rc,
                remainingRegisters -= spilledRegs;
                if (self()->traceSimulateTreeEvaluation())
                   {
+                  TR::Logger *log = self()->comp()->getLogger();
                   traceMsg(self()->comp(), "            rejected registers: ");
-                  self()->getDebug()->print(self()->comp()->getOptions()->getLogFile(), &spilledRegs);
+                  self()->getDebug()->print(log, &spilledRegs);
                   highWaterMark.dumpSpillMask(self());
                   traceMsg(self()->comp(), "\n            remaining registers: ");
-                  self()->getDebug()->print(self()->comp()->getOptions()->getLogFile(), &remainingRegisters);
+                  self()->getDebug()->print(log, &remainingRegisters);
                   traceMsg(self()->comp(), "\n");
                   }
                }
@@ -1449,11 +1451,12 @@ OMR::CodeGenerator::pickRegister(TR::RegisterCandidate     *rc,
          remainingRegisters -= spilledRegs;
          if (self()->traceSimulateTreeEvaluation())
             {
+            TR::Logger *log = self()->comp()->getLogger();
             traceMsg(self()->comp(), "            rejected registers: ");
-            self()->getDebug()->print(self()->comp()->getOptions()->getLogFile(), &spilledRegs);
+            self()->getDebug()->print(log, &spilledRegs);
             highWaterMark.dumpSpillMask(self());
             traceMsg(self()->comp(), "\n            remaining registers: ");
-            self()->getDebug()->print(self()->comp()->getOptions()->getLogFile(), &remainingRegisters);
+            self()->getDebug()->print(log, &remainingRegisters);
             traceMsg(self()->comp(), "\n");
             }
          }
@@ -1609,7 +1612,7 @@ OMR::CodeGenerator::pickRegister(TR::RegisterCandidate     *rc,
             if (self()->traceSimulateTreeEvaluation() && !unpreferredRegisters.isEmpty())
                {
                traceMsg(self()->comp(), "            Rejecting copy registers: ");
-               self()->getDebug()->print(self()->comp()->getOptions()->getLogFile(), &unpreferredRegisters);
+               self()->getDebug()->print(self()->comp()->getLogger(), &unpreferredRegisters);
                traceMsg(self()->comp(), "\n");
                }
             remainingRegisters -= unpreferredRegisters;
@@ -1651,7 +1654,7 @@ OMR::CodeGenerator::pickRegister(TR::RegisterCandidate     *rc,
             if (self()->traceSimulateTreeEvaluation() && !unpreferredRegisters.isEmpty())
                {
                traceMsg(self()->comp(), "            Rejecting linkage registers: ");
-               self()->getDebug()->print(self()->comp()->getOptions()->getLogFile(), &unpreferredRegisters);
+               self()->getDebug()->print(self()->comp()->getLogger(), &unpreferredRegisters);
                traceMsg(self()->comp(), "\n");
                }
             remainingRegisters -= unpreferredRegisters;
@@ -1674,7 +1677,7 @@ OMR::CodeGenerator::pickRegister(TR::RegisterCandidate     *rc,
       if (self()->traceSimulateTreeEvaluation())
          {
          traceMsg(self()->comp(), "            final registers: ");
-         self()->getDebug()->print(self()->comp()->getOptions()->getLogFile(), &remainingRegisters);
+         self()->getDebug()->print(self()->comp()->getLogger(), &remainingRegisters);
          traceMsg(self()->comp(), "\n");
          }
 
@@ -2290,15 +2293,16 @@ OMR::CodeGenerator::simulateBlockEvaluation(
 
    if (self()->traceSimulateTreeEvaluation())
       {
+      TR::Logger *log = self()->comp()->getLogger();
       traceMsg(self()->comp(), "            { simulating block_%d", block->getNumber());
       if (state->_candidate)
          traceMsg(self()->comp(), ", candidate %d", state->getCandidateSymRef()->getReferenceNumber());
       else
          traceMsg(self()->comp(), ", candidate ignored");
       traceMsg(self()->comp(), "\n               Already assigned on entry: ");
-      self()->getDebug()->print(self()->comp()->getOptions()->getLogFile(), &state->_alreadyAssignedOnEntry);
+      self()->getDebug()->print(log, &state->_alreadyAssignedOnEntry);
       traceMsg(self()->comp(), "\n               Already assigned on exit: ");
-      self()->getDebug()->print(self()->comp()->getOptions()->getLogFile(), &state->_alreadyAssignedOnExit);
+      self()->getDebug()->print(log, &state->_alreadyAssignedOnExit);
       }
 
    TR::TreeTop *tt;
@@ -2547,7 +2551,7 @@ OMR::CodeGenerator::simulateTreeEvaluation(TR::Node *node, TR_RegisterPressureSt
                tagChar = 'a';
             }
 
-         self()->getDebug()->dumpSimulatedNode(node, tagChar);
+         self()->getDebug()->dumpSimulatedNode(self()->comp()->getLogger(), node, tagChar);
          leaveSpaceForRegisterPressureState(state, self()->comp());
          }
       }
@@ -2696,7 +2700,7 @@ OMR::CodeGenerator::simulateSkippedTreeEvaluation(TR::Node *node, TR_RegisterPre
 
    if (self()->traceSimulateTreeEvaluation())
       {
-      self()->getDebug()->dumpSimulatedNode(node, tagChar);
+      self()->getDebug()->dumpSimulatedNode(self()->comp()->getLogger(), node, tagChar);
       leaveSpaceForRegisterPressureState(state, self()->comp());
       }
    }
@@ -3179,7 +3183,7 @@ OMR::CodeGenerator::simulateNodeGoingLive(TR::Node *node, TR_RegisterPressureSta
    //
    if (self()->traceSimulateTreeEvaluation())
       {
-      self()->getDebug()->dumpSimulatedNode(node, self()->isCandidateLoad(node, state)? 'C':' ');
+      self()->getDebug()->dumpSimulatedNode(self()->comp()->getLogger(), node, self()->isCandidateLoad(node, state)? 'C':' ');
       traceMsg(self()->comp(), "%2d(%d) g%+d=%-2d f%+d=%-2d v%+d=%-2d",
          self()->simulatedNodeState(node, state)._height,
          node->getNumChildren(),

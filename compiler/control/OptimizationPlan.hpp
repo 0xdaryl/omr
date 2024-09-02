@@ -124,6 +124,8 @@ class TR_OptimizationPlan
    bool isLogCompilation() const { return _flags.testAny(LogCompilation); }
    void setLogCompilation(TR::FILE *f) { _flags.set(LogCompilation); _logFile = f;  }
    TR::FILE *getLogCompilation() { return _logFile;  }
+   void setLogger(TR::Logger *log) { _logger = log; }
+   TR::Logger *getLogger() { return _logger; }
 
    bool shouldAddToUpgradeQueue() const { return _flags.testAny(AddToUpgradeQueue); }
    void setAddToUpgradeQueue() { _flags.set(AddToUpgradeQueue); }
@@ -234,6 +236,7 @@ class TR_OptimizationPlan
 
    bool                        _hwpDoReducedWarm;
    TR::FILE *_logFile;
+   TR::Logger *_logger;
    static TR_OptimizationPlan *_pool;
    static unsigned long        _totalNumAllocatedPlans; // number of elements in the system
    static unsigned long        _poolSize;   // number of elements currently in the pool

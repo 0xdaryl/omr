@@ -29,6 +29,7 @@
 #include "runtime/Runtime.hpp"
 
 namespace TR { class CodeGenerator; }
+namespace TR { class Logger; }
 namespace TR { class Node; }
 
 namespace TR {
@@ -49,7 +50,7 @@ class ARM64ConstantDataSnippet : public TR::Snippet
    template <typename T> inline T getData()                                { return *(reinterpret_cast<T*>(getRawData())); }
 
    virtual uint8_t*               emitSnippetBody();
-   virtual void                   print(TR::FILE* pOutFile, TR_Debug* debug);
+   virtual void                   print(TR::Logger *log, TR_Debug *debug);
    void                           addMetaDataForCodeAddress(uint8_t *cursor);
    TR_ExternalRelocationTargetKind getReloType() { return _reloType; }
    void                           setReloType(TR_ExternalRelocationTargetKind reloType) { _reloType = reloType; }

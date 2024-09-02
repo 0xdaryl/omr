@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include "compile/Compilation.hpp"
 #include "ras/Debug.hpp"
+#include "ras/Logger.hpp"
 
 // Number of bits set in a byte containing the index value
 //
@@ -187,24 +188,14 @@ void TR_BitVector::setChunkSize(int32_t chunkSize)
 #endif
    }
 
-void TR_BitVector::print(TR::Compilation *comp, TR::FILE *file)
+void TR_BitVector::print(TR::Logger *log, TR::Compilation *comp)
    {
-   if (comp->getDebug())
-      {
-      if (file == NULL)
-         file = comp->getOutFile();
-      comp->getDebug()->print(file, this);
-      }
+   comp->getDebug()->print(log, this);
    }
 
-void TR_SingleBitContainer::print(TR::Compilation *comp, TR::FILE *file)
+void TR_SingleBitContainer::print(TR::Logger *log, TR::Compilation *comp)
    {
-   if (comp->getDebug())
-      {
-      if (file == NULL)
-         file = comp->getOutFile();
-      comp->getDebug()->print(file, this);
-      }
+   comp->getDebug()->print(log, this);
    }
 
 // Compare this with a bit vector

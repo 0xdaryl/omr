@@ -48,10 +48,11 @@
 #include "ilgen/BytecodeBuilder.hpp"
 #include "infra/Cfg.hpp"
 #include "infra/List.hpp"
+#include "ras/Logger.hpp"
 
 #define OPT_DETAILS "O^O ILBLD: "
 
-#define TraceEnabled    (comp()->getOption(TR_TraceILGen))
+#define TraceEnabled    (comp()->getOption(TR_TraceILGen) && comp()->getLoggingEnabled())
 #define TraceIL(m, ...) {if (TraceEnabled) {traceMsg(comp(), m, ##__VA_ARGS__);}}
 
 
@@ -141,10 +142,10 @@ OMR::IlBuilder::injectIL()
 
    rc = connectTrees();
    if (TraceEnabled)
-      comp()->dumpMethodTrees("after connectTrees");
+      comp()->dumpMethodTrees(comp()->getLogger(), "after connectTrees");
    cfg()->removeUnreachableBlocks();
    if (TraceEnabled)
-      comp()->dumpMethodTrees("after removing unreachable blocks");
+      comp()->dumpMethodTrees(comp()->getLogger(), "after removing unreachable blocks");
    return rc;
    }
 
@@ -203,10 +204,10 @@ OMR::IlBuilder::printBlock(TR::Block *block)
    TR::TreeTop *tt = block->getEntry();
    while (tt != block->getExit())
       {
-      comp()->getDebug()->print(comp()->getOutFile(), tt);
+      comp()->getDebug()->print(comp()->getLogger(), tt);
       tt = tt->getNextTreeTop();
       }
-   comp()->getDebug()->print(comp()->getOutFile(), tt);
+   comp()->getDebug()->print(comp()->getLogger(), tt);
    }
 
 TR::IlBuilder *

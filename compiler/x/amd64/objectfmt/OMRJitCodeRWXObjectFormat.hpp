@@ -38,6 +38,7 @@ namespace OMR { typedef OMR::X86::AMD64::JitCodeRWXObjectFormat JitCodeRWXObject
 
 namespace TR { class Instruction; }
 namespace TR { class FunctionCallData; }
+namespace TR { class Logger; }
 
 namespace OMR
 {
@@ -61,7 +62,7 @@ public:
       return 5; // CALLImm or JMPImm
       }
 
-   virtual void printEncodedFunctionCall(TR::FILE *pOutFile, TR::FunctionCallData &data, uint8_t *bufferPos);
+   virtual void printEncodedFunctionCall(TR::Logger *log, TR::FunctionCallData &data, uint8_t *bufferPos);
 
    };
 }

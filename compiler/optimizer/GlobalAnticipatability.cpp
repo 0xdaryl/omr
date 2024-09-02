@@ -43,6 +43,7 @@
 #include "optimizer/Structure.hpp"
 #include "optimizer/DataFlowAnalysis.hpp"
 #include "optimizer/LocalAnalysis.hpp"
+#include "ras/Logger.hpp"
 
 class TR_OpaqueClassBlock;
 namespace TR { class Optimizer; }
@@ -109,7 +110,7 @@ TR_GlobalAnticipatability::TR_GlobalAnticipatability(TR::Compilation *comp, TR::
       for (i = 0; i < _numberOfNodes; i++)
          {
          traceMsg(comp, "Block number : %d has solution : ", i);
-         _blockAnalysisInfo[i]->print(comp);
+         _blockAnalysisInfo[i]->print(comp->getLogger(), comp);
          traceMsg(comp, "\n");
          }
 
@@ -421,7 +422,7 @@ void TR_GlobalAnticipatability::analyzeTreeTopsInBlockStructure(TR_BlockStructur
                if (trace())
                   {
                   //traceMsg(comp(), "_scratch2 : ");
-                  //_scratch2->print(comp());
+                  //_scratch2->print(comp()->getLogger(), comp());
                   //traceMsg(comp(), "\n");
                   }
                if ((lastNodeFirstChild || lastNodeSecondChild) &&
@@ -493,10 +494,10 @@ void TR_GlobalAnticipatability::analyzeTreeTopsInBlockStructure(TR_BlockStructur
    if (trace())
       {
       traceMsg(comp(), "\nLocal Anticipatability of Block : %d\n", blockStructure->getBlock()->getNumber());
-      _localAnticipatability.getDownwardExposedAnalysisInfo(blockStructure->getBlock()->getNumber())->print(comp());
+      _localAnticipatability.getDownwardExposedAnalysisInfo(blockStructure->getBlock()->getNumber())->print(comp()->getLogger(), comp());
 
       traceMsg(comp(), "\nIn Set of Block : %d\n", blockStructure->getNumber());
-      _regularInfo->print(comp());
+      _regularInfo->print(comp()->getLogger(), comp());
 
       }
    }
