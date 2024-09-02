@@ -57,6 +57,7 @@
 #include "optimizer/UseDefInfo.hpp"
 #include "optimizer/TransformUtil.hpp"
 #include "ras/Debug.hpp"
+#include "ras/Logger.hpp"
 
 #define OPT_DETAILS "O^O COPY PROPAGATION: "
 
@@ -1073,7 +1074,7 @@ void TR_CopyPropagation::rematerializeIndirectLoadsFromAutos()
       }
 
    if (trace())
-      comp()->dumpMethodTrees("Trees after rematerialization of indirect loads from autos");
+      comp()->dumpMethodTrees(comp()->getLogger(), "Trees after rematerialization of indirect loads from autos");
 
    }
 
@@ -1113,7 +1114,7 @@ void TR_CopyPropagation::commonIndirectLoadsFromAutos()
       }
 
    if (trace())
-      comp()->dumpMethodTrees("Trees after commoning of indirect loads from autos");
+      comp()->dumpMethodTrees(comp()->getLogger(), "Trees after commoning of indirect loads from autos");
 
    }
 

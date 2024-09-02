@@ -49,6 +49,7 @@
 #include "infra/CfgNode.hpp"
 #include "optimizer/DataFlowAnalysis.hpp"
 #include "ras/Debug.hpp"
+#include "ras/Logger.hpp"
 
 class TR_Structure;
 namespace TR { class Optimizer; }
@@ -668,7 +669,7 @@ TR_OSRLiveVariableInformation::findUseOfLocal(TR::Node *node, int32_t blockNum,
       if (comp()->getOption(TR_TraceOSR))
          {
          traceMsg(comp(), "liveSymbols introduced by real uses at OSRPoint node n%dn:", node->getGlobalIndex());
-         liveSymbols->print(comp());
+         liveSymbols->print(comp()->getLogger(), comp());
          traceMsg(comp(), "\n");
          }
 
@@ -716,7 +717,7 @@ TR_OSRLiveVariableInformation::buildLiveSymbolsBitVector(TR_OSRMethodData *osrMe
       if (comp()->getOption(TR_TraceOSR))
          {
          traceMsg(comp(), "definingMap for symRef #%d\n", symRefNumber);
-         definingSymbols->print(comp());
+         definingSymbols->print(comp()->getLogger(), comp());
          traceMsg(comp(), "\n");
          }
       TR_BitVectorIterator it(*definingSymbols);

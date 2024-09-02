@@ -27,6 +27,7 @@
 #include "infra/Assert.hpp"
 #include "objectfmt/FunctionCallData.hpp"
 #include "objectfmt/JitCodeRXObjectFormat.hpp"
+#include "ras/Logger.hpp"
 #include "runtime/CodeCache.hpp"
 #include "runtime/CodeCacheManager.hpp"
 #include "runtime/Runtime.hpp"
@@ -38,14 +39,14 @@ OMR::Z::JitCodeRXObjectFormat::emitFunctionCall(TR::FunctionCallData &data)
    TR::SymbolReference *callSymRef = data.methodSymRef;
    TR::CodeGenerator *cg = data.cg;
    TR::Node *callNode = data.callNode;
-   
+
 
    if (callSymRef == NULL)
       {
       TR_ASSERT_FATAL_WITH_NODE(callNode, data.runtimeHelperIndex > 0, "GlobalFunctionCallData does not contain symbol reference for call or valid TR_RuntimeHelper.");
       callSymRef = cg->symRefTab()->findOrCreateRuntimeHelper(data.runtimeHelperIndex, false, false, false);
       }
-   
+
    uintptr_t targetAddress = data.targetAddress ? data.targetAddress : reinterpret_cast<uintptr_t>(callSymRef->getMethodAddress());
 
    TR_ASSERT_FATAL_WITH_NODE(callNode, targetAddress != NULL, "Unable to make a call as targetAddress for the Call is not found.");
@@ -56,7 +57,7 @@ OMR::Z::JitCodeRXObjectFormat::emitFunctionCall(TR::FunctionCallData &data)
       {
       cg->comp()->failCompilation<TR::CompilationException>("Could not allocate global function data");
       }
-	
+
    TR_ASSERT_FATAL_WITH_NODE(callNode, cg->canUseRelativeLongInstructions(reinterpret_cast<int64_t>(ccGlobalFunctionDataAddress)), "ccGlobalFunctionDataAddress is outside relative immediate range.");
    ccGlobalFunctionDataAddress->address = targetAddress;
 
@@ -68,8 +69,8 @@ OMR::Z::JitCodeRXObjectFormat::emitFunctionCall(TR::FunctionCallData &data)
 
    if (data.entryPointReg == NULL)
       data.entryPointReg = data.returnAddressReg;
-   
-   data.out_loadInstr = generateRILInstruction(cg, TR::InstOpCode::LGRL, callNode, data.entryPointReg, reinterpret_cast<void *>(ccGlobalFunctionDataAddress), data.prevInstr);   
+
+   data.out_loadInstr = generateRILInstruction(cg, TR::InstOpCode::LGRL, callNode, data.entryPointReg, reinterpret_cast<void *>(ccGlobalFunctionDataAddress), data.prevInstr);
 
    data.out_callInstr = generateRRInstruction(cg, TR::InstOpCode::BASR, callNode, data.returnAddressReg, data.entryPointReg, data.out_loadInstr);
 
@@ -94,7 +95,7 @@ OMR::Z::JitCodeRXObjectFormat::encodeFunctionCall(TR::FunctionCallData &data)
       TR_ASSERT_FATAL_WITH_NODE(callNode, data.runtimeHelperIndex > 0, "GlobalFunctionCallData does not contain symbol reference for call or valid TR_RuntimeHelper");
       callSymRef = cg->symRefTab()->findOrCreateRuntimeHelper(data.runtimeHelperIndex, false, false, false);
       }
-   
+
    uintptr_t targetAddress = data.targetAddress != NULL ? data.targetAddress : reinterpret_cast<uintptr_t>(callSymRef->getMethodAddress());
 
    uint8_t *cursor = data.bufferAddress;
@@ -125,19 +126,19 @@ OMR::Z::JitCodeRXObjectFormat::encodeFunctionCall(TR::FunctionCallData &data)
    }
 
 uint8_t *
-OMR::Z::JitCodeRXObjectFormat::printEncodedFunctionCall(TR::FILE *pOutFile, TR::FunctionCallData &data)
+OMR::Z::JitCodeRXObjectFormat::printEncodedFunctionCall(TR::Logger *log, TR::FunctionCallData &data)
    {
    uint8_t *bufferPos = data.bufferAddress;
    TR_Debug *debug = data.cg->getDebug();
 
    uintptr_t ccFunctionCallDataAddress = static_cast<uintptr_t>(*(reinterpret_cast<int32_t*>(bufferPos + sizeof(int16_t))) * 2) + reinterpret_cast<uintptr_t>(bufferPos);
-   debug->printPrefix(pOutFile, NULL, bufferPos, 6);
-   trfprintf(pOutFile, "LGRL \tGPR14, <%p>\t# Target Address = <%p>.",
-                        ccFunctionCallDataAddress, *reinterpret_cast<uint8_t *>(ccFunctionCallDataAddress));
+   debug->printPrefix(log, NULL, bufferPos, 6);
+   log->printf("LGRL \tGPR14, <%p>\t# Target Address = <%p>.",
+               ccFunctionCallDataAddress, *reinterpret_cast<uint8_t *>(ccFunctionCallDataAddress));
    bufferPos += 6;
 
-   debug->printPrefix(pOutFile, NULL, bufferPos, 2);
-   trfprintf(pOutFile, "BASR \tGPR_14, GPR14");
+   debug->printPrefix(log, NULL, bufferPos, 2);
+   log->prints("BASR \tGPR_14, GPR14");
    bufferPos += 2;
 
    return bufferPos;
