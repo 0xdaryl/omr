@@ -60,6 +60,7 @@
 #include "infra/Bit.hpp"
 #include "ras/Debug.hpp"
 #include "ras/Delimiter.hpp"
+#include "ras/Logger.hpp"
 #include "runtime/Runtime.hpp"
 #include "z/codegen/BinaryAnalyser.hpp"
 #include "z/codegen/BinaryCommutativeAnalyser.hpp"
@@ -475,10 +476,10 @@ findPreviousAGIDef(TR::Instruction* prev,uint32_t searchLimit,TR::Register *useA
    TR::Instruction *curInsn = prev;
    TR_ASSERT(useA ,"null\n");
    TR_ASSERT(prev,"prev is null\n");
-   if(trace)traceMsg(comp, "in find at %p, looking for %p for %d\n",prev,useA,searchLimit);
+   if (trace) comp->getLogger()->printf("in find at %p, looking for %p for %d\n",prev,useA,searchLimit);
    while(searchLimit-- && curInsn)
       {
-      if(trace)traceMsg(comp, "Looking at %p %d\n",curInsn,searchLimit);
+      if (trace) comp->getLogger()->printf("Looking at %p %d\n",curInsn,searchLimit);
       TR::InstOpCode op = curInsn->getOpCode();
       if(op.isAdmin() || op.isLabel())
          {
@@ -487,13 +488,13 @@ findPreviousAGIDef(TR::Instruction* prev,uint32_t searchLimit,TR::Register *useA
       else if(!op.hasBypass() && !noAGI(op) &&
             (useA && curInsn->defsRegister(useA)))
          {
-         if(trace)traceMsg(comp, "Def found:%p\n",curInsn);
+         if(trace)comp->getLogger()->printf("Def found:%p\n",curInsn);
          return curInsn;
          }
 
       curInsn = curInsn->getPrev();
       }
-   //traceMsg(comp, "none found\n");
+   //comp->getLogger()->prints("none found\n");
    return NULL;
    }
 
@@ -1733,7 +1734,8 @@ genericRotateAndInsertHelper(TR::Node * node, TR::CodeGenerator * cg)
             msBit = shiftMsBit;
          else
             {
-            traceMsg(comp, "Cannot use RISBG, number could be negative, no sign extension available for RISBG\n");
+            if (comp->getOption(TR_TraceCG))
+               comp->getLogger()->prints("Cannot use RISBG, number could be negative, no sign extension available for RISBG\n");
             return NULL;
             }
          }
@@ -1742,9 +1744,10 @@ genericRotateAndInsertHelper(TR::Node * node, TR::CodeGenerator * cg)
 
       if (comp->getOption(TR_TraceCG))
          {
-         traceMsg(comp,"[%p] and/sh[r,l] => rotated-and-insert: tZeros %d, lZeros %d, popCnt %d\n", node, tZeros, lZeros, popCnt);
-         traceMsg(comp,"\t               => rotated-and-insert: shiftMsBit %d, shiftLsBit %d \n", shiftMsBit, shiftLsBit);
-         traceMsg(comp,"\t               => rotated-and-insert: msBit %d, lsBit %d \n", msBit, lsBit);
+         TR::Logger *log = comp->getLogger();
+         log->printf("[%p] and/sh[r,l] => rotated-and-insert: tZeros %d, lZeros %d, popCnt %d\n", node, tZeros, lZeros, popCnt);
+         log->printf("\t               => rotated-and-insert: shiftMsBit %d, shiftLsBit %d \n", shiftMsBit, shiftLsBit);
+         log->printf("\t               => rotated-and-insert: msBit %d, lsBit %d \n", msBit, lsBit);
          }
 
       // Make sure we have consecutive 1's
@@ -1850,8 +1853,8 @@ OMR::Z::TreeEvaluator::tryToReplaceShiftLandWithRotateInstruction(TR::Node * nod
 
       if (comp->getOption(TR_TraceCG))
          {
-         traceMsg(comp,"[%p] land => rotated-and-insert: tZeros %d, lZeros %d, popCnt %d\n", node, tZeros, lZeros, popCnt);
-         traceMsg(comp,"          => rotated-and-insert: lOnes %d, tOnes %d\n", lOnes, tOnes);
+         comp->getLogger()->printf("[%p] land => rotated-and-insert: tZeros %d, lZeros %d, popCnt %d\n", node, tZeros, lZeros, popCnt);
+         comp->getLogger()->printf("          => rotated-and-insert: lOnes %d, tOnes %d\n", lOnes, tOnes);
          }
 
       bool doTransformation = false;
@@ -2243,7 +2246,8 @@ OMR::Z::TreeEvaluator::dualMulEvaluator(TR::Node * node, TR::CodeGenerator * cg)
       TR::Node *lumulhNode;
       if (!needsUnsignedHighMulOnly)
          {
-         traceMsg(comp, "Found lmul/lumulh for node = %p\n", node);
+         if (comp->getOption(TR_TraceCG))
+            comp->getLogger()->printf("Found lmul/lumulh for node = %p\n", node);
          lmulNode = (node->getOpCodeValue() == TR::lmul) ? node : node->getChild(2);
          lumulhNode = lmulNode->getChild(2);
          TR_ASSERT((lumulhNode->getReferenceCount() > 1) && (lmulNode->getReferenceCount() > 1),

@@ -24,6 +24,7 @@
 
 #include <string.h>
 #include "infra/Assert.hpp"
+#include "ras/Logger.hpp"
 
 namespace TR { class Compilation; }
 
@@ -49,21 +50,22 @@ class Delimiter
 
       if (_trace)
          {
+         TR::Logger *log = _comp->getLogger();
          if (!comment0)
-            traceMsg(_comp,"<%s>\n",_tag);
+            log->printf("<%s>\n",_tag);
          else
             {
             if (!comment1)
-               traceMsg(_comp, "<%s %s>\n", _tag, comment0);
+               log->printf("<%s %s>\n", _tag, comment0);
             else
                {
-               traceMsg(_comp, "<%s\n", _tag);
-               traceMsg(_comp, "\t%s\n", comment0);
-               traceMsg(_comp, "\t%s", comment1);
+               log->printf("<%s\n", _tag);
+               log->printf("\t%s\n", comment0);
+               log->printf("\t%s", comment1);
                if (comment2)
-                  traceMsg(_comp, "\n\t%s>\n", comment2);
+                  log->printf("\n\t%s>\n", comment2);
                else
-                  traceMsg(_comp, ">\n");
+                  log->prints(">\n");
                }
             }
          }
@@ -72,7 +74,7 @@ class Delimiter
    ~Delimiter()
       {
       if (_trace)
-         traceMsg(_comp,"</%s>\n",_tag);
+         _comp->getLogger()->printf("</%s>\n",_tag);
       }
 
    protected:

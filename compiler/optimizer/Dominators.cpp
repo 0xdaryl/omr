@@ -48,6 +48,8 @@ TR_Dominators::TR_Dominators(TR::Compilation *c, bool post) :
    {
    LexicalTimer tlex("TR_Dominators::TR_Dominators", _compilation->phaseTimer());
 
+   TR::Logger *log = comp()->getLogger();
+
    _postDominators = post;
    _isValid = true;
    _topDfNum = 0;
@@ -61,8 +63,8 @@ TR_Dominators::TR_Dominators(TR::Compilation *c, bool post) :
 
    if (trace())
       {
-      traceMsg(comp(), "Starting %sdominator calculation\n", _postDominators ? "post-" : "");
-      traceMsg(comp(), "   Number of nodes is %d\n", _numNodes-1);
+      log->printf("Starting %sdominator calculation\n", _postDominators ? "post-" : "");
+      log->printf("   Number of nodes is %d\n", _numNodes-1);
       }
 
    if (_postDominators)
@@ -80,7 +82,7 @@ TR_Dominators::TR_Dominators(TR::Compilation *c, bool post) :
       TR::Block *dominator = getInfo(info._idom)._block;
       _dominators[dominated->getNumber()] = dominator;
       if (trace())
-         traceMsg(comp(), "   %sDominator of block_%d is block_%d\n", _postDominators ? "post-" : "",
+         log->printf("   %sDominator of block_%d is block_%d\n", _postDominators ? "post-" : "",
                                       dominated->getNumber(), dominator->getNumber());
       }
 
@@ -108,7 +110,7 @@ TR_Dominators::TR_Dominators(TR::Compilation *c, bool post) :
          {
          _isValid = false;
          if (trace())
-            traceMsg(comp(), "Some blocks are not reachable from exit. Post-dominator info is invalid.\n");
+            log->prints("Some blocks are not reachable from exit. Post-dominator info is invalid.\n");
          return;
          }
       else
@@ -123,7 +125,7 @@ TR_Dominators::TR_Dominators(TR::Compilation *c, bool post) :
    #endif
 
    if (trace())
-      traceMsg(comp(), "End of %sdominator calculation\n", _postDominators ? "post-" : "");
+      log->printf("End of %sdominator calculation\n", _postDominators ? "post-" : "");
 
    // Release no-longer-used data
    _info.clear();
@@ -153,6 +155,7 @@ int TR_Dominators::dominates(TR::Block *block, TR::Block *other)
 
 void TR_Dominators::findDominators(TR::Block *start)
    {
+   TR::Logger *log = comp()->getLogger();
    int32_t i;
 
    // Initialize the BBInfo structure for the first (dummy) entry
@@ -162,8 +165,8 @@ void TR_Dominators::findDominators(TR::Block *start)
 
    if (trace())
       {
-      traceMsg(comp(), "CFG before initialization:\n");
-      comp()->getDebug()->print(comp()->getLogger(), _cfg);
+      log->prints("CFG before initialization:\n");
+      comp()->getDebug()->print(log, _cfg);
       }
 
    // Initialize the BBInfo structures for the real blocks
@@ -172,11 +175,11 @@ void TR_Dominators::findDominators(TR::Block *start)
 
    if (trace())
       {
-      traceMsg(comp(), "CFG after initialization:\n");
-      comp()->getDebug()->print(comp()->getLogger(), _cfg);
-      traceMsg(comp(), "\nInfo after initialization:\n");
+      log->prints("CFG after initialization:\n");
+      comp()->getDebug()->print(log, _cfg);
+      log->prints("\nInfo after initialization:\n");
       for (i = 0; i <= _topDfNum; i++)
-         getInfo(i).print(comp()->getLogger(), comp()->fe());
+         getInfo(i).print(log, comp()->fe());
       }
 
    for (i = _topDfNum; i > 1; i--)
@@ -246,6 +249,8 @@ void TR_Dominators::findDominators(TR::Block *start)
 
 void TR_Dominators::initialize(TR::Block *start, BBInfo *nullParent) {
 
+   TR::Logger *log = comp()->getLogger();
+
    // Set up to start at the start block
    //
    TR::deque<StackInfo> stack(comp()->allocator());
@@ -278,8 +283,7 @@ void TR_Dominators::initialize(TR::Block *start, BBInfo *nullParent) {
             {
             if (trace())
                {
-               traceMsg(
-                  comp(),
+               log->printf(
                   "Insert block_%d at level %d\n",
                   toBlock( _postDominators ? (*next)->getFrom() : (*next)->getTo() )->getNumber(),
                   stack.size()
@@ -292,7 +296,7 @@ void TR_Dominators::initialize(TR::Block *start, BBInfo *nullParent) {
          }
 
       if (trace())
-         traceMsg(comp(), "At level %d block_%d becomes block_%d\n", stack.size(), block->getNumber(), _topDfNum);
+         log->printf("At level %d block_%d becomes block_%d\n", stack.size(), block->getNumber(), _topDfNum);
 
       block->setVisitCount(_visitCount);
       _dfNumbers[block->getNumber()] = _topDfNum++;
@@ -316,8 +320,7 @@ void TR_Dominators::initialize(TR::Block *start, BBInfo *nullParent) {
          {
          if (trace())
             {
-            traceMsg(
-               comp(),
+            log->printf(
                "Insert block_%d at level %d\n",
                toBlock(_postDominators ? (*next)->getFrom() : (*next)->getTo())->getNumber(),
                stack.size()
@@ -335,8 +338,7 @@ void TR_Dominators::initialize(TR::Block *start, BBInfo *nullParent) {
          {
          if (trace())
             {
-            traceMsg(
-               comp(),
+            log->printf(
                "Insert block_%d at level %d\n",
                toBlock( _postDominators ? (*firstExceptionSuccessor)->getFrom() : (*firstExceptionSuccessor)->getTo())->getNumber(),
                stack.size()
@@ -352,8 +354,7 @@ void TR_Dominators::initialize(TR::Block *start, BBInfo *nullParent) {
          {
          if (trace())
             {
-            traceMsg(
-               comp(),
+            log->printf(
                "Insert block_%d at level %d\n",
                toBlock( _postDominators ? (*firstSuccessor)->getFrom() : (*firstSuccessor)->getTo() )->getNumber(),
                stack.size()
@@ -484,22 +485,23 @@ void TR_PostDominators::findControlDependents()
 
    if (trace())
       {
+      TR::Logger *log = comp()->getLogger();
       for (i = 0; i < nextNodeNumber; i++)
          {
          BitVector::Cursor cursor(*_directControlDependents[i]);
          cursor.SetToFirstOne();
-         traceMsg(comp(), "Block %d controls blocks: {", i);
+         log->printf("Block %d controls blocks: {", i);
          if (cursor.Valid())
             {
             int32_t b = cursor;
-            traceMsg(comp(),"%d", b);
+            log->printf("%d", b);
             while(cursor.SetToNextOne())
                {
                b = cursor;
-               traceMsg(comp(),", %d", b);
+               log->printf(", %d", b);
                }
             }
-         traceMsg(comp(), "} \t\t%d blocks in total\n", numberOfBlocksControlled(i));
+         log->printf("} \t\t%d blocks in total\n", numberOfBlocksControlled(i));
          }
       }
    }
