@@ -47,6 +47,7 @@
 #include "infra/List.hpp"
 #include "ras/Debug.hpp"
 #include "ras/DebugCounter.hpp"
+#include "ras/Logger.hpp"
 #include "x/codegen/X86Instruction.hpp"
 #include "codegen/InstOpCode.hpp"
 #include "x/codegen/X86Register.hpp"
@@ -186,7 +187,7 @@ OMR::X86::RegisterDependencyConditions::RegisterDependencyConditions(
                if (prevPrevInstr)
                   {
                   if (comp->getOption(TR_TraceCG))
-                     traceMsg(comp, "Moving reg reg copy earlier (after %p) in %s\n", prevPrevInstr, comp->signature());
+                     comp->getLogger()->trprintf("Moving reg reg copy earlier (after %p) in %s\n", prevPrevInstr, comp->signature());
                   placeToAdd = prevPrevInstr;
                   }
                }
