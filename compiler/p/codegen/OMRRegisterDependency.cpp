@@ -867,7 +867,7 @@ void OMR::Power::RegisterDependencyGroup::assignRegisters(TR::Instruction   *cur
             // and assigned to a real register in OOL path. We protected the backing store when doing
             // the reverse spill so we could re-spill to the same slot now
             if (comp->getOption(TR_TraceCG))
-               traceMsg(comp,"\nOOL: Found register spilled in main line and re-assigned inside OOL");
+               comp->getLogger()->prints("\nOOL: Found register spilled in main line and re-assigned inside OOL");
             TR::Node            *currentNode = currentInstruction->getNode();
             TR::RealRegister    *assignedReg = toRealRegister(virtReg->getAssignedRegister());
             TR::MemoryReference *tempMR = TR::MemoryReference::createWithSymRef(cg, currentNode, (TR::SymbolReference*)virtReg->getBackingStorage()->getSymbolReference(), sizeof(uintptr_t));
