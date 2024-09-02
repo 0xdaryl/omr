@@ -49,6 +49,7 @@
 #include "infra/Assert.hpp"
 #include "infra/List.hpp"
 #include "ras/Debug.hpp"
+#include "ras/Logger.hpp"
 #include "x/codegen/X86Instruction.hpp"
 #include "codegen/InstOpCode.hpp"
 #include "x/codegen/X86SystemLinkage.hpp"
@@ -961,13 +962,13 @@ TR::AMD64ABILinkage::mapIncomingParms(
          parmCursor->setParameterOffset(stackIndex);
 
          if (comp()->getOption(TR_TraceCG))
-            traceMsg(comp(), "mapIncomingParms setParameterOffset %d for param symbol (reg param without home location) %p, hasToBeOnStack() %d\n", parmCursor->getParameterOffset(), parmCursor, hasToBeOnStack(parmCursor));
+            comp()->getLogger()->trprintf("mapIncomingParms setParameterOffset %d for param symbol (reg param without home location) %p, hasToBeOnStack() %d\n", parmCursor->getParameterOffset(), parmCursor, hasToBeOnStack(parmCursor));
          }
       else if (parmCursor->getLinkageRegisterIndex() >=0 && parmCursor->getAssignedGlobalRegisterIndex() >= 0)
          {
          //parmCursor->setDontHaveStackSlot(0); // this is a hack , so as we could print stack layout table in createPrologue
          if (comp()->getOption(TR_TraceCG))
-            traceMsg(comp(), "mapIncomingParms no need to set parm %p, for it has got register %d assigned\n", parmCursor, parmCursor->getAssignedGlobalRegisterIndex());
+            comp()->getLogger()->trprintf("mapIncomingParms no need to set parm %p, for it has got register %d assigned\n", parmCursor, parmCursor->getAssignedGlobalRegisterIndex());
          }
       }
    }
@@ -1048,7 +1049,7 @@ TR::AMD64SystemLinkage::layoutParm(
          layoutResult.abstract |= TR::parmLayoutResult::IN_LINKAGE_REG_PAIR;
 
       if (comp()->getOption(TR_TraceCG))
-         traceMsg(comp(), "layout param node %p in register\n", parmNode);
+         comp()->getLogger()->trprintf("layout param node %p in register\n", parmNode);
 
       if (!getProperties().getCallerFrameAllocatesSpaceForLinkageRegisters())
          return 0;
@@ -1058,7 +1059,7 @@ LAYOUT_ON_STACK:
    layoutResult.abstract |= TR::parmLayoutResult::ON_STACK;
    int32_t align = layoutTypeOnStack(parmNode->getDataType(), dataCursor, layoutResult);
    if (comp()->getOption(TR_TraceCG))
-      traceMsg(comp(), "layout param node %p on stack\n", parmNode);
+      comp()->getLogger()->trprintf("layout param node %p on stack\n", parmNode);
    return align;
    }
 
@@ -1083,7 +1084,7 @@ TR::AMD64SystemLinkage::layoutParm(
          layoutResult.abstract |= TR::parmLayoutResult::IN_LINKAGE_REG_PAIR;
 
       if (comp()->getOption(TR_TraceCG))
-         traceMsg(comp(), "layout param symbol %p in register\n", parmSymbol);
+         comp()->getLogger()->trprintf("layout param symbol %p in register\n", parmSymbol);
 
       if (!getProperties().getCallerFrameAllocatesSpaceForLinkageRegisters())
          return 0;
@@ -1093,7 +1094,7 @@ LAYOUT_ON_STACK:
    layoutResult.abstract |= TR::parmLayoutResult::ON_STACK;
    int32_t align = layoutTypeOnStack(parmSymbol->getDataType(), dataCursor, layoutResult);
    if (comp()->getOption(TR_TraceCG))
-      traceMsg(comp(), "layout param symbol %p on stack\n", parmSymbol);
+      comp()->getLogger()->trprintf("layout param symbol %p on stack\n", parmSymbol);
    return align;
    }
 
@@ -1108,7 +1109,7 @@ TR::AMD64SystemLinkage::setUpStackSizeForCallNode(TR::Node* node)
    int32_t sizeOfOutGoingArgs = 0;
 
    if (comp()->getOption(TR_TraceCG))
-      traceMsg(comp(), "setUpStackSizeForCallNode for call node %p\n", node);
+      comp()->getLogger()->trprintf("setUpStackSizeForCallNode for call node %p\n", node);
 
    for (int32_t i= node->getFirstArgumentIndex(); i<node->getNumChildren(); ++i)
       {
@@ -1123,13 +1124,13 @@ TR::AMD64SystemLinkage::setUpStackSizeForCallNode(TR::Node* node)
       {
       cg()->setLargestOutgoingArgSize(sizeOfOutGoingArgs);
       if (comp()->getOption(TR_TraceCG))
-         traceMsg(comp(), "setUpStackSizeForCallNode setLargestOutgoingArgSize %d(for call node %p)\n", sizeOfOutGoingArgs, node);
+         comp()->getLogger()->trprintf("setUpStackSizeForCallNode setLargestOutgoingArgSize %d(for call node %p)\n", sizeOfOutGoingArgs, node);
       }
 
    if (alignment > _properties.getOutgoingArgAlignment())
       {
       _properties.setOutgoingArgAlignment(alignment);
       if (comp()->getOption(TR_TraceCG))
-         traceMsg(comp(), "setUpStackSizeForCallNode setOutgoingArgAlignment %d(for call node %p)\n", alignment, node);
+         comp()->getLogger()->trprintf("setUpStackSizeForCallNode setOutgoingArgAlignment %d(for call node %p)\n", alignment, node);
       }
    }

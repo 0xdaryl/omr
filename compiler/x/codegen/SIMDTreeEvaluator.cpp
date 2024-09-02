@@ -30,6 +30,7 @@
 #include "infra/Assert.hpp"
 #include "x/codegen/X86Instruction.hpp"
 #include "codegen/InstOpCode.hpp"
+#include "ras/Logger.hpp"
 
 namespace TR { class Instruction; }
 
@@ -117,6 +118,7 @@ TR::Register* OMR::X86::TreeEvaluator::maskStoreEvaluator(TR::Node* node, TR::Co
 
 TR::Register* OMR::X86::TreeEvaluator::SIMDloadEvaluator(TR::Node* node, TR::CodeGenerator* cg)
    {
+   TR::Compilation *comp = cg->comp();
    TR::MemoryReference* tempMR = generateX86MemoryReference(node, cg);
    tempMR = ConvertToPatchableMemoryReference(tempMR, node, cg);
    TR::Register* resultReg = cg->allocateRegister(TR_VRF);
@@ -149,12 +151,12 @@ TR::Register* OMR::X86::TreeEvaluator::SIMDloadEvaluator(TR::Node* node, TR::Cod
          }
       }
 
-   OMR::X86::Encoding encoding = opCode.getSIMDEncoding(&cg->comp()->target().cpu, node->getType().getVectorLength());
+   OMR::X86::Encoding encoding = opCode.getSIMDEncoding(&comp->target().cpu, node->getType().getVectorLength());
 
    if (node->getSize() != 16 && node->getSize() != 32 && node->getSize() != 64)
       {
-      if (cg->comp()->getOption(TR_TraceCG))
-         traceMsg(cg->comp(), "Unsupported fill size: Node = %p\n", node);
+      if (comp->getOption(TR_TraceCG))
+         comp->getLogger()->trprintf("Unsupported fill size: Node = %p\n", node);
       TR_ASSERT_FATAL(false, "Unsupported fill size");
       }
 
@@ -171,7 +173,7 @@ TR::Register* OMR::X86::TreeEvaluator::SIMDloadEvaluator(TR::Node* node, TR::Cod
       if (maskReg)
          {
          TR::InstOpCode andOpcode = TR::InstOpCode::PANDRegReg;
-         OMR::X86::Encoding andEncoding = andOpcode.getSIMDEncoding(&cg->comp()->target().cpu, node->getDataType().getVectorLength());
+         OMR::X86::Encoding andEncoding = andOpcode.getSIMDEncoding(&comp->target().cpu, node->getDataType().getVectorLength());
          TR_ASSERT_FATAL(andEncoding != OMR::X86::Bad, "No supported encoding method for 'and' opcode");
          generateRegRegInstruction(andOpcode.getMnemonic(), node, resultReg, maskReg, cg, andEncoding);
          }
@@ -189,6 +191,7 @@ TR::Register* OMR::X86::TreeEvaluator::SIMDloadEvaluator(TR::Node* node, TR::Cod
 
 TR::Register* OMR::X86::TreeEvaluator::SIMDstoreEvaluator(TR::Node* node, TR::CodeGenerator* cg)
    {
+   TR::Compilation *comp = cg->comp();
    TR::Node* valueNode = node->getChild(node->getOpCode().isIndirect() ? 1 : 0);
    TR::MemoryReference* tempMR = generateX86MemoryReference(node, cg);
    tempMR = ConvertToPatchableMemoryReference(tempMR, node, cg);
@@ -200,20 +203,20 @@ TR::Register* OMR::X86::TreeEvaluator::SIMDstoreEvaluator(TR::Node* node, TR::Co
    switch (node->getSize())
       {
       case 16:
-         if (cg->comp()->target().cpu.supportsAVX())
+         if (comp->target().cpu.supportsAVX())
             encoding = VEX_L128;
          break;
       case 32:
-         TR_ASSERT_FATAL(cg->comp()->target().cpu.supportsAVX(), "256-bit vstore requires AVX");
+         TR_ASSERT_FATAL(comp->target().cpu.supportsAVX(), "256-bit vstore requires AVX");
          encoding = VEX_L256;
          break;
       case 64:
-          TR_ASSERT_FATAL(cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F), "512-bit vstore requires AVX-512");
+          TR_ASSERT_FATAL(comp->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F), "512-bit vstore requires AVX-512");
          encoding = EVEX_L512;
          break;
       default:
-         if (cg->comp()->getOption(TR_TraceCG))
-            traceMsg(cg->comp(), "Unsupported fill size: Node = %p\n", node);
+         if (comp->getOption(TR_TraceCG))
+            comp->getLogger()->trprintf("Unsupported fill size: Node = %p\n", node);
          TR_ASSERT_FATAL(false, "Unsupported fill size");
          break;
       }
@@ -229,6 +232,7 @@ TR::Register* OMR::X86::TreeEvaluator::SIMDstoreEvaluator(TR::Node* node, TR::Co
 
 TR::Register* OMR::X86::TreeEvaluator::SIMDsplatsEvaluator(TR::Node* node, TR::CodeGenerator* cg)
    {
+   TR::Compilation *comp = cg->comp();
    TR::Node* childNode = node->getChild(0);
    TR::Register* childReg = cg->evaluate(childNode);
    TR::DataType et = node->getDataType().getVectorElementType();
@@ -244,7 +248,7 @@ TR::Register* OMR::X86::TreeEvaluator::SIMDsplatsEvaluator(TR::Node* node, TR::C
          generateRegRegInstruction(TR::InstOpCode::MOVDRegReg4, node, resultReg, childReg, cg);
          break;
       case TR::Int64:
-         if (cg->comp()->target().is32Bit())
+         if (comp->target().is32Bit())
             {
             TR::Register* tempVectorReg = cg->allocateRegister(TR_VRF);
             generateRegRegInstruction(TR::InstOpCode::MOVDRegReg4, node, tempVectorReg, childReg->getHighOrder(), cg);
@@ -263,8 +267,8 @@ TR::Register* OMR::X86::TreeEvaluator::SIMDsplatsEvaluator(TR::Node* node, TR::C
          generateRegRegInstruction(TR::InstOpCode::MOVSDRegReg, node, resultReg, childReg, cg);
          break;
       default:
-         if (cg->comp()->getOption(TR_TraceCG))
-            traceMsg(cg->comp(), "Unsupported data type, Node = %p\n", node);
+         if (comp->getOption(TR_TraceCG))
+            comp->getLogger()->trprintf("Unsupported data type, Node = %p\n", node);
          TR_ASSERT_FATAL(false, "Unsupported data type");
          break;
       }
@@ -287,14 +291,14 @@ TR::Register* OMR::X86::TreeEvaluator::SIMDsplatsEvaluator(TR::Node* node, TR::C
          break;
       case TR::VectorLength256:
          {
-         TR_ASSERT_FATAL(cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX2), "256-bit vsplats requires AVX2");
+         TR_ASSERT_FATAL(comp->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX2), "256-bit vsplats requires AVX2");
          TR::InstOpCode opcode = broadcast64 ? TR::InstOpCode::VBROADCASTSDYmmYmm : TR::InstOpCode::VBROADCASTSSRegReg;
-         generateRegRegInstruction(opcode.getMnemonic(), node, resultReg, resultReg, cg, opcode.getSIMDEncoding(&cg->comp()->target().cpu, TR::VectorLength256));
+         generateRegRegInstruction(opcode.getMnemonic(), node, resultReg, resultReg, cg, opcode.getSIMDEncoding(&comp->target().cpu, TR::VectorLength256));
          break;
          }
       case TR::VectorLength512:
          {
-         TR_ASSERT_FATAL(cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F), "512-bit vsplats requires AVX-512");
+         TR_ASSERT_FATAL(comp->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F), "512-bit vsplats requires AVX-512");
          TR::InstOpCode opcode = broadcast64 ? TR::InstOpCode::VBROADCASTSDZmmXmm : TR::InstOpCode::VBROADCASTSSRegReg;
          generateRegRegInstruction(opcode.getMnemonic(), node, resultReg, resultReg, cg, OMR::X86::EVEX_L512);
          break;

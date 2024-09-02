@@ -46,6 +46,7 @@
 #include "runtime/Runtime.hpp"
 #include "x/codegen/X86Instruction.hpp"
 #include "codegen/InstOpCode.hpp"
+#include "ras/Logger.hpp"
 
 class TR_OpaqueClassBlock;
 namespace TR { class Machine; }
@@ -795,8 +796,11 @@ OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(
       if (self()->getUnresolvedDataSnippet())
          {
          self()->getUnresolvedDataSnippet()->setAddressOfDataReference(cursor);
-         traceMsg(comp, "found unresolved shadow with NULL base object : data reference instruction=%p, cursor=%p\n",
-            self()->getUnresolvedDataSnippet()->getDataReferenceInstruction(), cursor);
+         if (comp->getOption(TR_TraceCG))
+            {
+            comp->getLogger()->trprintf("found unresolved shadow with NULL base object : data reference instruction=%p, cursor=%p\n",
+               self()->getUnresolvedDataSnippet()->getDataReferenceInstruction(), cursor);
+            }
          }
 
       return cursor+4;

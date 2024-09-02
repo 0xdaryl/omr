@@ -58,6 +58,7 @@
 #include "infra/Assert.hpp"
 #include "infra/List.hpp"
 #include "ras/Debug.hpp"
+#include "ras/Logger.hpp"
 #include "x/codegen/OutlinedInstructions.hpp"
 #include "codegen/X86Instruction.hpp"
 #include "codegen/InstOpCode.hpp"
@@ -2071,7 +2072,7 @@ TR_RegisterAssignerState::createDependenciesFromRegisterState(TR_OutlinedInstruc
 
    if (comp->getOption(TR_TraceNonLinearRegisterAssigner))
       {
-      traceMsg(comp, "createDependenciesFromRegisterState : %d live registers: %d assigned, %d spilled\n",
+      comp->getLogger()->printf("createDependenciesFromRegisterState : %d live registers: %d assigned, %d spilled\n",
          numDeps,
          numDeps-_spilledRegistersList->size(),
          _spilledRegistersList->size());
@@ -2111,8 +2112,8 @@ TR_RegisterAssignerState::createDependenciesFromRegisterState(TR_OutlinedInstruc
 
                      if (comp->getOption(TR_TraceNonLinearRegisterAssigner))
                         {
-                        traceMsg(comp, "Adjusting up register use counts of reg %p (fuc=%d:tuc=%d:mergeFuc=%d) by %d\n",
-                        		(*iter)->virtReg, (*iter)->virtReg->getFutureUseCount(), (*iter)->virtReg->getTotalUseCount(), (*iter)->mergeFuc, (*iter)->useCount);
+                        comp->getLogger()->printf("Adjusting up register use counts of reg %p (fuc=%d:tuc=%d:mergeFuc=%d) by %d\n",
+                           (*iter)->virtReg, (*iter)->virtReg->getFutureUseCount(), (*iter)->virtReg->getTotalUseCount(), (*iter)->mergeFuc, (*iter)->useCount);
                         }
                      }
                   }
@@ -2132,7 +2133,7 @@ TR_RegisterAssignerState::createDependenciesFromRegisterState(TR_OutlinedInstruc
 
          if (comp->getOption(TR_TraceNonLinearRegisterAssigner))
             {
-            traceMsg(comp, "   create ASSIGNED dependency: virtual %p -> %s\n",
+            comp->getLogger()->trprintf("   create ASSIGNED dependency: virtual %p -> %s\n",
                virtReg,
                _machine->getDebug()->getName(realReg));
             }
@@ -2156,9 +2157,9 @@ TR_RegisterAssignerState::createDependenciesFromRegisterState(TR_OutlinedInstruc
 
       if (comp->getOption(TR_TraceNonLinearRegisterAssigner))
          {
-         traceMsg(comp, "   create SPILLED dependency: virtual %p -> backing storage %p\n",
-        		 *iter,
-        		 (*iter)->getBackingStorage());
+         comp->getLogger()->trprintf("   create SPILLED dependency: virtual %p -> backing storage %p\n",
+            *iter,
+            (*iter)->getBackingStorage());
          }
       }
 
@@ -2232,7 +2233,7 @@ void TR_RegisterAssignerState::dump()
 
    if (comp->getOption(TR_TraceNonLinearRegisterAssigner))
       {
-      traceMsg(comp, "\nREGISTER ASSIGNER STATE\n=======================\n\nAssigned Live Registers:\n");
+      comp->getLogger()->prints("\nREGISTER ASSIGNER STATE\n=======================\n\nAssigned Live Registers:\n");
 
       int32_t i;
       int32_t endReg = TR::RealRegister::LastXMMR;
@@ -2240,17 +2241,17 @@ void TR_RegisterAssignerState::dump()
          {
          if (_registerFile[i]->getState() == TR::RealRegister::Assigned)
             {
-            traceMsg(comp, "         %s -> %s\n",
+            comp->getLogger()->printf("         %s -> %s\n",
                comp->getDebug()->getName(_registerFile[i]->getAssignedRegister()),
                comp->getDebug()->getName(_registerFile[i]));
             }
          }
 
-      traceMsg(comp, "\nSpilled Registers:\n");
+      comp->getLogger()->prints("\nSpilled Registers:\n");
       for(auto iter = _spilledRegistersList->begin(); iter != _spilledRegistersList->end(); ++iter)
-         traceMsg(comp, "         %s\n", comp->getDebug()->getName(*iter));
+         comp->getLogger()->printf("         %s\n", comp->getDebug()->getName(*iter));
 
-      traceMsg(comp, "\n=======================\n");
+      comp->getLogger()->prints("\n=======================\n");
       }
    }
 
@@ -2263,18 +2264,18 @@ void OMR::X86::Machine::adjustRegisterUseCountsUp(TR::list<OMR::RegisterUsage*> 
       {
       if (comp->getOption(TR_TraceNonLinearRegisterAssigner))
          {
-         traceMsg(comp, "Adjusting UP register use counts of reg %p (fuc=%d:tuc=%d:adjustFuture=%d) by %d -> ",
-        		 (*iter)->virtReg, (*iter)->virtReg->getFutureUseCount(), (*iter)->virtReg->getTotalUseCount(), adjustFuture, (*iter)->useCount);
+         comp->getLogger()->trprintf("Adjusting UP register use counts of reg %p (fuc=%d:tuc=%d:adjustFuture=%d) by %d -> ",
+            (*iter)->virtReg, (*iter)->virtReg->getFutureUseCount(), (*iter)->virtReg->getTotalUseCount(), adjustFuture, (*iter)->useCount);
          }
 
       (*iter)->virtReg->incTotalUseCount((*iter)->useCount);
 
       if (adjustFuture)
-    	  (*iter)->virtReg->incFutureUseCount((*iter)->useCount);
+         (*iter)->virtReg->incFutureUseCount((*iter)->useCount);
 
       if (comp->getOption(TR_TraceNonLinearRegisterAssigner))
          {
-         traceMsg(comp, "(fuc=%d:tuc=%d)\n", (*iter)->virtReg->getFutureUseCount(), (*iter)->virtReg->getTotalUseCount());
+         comp->getLogger()->printf("(fuc=%d:tuc=%d)\n", (*iter)->virtReg->getFutureUseCount(), (*iter)->virtReg->getTotalUseCount());
          }
       }
    }
@@ -2289,8 +2290,8 @@ void OMR::X86::Machine::adjustRegisterUseCountsDown(TR::list<OMR::RegisterUsage*
       {
       if (comp->getOption(TR_TraceNonLinearRegisterAssigner))
          {
-         traceMsg(comp, "Adjusting DOWN register use counts of reg %p (fuc=%d:tuc=%d:adjustFuture=%d) by %d -> ",
-        		 (*iter)->virtReg, (*iter)->virtReg->getFutureUseCount(), (*iter)->virtReg->getTotalUseCount(), adjustFuture, (*iter)->useCount);
+         comp->getLogger()->trprintf("Adjusting DOWN register use counts of reg %p (fuc=%d:tuc=%d:adjustFuture=%d) by %d -> ",
+            (*iter)->virtReg, (*iter)->virtReg->getFutureUseCount(), (*iter)->virtReg->getTotalUseCount(), adjustFuture, (*iter)->useCount);
          }
 
       (*iter)->virtReg->decTotalUseCount((*iter)->useCount);
@@ -2300,7 +2301,7 @@ void OMR::X86::Machine::adjustRegisterUseCountsDown(TR::list<OMR::RegisterUsage*
 
       if (comp->getOption(TR_TraceNonLinearRegisterAssigner))
          {
-         traceMsg(comp, "(fuc=%d:tuc=%d)\n", (*iter)->virtReg->getFutureUseCount(), (*iter)->virtReg->getTotalUseCount());
+         comp->getLogger()->printf("(fuc=%d:tuc=%d)\n", (*iter)->virtReg->getFutureUseCount(), (*iter)->virtReg->getTotalUseCount());
          }
       }
    }
@@ -2336,8 +2337,8 @@ void OMR::X86::Machine::disassociateUnspilledBackingStorage()
                }
             else if (virtReg->getKind() == TR_VRF)
                {
-               size = self()->cg()->comp()->target().cpu.supportsAVX() ? 32 : 16;
-               size = self()->cg()->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F) ? 64 : size;
+               size = comp->target().cpu.supportsAVX() ? 32 : 16;
+               size = comp->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F) ? 64 : size;
                }
             else
                {
@@ -2346,7 +2347,10 @@ void OMR::X86::Machine::disassociateUnspilledBackingStorage()
             self()->cg()->freeSpill(location, size, virtReg->isSpilledToSecondHalf()? 4:0);
             virtReg->setBackingStorage(NULL);
 
-            traceMsg(self()->cg()->comp(), "disassociating backing storage %p from assigned virtual %p\n", location, virtReg);
+            if (comp->getOption(TR_TraceNonLinearRegisterAssigner))
+               {
+               comp->getLogger()->trprintf("disassociating backing storage %p from assigned virtual %p\n", location, virtReg);
+               }
             }
          }
       }
@@ -2369,7 +2373,7 @@ void OMR::X86::Machine::purgeDeadRegistersFromRegisterFile()
             _registerFile[i]->setState(TR::RealRegister::Free);
             }
 /*
-            traceMsg(comp, "         %s -> %s\n",
+            comp->getLogger()->printf("         %s -> %s\n",
                comp->getDebug()->getName(_registerFile[i]->getAssignedRegister()),
                comp->getDebug()->getName(_registerFile[i]));
 */
