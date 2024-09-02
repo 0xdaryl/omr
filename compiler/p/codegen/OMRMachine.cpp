@@ -59,6 +59,7 @@
 #include "p/codegen/PPCInstruction.hpp"
 #include "p/codegen/PPCOpsDefines.hpp"
 #include "ras/Debug.hpp"
+#include "ras/Logger.hpp"
 #include "env/IO.hpp"
 
 namespace TR { class AutomaticSymbol; }
@@ -1026,7 +1027,7 @@ TR::RealRegister *OMR::Power::Machine::reverseSpillState(TR::Instruction      *c
          spilledRegister->setBackingStorage(NULL);
          }
       }
-      
+
    TR::Register *tempIndexRegister = NULL;
    switch (rk)
       {
@@ -1988,7 +1989,7 @@ OMR::Power::Machine::decFutureUseCountAndUnlatch(TR::Register *virtualRegister)
          {
          if (trace)
             {
-            traceMsg(comp,"\nOOL: %s's remaining uses are out-of-line, unlatching\n", self()->cg()->getDebug()->getName(virtualRegister));
+            comp->getLogger()->printf("\nOOL: %s's remaining uses are out-of-line, unlatching\n", self()->cg()->getDebug()->getName(virtualRegister));
             }
          }
       virtualRegister->getAssignedRealRegister()->setState(TR::RealRegister::Unlatched);
@@ -2004,7 +2005,7 @@ OMR::Power::Machine::decFutureUseCountAndUnlatch(TR::Register *virtualRegister)
       TR_ASSERT(cg->isFreeSpillListLocked(), "Expecting the free spill list to be locked on this path");
       int32_t size = spillSizeForRegister(virtualRegister);
       if (trace)
-         traceMsg(comp, "\nFreeing backing storage " POINTER_PRINTF_FORMAT " of size %u from dead virtual %s\n", location, size, cg->getDebug()->getName(virtualRegister));
+         comp->getLogger()->trprintf("\nFreeing backing storage " POINTER_PRINTF_FORMAT " of size %u from dead virtual %s\n", location, size, cg->getDebug()->getName(virtualRegister));
       cg->unlockFreeSpillList();
       cg->freeSpill(location, size, 0);
       virtualRegister->setBackingStorage(NULL);
@@ -2051,7 +2052,7 @@ OMR::Power::Machine::disassociateUnspilledBackingStorage()
             {
             int32_t size = spillSizeForRegister(virtReg);
             if (trace)
-               traceMsg(comp, "\nDisassociating backing storage " POINTER_PRINTF_FORMAT " of size %u from assigned virtual %s\n", location, size, cg->getDebug()->getName(virtReg));
+               comp->getLogger()->trprintf("\nDisassociating backing storage " POINTER_PRINTF_FORMAT " of size %u from assigned virtual %s\n", location, size, cg->getDebug()->getName(virtReg));
             cg->freeSpill(location, size, 0);
             virtReg->setBackingStorage(NULL);
             location->setMaxSpillDepth(0);
