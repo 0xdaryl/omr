@@ -31,6 +31,7 @@
 #include "codegen/TreeEvaluator.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
+#include "ras/Logger.hpp"
 
 static bool virtualGuardHelper(TR::Node *node, TR::CodeGenerator *cg);
 
@@ -134,7 +135,7 @@ static uint32_t countIntegerAndAddressTypesInGlRegDeps(TR::Node *glRegDepsNode, 
          }
       }
    if (cg->comp()->getOption(TR_TraceCG))
-      traceMsg(cg->comp(), "%d integer/address nodes found in GlRegDeps node %p\n", numIntNodes, glRegDepsNode);
+      cg->comp()->getLogger()->trprintf("%d integer/address nodes found in GlRegDeps node %p\n", numIntNodes, glRegDepsNode);
 
    return numIntNodes;
    }
@@ -908,8 +909,7 @@ OMR::ARM64::TreeEvaluator::iselectEvaluator(TR::Node *node, TR::CodeGenerator *c
    if (falseReg->containsCollectedReference())
       {
       if (cg->comp()->getOption(TR_TraceCG))
-         traceMsg(
-            cg->comp(),
+         cg->comp()->getLogger()->printf(
             "Setting containsCollectedReference on result of select node in register %s\n",
             cg->getDebug()->getName(resultReg));
       resultReg->setContainsCollectedReference();
