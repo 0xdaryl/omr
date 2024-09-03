@@ -80,6 +80,7 @@
 #include "infra/BitVector.hpp"
 #include "infra/List.hpp"
 #include "ras/Debug.hpp"
+#include "ras/Logger.hpp"
 #include "runtime/Runtime.hpp"
 #include "z/codegen/CallSnippet.hpp"
 #include "z/codegen/S390GenerateInstructions.hpp"
@@ -178,6 +179,8 @@ OMR::Z::Linkage::removeOSCOnSavedArgument(TR::Instruction* instr, TR::Register* 
    int32_t       windowSize=0;
    const int32_t maxWindowSize=10;
 
+   TR::Compilation *comp = self()->comp();
+
    // Start looking at the top of instruction stream body
    //
    TR::Instruction * current = instr->getNext();
@@ -186,8 +189,8 @@ OMR::Z::Linkage::removeOSCOnSavedArgument(TR::Instruction* instr, TR::Register* 
    if (!disable)
       return;
 
-   if (self()->comp()->getOption(TR_TraceCG))
-      traceMsg(self()->comp(), "%p SP OFFSET %d, SREG %p\n",instr, stackOffset, sReg);
+   if (comp->getOption(TR_TraceCG))
+      comp->getLogger()->trprintf("%p SP OFFSET %d, SREG %p\n",instr, stackOffset, sReg);
 
    while ( (current != NULL) &&
             !current->isLabel()    &&
@@ -195,8 +198,8 @@ OMR::Z::Linkage::removeOSCOnSavedArgument(TR::Instruction* instr, TR::Register* 
             !current->isBranchOp() &&
             windowSize < maxWindowSize && !done )
       {
-      if (self()->comp()->getOption(TR_TraceCG))
-         traceMsg(self()->comp(), "%p inspecting\n", current);
+      if (comp->getOption(TR_TraceCG))
+         comp->getLogger()->trprintf("%p inspecting\n", current);
 
       if (current->isLoad())
          {
@@ -215,8 +218,8 @@ OMR::Z::Linkage::removeOSCOnSavedArgument(TR::Instruction* instr, TR::Register* 
 
          TR::Instruction         *newInst = NULL;
 
-         if (self()->comp()->getOption(TR_TraceCG))
-            traceMsg(self()->comp(), "%p is load, mrOffset %i\n",current, disp);
+         if (comp->getOption(TR_TraceCG))
+            comp->getLogger()->trprintf("%p is load, mrOffset %i\n",current, disp);
 
          // Find a memRef that matches the store
          //
@@ -229,11 +232,11 @@ OMR::Z::Linkage::removeOSCOnSavedArgument(TR::Instruction* instr, TR::Register* 
             if (opCode == TR::InstOpCode::L)
                {
                newInst = generateRRInstruction(self()->cg(), TR::InstOpCode::LR, current->getNode(), tReg, sReg, prev);
-               if (self()->comp()->getOption(TR_TraceCG))
+               if (comp->getOption(TR_TraceCG))
                   {
-                  traceMsg(self()->comp(), "\nProlog peeking changing TR::InstOpCode::L %s,%d(SP) to TR::InstOpCode::LR %s,%s : [%p] => [%p]\n",
-                        tReg->getRegisterName(self()->comp()), stackOffset,
-                        tReg->getRegisterName(self()->comp()), sReg->getRegisterName(self()->comp()), current, newInst);
+                  comp->getLogger()->trprintf("\nProlog peeking changing TR::InstOpCode::L %s,%d(SP) to TR::InstOpCode::LR %s,%s : [%p] => [%p]\n",
+                        tReg->getRegisterName(comp), stackOffset,
+                        tReg->getRegisterName(comp), sReg->getRegisterName(comp), current, newInst);
                   }
 
                mustReplace = false;   // If sReg = treg, just delete the redundent load
@@ -241,11 +244,11 @@ OMR::Z::Linkage::removeOSCOnSavedArgument(TR::Instruction* instr, TR::Register* 
             else if (opCode == TR::InstOpCode::LG)
                {
                newInst = generateRRInstruction(self()->cg(), TR::InstOpCode::LGR, current->getNode(), tReg, sReg, prev);
-               if (self()->comp()->getOption(TR_TraceCG))
+               if (comp->getOption(TR_TraceCG))
                   {
-                  traceMsg(self()->comp(), "\nProlog peeking changing TR::InstOpCode::LG %s,%d(SP) to TR::InstOpCode::LGR %s,%s : [%p] => [%p]\n",
-                        tReg->getRegisterName(self()->comp()), stackOffset,
-                        tReg->getRegisterName(self()->comp()), sReg->getRegisterName(self()->comp()), current, newInst);
+                  comp->getLogger()->trprintf("\nProlog peeking changing TR::InstOpCode::LG %s,%d(SP) to TR::InstOpCode::LGR %s,%s : [%p] => [%p]\n",
+                        tReg->getRegisterName(comp), stackOffset,
+                        tReg->getRegisterName(comp), sReg->getRegisterName(comp), current, newInst);
                   }
 
                mustReplace = false;   // If sReg = treg, just delete the redundent load
@@ -253,11 +256,11 @@ OMR::Z::Linkage::removeOSCOnSavedArgument(TR::Instruction* instr, TR::Register* 
             else if (opCode == TR::InstOpCode::LE)
                {
                newInst = generateRRInstruction(self()->cg(), TR::InstOpCode::LER, current->getNode(), tReg, sReg, prev);
-               if (self()->comp()->getOption(TR_TraceCG))
+               if (comp->getOption(TR_TraceCG))
                   {
-                  traceMsg(self()->comp(), "\nProlog peeking changing TR::InstOpCode::LE %s,%d(SP) to TR::InstOpCode::LER %s,%s : [%p] => [%p]\n",
-                        tReg->getRegisterName(self()->comp()), stackOffset,
-                        tReg->getRegisterName(self()->comp()), sReg->getRegisterName(self()->comp()), current, newInst);
+                  comp->getLogger()->trprintf("\nProlog peeking changing TR::InstOpCode::LE %s,%d(SP) to TR::InstOpCode::LER %s,%s : [%p] => [%p]\n",
+                        tReg->getRegisterName(comp), stackOffset,
+                        tReg->getRegisterName(comp), sReg->getRegisterName(comp), current, newInst);
                   }
 
                mustReplace = false;   // If sReg = treg, just delete the redundent load
@@ -265,11 +268,11 @@ OMR::Z::Linkage::removeOSCOnSavedArgument(TR::Instruction* instr, TR::Register* 
             else if (opCode == TR::InstOpCode::LD)
                {
                newInst = generateRRInstruction(self()->cg(), TR::InstOpCode::LDR, current->getNode(), tReg, sReg, prev);
-               if (self()->comp()->getOption(TR_TraceCG))
+               if (comp->getOption(TR_TraceCG))
                   {
-                  traceMsg(self()->comp(), "\nProlog peeking changing TR::InstOpCode::LD %s,%d(SP) to TR::InstOpCode::LDR %s,%s : [%p] => [%p]\n",
-                        tReg->getRegisterName(self()->comp()), stackOffset,
-                        tReg->getRegisterName(self()->comp()), sReg->getRegisterName(self()->comp()), current, newInst);
+                  comp->getLogger()->trprintf("\nProlog peeking changing TR::InstOpCode::LD %s,%d(SP) to TR::InstOpCode::LDR %s,%s : [%p] => [%p]\n",
+                        tReg->getRegisterName(comp), stackOffset,
+                        tReg->getRegisterName(comp), sReg->getRegisterName(comp), current, newInst);
                   }
 
                mustReplace = false;   // If sReg = treg, just delete the redundent load
@@ -277,38 +280,38 @@ OMR::Z::Linkage::removeOSCOnSavedArgument(TR::Instruction* instr, TR::Register* 
             else if (opCode == TR::InstOpCode::LT)
                {
                newInst = generateRRInstruction(self()->cg(), TR::InstOpCode::LTR, current->getNode(), tReg, sReg, prev);
-               if (self()->comp()->getOption(TR_TraceCG))
+               if (comp->getOption(TR_TraceCG))
                   {
-                  traceMsg(self()->comp(), "\nProlog peeking changing TR::InstOpCode::LT %s,%d(SP) to TR::InstOpCode::LTR %s,%s : [%p] => [%p]\n",
-                        tReg->getRegisterName(self()->comp()), stackOffset,
-                        tReg->getRegisterName(self()->comp()), sReg->getRegisterName(self()->comp()), current, newInst);
+                  comp->getLogger()->trprintf("\nProlog peeking changing TR::InstOpCode::LT %s,%d(SP) to TR::InstOpCode::LTR %s,%s : [%p] => [%p]\n",
+                        tReg->getRegisterName(comp), stackOffset,
+                        tReg->getRegisterName(comp), sReg->getRegisterName(comp), current, newInst);
                   }
                }
             else if (opCode == TR::InstOpCode::LTG)
                {
                newInst = generateRRInstruction(self()->cg(), TR::InstOpCode::LTGR, current->getNode(), tReg, sReg, prev);
-               if (self()->comp()->getOption(TR_TraceCG))
+               if (comp->getOption(TR_TraceCG))
                   {
-                  traceMsg(self()->comp(), "\nProlog peeking changing TR::InstOpCode::LTG %s,%d(SP) to TR::InstOpCode::LTGR %s,%s : [%p] => [%p]\n",
-                        tReg->getRegisterName(self()->comp()), stackOffset,
-                        tReg->getRegisterName(self()->comp()), sReg->getRegisterName(self()->comp()), current, newInst);
+                  comp->getLogger()->trprintf("\nProlog peeking changing TR::InstOpCode::LTG %s,%d(SP) to TR::InstOpCode::LTGR %s,%s : [%p] => [%p]\n",
+                        tReg->getRegisterName(comp), stackOffset,
+                        tReg->getRegisterName(comp), sReg->getRegisterName(comp), current, newInst);
                   }
                }
             else if (opCode == TR::InstOpCode::LGF)
                {
                newInst = generateRRInstruction(self()->cg(), TR::InstOpCode::LGFR, current->getNode(), tReg, sReg, prev);
-               if (self()->comp()->getOption(TR_TraceCG))
+               if (comp->getOption(TR_TraceCG))
                   {
-                  traceMsg(self()->comp(), "\nProlog peeking changing TR::InstOpCode::LGF %s,%d(SP) to TR::InstOpCode::LGFR %s,%s : [%p] => [%p]\n",
-                        tReg->getRegisterName(self()->comp()), stackOffset,
-                        tReg->getRegisterName(self()->comp()), sReg->getRegisterName(self()->comp()), current, newInst);
+                  comp->getLogger()->trprintf("\nProlog peeking changing TR::InstOpCode::LGF %s,%d(SP) to TR::InstOpCode::LGFR %s,%s : [%p] => [%p]\n",
+                        tReg->getRegisterName(comp), stackOffset,
+                        tReg->getRegisterName(comp), sReg->getRegisterName(comp), current, newInst);
                   }
                }
 
             // Replace if we have a new instruction
             //
             if (newInst &&
-                performTransformation(self()->comp(), "O^O : Prolog peeking removing [%p]\n", current) )
+                performTransformation(comp, "O^O : Prolog peeking removing [%p]\n", current) )
                {
                self()->cg()->replaceInst(current, newInst);
                current = newInst;
@@ -316,8 +319,8 @@ OMR::Z::Linkage::removeOSCOnSavedArgument(TR::Instruction* instr, TR::Register* 
                if(!mustReplace && tReg == sReg)
                  {
                   newInst->remove();
-                 if (self()->comp()->getOption(TR_TraceCG))
-                    traceMsg(self()->comp(), "deleting instruction as sreg = treg\n");
+                 if (comp->getOption(TR_TraceCG))
+                    comp->getLogger()->prints("deleting instruction as sreg = treg\n");
                  }
 
                done = true;
@@ -496,7 +499,7 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
 
       if (self()->comp()->getOption(TR_TraceCG))
          {
-         traceMsg(self()->comp(), "save argument: %s, lri: %d, ai: %d, offset: %d, isReferenced: %d, hasToBeOnStack: %d\n", param_name, lri, ai, offset, paramCursor->isReferencedParameter(),self()->hasToBeOnStack(paramCursor));
+         self()->comp()->getLogger()->printf("save argument: %s, lri: %d, ai: %d, offset: %d, isReferenced: %d, hasToBeOnStack: %d\n", param_name, lri, ai, offset, paramCursor->isReferencedParameter(),self()->hasToBeOnStack(paramCursor));
          }
 
       TR::InstOpCode::Mnemonic storeOpCode, loadOpCode;
@@ -611,7 +614,7 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
 
          if (self()->comp()->getOption(TR_TraceCG))
          {
-         traceMsg(self()->comp(), "save argument: %s, regNum: %d, \n", param_name, regNum);
+         self()->comp()->getLogger()->printf("save argument: %s, regNum: %d, \n", param_name, regNum);
          }
          // XPLINK(STOREARGS)
          if ( !paramCursor->isReferencedParameter() && !paramCursor->isParmHasToBeOnStack() &&
@@ -2091,7 +2094,7 @@ OMR::Z::Linkage::replaceCallWithJumpInstruction(TR::Instruction *callInstruction
    replacementInst = new (self()->trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::BRCL, node, (uint32_t)0xf, callSymbol, callSymRef, self()->cg());
 
    if(self()->comp()->getOption(TR_TraceCG))
-      traceMsg(self()->comp(), "Replacing instruction %p to a jump %p !\n",callInstruction, replacementInst);
+      self()->comp()->getLogger()->trprintf("Replacing instruction %p to a jump %p !\n",callInstruction, replacementInst);
 
    self()->cg()->replaceInst(callInstruction,replacementInst);
    }
@@ -2358,7 +2361,7 @@ OMR::Z::Linkage::buildNativeDispatch(TR::Node * callNode,
       bool isJNIGCPoint)
    {
    if (self()->comp()->getOption(TR_TraceCG))
-      traceMsg(self()->comp(), "\nbuildNativeDispatch\n");
+      self()->comp()->getLogger()->printf("\nbuildNativeDispatch\n");
 
    bool hasGlRegDeps;
    int64_t killMask = -1;

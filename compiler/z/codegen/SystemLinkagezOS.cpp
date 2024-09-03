@@ -67,6 +67,7 @@
 #include "infra/List.hpp"
 #include "ras/Debug.hpp"
 #include "ras/Delimiter.hpp"
+#include "ras/Logger.hpp"
 #include "z/codegen/S390Evaluator.hpp"
 #include "z/codegen/S390GenerateInstructions.hpp"
 #include "z/codegen/S390Instruction.hpp"
@@ -236,7 +237,7 @@ void TR::S390zOSSystemLinkage::createPrologue(TR::Instruction* cursor)
 
    if (comp()->getOption(TR_TraceCG))
       {
-      traceMsg(comp(), "Initial stackFrameSize = %d\n Offset to first parameter = %d\n Argument size = %d\n Local size = %d\n", stackFrameSize, self()->getOffsetToFirstParm(), argSize, localSize);
+      comp()->getLogger()->printf("Initial stackFrameSize = %d\n Offset to first parameter = %d\n Argument size = %d\n Local size = %d\n", stackFrameSize, self()->getOffsetToFirstParm(), argSize, localSize);
       }
 
    // Now that we know the stack frame size, map the stack backwards
@@ -1042,7 +1043,7 @@ TR::S390zOSSystemLinkage::spillGPRsInPrologue(TR::Node* node, TR::Instruction* c
 
    if (comp()->getOption(TR_TraceCG))
       {
-      traceMsg(comp(), "GPRSaveMask: Register context %x\n", GPRSaveMask&0xffff);
+      comp()->getLogger()->printf("GPRSaveMask: Register context %x\n", GPRSaveMask&0xffff);
       }
 
    firstPossibleSaved = GPREGINDEX(TR::RealRegister::GPR4); // GPR4 is first reg in save area

@@ -73,6 +73,7 @@
 #include "infra/Assert.hpp"
 #include "infra/deque.hpp"
 #include "ras/Debug.hpp"
+#include "ras/Logger.hpp"
 #include "z/codegen/S390Instruction.hpp"
 #include "z/codegen/S390OutOfLineCodeSection.hpp"
 #include "env/TRMemory.hpp"
@@ -605,7 +606,7 @@ OMR::Z::Instruction::setupThrowsImplicitNullPointerException(TR::Node *n, TR::Me
                self()->getNode()->getSymbolReference() ==  comp->getSymRefTab()->findVftSymbolRef()) ||
              (n->hasChild(nullCheckReference) && mr->usesRegister(nullCheckReference->getRegister())))
             {
-            traceMsg(comp,"Instruction %p throws an implicit NPE, node: %p NPE node: %p\n", self(), n, nullCheckReference);
+            comp->getLogger()->trprintf("Instruction %p throws an implicit NPE, node: %p NPE node: %p\n", self(), n, nullCheckReference);
             self()->cg()->setImplicitExceptionPoint(self());
             }
          }

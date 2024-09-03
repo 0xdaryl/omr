@@ -345,7 +345,7 @@ TR_Debug::printz(TR::Logger *log, TR::Instruction * instr)
          // assocreg piggy backs on a vanilla TR::Instruction
          // if (instr->getOpCodeValue() == TR::InstOpCode::assocreg) break;
 
-         if ((instr->getOpCodeValue() == TR::InstOpCode::assocreg) && /*(debug("traceMsg90RA"))*/
+         if ((instr->getOpCodeValue() == TR::InstOpCode::assocreg) &&
              (_comp->getOption(TR_TraceRA)))
             {
             if (_comp->cg()->getCodeGeneratorPhase() < TR::CodeGenPhase::BinaryEncodingPhase)
