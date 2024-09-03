@@ -64,6 +64,7 @@
 #include "infra/List.hpp"
 #include "ras/Debug.hpp"
 #include "ras/Delimiter.hpp"
+#include "ras/Logger.hpp"
 #include "z/codegen/S390Evaluator.hpp"
 #include "z/codegen/S390GenerateInstructions.hpp"
 #include "z/codegen/S390Instruction.hpp"
@@ -312,7 +313,7 @@ TR::SystemLinkage::mapStack(TR::ResolvedMethodSymbol * method, uint32_t stackInd
       }
 
    if (comp()->getOption(TR_TraceCG))
-      traceMsg(comp(), "\n\nOffsetToLongDispSlot = %d\n", getOffsetToLongDispSlot());
+      comp()->getLogger()->printf("\n\nOffsetToLongDispSlot = %d\n", getOffsetToLongDispSlot());
 
    if (isZLinuxLinkageType())
       {

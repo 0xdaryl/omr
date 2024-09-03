@@ -3345,10 +3345,14 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
       }
    else
       {
-      traceMsg(comp, "    WARNING: Assigning a Locked register %s to %s\n",
+      if (comp->getOption(TR_TraceCG))
+         {
+         TR::Logger *log = comp->getLogger();
+         log->printf("    WARNING: Assigning a Locked register %s to %s\n",
                                          getRegisterName(targetRegister,self()->cg()),
                                          getRegisterName(virtualRegister,self()->cg()));
-      traceMsg(comp, "             This assignment is equivalent to using a hard coded real register.\n");
+         log->printf("             This assignment is equivalent to using a hard coded real register.\n");
+         }
 
       // the virtual register haven't be assigned to any real register yet
       if (currentAssignedRegister == NULL)
