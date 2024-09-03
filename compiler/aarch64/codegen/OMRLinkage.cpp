@@ -36,6 +36,7 @@
 #include "il/SymbolReference.hpp"
 #include "infra/IGNode.hpp"
 #include "infra/InterferenceGraph.hpp"
+#include "ras/Logger.hpp"
 
 typedef bool (*localSizeTestMethod) (uint32_t size);
 static bool isLocalSize4Byte(uint32_t size)
@@ -197,7 +198,7 @@ void OMR::ARM64::Linkage::mapCompactedStack(TR::ResolvedMethodSymbol *method)
          int32_t newOffset = stackIndex + pointerSize * (localCursor->getGCMapIndex() - firstLocalGCIndex);
          if (comp->getOption(TR_TraceCG))
             {
-            traceMsg(comp, "\nmapCompactedStack: changing %s (GC index %d) offset from %d to %d",
+            comp->getLogger()->printf("\nmapCompactedStack: changing %s (GC index %d) offset from %d to %d",
                comp->getDebug()->getName(localCursor), localCursor->getGCMapIndex(), localCursor->getOffset(), newOffset);
             }
 
@@ -255,7 +256,7 @@ void OMR::ARM64::Linkage::mapCompactedStack(TR::ResolvedMethodSymbol *method)
                   else  // share local with already mapped stack slot
                      {
                      if (comp->getOption(TR_TraceCG))
-                        traceMsg(comp, "O^O COMPACT LOCALS: Sharing slot for local %p (colour = %d)\n", localCursor, colour);
+                        comp->getLogger()->trprintf("O^O COMPACT LOCALS: Sharing slot for local %p (colour = %d)\n", localCursor, colour);
 
                      localCursor->setOffset(colourToOffsetMap[colour]);
                      }

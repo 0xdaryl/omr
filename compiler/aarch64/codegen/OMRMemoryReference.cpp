@@ -32,6 +32,7 @@
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
 #include "il/StaticSymbol.hpp"
+#include "ras/Logger.hpp"
 
 TR::MemoryReference *TR::MemoryReference::create(TR::CodeGenerator *cg)
    {
@@ -348,7 +349,7 @@ void OMR::ARM64::MemoryReference::validateImmediateOffsetAlignment(TR::Node *nod
       TR::Compilation *comp = cg->comp();
       if (comp->getOption(TR_TraceCG))
          {
-         traceMsg(comp, "Validating immediate offset (%d) at node %p for alignment (%d)\n", displacement, node, alignment);
+         comp->getLogger()->trprintf("Validating immediate offset (%d) at node %p for alignment (%d)\n", displacement, node, alignment);
          }
       TR::Register *newBase;
 
@@ -531,7 +532,7 @@ int32_t OMR::ARM64::MemoryReference::getScaleForNode(TR::Node *node, TR::CodeGen
             TR::Compilation *comp = cg->comp();
             if (comp->getOption(TR_TraceCG))
                {
-               traceMsg(comp, "Shift amount for index register at node %p is %d which is invalid for _length = %d\n", node, shiftAmount, _length);
+               comp->getLogger()->trprintf("Shift amount for index register at node %p is %d which is invalid for _length = %d\n", node, shiftAmount, _length);
                }
             }
          }
@@ -550,7 +551,7 @@ static bool checkOffset(TR::Node *node, TR::CodeGenerator *cg, uint32_t offset, 
       TR::Compilation *comp = cg->comp();
       if (comp->getOption(TR_TraceCG))
          {
-         traceMsg(comp, "offset amount at node %p is %d which is invalid for length = %d\n", node, offset, length);
+         comp->getLogger()->trprintf("offset amount at node %p is %d which is invalid for length = %d\n", node, offset, length);
          }
       return false;
       }
@@ -653,7 +654,7 @@ void OMR::ARM64::MemoryReference::populateMemoryReference(TR::Node *subTree, TR:
             self()->addToOffset(integerChild, amount, cg);
             if (comp->getOption(TR_TraceCG))
                {
-               traceMsg(comp, "Capturing array access with constant index at node %p offset = %d\n", subTree, amount);
+               comp->getLogger()->trprintf("Capturing array access with constant index at node %p offset = %d\n", subTree, amount);
                }
             cg->decReferenceCount(integerChild);
             }
@@ -687,7 +688,7 @@ void OMR::ARM64::MemoryReference::populateMemoryReference(TR::Node *subTree, TR:
          self()->addToOffset(subTree, amount, cg);
          if (comp->getOption(TR_TraceCG))
             {
-            traceMsg(comp, "Capturing lsub node with constant value at node %p offset = %d\n", subTree, amount);
+            comp->getLogger()->trprintf("Capturing lsub node with constant value at node %p offset = %d\n", subTree, amount);
             }
          cg->decReferenceCount(constChild);
          cg->decReferenceCount(subTree);
@@ -704,7 +705,7 @@ void OMR::ARM64::MemoryReference::populateMemoryReference(TR::Node *subTree, TR:
          self()->setIndexSignExtendedWord();
          if (comp->getOption(TR_TraceCG))
             {
-            traceMsg(comp, "Capturing l2i node at %p\n", subTree);
+            comp->getLogger()->trprintf("Capturing l2i node at %p\n", subTree);
             }
          cg->decReferenceCount(subTree);
          }
@@ -732,7 +733,7 @@ void OMR::ARM64::MemoryReference::populateMemoryReference(TR::Node *subTree, TR:
             self()->setIndexSignExtendedWord();
             if (comp->getOption(TR_TraceCG))
                {
-               traceMsg(comp, "Capturing i2l node at %p which is a first child of shift node %p\n", firstChild, subTree);
+               comp->getLogger()->trprintf("Capturing i2l node at %p which is a first child of shift node %p\n", firstChild, subTree);
                }
             cg->decReferenceCount(firstChild);
             firstChild = i2lChild;
@@ -748,7 +749,7 @@ void OMR::ARM64::MemoryReference::populateMemoryReference(TR::Node *subTree, TR:
          _scale = scale;
          if (comp->getOption(TR_TraceCG))
             {
-            traceMsg(comp, "Capturing shift node at %p, scale = %d\n", subTree, _scale);
+            comp->getLogger()->trprintf("Capturing shift node at %p, scale = %d\n", subTree, _scale);
             }
          cg->decReferenceCount(secondChild);
          cg->decReferenceCount(subTree);
@@ -1549,7 +1550,7 @@ TR::Instruction *OMR::ARM64::MemoryReference::expandInstruction(TR::Instruction 
                         if (comp->getOption(TR_TraceCG) && debugObj)
                            {
                            TR::InstOpCode newOpCode(newOp);
-                           traceMsg(comp, "Replacing opcode of instruction %p from %s to %s\n", currentInstruction, debugObj->getOpCodeName(&op), debugObj->getOpCodeName(&newOpCode));
+                           comp->getLogger()->trprintf("Replacing opcode of instruction %p from %s to %s\n", currentInstruction, debugObj->getOpCodeName(&op), debugObj->getOpCodeName(&newOpCode));
                            }
                         currentInstruction->setOpCodeValue(newOp);
                         self()->setIndexRegister(x16);
@@ -1589,7 +1590,7 @@ TR::Instruction *OMR::ARM64::MemoryReference::expandInstruction(TR::Instruction 
                      if (comp->getOption(TR_TraceCG) && debugObj)
                         {
                         TR::InstOpCode newOpCode(newOp);
-                        traceMsg(comp, "Replacing opcode of instruction %p from %s to %s\n", currentInstruction, debugObj->getOpCodeName(&op), debugObj->getOpCodeName(&newOpCode));
+                        comp->getLogger()->trprintf("Replacing opcode of instruction %p from %s to %s\n", currentInstruction, debugObj->getOpCodeName(&op), debugObj->getOpCodeName(&newOpCode));
                         }
                      currentInstruction->setOpCodeValue(newOp);
                      return currentInstruction;
@@ -1605,7 +1606,7 @@ TR::Instruction *OMR::ARM64::MemoryReference::expandInstruction(TR::Instruction 
                      if (comp->getOption(TR_TraceCG) && debugObj)
                         {
                         TR::InstOpCode newOpCode(newOp);
-                        traceMsg(comp, "Replacing opcode of instruction %p from %s to %s\n", currentInstruction, debugObj->getOpCodeName(&op), debugObj->getOpCodeName(&newOpCode));
+                        comp->getLogger()->trprintf("Replacing opcode of instruction %p from %s to %s\n", currentInstruction, debugObj->getOpCodeName(&op), debugObj->getOpCodeName(&newOpCode));
                         }
                      currentInstruction->setOpCodeValue(newOp);
                      self()->setIndexRegister(x16);
