@@ -28,6 +28,7 @@
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
 #include "il/LabelSymbol.hpp"
+#include "ras/Logger.hpp"
 
 TR::Register *
 genericReturnEvaluator(TR::Node *node, TR::RealRegister::RegNum rnum, TR_RegisterKinds rk, TR_ReturnInfo i,  TR::CodeGenerator *cg)
@@ -578,8 +579,7 @@ OMR::RV::TreeEvaluator::iselectEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    if (falseReg->containsCollectedReference())
       {
       if (cg->comp()->getOption(TR_TraceCG))
-         traceMsg(
-            cg->comp(),
+         cg->comp()->getLogger()->printf(
             "Setting containsCollectedReference on result of select node in register %s\n",
             cg->getDebug()->getName(trueReg));
       trueReg->setContainsCollectedReference();
