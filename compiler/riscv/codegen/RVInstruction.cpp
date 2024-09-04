@@ -51,6 +51,7 @@
 #include "infra/Assert.hpp"                       // for TR_ASSERT
 #include "codegen/RVOutOfLineCodeSection.hpp"
 #include "codegen/GenerateInstructions.hpp"
+#include "ras/Logger.hpp"
 
 // TR::RtypeInstruction:: member functions
 
@@ -407,7 +408,7 @@ void TR::BtypeInstruction::expandIntoFarBranch()
    TR_ASSERT_FATAL(getLabelSymbol(), "Attempt to expand conditional branch %p without a label", self());
 
    if (comp()->getOption(TR_TraceCG))
-      traceMsg(comp(), "Expanding conditional branch instruction %p into a far branch\n", self());
+      comp()->getLogger()->trprintf("Expanding conditional branch instruction %p into a far branch\n", self());
 
    TR::RealRegister *zero = cg()->machine()->getRealRegister(TR::RealRegister::zero);
 
