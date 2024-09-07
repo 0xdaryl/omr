@@ -50,6 +50,7 @@
 #include "il/Symbol.hpp"
 #include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
+#include "ras/Logger.hpp"
 
 #ifdef J9_PROJECT_SPECIFIC
 #include "env/VMJ9.h"
@@ -546,7 +547,7 @@ int32_t OMR::ARM::Linkage::buildARMLinkageArgs(TR::Node                         
       {
       if (comp->getOption(TR_TraceCG))
          {
-         traceMsg(comp, "Special arg %s in %s\n",
+         comp->getLogger()->printf("Special arg %s in %s\n",
             comp->getDebug()->getName(callNode->getChild(from)),
             comp->getDebug()->getName(self()->machine()->getRealRegister(specialArgReg)));
          }
