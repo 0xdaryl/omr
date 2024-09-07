@@ -75,6 +75,7 @@
 #include "optimizer/RegisterCandidate.hpp"
 #include "optimizer/Structure.hpp"
 #include "ras/Debug.hpp"
+#include "ras/Logger.hpp"
 
 #define OPT_DETAILS "O^O CODE GENERATION: "
 
@@ -86,19 +87,26 @@ namespace TR { class RealRegister; }
 void
 OMR::CodeGenerator::checkForLiveRegisters(TR_LiveRegisters *liveRegisters)
    {
-   TR_Debug * debug = self()->comp()->getDebug();
+   TR::Compilation *comp = self()->comp();
+   TR_Debug * debug = comp->getDebug();
    bool regsAreLive = false;
+   bool trace = comp->getOption(TR_TraceCG);
+   TR::Logger *log = comp->getLogger();
 
    if (liveRegisters && liveRegisters->getFirstLiveRegister())
       {
-      traceMsg(self()->comp(), "\n\n");
+      if (trace)
+         log->prints("\n\n");
       for (TR_LiveRegisterInfo *p = liveRegisters->getFirstLiveRegister(); p; p = p->getNext())
          {
-         if (p->getNode())
-            traceMsg(self()->comp(), "Virtual register %s (for node [%s], ref count=%d) is live at end of method\n",
+         if (trace)
+            {
+            if (p->getNode())
+               log->printf("Virtual register %s (for node [%s], ref count=%d) is live at end of method\n",
                         debug->getName(p->getRegister()), debug->getName(p->getNode()), p->getNode()->getReferenceCount());
-         else
-            traceMsg(self()->comp(), "Virtual register %s %p is live at end of method with node count %d\n", debug->getName(p->getRegister()), p->getRegister(), p->getNodeCount());
+            else
+               log->trprintf("Virtual register %s %p is live at end of method with node count %d\n", debug->getName(p->getRegister()), p->getRegister(), p->getNodeCount());
+            }
          regsAreLive = true;
          }
       }
@@ -439,7 +447,7 @@ OMR::CodeGenerator::allocateSpill(int32_t dataSize, bool containsCollectedRefere
    TR_ASSERT_FATAL(!containsCollectedReference || (dataSize == TR::Compiler->om.sizeofReferenceAddress()), "assertion failure");
 
    if (self()->comp()->getOption(TR_TraceRA))
-      traceMsg(self()->comp(), "\nallocateSpill(%d, %s, %s)", dataSize, containsCollectedReference? "collected":"uncollected", offset? "offset":"NULL");
+      self()->comp()->getLogger()->printf("\nallocateSpill(%d, %s, %s)", dataSize, containsCollectedReference? "collected":"uncollected", offset? "offset":"NULL");
 
    if (offset && self()->comp()->getOption(TR_DisableHalfSlotSpills))
       {
@@ -556,13 +564,13 @@ OMR::CodeGenerator::allocateSpill(int32_t dataSize, bool containsCollectedRefere
       spillSymbol->setGCMapIndex(self()->getStackAtlas()->assignGCIndex());
       _collectedSpillList.push_front(spill);
       if (self()->comp()->getOption(TR_TraceRA))
-         traceMsg(self()->comp(), "\n -> added to collectedSpillList");
+         self()->comp()->getLogger()->prints("\n -> added to collectedSpillList");
       }
    spill->setContainsCollectedReference(containsCollectedReference);
 
    TR_ASSERT(spill->isOccupied(), "assertion failure");
    if (self()->comp()->getOption(TR_TraceRA))
-     traceMsg(self()->comp(), "\nallocateSpill returning (%s(%d%d), %d) ", self()->getDebug()->getName(spill->getSymbolReference()->getSymbol()), spill->firstHalfIsOccupied()?1:0, spill->secondHalfIsOccupied()?1:0, offset? *offset : 0);
+     self()->comp()->getLogger()->printf("\nallocateSpill returning (%s(%d%d), %d) ", self()->getDebug()->getName(spill->getSymbolReference()->getSymbol()), spill->firstHalfIsOccupied()?1:0, spill->secondHalfIsOccupied()?1:0, offset? *offset : 0);
    return spill;
    }
 
@@ -573,9 +581,12 @@ OMR::CodeGenerator::freeSpill(TR_BackingStore *spill, int32_t dataSize, int32_t 
    TR_ASSERT_FATAL(offset == 0 || offset == 4, "Spill offset must be 0 or 4 bytes");
    TR_ASSERT_FATAL(dataSize + offset <= 64, "Spill size + offset must not exceed 64 bytes");
 
-   if (self()->comp()->getOption(TR_TraceRA))
+   TR::Compilation *comp = self()->comp();
+   TR::Logger *log = comp->getLogger();
+
+   if (comp->getOption(TR_TraceRA))
       {
-      traceMsg(self()->comp(), "\nfreeSpill(%s(%d%d), %d, %d, isLocked=%d)",
+      log->printf("\nfreeSpill(%s(%d%d), %d, %d, isLocked=%d)",
                self()->getDebug()->getName(spill->getSymbolReference()->getSymbol()),
                spill->firstHalfIsOccupied()?1:0,
                spill->secondHalfIsOccupied()?1:0,
@@ -597,8 +608,8 @@ OMR::CodeGenerator::freeSpill(TR_BackingStore *spill, int32_t dataSize, int32_t 
       if (updateFreeList)
          {
          _internalPointerSpillFreeList.push_front(spill);
-         if (self()->comp()->getOption(TR_TraceRA))
-            traceMsg(self()->comp(), "\n -> Added to internalPointerSpillFreeList");
+         if (comp->getOption(TR_TraceRA))
+            log->prints("\n -> Added to internalPointerSpillFreeList");
          }
       }
    else if (dataSize <= 4 && spill->getSymbolReference()->getSymbol()->getSize() == 8)
@@ -606,15 +617,15 @@ OMR::CodeGenerator::freeSpill(TR_BackingStore *spill, int32_t dataSize, int32_t 
       if (offset == 0)
          {
          spill->setFirstHalfIsEmpty();
-         if (self()->comp()->getOption(TR_TraceRA))
-            traceMsg(self()->comp(), "\n -> setFirstHalfIsEmpty");
+         if (comp->getOption(TR_TraceRA))
+            log->prints("\n -> setFirstHalfIsEmpty");
          }
       else
          {
          TR_ASSERT(offset == 4, "assertion failure");
          spill->setSecondHalfIsEmpty();
-         if (self()->comp()->getOption(TR_TraceRA))
-            traceMsg(self()->comp(), "\n -> setSecondHalfIsEmpty");
+         if (comp->getOption(TR_TraceRA))
+            log->prints("\n -> setSecondHalfIsEmpty");
          }
 
       if (spill->isEmpty())
@@ -625,15 +636,15 @@ OMR::CodeGenerator::freeSpill(TR_BackingStore *spill, int32_t dataSize, int32_t 
             {
             _spill4FreeList.remove(spill); // It may have been half-full before
             _spill8FreeList.push_front(spill);
-            if (self()->comp()->getOption(TR_TraceRA))
-               traceMsg(self()->comp(), "\n -> moved to spill8FreeList");
+            if (comp->getOption(TR_TraceRA))
+               log->prints("\n -> moved to spill8FreeList");
             }
          }
       else if (spill->firstHalfIsOccupied())
          {
          // TODO: Once every caller can cope with nonzero offsets, we should add first-half-occupied symbols into _spill4FreeList.
-         if (self()->comp()->getOption(TR_TraceRA))
-            traceMsg(self()->comp(), "\n -> first half is still occupied; conservatively keeping out of spill4FreeList");
+         if (comp->getOption(TR_TraceRA))
+            log->prints("\n -> first half is still occupied; conservatively keeping out of spill4FreeList");
          }
       else
          {
@@ -643,8 +654,8 @@ OMR::CodeGenerator::freeSpill(TR_BackingStore *spill, int32_t dataSize, int32_t 
             {
             // Half-free
             _spill4FreeList.push_front(spill);
-            if (self()->comp()->getOption(TR_TraceRA))
-               traceMsg(self()->comp(), "\n -> moved to spill4FreeList");
+            if (comp->getOption(TR_TraceRA))
+               log->prints("\n -> moved to spill4FreeList");
             }
          }
       }
@@ -657,32 +668,32 @@ OMR::CodeGenerator::freeSpill(TR_BackingStore *spill, int32_t dataSize, int32_t 
          if (spill->getSymbolReference()->getSymbol()->getSize() <= 4)
             {
             _spill4FreeList.push_front(spill);
-            if (self()->comp()->getOption(TR_TraceRA))
-               traceMsg(self()->comp(), "\n -> added to spill4FreeList");
+            if (comp->getOption(TR_TraceRA))
+               log->prints("\n -> added to spill4FreeList");
             }
          else if (spill->getSymbolReference()->getSymbol()->getSize() == 8)
             {
             _spill8FreeList.push_front(spill);
-            if (self()->comp()->getOption(TR_TraceRA))
-               traceMsg(self()->comp(), "\n -> added to spill8FreeList");
+            if (comp->getOption(TR_TraceRA))
+               log->prints("\n -> added to spill8FreeList");
             }
          else if (spill->getSymbolReference()->getSymbol()->getSize() == 16)
             {
             _spill16FreeList.push_front(spill);
-            if (self()->comp()->getOption(TR_TraceRA))
-               traceMsg(self()->comp(), "\n -> added to spill16FreeList");
+            if (comp->getOption(TR_TraceRA))
+               log->prints("\n -> added to spill16FreeList");
             }
          else if (spill->getSymbolReference()->getSymbol()->getSize() == 32)
             {
             _spill32FreeList.push_front(spill);
-            if (self()->comp()->getOption(TR_TraceRA))
-               traceMsg(self()->comp(), "\n -> added to spill32FreeList");
+            if (comp->getOption(TR_TraceRA))
+               log->prints("\n -> added to spill32FreeList");
             }
          else if (spill->getSymbolReference()->getSymbol()->getSize() == 64)
             {
             _spill64FreeList.push_front(spill);
-            if (self()->comp()->getOption(TR_TraceRA))
-               traceMsg(self()->comp(), "\n -> added to spill64FreeList");
+            if (comp->getOption(TR_TraceRA))
+               log->prints("\n -> added to spill64FreeList");
             }
          }
       }
@@ -692,7 +703,7 @@ void
 OMR::CodeGenerator::jettisonAllSpills()
    {
    if (self()->comp()->getOption(TR_TraceRA))
-      traceMsg(self()->comp(), "jettisonAllSpills: Clearing spill-temp freelists\n");
+      self()->comp()->getLogger()->prints("jettisonAllSpills: Clearing spill-temp freelists\n");
    _spill4FreeList.clear();
    _spill8FreeList.clear();
    _spill16FreeList.clear();
@@ -1087,7 +1098,7 @@ static bool blockIsMuchColderThanContainingLoop(TR::Block *block, TR::CodeGenera
       if (block->getFrequency() < regSimBlockFreqCutoff)
          {
          if (cg->traceSimulateTreeEvaluation())
-            traceMsg(cg->comp(), "            Block %d is not hot enough for simulation (%d)\n", block->getNumber(), block->getFrequency());
+            cg->comp()->getLogger()->printf("            Block %d is not hot enough for simulation (%d)\n", block->getNumber(), block->getFrequency());
 
          return true;
          }
@@ -1110,14 +1121,14 @@ static bool blockIsMuchColderThanContainingLoop(TR::Block *block, TR::CodeGenera
    //
    bool result = blockFrequency < loopFrequency/100;
    if (result && cg->traceSimulateTreeEvaluation())
-      traceMsg(cg->comp(), "            Block %d is much colder than containing loop (%d << %d)\n", block->getNumber(), blockFrequency, loopFrequency);
+      cg->comp()->getLogger()->printf("            Block %d is much colder than containing loop (%d << %d)\n", block->getNumber(), blockFrequency, loopFrequency);
    return result;
    }
 
 static bool blockIsIgnorablyCold(TR::Block *block, TR::CodeGenerator *cg)
    {
    if (block->isCold() && cg->traceSimulateTreeEvaluation())
-      traceMsg(cg->comp(), "            Block %d is cold\n", block->getNumber());
+      cg->comp()->getLogger()->printf("            Block %d is cold\n", block->getNumber());
    return (block->isCold() || blockIsMuchColderThanContainingLoop(block, cg));
    }
 
@@ -1126,12 +1137,14 @@ OMR::CodeGenerator::TR_RegisterPressureState::updateRegisterPressure(TR::Symbol 
    {
    TR::DataType dt = TR::NoType;
 
-   TR::CodeGenerator *cg = TR::comp()->cg();
+   TR::Compilation *comp = TR::comp();
+   TR::CodeGenerator *cg = comp->cg();
 
    if (symbol->getType().isAggregate())
       {
       dt = cg->getDataTypeFromSymbolMap(symbol);
-      traceMsg(TR::comp(), "\nxxx2, rcSymbol %p is aggregate but found better dt = %s\n",symbol,dt.toString());
+      if (comp->getOption(TR_TraceRegisterPressureDetails))
+         comp->getLogger()->trprintf("\nxxx2, rcSymbol %p is aggregate but found better dt = %s\n",symbol,dt.toString());
       }
 
    if (dt == TR::NoType)
@@ -1156,6 +1169,10 @@ OMR::CodeGenerator::pickRegister(TR::RegisterCandidate     *rc,
    static volatile uint8_t gprsWithheldFromPickRegister=0, fprsWithheldFromPickRegister=0, vrfWithheldFromPickRegister=0, gprsWithheldFromPickRegisterWhenWarm=0;
    int32_t currentCandidateWeight =-1;
    int32_t maxCandidateWeight =-1;
+
+   TR::Compilation *comp = self()->comp();
+   TR::Logger *log = comp->getLogger();
+
    if (!isInitialized)
       {
       static char *rwgpr = feGetEnv("TR_gprsWithheldFromPickRegister");
@@ -1177,7 +1194,7 @@ OMR::CodeGenerator::pickRegister(TR::RegisterCandidate     *rc,
       isInitialized = true;
       }
 
-   if (self()->comp()->getOption(TR_AssignEveryGlobalRegister))
+   if (comp->getOption(TR_AssignEveryGlobalRegister))
       {
       // Trivial fixed-sequence algorithm
 
@@ -1186,7 +1203,7 @@ OMR::CodeGenerator::pickRegister(TR::RegisterCandidate     *rc,
          {
          TR_GlobalRegisterNumber lowRegisterNumber = bvi.getNextElement();
 
-         if (self()->comp()->target().is32Bit() && rc->getDataType() == TR::Int64)
+         if (comp->target().is32Bit() && rc->getDataType() == TR::Int64)
             highRegisterNumber = bvi.getNextElement();
          else
             highRegisterNumber = -1;
@@ -1201,7 +1218,7 @@ OMR::CodeGenerator::pickRegister(TR::RegisterCandidate     *rc,
       TR_ASSERT(0, "Shouldn't get here");
       }
 
-   if (!self()->comp()->getOption(TR_DisableRegisterPressureSimulation))
+   if (!comp->getOption(TR_DisableRegisterPressureSimulation))
       {
       // Register pressure simulation algorithm
 
@@ -1216,21 +1233,20 @@ OMR::CodeGenerator::pickRegister(TR::RegisterCandidate     *rc,
 
       if (self()->terseSimulateTreeEvaluation())
          {
-         TR::Logger *log = self()->comp()->getLogger();
-         traceMsg(self()->comp(), "         { Picking register for %s%s candidate #%d %s\n",
+         log->printf("         { Picking register for %s%s candidate #%d %s\n",
             highRegisterNumber? "high word of " : "",
             usesFPR? "FPR" : (usesVRF ? "VRF" : "GPR"), rc->getSymbolReference()->getReferenceNumber(), self()->getDebug()->getName(rc->getSymbolReference()));
-         traceMsg(self()->comp(), "            Available regs: ");
+         log->prints("            Available regs: ");
          self()->getDebug()->print(log, &availableRegisters);
-         traceMsg(self()->comp(), "\n");
+         log->println();
          if (debug("dumpAllSpillKinds"))
             {
             for (int32_t i = 0; i < TR_numSpillKinds; i++)
                {
                TR_SpillKinds sk = (TR_SpillKinds)i;
-               traceMsg(self()->comp(), "            %s regs: ", self()->getDebug()->getSpillKindName(sk));
+               log->printf("            %s regs: ", self()->getDebug()->getSpillKindName(sk));
                self()->getDebug()->print(log, self()->getGlobalRegisters(sk, TR_Private));
-               traceMsg(self()->comp(), "\n");
+               log->println();
                }
             }
          }
@@ -1245,16 +1261,16 @@ OMR::CodeGenerator::pickRegister(TR::RegisterCandidate     *rc,
          }
 
       TR_BitVector remainingRegisters = availableRegisters;
-      TR_BitVector *spilledRegisters = self()->getGlobalRegisters(TR_vmThreadSpill, self()->comp()->getMethodSymbol()->getLinkageConvention());
+      TR_BitVector *spilledRegisters = self()->getGlobalRegisters(TR_vmThreadSpill, comp->getMethodSymbol()->getLinkageConvention());
       if (spilledRegisters)
          {
          if (self()->traceSimulateTreeEvaluation())
             {
             TR_BitVector regsToPrint = remainingRegisters;
             regsToPrint &= *spilledRegisters;
-            traceMsg(self()->comp(), "            vmThread register not enabled; rejected: ");
-            self()->getDebug()->print(self()->comp()->getLogger(), &regsToPrint);
-            traceMsg(self()->comp(), "\n");
+            log->prints("            vmThread register not enabled; rejected: ");
+            self()->getDebug()->print(log, &regsToPrint);
+            log->println();
             }
          remainingRegisters -= *spilledRegisters;
          }
@@ -1263,17 +1279,17 @@ OMR::CodeGenerator::pickRegister(TR::RegisterCandidate     *rc,
       //
       TR_RegisterPressureSummary highWaterMark(0, 0, 0);
       const bool canExitEarly = !rc->canBeReprioritized();
-      TR_BitVector alreadyAssignedOnEntry(self()->comp()->getSymRefCount(), self()->trMemory(), stackAlloc, growable);
-      TR_BitVector alreadyAssignedOnExit(self()->comp()->getSymRefCount(), self()->trMemory(), stackAlloc, growable);
+      TR_BitVector alreadyAssignedOnEntry(comp->getSymRefCount(), self()->trMemory(), stackAlloc, growable);
+      TR_BitVector alreadyAssignedOnExit(comp->getSymRefCount(), self()->trMemory(), stackAlloc, growable);
 
       TR_BitVector blocksToVisit = rc->getBlocksLiveOnEntry();
       blocksToVisit |= rc->getBlocksLiveOnExit();
 
       if (self()->traceSimulateTreeEvaluation())
          {
-         traceMsg(self()->comp(), "                Blocks to visit: ");
-         self()->getDebug()->print(self()->comp()->getLogger(), &blocksToVisit);
-         traceMsg(self()->comp(), "\n");
+         log->prints("                Blocks to visit: ");
+         self()->getDebug()->print(log, &blocksToVisit);
+         log->println();
          }
 
       TR_BitVectorIterator blockIterator(blocksToVisit);
@@ -1285,9 +1301,9 @@ OMR::CodeGenerator::pickRegister(TR::RegisterCandidate     *rc,
 
       if (self()->terseSimulateTreeEvaluation())
          {
-         traceMsg(self()->comp(), "            Ext blocks to visit: ");
-         self()->getDebug()->print(self()->comp()->getLogger(), &blocksToVisit);
-         traceMsg(self()->comp(), "\n");
+         log->prints("            Ext blocks to visit: ");
+         self()->getDebug()->print(log, &blocksToVisit);
+         log->println();
          }
 
       blockIterator = TR_BitVectorIterator(blocksToVisit);
@@ -1370,7 +1386,7 @@ OMR::CodeGenerator::pickRegister(TR::RegisterCandidate     *rc,
                {
                if (canAffordFullSimulation)
                   {
-                  TR_RegisterPressureState state(blockEntryState, rc, rc->getBlocksLiveOnEntry().isSet(block->getNumber()), self()->comp()->incVisitCount());
+                  TR_RegisterPressureState state(blockEntryState, rc, rc->getBlocksLiveOnEntry().isSet(block->getNumber()), comp->incVisitCount());
                   if (rc->getBlocksLiveOnEntry().isSet(block->getNumber()))
                      {
                      state.updateRegisterPressure(rcSymbol);
@@ -1392,14 +1408,14 @@ OMR::CodeGenerator::pickRegister(TR::RegisterCandidate     *rc,
                   //
                   _blockRegisterPressureCache[block->getNumber()] = summary;
                   if (self()->traceSimulateTreeEvaluation())
-                     traceMsg(self()->comp(), "            saved summary for block_%d\n", block->getNumber());
+                     log->printf("            saved summary for block_%d\n", block->getNumber());
                   }
                else
                   {
                   // Can't afford a full simulation; assume GRA is no longer profitable.
                   //
                   if (self()->terseSimulateTreeEvaluation())
-                     traceMsg(self()->comp(), "         } can't afford full simulation -- exiting\n");
+                     log->prints("         } can't afford full simulation -- exiting\n");
 
                   return -1;
                   }
@@ -1410,10 +1426,10 @@ OMR::CodeGenerator::pickRegister(TR::RegisterCandidate     *rc,
                //
                if (self()->traceSimulateTreeEvaluation())
                   {
-                  traceMsg(self()->comp(), "            using cache for block_%d -- g=%d, f=%d, v=%d",
+                  log->printf("            using cache for block_%d -- g=%d, f=%d, v=%d",
                      block->getNumber(), cachedSummary->_gprPressure, cachedSummary->_fprPressure, cachedSummary->_vrfPressure);
                   cachedSummary->dumpSpillMask(self());
-                  traceMsg(self()->comp(), "\n");
+                  log->println();
                   }
                highWaterMark.accumulate(*cachedSummary);
                }
@@ -1428,13 +1444,12 @@ OMR::CodeGenerator::pickRegister(TR::RegisterCandidate     *rc,
                remainingRegisters -= spilledRegs;
                if (self()->traceSimulateTreeEvaluation())
                   {
-                  TR::Logger *log = self()->comp()->getLogger();
-                  traceMsg(self()->comp(), "            rejected registers: ");
+                  log->prints("            rejected registers: ");
                   self()->getDebug()->print(log, &spilledRegs);
                   highWaterMark.dumpSpillMask(self());
-                  traceMsg(self()->comp(), "\n            remaining registers: ");
+                  log->prints("\n            remaining registers: ");
                   self()->getDebug()->print(log, &remainingRegisters);
-                  traceMsg(self()->comp(), "\n");
+                  log->println();
                   }
                }
             }
@@ -1451,13 +1466,12 @@ OMR::CodeGenerator::pickRegister(TR::RegisterCandidate     *rc,
          remainingRegisters -= spilledRegs;
          if (self()->traceSimulateTreeEvaluation())
             {
-            TR::Logger *log = self()->comp()->getLogger();
-            traceMsg(self()->comp(), "            rejected registers: ");
+            log->prints("            rejected registers: ");
             self()->getDebug()->print(log, &spilledRegs);
             highWaterMark.dumpSpillMask(self());
-            traceMsg(self()->comp(), "\n            remaining registers: ");
+            log->prints("\n            remaining registers: ");
             self()->getDebug()->print(log, &remainingRegisters);
-            traceMsg(self()->comp(), "\n");
+            log->println();
             }
          }
 
@@ -1480,7 +1494,7 @@ OMR::CodeGenerator::pickRegister(TR::RegisterCandidate     *rc,
       while (blockIterator.hasMoreElements())
          {
          TR::Block *block = allBlocks[blockIterator.getNextElement()];
-         if (block != self()->comp()->getFlowGraph()->getEnd() && !blockIsIgnorablyCold(block, self()))
+         if (block != comp->getFlowGraph()->getEnd() && !blockIsIgnorablyCold(block, self()))
             {
             // Only scan for copies if this block is hotter than the hottest known copy
             //
@@ -1489,8 +1503,8 @@ OMR::CodeGenerator::pickRegister(TR::RegisterCandidate     *rc,
                block->getStructureOf()->calculateFrequencyOfExecution(&blockWeight);
             if (blockWeight > hottestCopiedRegisterWeight)
                {
-               if (self()->comp()->getOption(TR_TraceRegisterPressureDetails))
-                  traceMsg(self()->comp(), "            scanning block_%d for copies\n", block->getNumber());
+               if (comp->getOption(TR_TraceRegisterPressureDetails))
+                  log->printf("            scanning block_%d for copies\n", block->getNumber());
 
                // Scan for copies
                //
@@ -1517,7 +1531,7 @@ OMR::CodeGenerator::pickRegister(TR::RegisterCandidate     *rc,
                            hottestCopiedRegisterWeight = blockWeight;
                            if (self()->traceSimulateTreeEvaluation())
                               {
-                              traceMsg(self()->comp(), "            found copy to/from #%d, register %d (%s), weight %d, at %s\n",
+                              log->printf("            found copy to/from #%d, register %d (%s), weight %d, at %s\n",
                                       candidate->getSymbolReference()->getReferenceNumber(),
                                       hottestCopiedRegister, self()->getDebug()->getGlobalRegisterName(hottestCopiedRegister),
                                       hottestCopiedRegisterWeight, self()->getDebug()->getName(node));
@@ -1528,7 +1542,7 @@ OMR::CodeGenerator::pickRegister(TR::RegisterCandidate     *rc,
                         {
                         if (self()->traceSimulateTreeEvaluation())
                            {
-                           traceMsg(self()->comp(), "            unprefer copy to/from #%d, register %d (%s), weight %d, at %s\n",
+                           log->printf("            unprefer copy to/from #%d, register %d (%s), weight %d, at %s\n",
                                    candidate->getSymbolReference()->getReferenceNumber(),
                                    candidate->getGlobalRegisterNumber(), self()->getDebug()->getGlobalRegisterName(candidate->getGlobalRegisterNumber()),
                                    blockWeight, self()->getDebug()->getName(node));
@@ -1557,7 +1571,7 @@ OMR::CodeGenerator::pickRegister(TR::RegisterCandidate     *rc,
                                  hottestCopiedRegisterWeight = blockWeight;
                                  if (self()->traceSimulateTreeEvaluation())
                                     {
-                                    traceMsg(self()->comp(), "            found call parameter index %i, register %d (%s), weight %d, at %s\n",
+                                    log->printf("            found call parameter index %i, register %d (%s), weight %d, at %s\n",
                                             i,
                                             hottestCopiedRegister, self()->getDebug()->getGlobalRegisterName(hottestCopiedRegister),
                                             hottestCopiedRegisterWeight, self()->getDebug()->getName(callNode));
@@ -1569,7 +1583,7 @@ OMR::CodeGenerator::pickRegister(TR::RegisterCandidate     *rc,
                               {
                               if (self()->traceSimulateTreeEvaluation())
                                  {
-                                 traceMsg(self()->comp(), "            unprefer call parameter index %i, register %d (%s), weight %d, at %s\n",
+                                 log->printf("            unprefer call parameter index %i, register %d (%s), weight %d, at %s\n",
                                          i,
                                          candidateRegister, self()->getDebug()->getGlobalRegisterName(candidateRegister),
                                          blockWeight, self()->getDebug()->getName(callNode));
@@ -1587,7 +1601,7 @@ OMR::CodeGenerator::pickRegister(TR::RegisterCandidate     *rc,
                         {
                         if (self()->traceSimulateTreeEvaluation())
                            {
-                           traceMsg(self()->comp(), "            unprefer used candidate #%d, register %d (%s), weight %d, at %s\n",
+                           log->printf("            unprefer used candidate #%d, register %d (%s), weight %d, at %s\n",
                                    candidate->getSymbolReference()->getReferenceNumber(),
                                    candidate->getGlobalRegisterNumber(), self()->getDebug()->getGlobalRegisterName(candidate->getGlobalRegisterNumber()),
                                    blockWeight, self()->getDebug()->getName(node));
@@ -1611,9 +1625,9 @@ OMR::CodeGenerator::pickRegister(TR::RegisterCandidate     *rc,
             {
             if (self()->traceSimulateTreeEvaluation() && !unpreferredRegisters.isEmpty())
                {
-               traceMsg(self()->comp(), "            Rejecting copy registers: ");
-               self()->getDebug()->print(self()->comp()->getLogger(), &unpreferredRegisters);
-               traceMsg(self()->comp(), "\n");
+               log->prints("            Rejecting copy registers: ");
+               self()->getDebug()->print(log, &unpreferredRegisters);
+               log->println();
                }
             remainingRegisters -= unpreferredRegisters;
             }
@@ -1622,7 +1636,7 @@ OMR::CodeGenerator::pickRegister(TR::RegisterCandidate     *rc,
          {
          TR_ASSERT(remainingRegisters.isSet(hottestCopiedRegister), "assertion failure");
          if (self()->traceSimulateTreeEvaluation())
-            traceMsg(self()->comp(), "            Using copy register %d\n", hottestCopiedRegister);
+            log->printf("            Using copy register %d\n", hottestCopiedRegister);
 
          // Eliminate all other registers from consideration
          //
@@ -1646,16 +1660,16 @@ OMR::CodeGenerator::pickRegister(TR::RegisterCandidate     *rc,
          {
          // Not a parameter.  If we can avoid linkage registers, do so.
          //
-         unpreferredRegisters = *self()->getGlobalRegisters(TR_linkageSpill, self()->comp()->getJittedMethodSymbol()->getLinkageConvention());
+         unpreferredRegisters = *self()->getGlobalRegisters(TR_linkageSpill, comp->getJittedMethodSymbol()->getLinkageConvention());
 
          unpreferredRegisters &= remainingRegisters;
          if (unpreferredRegisters != remainingRegisters)
             {
             if (self()->traceSimulateTreeEvaluation() && !unpreferredRegisters.isEmpty())
                {
-               traceMsg(self()->comp(), "            Rejecting linkage registers: ");
-               self()->getDebug()->print(self()->comp()->getLogger(), &unpreferredRegisters);
-               traceMsg(self()->comp(), "\n");
+               log->prints("            Rejecting linkage registers: ");
+               self()->getDebug()->print(log, &unpreferredRegisters);
+               log->println();
                }
             remainingRegisters -= unpreferredRegisters;
             }
@@ -1665,7 +1679,7 @@ OMR::CodeGenerator::pickRegister(TR::RegisterCandidate     *rc,
          if (remainingRegisters.isSet(linkageRegister))
             {
             if (self()->traceSimulateTreeEvaluation())
-               traceMsg(self()->comp(), "            Using linkage register %d\n", linkageRegister);
+               log->printf("            Using linkage register %d\n", linkageRegister);
 
             // Eliminate all other registers from consideration
             //
@@ -1676,9 +1690,9 @@ OMR::CodeGenerator::pickRegister(TR::RegisterCandidate     *rc,
 
       if (self()->traceSimulateTreeEvaluation())
          {
-         traceMsg(self()->comp(), "            final registers: ");
-         self()->getDebug()->print(self()->comp()->getLogger(), &remainingRegisters);
-         traceMsg(self()->comp(), "\n");
+         log->prints("            final registers: ");
+         self()->getDebug()->print(log, &remainingRegisters);
+         log->println();
          }
 
       // 4. Return the first remaining reg, if any.
@@ -1686,9 +1700,9 @@ OMR::CodeGenerator::pickRegister(TR::RegisterCandidate     *rc,
       if (remainingRegisters.isEmpty())
          {
          if (self()->terseSimulateTreeEvaluation())
-            traceMsg(self()->comp(), "         } No good registers for candidate #%d after reg pressure simulation\n", rc->getSymbolReference()->getReferenceNumber());
+            log->printf("         } No good registers for candidate #%d after reg pressure simulation\n", rc->getSymbolReference()->getReferenceNumber());
          else
-            dumpOptDetails(self()->comp(), "No good registers for candidate #%d after reg pressure simulation\n", rc->getSymbolReference()->getReferenceNumber());
+            dumpOptDetails(comp, "No good registers for candidate #%d after reg pressure simulation\n", rc->getSymbolReference()->getReferenceNumber());
 
          return -1;
          }
@@ -1700,7 +1714,7 @@ OMR::CodeGenerator::pickRegister(TR::RegisterCandidate     *rc,
          TR_GlobalRegisterNumber result = TR_BitVectorIterator(remainingRegisters).getFirstElement();
 
          if (self()->terseSimulateTreeEvaluation())
-            traceMsg(self()->comp(), "         } Picked register %d (%s) for candidate #%d %s\n", result, self()->getDebug()->getGlobalRegisterName(result), rc->getSymbolReference()->getReferenceNumber(), self()->getDebug()->getName(rc->getSymbolReference()));
+            log->printf("         } Picked register %d (%s) for candidate #%d %s\n", result, self()->getDebug()->getGlobalRegisterName(result), rc->getSymbolReference()->getReferenceNumber(), self()->getDebug()->getName(rc->getSymbolReference()));
 
          // Bump the register pressure in the cache for each block in the
          // candidate's live range.
@@ -1747,31 +1761,31 @@ OMR::CodeGenerator::pickRegister(TR::RegisterCandidate     *rc,
          (dtype == TR::Float
           || dtype == TR::Double
           ) ?
-         fprsWithheldFromPickRegister : (self()->comp()->getMethodHotness() == warm)? gprsWithheldFromPickRegisterWhenWarm :
+         fprsWithheldFromPickRegister : (comp->getMethodHotness() == warm)? gprsWithheldFromPickRegisterWhenWarm :
          gprsWithheldFromPickRegister;
 
       if (availableRegisters.elementCount() <= regsWithheld)
          {
-         if (debug("tracePickRegister") || self()->comp()->getOptions()->trace(OMR::tacticalGlobalRegisterAllocator))
+         if (debug("tracePickRegister") || comp->getOptions()->trace(OMR::tacticalGlobalRegisterAllocator))
             {
-            traceMsg(self()->comp(), "pickRegister: Withholding %d registers from candidate #%d\n", availableRegisters.elementCount(), rc->getSymbolReference()->getReferenceNumber());
+            log->printf("pickRegister: Withholding %d registers from candidate #%d\n", availableRegisters.elementCount(), rc->getSymbolReference()->getReferenceNumber());
             }
          return -1;
          }
       else
          {
-         if (debug("tracePickRegister") || self()->comp()->getOptions()->trace(OMR::tacticalGlobalRegisterAllocator))
+         if (debug("tracePickRegister") || comp->getOptions()->trace(OMR::tacticalGlobalRegisterAllocator))
             {
-            traceMsg(self()->comp(),"pickRegister: %d registers still available for candidate #%d\n", availableRegisters.elementCount(), rc->getSymbolReference()->getReferenceNumber());
+            log->printf("pickRegister: %d registers still available for candidate #%d\n", availableRegisters.elementCount(), rc->getSymbolReference()->getReferenceNumber());
             }
          }
 
       TR_BitVectorIterator bvi;
       TR::Symbol            *rcSymbol = rc->getSymbolReference()->getSymbol();
 
-      if (debug("tracePickRegister") || self()->comp()->getOptions()->trace(OMR::tacticalGlobalRegisterAllocator))
+      if (debug("tracePickRegister") || comp->getOptions()->trace(OMR::tacticalGlobalRegisterAllocator))
          {
-         traceMsg(self()->comp(), "pickRegister: Candidate #%d {\n", rc->getSymbolReference()->getReferenceNumber());
+         log->printf("pickRegister: Candidate #%d {\n", rc->getSymbolReference()->getReferenceNumber());
          }
 
 
@@ -1791,15 +1805,15 @@ OMR::CodeGenerator::pickRegister(TR::RegisterCandidate     *rc,
             linkageRegister = self()->getLinkageGlobalRegisterNumber(lri, rcSymbol->getDataType());
             }
          }
-      if (debug("tracePickRegister") || self()->comp()->getOptions()->trace(OMR::tacticalGlobalRegisterAllocator))
+      if (debug("tracePickRegister") || comp->getOptions()->trace(OMR::tacticalGlobalRegisterAllocator))
          {
          if (linkageRegister == -1)
             {
-            traceMsg(self()->comp(), "pickRegister:\tNo linkage register\n");
+            log->prints("pickRegister:\tNo linkage register\n");
             }
          else
             {
-            traceMsg(self()->comp(), "pickRegister:\tLinkage register #%d\n", linkageRegister);
+            log->printf("pickRegister:\tLinkage register #%d\n", linkageRegister);
             }
          }
 
@@ -1813,9 +1827,9 @@ OMR::CodeGenerator::pickRegister(TR::RegisterCandidate     *rc,
          preservedRegisters = self()->getGlobalFPRsPreservedAcrossCalls();
       else
          preservedRegisters = self()->getGlobalGPRsPreservedAcrossCalls();
-      if (debug("tracePickRegister") || self()->comp()->getOptions()->trace(OMR::tacticalGlobalRegisterAllocator))
+      if (debug("tracePickRegister") || comp->getOptions()->trace(OMR::tacticalGlobalRegisterAllocator))
          {
-         traceMsg(self()->comp(), "pickRegister:\tPreserved register info is %spresent\n", preservedRegisters? "" : "NOT ");
+         log->printf("pickRegister:\tPreserved register info is %spresent\n", preservedRegisters? "" : "NOT ");
          }
 
       // Now choose the preference order string.
@@ -1837,9 +1851,9 @@ OMR::CodeGenerator::pickRegister(TR::RegisterCandidate     *rc,
                }
             }
 
-         if (debug("tracePickRegister") || self()->comp()->getOptions()->trace(OMR::tacticalGlobalRegisterAllocator))
+         if (debug("tracePickRegister") || comp->getOptions()->trace(OMR::tacticalGlobalRegisterAllocator))
             {
-            traceMsg(self()->comp(), "pickRegister:\tRegister is %slive across non-cold call\n", isLiveAcrossNonColdCall? "" : "NOT ");
+            log->printf("pickRegister:\tRegister is %slive across non-cold call\n", isLiveAcrossNonColdCall? "" : "NOT ");
             }
 
          if (isLiveAcrossNonColdCall)
@@ -1878,9 +1892,9 @@ OMR::CodeGenerator::pickRegister(TR::RegisterCandidate     *rc,
          }
 
       TR_ASSERT(preferences, "A register selection preference order must be chosen");
-      if (debug("tracePickRegister") || self()->comp()->getOptions()->trace(OMR::tacticalGlobalRegisterAllocator))
+      if (debug("tracePickRegister") || comp->getOptions()->trace(OMR::tacticalGlobalRegisterAllocator))
          {
-         traceMsg(self()->comp(), "pickRegister:\tPreference order: %s\n", preferences);
+         log->printf("pickRegister:\tPreference order: %s\n", preferences);
          }
 
 
@@ -1951,17 +1965,17 @@ OMR::CodeGenerator::pickRegister(TR::RegisterCandidate     *rc,
             }
          }
 
-      if (debug("tracePickRegister") || self()->comp()->getOptions()->trace(OMR::tacticalGlobalRegisterAllocator))
+      if (debug("tracePickRegister") || comp->getOptions()->trace(OMR::tacticalGlobalRegisterAllocator))
          {
          if (bestLowRegisterNumber == -1)
             {
-            traceMsg(self()->comp(), "pickRegister:\tNOT assigned a global register\n");
+            log->prints("pickRegister:\tNOT assigned a global register\n");
             }
          else
             {
-            traceMsg(self()->comp(), "pickRegister:\tPicked global register #%d\n", bestLowRegisterNumber);
+            log->printf("pickRegister:\tPicked global register #%d\n", bestLowRegisterNumber);
             }
-         traceMsg(self()->comp(), "pickRegister: }\n");
+         log->prints("pickRegister: }\n");
          }
       return bestLowRegisterNumber;
       }
@@ -1976,7 +1990,7 @@ OMR::CodeGenerator::findCoalescenceForRegisterCopy(TR::Node *node, TR::RegisterC
    if (node->getOpCode().isStoreDirect() && node->getFirstChild()->getOpCode().isLoadVarDirect())
       {
       if (self()->comp()->getOption(TR_TraceRegisterPressureDetails))
-         traceMsg(self()->comp(), "            found copy %s\n", self()->getDebug()->getName(node));
+         self()->comp()->getLogger()->printf("            found copy %s\n", self()->getDebug()->getName(node));
 
       TR::RegisterCandidate *storedCand = self()->comp()->getGlobalRegisterCandidates()->find(node->getSymbolReference());
 
@@ -2052,7 +2066,7 @@ OMR::CodeGenerator::computeSimulatedSpilledRegs(TR_BitVector *spilledRegisters, 
    if (symRefNum == _blockAndCandidateRegisterPressureCacheTags[blockNum])
       {
       if (traceSimulateTreeEvaluation())
-         traceMsg(comp(), "Using candidate-specific regsiter pressure simulation cache for block_%d, sym #%d\n", blockNum, symRefNum);
+         comp()->getLogger()->printf("Using candidate-specific register pressure simulation cache for block_%d, sym #%d\n", blockNum, symRefNum);
       computeSpilledRegsForAllPresentLinkages(spilledRegisters, _blockAndCandidateRegisterPressureCache[blockNum]);
       }
    else
@@ -2102,7 +2116,7 @@ void OMR::CodeGenerator::TR_RegisterPressureSummary::setLinkagePresent(TR_Linkag
       {
       // Call setLinkagePresent() after calling spill() to make the
       // traces look nice (like "!volatile.private").
-      traceMsg(cg->comp(), ".%s", cg->getDebug()->getLinkageConventionName(lc));
+      cg->comp()->getLogger()->printf(".%s", cg->getDebug()->getLinkageConventionName(lc));
       }
    }
 
@@ -2110,7 +2124,7 @@ void OMR::CodeGenerator::TR_RegisterPressureSummary::spill(TR_SpillKinds kind, T
    {
    _spillMask |= (1 << kind);
    if (cg->traceSimulateTreeEvaluation())
-      traceMsg(cg->comp(), " !%s", cg->getDebug()->getSpillKindName(kind));
+      cg->comp()->getLogger()->printf(" !%s", cg->getDebug()->getSpillKindName(kind));
    }
 
 void OMR::CodeGenerator::TR_RegisterPressureSummary::dumpSpillMask(TR::CodeGenerator *cg)
@@ -2121,7 +2135,7 @@ void OMR::CodeGenerator::TR_RegisterPressureSummary::dumpSpillMask(TR::CodeGener
          {
          TR_SpillKinds spillKind = (TR_SpillKinds)i;
          if (isSpilled(spillKind))
-            traceMsg(cg->comp(), " %s", cg->getDebug()->getSpillKindName(spillKind));
+            cg->comp()->getLogger()->printf(" %s", cg->getDebug()->getSpillKindName(spillKind));
          }
       }
    }
@@ -2134,7 +2148,7 @@ void OMR::CodeGenerator::TR_RegisterPressureSummary::dumpLinkageConventionMask(T
          {
          TR_LinkageConventions lc = (TR_LinkageConventions)i;
          if (isLinkagePresent(lc))
-            traceMsg(cg->comp(), " %s", cg->getDebug()->getLinkageConventionName(lc));
+            cg->comp()->getLogger()->printf(" %s", cg->getDebug()->getLinkageConventionName(lc));
          }
       }
    }
@@ -2192,12 +2206,13 @@ void OMR::CodeGenerator::addToUnlatchedRegisterList(TR::RealRegister *reg)
 
 inline void standardNodeSimulationAnnotations(OMR::CodeGenerator::TR_RegisterPressureState *state, TR::Compilation *comp)
    {
+   TR::Logger *log = comp->getLogger();
    if (state->_candidate)
-      traceMsg(comp, " %c%c", state->_pressureRiskFromStart? '+': state->_numLiveCandidateLoads? '|':' ', state->_pressureRiskUntilEnd? '+':' ');
+      log->printf(" %c%c", state->_pressureRiskFromStart? '+': state->_numLiveCandidateLoads? '|':' ', state->_pressureRiskUntilEnd? '+':' ');
    if (state->_memrefNestDepth >= 2)
-      traceMsg(comp, " mem*%d", state->_memrefNestDepth);
+      log->printf(" mem*%d", state->_memrefNestDepth);
    else if (state->_memrefNestDepth >= 1)
-      traceMsg(comp, " mem");
+      log->prints(" mem");
    }
 
 inline void leaveSpaceForRegisterPressureState(OMR::CodeGenerator::TR_RegisterPressureState *state, TR::Compilation *comp)
@@ -2207,7 +2222,7 @@ inline void leaveSpaceForRegisterPressureState(OMR::CodeGenerator::TR_RegisterPr
    // printed.  This keeps any subsequent annotations lined up with those on
    // other rows.
    //
-   traceMsg(comp, "%*s", 26, "");
+   comp->getLogger()->printf("%*s", 26, "");
    standardNodeSimulationAnnotations(state, comp);
    }
 
@@ -2249,7 +2264,7 @@ keepMostRecentValueAliveIfLiveOnEntryToSuccessor(
       cg->simulatedNodeState(mrv, state)._keepLiveUntil = exitPoint;
       if (comp->getOption(TR_TraceRegisterPressureDetails))
          {
-         traceMsg(comp, "\n               Will keep #%s live until %s",
+         comp->getLogger()->printf("\n               Will keep #%s live until %s",
             cg->getDebug()->getName(mrv),
             cg->getDebug()->getName(exitPoint->getNode()));
          }
@@ -2271,7 +2286,7 @@ killMostRecentValueIfKeptAliveUntilCurrentTreeTop(
          {
          nodeState._keepLiveUntil = NULL;
          if (comp->getOption(TR_TraceRegisterPressureDetails))
-            traceMsg(comp, " exiting(%s)", cg->getDebug()->getName(mrv));
+            comp->getLogger()->printf(" exiting(%s)", cg->getDebug()->getName(mrv));
          if (mrv->getFutureUseCount() == 0)
             {
             // Resurrect the node and kill it again more thoroughly
@@ -2291,17 +2306,18 @@ OMR::CodeGenerator::simulateBlockEvaluation(
    TR_ASSERT(!block->isExtensionOfPreviousBlock(), "simulateBlockEvaluation operates on extended basic blocks");
    state->_currentBlock = block;
 
+   TR::Logger *log = self()->comp()->getLogger();
+
    if (self()->traceSimulateTreeEvaluation())
       {
-      TR::Logger *log = self()->comp()->getLogger();
-      traceMsg(self()->comp(), "            { simulating block_%d", block->getNumber());
+      log->printf("            { simulating block_%d", block->getNumber());
       if (state->_candidate)
-         traceMsg(self()->comp(), ", candidate %d", state->getCandidateSymRef()->getReferenceNumber());
+         log->printf(", candidate %d", state->getCandidateSymRef()->getReferenceNumber());
       else
-         traceMsg(self()->comp(), ", candidate ignored");
-      traceMsg(self()->comp(), "\n               Already assigned on entry: ");
+         log->prints(", candidate ignored");
+      log->prints("\n               Already assigned on entry: ");
       self()->getDebug()->print(log, &state->_alreadyAssignedOnEntry);
-      traceMsg(self()->comp(), "\n               Already assigned on exit: ");
+      log->prints("\n               Already assigned on exit: ");
       self()->getDebug()->print(log, &state->_alreadyAssignedOnExit);
       }
 
@@ -2352,7 +2368,7 @@ OMR::CodeGenerator::simulateBlockEvaluation(
    if (state->mustAbort())
       {
       if (self()->traceSimulateTreeEvaluation())
-         traceMsg(self()->comp(), "\n               ABORTED");
+         log->prints("\n               ABORTED");
       }
    else // Normal termination
       {
@@ -2377,7 +2393,7 @@ OMR::CodeGenerator::simulateBlockEvaluation(
          {
          if (self()->traceSimulateTreeEvaluation())
             {
-            traceMsg(self()->comp(), "\n               Removing non-mandatory spill kinds from ");
+            log->prints("\n               Removing non-mandatory spill kinds from ");
             summary->dumpSpillMask(self());
             }
          summary->_spillMask &= mandatoryMask;
@@ -2386,10 +2402,10 @@ OMR::CodeGenerator::simulateBlockEvaluation(
 
    if (self()->traceSimulateTreeEvaluation())
       {
-      traceMsg(self()->comp(), "\n            } finished simulating block_%d -- g=%d, f=%d, v=%d",
+      log->printf("\n            } finished simulating block_%d -- g=%d, f=%d, v=%d",
          block->getNumber(), summary->_gprPressure, summary->_fprPressure, summary->_vrfPressure);
       summary->dumpSpillMask(self());
-      traceMsg(self()->comp(), "\n");
+      log->println();
       }
    }
 
@@ -2472,7 +2488,7 @@ OMR::CodeGenerator::simulateTreeEvaluation(TR::Node *node, TR_RegisterPressureSt
    if (state->mustAbort())
       {
       if (self()->traceSimulateTreeEvaluation())
-         traceMsg(self()->comp(), " ABORTED");
+         self()->comp()->getLogger()->prints(" ABORTED");
       return;
       }
 
@@ -2614,7 +2630,7 @@ OMR::CodeGenerator::simulateTreeEvaluation(TR::Node *node, TR_RegisterPressureSt
             child->incFutureUseCount();
 
             if (self()->comp()->getOption(TR_TraceRegisterPressureDetails))
-               traceMsg(self()->comp(), " ++%s", self()->getDebug()->getName(child));
+               self()->comp()->getLogger()->printf(" ++%s", self()->getDebug()->getName(child));
             }
 
          self()->simulateNodeEvaluation(node, state, summary);
@@ -2758,7 +2774,7 @@ OMR::CodeGenerator::simulateNodeEvaluation(TR::Node *node, TR_RegisterPressureSt
    if (callNodeLinkage)
       {
       if (self()->comp()->getOption(TR_TraceRegisterPressureDetails))
-         traceMsg(self()->comp(), " (%s %s linkage)",
+         self()->comp()->getLogger()->printf(" (%s %s linkage)",
             self()->getDebug()->getName(node),
             self()->getDebug()->getLinkageConventionName(node->getSymbol()->castToMethodSymbol()->getLinkageConvention()));
       for (int32_t k = 0; k < NumRegisterKinds; k++)
@@ -2772,7 +2788,7 @@ OMR::CodeGenerator::simulateNodeEvaluation(TR::Node *node, TR_RegisterPressureSt
       {
       TR_ASSERT(node->getNumChildren() == 2, "assertion failure");
       if (self()->comp()->getOption(TR_TraceRegisterPressureDetails))
-         traceMsg(self()->comp(), " (%s before %s)", self()->getDebug()->getName(node->getSecondChild()), self()->getDebug()->getName(node->getFirstChild()));
+         self()->comp()->getLogger()->printf(" (%s before %s)", self()->getDebug()->getName(node->getSecondChild()), self()->getDebug()->getName(node->getFirstChild()));
       self()->simulateTreeEvaluation(node->getSecondChild(), state, summary);
       self()->simulateTreeEvaluation(node->getFirstChild(),  state, summary);
       }
@@ -2792,7 +2808,7 @@ OMR::CodeGenerator::simulateNodeEvaluation(TR::Node *node, TR_RegisterPressureSt
                {
                childrenInRegisters.set(1 << childIndex);
                if (callNodeLinkage && self()->comp()->getOption(TR_TraceRegisterPressureDetails))
-                  traceMsg(self()->comp(), " (%s arg %d in %s, %d left)",
+                  self()->comp()->getLogger()->printf(" (%s arg %d in %s, %d left)",
                      self()->getDebug()->getName(node),
                      childIndex,
                      self()->getDebug()->getRegisterKindName(callNodeLinkage->argumentRegisterKind(node->getChild(childIndex))),
@@ -2803,7 +2819,7 @@ OMR::CodeGenerator::simulateNodeEvaluation(TR::Node *node, TR_RegisterPressureSt
                // Child is in memory, so its register dies immediately after the store
                self()->simulateDecReferenceCount(node->getChild(childIndex), state);
                if (callNodeLinkage && self()->comp()->getOption(TR_TraceRegisterPressureDetails))
-                  traceMsg(self()->comp(), " (%s arg %s in mem)",
+                  self()->comp()->getLogger()->printf(" (%s arg %s in mem)",
                      self()->getDebug()->getName(node),
                      self()->getDebug()->getName(node->getChild(childIndex)));
                }
@@ -2816,7 +2832,7 @@ OMR::CodeGenerator::simulateNodeEvaluation(TR::Node *node, TR_RegisterPressureSt
 
    if (self()->comp()->getOption(TR_TraceRegisterPressureDetails))
       {
-      traceMsg(self()->comp(), "state->_gprPressure = %d summary->_gprPressure = %d summary->PRESSURE_LIMIT = %d\n",state->_gprPressure,summary->_gprPressure,summary->PRESSURE_LIMIT);
+      self()->comp()->getLogger()->printf("state->_gprPressure = %d summary->_gprPressure = %d summary->PRESSURE_LIMIT = %d\n",state->_gprPressure,summary->_gprPressure,summary->PRESSURE_LIMIT);
       }
 
    if (summary->_gprPressure < summary->PRESSURE_LIMIT)
@@ -2852,7 +2868,7 @@ OMR::CodeGenerator::simulateNodeEvaluation(TR::Node *node, TR_RegisterPressureSt
             tag = " decRegArgs";
 
          if (self()->comp()->getOption(TR_TraceRegisterPressureDetails))
-            traceMsg(self()->comp(), " childrenInRegisters=" UINT64_PRINTF_FORMAT_HEX, childrenInRegisters.getValue());
+            self()->comp()->getLogger()->printf(" childrenInRegisters=" UINT64_PRINTF_FORMAT_HEX, childrenInRegisters.getValue());
 
          for (int32_t childIndex = std::min<int32_t>(maxChildrenInRegisters, node->getNumChildren())-1; childIndex >= 0; childIndex--)
             if (childrenInRegisters.testAny(1 << childIndex))
@@ -2880,7 +2896,7 @@ OMR::CodeGenerator::simulateNodeEvaluation(TR::Node *node, TR_RegisterPressureSt
    self()->simulateNodeGoingLive(node, state);
 
    if (tag && self()->comp()->getOption(TR_TraceRegisterPressureDetails))
-      traceMsg(self()->comp(), tag);
+      self()->comp()->getLogger()->prints(tag);
 
    }
 
@@ -3162,7 +3178,7 @@ OMR::CodeGenerator::simulateNodeGoingLive(TR::Node *node, TR_RegisterPressureSta
       if (childNodeState._willBeRematerialized && childNodeState._childRefcountsHaveBeenDecremented)
          {
          if (self()->comp()->getOption(TR_TraceRegisterPressureDetails))
-            traceMsg(self()->comp(), " rematChild:");
+            self()->comp()->getLogger()->prints(" rematChild:");
          self()->simulateNodeGoingDead(child, state);
          }
       childNodeState._willBeRematerialized = 0;
@@ -3184,7 +3200,7 @@ OMR::CodeGenerator::simulateNodeGoingLive(TR::Node *node, TR_RegisterPressureSta
    if (self()->traceSimulateTreeEvaluation())
       {
       self()->getDebug()->dumpSimulatedNode(self()->comp()->getLogger(), node, self()->isCandidateLoad(node, state)? 'C':' ');
-      traceMsg(self()->comp(), "%2d(%d) g%+d=%-2d f%+d=%-2d v%+d=%-2d",
+      self()->comp()->getLogger()->printf("%2d(%d) g%+d=%-2d f%+d=%-2d v%+d=%-2d",
          self()->simulatedNodeState(node, state)._height,
          node->getNumChildren(),
          self()->nodeResultGPRCount(node, state), state->_gprPressure,
@@ -3206,14 +3222,14 @@ OMR::CodeGenerator::simulateNodeGoingDead(TR::Node *node, TR_RegisterPressureSta
       // There's another candidate load coming up, and that one will be live on entry too
       state->_pressureRiskFromStart = true;
       if (self()->comp()->getOption(TR_TraceRegisterPressureDetails))
-         traceMsg(self()->comp(), " *%s", self()->getDebug()->getName(node));
+         self()->comp()->getLogger()->printf(" *%s", self()->getDebug()->getName(node));
       }
    else if (self()->isLoadAlreadyAssignedOnEntry(node, state)
       && (node != findCandidate(node->getSymbolReference(), state->_candidatesAlreadyAssigned)->getLastLoad()))
       {
       // There's another load coming up
       if (self()->comp()->getOption(TR_TraceRegisterPressureDetails))
-         traceMsg(self()->comp(), " *%s", self()->getDebug()->getName(node));
+         self()->comp()->getLogger()->printf(" *%s", self()->getDebug()->getName(node));
       }
    else
       {
@@ -3224,7 +3240,7 @@ OMR::CodeGenerator::simulateNodeGoingDead(TR::Node *node, TR_RegisterPressureSta
       TR_ASSERT(state->_fprPressure >= 0, "FPR pressure must never be negative");
       TR_ASSERT(state->_vrfPressure >= 0, "VRF pressure must never be negative");
       if (self()->comp()->getOption(TR_TraceRegisterPressureDetails))
-         traceMsg(self()->comp(), " ~%s", self()->getDebug()->getName(node));
+         self()->comp()->getLogger()->printf(" ~%s", self()->getDebug()->getName(node));
       }
 
    if (self()->isCandidateLoad(node, state) && nodeState._liveCandidateLoad)
@@ -3246,7 +3262,7 @@ OMR::CodeGenerator::simulateDecReferenceCount(TR::Node *node, TR_RegisterPressur
    self()->simulateNodeInitialization(node, state);
 
    if (self()->comp()->getOption(TR_TraceRegisterPressureDetails))
-      traceMsg(self()->comp(), " --%s", self()->getDebug()->getName(node));
+      self()->comp()->getLogger()->printf(" --%s", self()->getDebug()->getName(node));
 
    TR_ASSERT(node->getFutureUseCount() > 0, "Too many simulated refcount decrements on node %s, refcount %d", self()->getDebug()->getName(node), node->getReferenceCount());
    if (node->decFutureUseCount() == 0)
@@ -3278,11 +3294,11 @@ OMR::CodeGenerator::simulateDecReferenceCount(TR::Node *node, TR_RegisterPressur
                   state->_pressureRiskUntilEnd++;
                   nodeState._isCausingPressureRiskUntilEnd = 1;
                   if (self()->comp()->getOption(TR_TraceRegisterPressureDetails))
-                     traceMsg(self()->comp(), " keep:%s", self()->getDebug()->getName(node));
+                     self()->comp()->getLogger()->printf(" keep:%s", self()->getDebug()->getName(node));
                   }
                }
             else if (self()->comp()->getOption(TR_TraceRegisterPressureDetails))
-               traceMsg(self()->comp(), " keeping:%s", self()->getDebug()->getName(node)); // Some node other than the candidate's most recent value is being kept alive
+               self()->comp()->getLogger()->printf(" keeping:%s", self()->getDebug()->getName(node)); // Some node other than the candidate's most recent value is being kept alive
             }
          else
             {
@@ -3300,7 +3316,7 @@ OMR::CodeGenerator::simulateDecReferenceCount(TR::Node *node, TR_RegisterPressur
          // This is kind of like a lazy recursivelyDecReferenceCount.
          //
          if (self()->comp()->getOption(TR_TraceRegisterPressureDetails))
-            traceMsg(self()->comp(), " ~~%s", self()->getDebug()->getName(node));
+            self()->comp()->getLogger()->printf(" ~~%s", self()->getDebug()->getName(node));
 
          for (int32_t childIndex = 0; childIndex < node->getNumChildren(); childIndex++)
             {
@@ -3321,14 +3337,14 @@ OMR::CodeGenerator::TR_SimulatedMemoryReference::add(
       {
       // Pretend to emit an LEA
       if (cg->comp()->getOption(TR_TraceRegisterPressureDetails))
-         traceMsg(cg->comp(), " consolidateMemref{");
+         cg->comp()->getLogger()->prints(" consolidateMemref{");
 
       simulateDecNodeReferenceCounts(state, cg);
       _numConsolidatedRegisters = 1;
       state->_gprPressure += _numConsolidatedRegisters;
 
       if (cg->comp()->getOption(TR_TraceRegisterPressureDetails))
-         traceMsg(cg->comp(), " }");
+         cg->comp()->getLogger()->prints(" }");
       }
    //_undecrementedNodes.add(node);
    _numRegisters += 1;
