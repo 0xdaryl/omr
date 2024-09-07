@@ -55,12 +55,13 @@
 TR::Register *
 OMR::CodeGenerator::evaluate(TR::Node * node)
    {
+   TR::Compilation *comp = self()->comp();
    TR::Register *reg;
 
    TR::ILOpCodes opcode = node->getOpCodeValue();
 
-   TR_ASSERT(!self()->comp()->getOption(TR_EnableParanoidRefCountChecks) || node->getOpCode().isTreeTop() || node->getReferenceCount() > 0,
-      "OMR::CodeGenerator::evaluate invoked for nontreetop node [%s] with count == 0", node->getName(self()->comp()->getDebug()));
+   TR_ASSERT(!comp->getOption(TR_EnableParanoidRefCountChecks) || node->getOpCode().isTreeTop() || node->getReferenceCount() > 0,
+      "OMR::CodeGenerator::evaluate invoked for nontreetop node [%s] with count == 0", node->getName(comp->getDebug()));
 
    if (opcode != TR::BBStart && node->getRegister())
       {
@@ -181,11 +182,12 @@ OMR::CodeGenerator::evaluate(TR::Node * node)
 
       reg = _nodeToInstrEvaluators[opcode](node, self());
 
-      if (self()->comp()->getOption(TR_TraceRegisterPressureDetails) && self()->comp()->getLoggingEnabled())
+      if (comp->getOption(TR_TraceRegisterPressureDetails) && comp->getLoggingEnabled())
          {
-         traceMsg(self()->comp(), "  evaluated %s", self()->getDebug()->getName(node));
-         self()->getDebug()->dumpLiveRegisters(self()->comp()->getLogger());
-         traceMsg(self()->comp(), "\n");
+         TR::Logger *log = comp->getLogger();
+         log->printf("  evaluated %s", self()->getDebug()->getName(node));
+         self()->getDebug()->dumpLiveRegisters(log);
+         log->println();
          }
 
       // Pop off and decrement tracked nodes
@@ -209,9 +211,9 @@ OMR::CodeGenerator::evaluate(TR::Node * node)
             //     - register shuffling _could_ be seen in this case.
             //     - but a bug might have been avoided: partial and complete evaluation of a commoned node occurred.
             //
-            if (self()->comp()->getOption(TR_TraceCG))
+            if (comp->getOption(TR_TraceCG))
                {
-               self()->comp()->getDebug()->trace(" _stackOfArtificiallyInflatedNodes.pop(): node %p part of commoned case, might have avoided a bug!\n", artificiallyInflatedNode);
+               comp->getLogger()->trprintf(" _stackOfArtificiallyInflatedNodes.pop(): node %p part of commoned case, might have avoided a bug!\n", artificiallyInflatedNode);
                }
             }
 
@@ -228,10 +230,10 @@ OMR::CodeGenerator::evaluate(TR::Node * node)
 #endif
 #endif
 
-         if (self()->comp()->getOption(TR_TraceCG))
+         if (comp->getOption(TR_TraceCG))
             {
-            self()->comp()->getDebug()->trace(" _stackOfArtificiallyInflatedNodes.pop() %p, decReferenceCount(...) called. reg=%s\n", artificiallyInflatedNode,
-                                      artificiallyInflatedNode->getRegister()?artificiallyInflatedNode->getRegister()->getRegisterName(self()->comp()):"null");
+            comp->getLogger()->trprintf(" _stackOfArtificiallyInflatedNodes.pop() %p, decReferenceCount(...) called. reg=%s\n", artificiallyInflatedNode,
+                                      artificiallyInflatedNode->getRegister()?artificiallyInflatedNode->getRegister()->getRegisterName(comp):"null");
             }
          }
 
@@ -244,10 +246,10 @@ OMR::CodeGenerator::evaluate(TR::Node * node)
       // for anchor mode, if node is an indirect store, it can have
       // ref count <= 2
       // but for compressedRefs, the indirect store must be an address
-      if (self()->comp()->useAnchors())
+      if (comp->useAnchors())
          {
          if (((node->getOpCode().isStoreIndirect() &&
-               (self()->comp()->useCompressedPointers() && (node->getSymbolReference()->getSymbol()->getDataType() == TR::Address))) ||
+               (comp->useCompressedPointers() && (node->getSymbolReference()->getSymbol()->getDataType() == TR::Address))) ||
                 opcode == TR::awrtbari) &&
                node->getReferenceCount() <= 2 &&
                !checkRefCount)
@@ -255,7 +257,7 @@ OMR::CodeGenerator::evaluate(TR::Node * node)
          }
 
       TR_ASSERT(checkRefCount,
-                  "evaluate: the node's register wasn't set (node [%s])", node->getName(self()->comp()->getDebug()));
+                  "evaluate: the node's register wasn't set (node [%s])", node->getName(comp->getDebug()));
       }
 
    return reg;
@@ -391,7 +393,7 @@ OMR::CodeGenerator::decReferenceCount(TR::Node * node)
          {
          storageReference->decOwningRegisterCount();
          if (self()->traceBCDCodeGen())
-            traceMsg(self()->comp(),"\tdecrement owningRegisterCount %d->%d on ref #%d (%s) for reg %s as %s (%p) refCount == 1 (going to 0)\n",
+            self()->comp()->getLogger()->trprintf("\tdecrement owningRegisterCount %d->%d on ref #%d (%s) for reg %s as %s (%p) refCount == 1 (going to 0)\n",
                storageReference->getOwningRegisterCount()+1,
                storageReference->getOwningRegisterCount(),
                storageReference->getReferenceNumber(),
