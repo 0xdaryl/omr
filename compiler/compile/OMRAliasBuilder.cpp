@@ -91,7 +91,7 @@ TR_BitVector *
 OMR::AliasBuilder::methodAliases(TR::SymbolReference *symRef)
    {
    if (comp()->getOption(TR_TraceAliases))
-      traceMsg(comp(), "For method sym %d default aliases\n", symRef->getReferenceNumber());
+      comp()->getLogger()->printf("For method sym %d default aliases\n", symRef->getReferenceNumber());
 
    return &defaultMethodDefAliases();
    }
