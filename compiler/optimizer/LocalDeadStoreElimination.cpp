@@ -50,6 +50,7 @@
 #include "optimizer/Optimization.hpp"
 #include "optimizer/Optimization_inlines.hpp"
 #include "optimizer/Optimizer.hpp"
+#include "ras/Logger.hpp"
 
 
 TR::Optimization *TR::LocalDeadStoreElimination::create(TR::OptimizationManager *manager)
@@ -76,7 +77,7 @@ TR::LocalDeadStoreElimination::isFirstReferenceToNode(TR::Node *parent, int32_t 
 int32_t TR::LocalDeadStoreElimination::perform()
    {
    if (trace())
-      traceMsg(comp(), "Starting LocalDeadStoreElimination\n");
+      comp()->getLogger()->prints("Starting LocalDeadStoreElimination\n");
 
    TR::TreeTop *tt, *exitTreeTop;
    for (tt = comp()->getStartTree(); tt; tt = exitTreeTop->getNextTreeTop())
@@ -91,7 +92,7 @@ int32_t TR::LocalDeadStoreElimination::perform()
       requestDeadTreesCleanup();
 
    if (trace())
-      traceMsg(comp(), "\nEnding LocalDeadStoreElimination\n");
+      comp()->getLogger()->prints("\nEnding LocalDeadStoreElimination\n");
 
    return 1;
    }
@@ -217,7 +218,7 @@ void TR::LocalDeadStoreElimination::transformBlock(TR::TreeTop * entryTree, TR::
                                                      // the one extra incVisitCount that might occur if we remove a store tree.
          {
          if (trace())
-            traceMsg(comp(), "Bailing out of local deadstore to avoid visit count overflow\n");
+            comp()->getLogger()->prints("Bailing out of local deadstore to avoid visit count overflow\n");
          break;
          }
 
@@ -696,7 +697,7 @@ bool TR::LocalDeadStoreElimination::seenIdenticalStore(TR::Node *node)
       if (storeNode == node)
          {
          if (trace())
-            traceMsg(comp(), "seenIdentical nodes %p and %p\n", node, storeNode);
+            comp()->getLogger()->trprintf("seenIdentical nodes %p and %p\n", node, storeNode);
          return false;
          }
       if (areLhsOfStoresSyntacticallyEquivalent(storeNode, node))
@@ -1046,13 +1047,13 @@ bool TR::LocalDeadStoreElimination::examineNewUsesForKill(TR::Node *node, TR::No
         parent->getOpCode().isCall())))
        {
        if (trace())
-          traceMsg(comp(), "going to remove new %p at node %p\n", newNode, node);
+          comp()->getLogger()->trprintf("going to remove new %p at node %p\n", newNode, node);
        if ((childNum == 0) && (storeNode == parent))
           return true;
        else
           {
           if (trace())
-             traceMsg(comp(), "removing new %p at node %p\n", newNode, node);
+             comp()->getLogger()->trprintf("removing new %p at node %p\n", newNode, node);
           currentNews->remove(newNode);
           if (!removedNews->find(newNode))
              removedNews->add(newNode);

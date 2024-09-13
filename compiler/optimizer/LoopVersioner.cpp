@@ -150,7 +150,7 @@ int32_t TR_LoopVersioner::perform()
 int32_t TR_LoopVersioner::performWithDominators()
    {
    if (trace())
-      traceMsg(comp(), "Building Control Dependencies\n");
+      comp()->getLogger()->prints("Building Control Dependencies\n");
 
    TR_PostDominators postDominators(comp());
    if (postDominators.isValid())
@@ -161,7 +161,7 @@ int32_t TR_LoopVersioner::performWithDominators()
    else
       {
       if (trace())
-         traceMsg(comp(), "WARNING: method may have infinite loops\n");
+         comp()->getLogger()->prints("WARNING: method may have infinite loops\n");
       }
    auto result = performWithoutDominators();
 
@@ -177,11 +177,12 @@ int32_t TR_LoopVersioner::performWithDominators()
 
 bool TR_LoopVersioner::loopIsWorthVersioning(TR_RegionStructure *naturalLoop)
    {
+   TR::Logger *log = comp()->getLogger();
    TR::Block *entryBlock = naturalLoop->getEntryBlock();
 
    if (entryBlock->isCold())
       {
-      if (trace()) traceMsg(comp(), "loopIsWorthVersioning returning false for cold block\n");
+      if (trace()) log->prints("loopIsWorthVersioning returning false for cold block\n");
       return false;
       }
 
@@ -204,7 +205,7 @@ bool TR_LoopVersioner::loopIsWorthVersioning(TR_RegionStructure *naturalLoop)
 
                if ((unimportantLoopCountThreshold*loopInvariantBlock->getFrequency()) > entryBlock->getFrequency()) // loop does not even run twice
                   {
-                  if (trace()) traceMsg(comp(), "loopIsWorthVersioning returning false based on LoopCountThreshold\n");
+                  if (trace()) log->prints("loopIsWorthVersioning returning false based on LoopCountThreshold\n");
                   return false;
                   }
                }
@@ -228,16 +229,16 @@ bool TR_LoopVersioner::loopIsWorthVersioning(TR_RegionStructure *naturalLoop)
          lvBlockFreqCutoff = 5000;
          }
 
-      if (trace()) traceMsg(comp(), "lvBlockFreqCutoff=%d\n", lvBlockFreqCutoff);
+      if (trace()) log->printf("lvBlockFreqCutoff=%d\n", lvBlockFreqCutoff);
 
       if (entryBlock->getFrequency() < lvBlockFreqCutoff)
          {
-         if (trace()) traceMsg(comp(), "loopIsWorthVersioning returning false based on lvBlockFreqCutoff\n");
+         if (trace()) log->prints("loopIsWorthVersioning returning false based on lvBlockFreqCutoff\n");
          return false;
          }
       }
 
-   if (trace()) traceMsg(comp(), "loopIsWorthVersioning returning true\n");
+   if (trace()) log->prints("loopIsWorthVersioning returning true\n");
    return true;
    }
 
@@ -245,6 +246,8 @@ bool TR_LoopVersioner::loopIsWorthVersioning(TR_RegionStructure *naturalLoop)
 
 int32_t TR_LoopVersioner::performWithoutDominators()
    {
+   TR::Logger *log = comp()->getLogger();
+
    _seenDefinedSymbolReferences = NULL;
    _additionInfo = NULL;
    _nullCheckReference = NULL;
@@ -283,9 +286,9 @@ int32_t TR_LoopVersioner::performWithoutDominators()
    _cfg = comp()->getFlowGraph();
    if (trace())
       {
-      traceMsg(comp(), "Starting LoopVersioning\n");
-      traceMsg(comp(), "\nCFG before loop versioning:\n");
-      getDebug()->print(comp()->getLogger(), _cfg);
+      log->prints("Starting LoopVersioning\n");
+      log->prints("\nCFG before loop versioning:\n");
+      getDebug()->print(log, _cfg);
       }
 
    // printTrees();
@@ -476,7 +479,7 @@ int32_t TR_LoopVersioner::performWithoutDominators()
              isExprInvariant(_loopTestTree->getNode()->getSecondChild()))
            {
            if (trace())
-              traceMsg(comp(), "Limit in loop test tree %p is invariant\n", _loopTestTree->getNode()->getSecondChild());
+              log->trprintf("Limit in loop test tree %p is invariant\n", _loopTestTree->getNode()->getSecondChild());
            _loopConditionInvariant = true;
            }
          else
@@ -580,7 +583,7 @@ int32_t TR_LoopVersioner::performWithoutDominators()
          TR_Hotness hotnessThreshold = hot;
          if (comp()->getOption(TR_EnableAggressiveLoopVersioning))
             {
-            if (trace()) traceMsg(comp(), "aggressiveLoopVersioning: raising hotnessThreshold for conditionalsWillBeEliminated\n");
+            if (trace()) log->prints("aggressiveLoopVersioning: raising hotnessThreshold for conditionalsWillBeEliminated\n");
             hotnessThreshold = maxHotness; // threshold which can't be matched by the > operator
             }
 
@@ -766,9 +769,9 @@ int32_t TR_LoopVersioner::performWithoutDominators()
 
    if (trace())
       {
-      traceMsg(comp(), "\nCFG after loop versioning:\n");
-      getDebug()->print(comp()->getLogger(), _cfg);
-      traceMsg(comp(), "Ending LoopVersioner\n");
+      log->prints("\nCFG after loop versioning:\n");
+      getDebug()->print(log, _cfg);
+      log->prints("Ending LoopVersioner\n");
       }
 
    if (_invalidateAliasSets)
@@ -938,7 +941,7 @@ bool TR_LoopVersioner::detectInvariantChecks(List<TR::Node> *nullCheckedReferenc
           _checksInDupHeader.find(nextTree->getData()))
          {
          if (trace())
-            traceMsg(comp(), "Non invariant Null check reference %p (%s)\n", node->getData(), node->getData()->getOpCode().getName());
+            comp()->getLogger()->trprintf("Non invariant Null check reference %p (%s)\n", node->getData(), node->getData()->getOpCode().getName());
 
          if (prevNode)
             {
@@ -954,7 +957,7 @@ bool TR_LoopVersioner::detectInvariantChecks(List<TR::Node> *nullCheckedReferenc
       else
          {
          if (trace())
-            traceMsg(comp(), "Invariant Null check reference %p (%s)\n", node->getData(), node->getData()->getOpCode().getName());
+            comp()->getLogger()->trprintf("Invariant Null check reference %p (%s)\n", node->getData(), node->getData()->getOpCode().getName());
          foundInvariantChecks = true;
          prevNode = node;
          prevTree = nextTree;
@@ -1020,7 +1023,7 @@ bool TR_LoopVersioner::detectInvariantArrayStoreChecks(List<TR::TreeTop> *arrayS
                 _checksInDupHeader.find(treetop->getData()))
                {
                if (trace())
-                  traceMsg(comp(), "Non invariant Array store check %p (%s)\n", treetop->getData()->getNode(), treetop->getData()->getNode()->getOpCode().getName());
+                  comp()->getLogger()->trprintf("Non invariant Array store check %p (%s)\n", treetop->getData()->getNode(), treetop->getData()->getNode()->getOpCode().getName());
 
                if (prevTreetop)
                   prevTreetop->setNextElement(treetop->getNextElement());
@@ -1030,7 +1033,7 @@ bool TR_LoopVersioner::detectInvariantArrayStoreChecks(List<TR::TreeTop> *arrayS
             else
                {
                if (trace())
-                  traceMsg(comp(), "Invariant Array store check %p (%s)\n", treetop->getData()->getNode(), treetop->getData()->getNode()->getOpCode().getName());
+                  comp()->getLogger()->trprintf("Invariant Array store check %p (%s)\n", treetop->getData()->getNode(), treetop->getData()->getNode()->getOpCode().getName());
                foundInvariantChecks = true;
                prevTreetop = treetop;
                }
@@ -1038,7 +1041,7 @@ bool TR_LoopVersioner::detectInvariantArrayStoreChecks(List<TR::TreeTop> *arrayS
          else
             {
             if (trace())
-                  traceMsg(comp(), "Non invariant Specialized expr %p (%s)\n", treetop->getData()->getNode(), treetop->getData()->getNode()->getOpCode().getName());
+               comp()->getLogger()->trprintf("Non invariant Specialized expr %p (%s)\n", treetop->getData()->getNode(), treetop->getData()->getNode()->getOpCode().getName());
 
             if (prevTreetop)
                prevTreetop->setNextElement(treetop->getNextElement());
@@ -1071,7 +1074,7 @@ bool TR_LoopVersioner::detectInvariantSpecializedExprs(List<TR::Node> *profiledE
       if (!isProfiledExprInvariant)
          {
          if (trace())
-            traceMsg(comp(), "Non invariant Specialized expr %p (%s)\n", node->getData(), node->getData()->getOpCode().getName());
+            comp()->getLogger()->trprintf("Non invariant Specialized expr %p (%s)\n", node->getData(), node->getData()->getOpCode().getName());
 
          if (prevNode)
             prevNode->setNextElement(node->getNextElement());
@@ -1081,7 +1084,7 @@ bool TR_LoopVersioner::detectInvariantSpecializedExprs(List<TR::Node> *profiledE
       else
          {
          if (trace())
-            traceMsg(comp(), "Invariant Specialized expr %p (%s)\n", node->getData(), node->getData()->getOpCode().getName());
+            comp()->getLogger()->trprintf("Invariant Specialized expr %p (%s)\n", node->getData(), node->getData()->getOpCode().getName());
          foundInvariantExprs = true;
          prevNode = node;
          }
@@ -1118,7 +1121,7 @@ bool TR_LoopVersioner::detectInvariantNodes(List<TR_NodeParentSymRef> *invariant
       {
       TR::Node *node = nextNode->getData()->_node;
       TR::Node *parent = nextNode->getData()->_parent;
-      if (trace()) traceMsg(comp(), "Looking at node %p parent %p\n\n", node, nextNode->getData()->_parent);
+      if (trace()) comp()->getLogger()->trprintf("Looking at node %p parent %p\n\n", node, nextNode->getData()->_parent);
       bool isNodeInvariant = isExprInvariant(node);
       // while not technically true, computeCC and overflow compares need to have their children intact and so they can't be marked as invariant
       // a better solution is really needed
@@ -1131,7 +1134,7 @@ bool TR_LoopVersioner::detectInvariantNodes(List<TR_NodeParentSymRef> *invariant
       if (removeElement)
          {
          if (trace())
-            traceMsg(comp(), "Non invariant expr %p (%s)\n", node, node->getOpCode().getName());
+            comp()->getLogger()->trprintf("Non invariant expr %p (%s)\n", node, node->getOpCode().getName());
 
          if (prevNode)
             prevNode->setNextElement(nextNode->getNextElement());
@@ -1141,7 +1144,7 @@ bool TR_LoopVersioner::detectInvariantNodes(List<TR_NodeParentSymRef> *invariant
       else
          {
          if (trace())
-            traceMsg(comp(), "Invariant expr %p (%s)\n", node, node->getOpCode().getName());
+            comp()->getLogger()->trprintf("Invariant expr %p (%s)\n", node, node->getOpCode().getName());
 
          prevNode = nextNode;
          }
@@ -1217,8 +1220,7 @@ bool TR_LoopVersioner::detectInvariantCheckCasts(List<TR::TreeTop> *trees)
          prevTreesElem = curTreesElem;
          if (trace())
             {
-            traceMsg(
-               comp(),
+            comp()->getLogger()->trprintf(
                "Invariant checkcast n%un [%p]\n",
                node->getGlobalIndex(),
                node);
@@ -1234,8 +1236,7 @@ bool TR_LoopVersioner::detectInvariantCheckCasts(List<TR::TreeTop> *trees)
 
          if (trace())
             {
-            traceMsg(
-               comp(),
+            comp()->getLogger()->trprintf(
                "Non-invariant checkcast n%un %p\n",
                node->getGlobalIndex(),
                node);
@@ -1487,8 +1488,7 @@ bool TR_LoopVersioner::isVersionableIfWithExtremum(
    // Success!
    if (trace())
       {
-      traceMsg(
-         comp(),
+      comp()->getLogger()->trprintf(
          "Conditional n%un [%p] is versionable based on an extremum of child %d: "
          "n%un [%p], derived from IV #%d\n",
          ifNode->getGlobalIndex(),
@@ -1510,6 +1510,7 @@ bool TR_LoopVersioner::detectInvariantConditionals(
    bool *containsNonInlineGuard,
    SharedSparseBitVector &reverseBranchInLoops)
    {
+   TR::Logger *log = comp()->getLogger();
    bool foundInvariantTrees = false;
    ListElement<TR::TreeTop> *nextTree = trees->getListHead();
    ListElement<TR::TreeTop> *prevTree = NULL;
@@ -1523,7 +1524,7 @@ bool TR_LoopVersioner::detectInvariantConditionals(
       {
       TR::Node *node = nextTree->getData()->getNode();
       if (trace())
-         traceMsg(comp(), "guard node %p %d\n", node, onlyDetectHighlyBiasedBranches);
+         log->trprintf("guard node %p %d\n", node, onlyDetectHighlyBiasedBranches);
 
       TR_ASSERT_FATAL_WITH_NODE(node, node->getOpCode().isIf(), "expected if");
 
@@ -1539,13 +1540,13 @@ bool TR_LoopVersioner::detectInvariantConditionals(
             static_cast<double> (nextBlock->getNextBlock()->getFrequency())/nextBlock->getFrequency() >= 0.8)
             {
             if (trace())
-               traceMsg(comp(), "node %p is highly biased\n", node);
+               log->trprintf("node %p is highly biased\n", node);
             highlyBiasedBranch = true;
             }
          else if(node->isVersionableIfWithMaxExpr() || node->isVersionableIfWithMinExpr() || node->isMaxLoopIterationGuard())
             {
             if (trace())
-               traceMsg(comp(), "node %p is versionable If\n", node);
+               log->trprintf("node %p is versionable If\n", node);
             highlyBiasedBranch = true;
             }
 #ifdef J9_PROJECT_SPECIFIC
@@ -1784,7 +1785,7 @@ bool TR_LoopVersioner::detectInvariantConditionals(
          {
          if (trace())
             {
-            traceMsg(comp(), "Non invariant tree %p (%s)\n", node, node->getOpCode().getName());
+            log->trprintf("Non invariant tree %p (%s)\n", node, node->getOpCode().getName());
             }
          if (prevTree)
             {
@@ -1805,7 +1806,7 @@ bool TR_LoopVersioner::detectInvariantConditionals(
              (!onlyNonInlineGuardConditional))
              {
              if (trace())
-                traceMsg(comp(), "Invariant tree %p (%s)\n", node, node->getOpCode().getName());
+                log->trprintf("Invariant tree %p (%s)\n", node, node->getOpCode().getName());
 
              foundInvariantTrees = true;
              prevTree = nextTree;
@@ -1836,7 +1837,7 @@ bool TR_LoopVersioner::detectInvariantConditionals(
                   else
 		     {
                      if (trace())
-                        traceMsg(comp(), "Keeping invariant branch  %p (%s) in block_%d\n", node, node->getOpCode().getName(), nextTree->getData()->getEnclosingBlock()->getNumber());
+                        log->trprintf("Keeping invariant branch  %p (%s) in block_%d\n", node, node->getOpCode().getName(), nextTree->getData()->getEnclosingBlock()->getNumber());
                      trees->setListHead(nextTree);
                      removedNode = prevTree->getData()->getNode();
                      prevTree = nextTree;
@@ -1849,7 +1850,7 @@ bool TR_LoopVersioner::detectInvariantConditionals(
                   }
 
                if (trace())
-                   traceMsg(comp(), "Discarded invariant branch  %p (%s) \n", removedNode, removedNode->getOpCode().getName());
+                   log->trprintf("Discarded invariant branch  %p (%s) \n", removedNode, removedNode->getOpCode().getName());
 
                }
             }
@@ -1885,7 +1886,7 @@ TR::Node *TR_LoopVersioner::isDependentOnInvariant(TR::Node *useNode)
    TR_ValueNumberInfo *valueNumberInfo = optimizer()->getValueNumberInfo();
    int32_t firstDefValueNumber = valueNumberInfo->getValueNumber(useDefInfo->getNode(cursor));
    if (trace())
-      traceMsg(comp(),"Definition Counts for node [%p] is %d inside isDependentOnInvariant \n", useNode,defs.PopulationCount());
+      comp()->getLogger()->trprintf("Definition Counts for node [%p] is %d inside isDependentOnInvariant \n", useNode,defs.PopulationCount());
    TR::Node *childNode = NULL;
    if (isNonZero) //&&
        //(defs.PopulationCount() == 1) &&
@@ -1901,7 +1902,7 @@ TR::Node *TR_LoopVersioner::isDependentOnInvariant(TR::Node *useNode)
          TR::Node *defNode = useDefInfo->getNode(defIndex);
          int32_t valueNumber = valueNumberInfo->getValueNumber(defNode);
          if(trace())
-            traceMsg(comp(),"Definition node [%p] value number %d and firstValueNumber %d  \n", defNode,valueNumber,firstDefValueNumber);
+            comp()->getLogger()->trprintf("Definition node [%p] value number %d and firstValueNumber %d  \n", defNode,valueNumber,firstDefValueNumber);
 
          if(valueNumber != firstDefValueNumber)
             return NULL;
@@ -2275,7 +2276,6 @@ bool TR_LoopVersioner::detectInvariantBoundChecks(List<TR::TreeTop> *boundCheckT
             {
             isInductionVariable = false;
             isIndexInvariant = false;
-            ///traceMsg(comp(), "marking node %p as non-invariant\n", node);
             }
          }
 
@@ -2287,7 +2287,7 @@ bool TR_LoopVersioner::detectInvariantBoundChecks(List<TR::TreeTop> *boundCheckT
           !isInductionVariable)
          {
          if (trace())
-            traceMsg(comp(), "Non invariant Bound check reference %p (%s)\n", node, node->getOpCode().getName());
+            comp()->getLogger()->trprintf("Non invariant Bound check reference %p (%s)\n", node, node->getOpCode().getName());
          if (prevTree)
             {
             prevTree->setNextElement(nextTree->getNextElement());
@@ -2300,7 +2300,7 @@ bool TR_LoopVersioner::detectInvariantBoundChecks(List<TR::TreeTop> *boundCheckT
       else
          {
          if (trace())
-            traceMsg(comp(), "Invariant Bound check reference %p (%s)\n", node, node->getOpCode().getName());
+            comp()->getLogger()->trprintf("Invariant Bound check reference %p (%s)\n", node, node->getOpCode().getName());
          foundInvariantChecks = true;
          prevTree = nextTree;
          }
@@ -2323,7 +2323,6 @@ bool TR_LoopVersioner::detectInvariantSpineChecks(List<TR::TreeTop> *spineCheckT
       TR::Node *node = nextTree->getData()->getNode();
       TR::Node *arrayObject = node->getChild(1);
       bool isArrayInvariant = isExprInvariant(arrayObject);
-//printf("isArrayInvariant is %d\n",isArrayInvariant);fflush(stdout);
       if (!isArrayInvariant)
          {
 	if (arrayObject->getOpCode().hasSymbolReference() &&
@@ -2334,9 +2333,8 @@ bool TR_LoopVersioner::detectInvariantSpineChecks(List<TR::TreeTop> *spineCheckT
 
         if (!isArrayInvariant)
           {
-//printf("Found A not invariant\n");fflush(stdout);
          if (trace())
-            traceMsg(comp(), "Non invariant Spine check reference %p (%s)\n", node, node->getOpCode().getName());
+            comp()->getLogger()->trprintf("Non invariant Spine check reference %p (%s)\n", node, node->getOpCode().getName());
          if (prevTree)
             {
             prevTree->setNextElement(nextTree->getNextElement());
@@ -2348,9 +2346,8 @@ bool TR_LoopVersioner::detectInvariantSpineChecks(List<TR::TreeTop> *spineCheckT
          }
       else
          {
-//printf("Found A invariant\n");fflush(stdout);
          if (trace())
-            traceMsg(comp(), "Invariant Spine check reference %p (%s)\n", node, node->getOpCode().getName());
+            comp()->getLogger()->trprintf("Invariant Spine check reference %p (%s)\n", node, node->getOpCode().getName());
          foundInvariantChecks = true;
          prevTree = nextTree;
          }
@@ -2430,7 +2427,7 @@ bool TR_LoopVersioner::detectInvariantDivChecks(List<TR::TreeTop> *divideCheckTr
           !isInductionVariable)
          {
          if (trace())
-            traceMsg(comp(), "Non invariant Div check reference %p (%s)\n", node, node->getOpCode().getName());
+            comp()->getLogger()->trprintf("Non invariant Div check reference %p (%s)\n", node, node->getOpCode().getName());
 
          if (prevTree)
             {
@@ -2444,7 +2441,7 @@ bool TR_LoopVersioner::detectInvariantDivChecks(List<TR::TreeTop> *divideCheckTr
       else
          {
          if (trace())
-            traceMsg(comp(), "Invariant Div check reference %p (%s)\n", node, node->getOpCode().getName());
+            comp()->getLogger()->trprintf("Invariant Div check reference %p (%s)\n", node, node->getOpCode().getName());
          foundInvariantChecks = true;
          prevTree = nextTree;
          }
@@ -2486,8 +2483,8 @@ bool TR_LoopVersioner::isDependentOnAllocation(TR::Node *useNode, int32_t recurs
          TR::Node *child = defNode->getFirstChild();
          if (trace())
             {
-            traceMsg(comp(), "use %p child %p def %p rec %d\n", useNode, child, defNode, recursionDepth);
-            traceMsg(comp(), "new %d non new %d\n", pointsToNew, pointsToNonNew);
+            comp()->getLogger()->trprintf("use %p child %p def %p rec %d\n", useNode, child, defNode, recursionDepth);
+            comp()->getLogger()->printf("new %d non new %d\n", pointsToNew, pointsToNonNew);
             }
 
         bool heapificationStore = defNode->getOpCodeValue() == TR::astore && defNode->isHeapificationStore();
@@ -2510,7 +2507,7 @@ bool TR_LoopVersioner::isDependentOnAllocation(TR::Node *useNode, int32_t recurs
             }
 
          if (trace())
-            traceMsg(comp(), "new %d non new %d\n", pointsToNew, pointsToNonNew);
+            comp()->getLogger()->printf("new %d non new %d\n", pointsToNew, pointsToNonNew);
 
          if (!pointsToNew)
             {
@@ -2525,7 +2522,7 @@ bool TR_LoopVersioner::isDependentOnAllocation(TR::Node *useNode, int32_t recurs
          }
 
       if (trace())
-         traceMsg(comp(), "final new %d non new %d\n", pointsToNew, pointsToNonNew);
+         comp()->getLogger()->printf("final new %d non new %d\n", pointsToNew, pointsToNonNew);
 
       if (!pointsToNew || pointsToNonNew)
          return false;
@@ -2543,6 +2540,8 @@ bool TR_LoopVersioner::detectInvariantAwrtbaris(List<TR::TreeTop> *awrtbariTrees
       return false;
 
 #ifdef J9_PROJECT_SPECIFIC
+   TR::Logger *log = comp()->getLogger();
+
    if (comp()->getOptions()->isVariableHeapBaseForBarrierRange0())
       {
       awrtbariTrees->deleteAll();
@@ -2577,12 +2576,12 @@ bool TR_LoopVersioner::detectInvariantAwrtbaris(List<TR::TreeTop> *awrtbariTrees
         node = node->getFirstChild();
 
       if (trace())
-         traceMsg(comp(), "base invariant 0 in %p\n", node);
+         log->trprintf("base invariant 0 in %p\n", node);
 
       if (node->getOpCodeValue() == TR::awrtbari)
          {
          if (trace())
-            traceMsg(comp(), "base invariant 1 in %p\n", node);
+            log->trprintf("base invariant 1 in %p\n", node);
          //printf("base invariant 1 in %s\n", comp()->signature());
          TR::Node *baseChild = node->getLastChild();
          if (baseChild->getOpCode().hasSymbolReference() &&
@@ -2591,7 +2590,7 @@ bool TR_LoopVersioner::detectInvariantAwrtbaris(List<TR::TreeTop> *awrtbariTrees
             {
             isBaseInvariant = isExprInvariant(baseChild, true);
             if (trace())
-               traceMsg(comp(), "base invariant 11 in %p inv %d\n", node, isBaseInvariant);
+               log->trprintf("base invariant 11 in %p inv %d\n", node, isBaseInvariant);
 
             if (isBaseInvariant)
                {
@@ -2602,7 +2601,7 @@ bool TR_LoopVersioner::detectInvariantAwrtbaris(List<TR::TreeTop> *awrtbariTrees
                else
                   {
                   if (trace())
-                     traceMsg(comp(), "base invariant 0 in %p\n", baseChild);
+                     log->trprintf("base invariant 0 in %p\n", baseChild);
                   //
                   // recursionDepth cannot be changed to > 1 because isExprInvariant used inside
                   // isDependentOnAllocation may not give the right answer if the expr is outside the loop
@@ -2620,7 +2619,7 @@ bool TR_LoopVersioner::detectInvariantAwrtbaris(List<TR::TreeTop> *awrtbariTrees
       if (!isBaseInvariant)
          {
          if (trace())
-            traceMsg(comp(), "Non invariant awrtbari %p (%s)\n", node, node->getOpCode().getName());
+            log->trprintf("Non invariant awrtbari %p (%s)\n", node, node->getOpCode().getName());
 
          if (prevTree)
             {
@@ -2634,7 +2633,7 @@ bool TR_LoopVersioner::detectInvariantAwrtbaris(List<TR::TreeTop> *awrtbariTrees
       else
          {
          if (trace())
-            traceMsg(comp(), "Invariant awrtbari %p (%s)\n", node, node->getOpCode().getName());
+            log->trprintf("Invariant awrtbari %p (%s)\n", node, node->getOpCode().getName());
          foundInvariantChecks = true;
          prevTree = nextTree;
          }
@@ -2741,7 +2740,7 @@ bool TR_LoopVersioner::hasWrtbarBeenSeen(List<TR::TreeTop> *awrtbariTrees, TR::N
         node = node->getFirstChild();
 
       if (trace())
-         traceMsg(comp(), "base invariant 0 in %p\n", node);
+         comp()->getLogger()->trprintf("base invariant 0 in %p\n", node);
 
       if (node->getOpCodeValue() == TR::awrtbari)
          {
@@ -2891,17 +2890,17 @@ bool TR_LoopVersioner::checkProfiledGuardSuitability(TR_ScratchList<TR::Block> *
             int32_t len = method->getMethod()->classNameLength();
             char *s = TR::Compiler->cls.classNameToSignature(method->getMethod()->classNameChars(), len, comp);
             TR_OpaqueClassBlock *classOfMethod = comp->fe()->getClassFromSignature(s, len, owningMethod, true);
-            traceMsg(comp, "Found profiled gaurd %p is on interface %s\n", guardNode, TR::Compiler->cls.classNameChars(comp, classOfMethod, len));
+            comp->getLogger()->trprintf("Found profiled gaurd %p is on interface %s\n", guardNode, TR::Compiler->cls.classNameChars(comp, classOfMethod, len));
             }
          TR::DebugCounter::incStaticDebugCounter(comp, TR::DebugCounter::debugCounterName(comp, "interfaceGuardCheck/(%s)", comp->signature()));
          int32_t *treeTopCounts = computeCallsiteCounts(loopBlocks, comp);
          float loopCodeRatio = (float)treeTopCounts[guardNode->getInlinedSiteIndex() + 2] / (float)treeTopCounts[0];
          if (trace())
-            traceMsg(comp, "  Loop code ratio %d / %d = %.2f\n", treeTopCounts[guardNode->getInlinedSiteIndex() + 2], treeTopCounts[0], loopCodeRatio);
+            comp->getLogger()->printf("  Loop code ratio %d / %d = %.2f\n", treeTopCounts[guardNode->getInlinedSiteIndex() + 2], treeTopCounts[0], loopCodeRatio);
          if (disableLoopCodeRatioCheck || loopCodeRatio < 0.25)
             {
             if (trace())
-               traceMsg(comp, "Skipping versioning of profiled guard %p because we found more than 2 JIT'd implementors at warm or above and the loop code ratio is too low\n", guardNode);
+               comp->getLogger()->trprintf("Skipping versioning of profiled guard %p because we found more than 2 JIT'd implementors at warm or above and the loop code ratio is too low\n", guardNode);
             risky = true;
             TR::DebugCounter::incStaticDebugCounter(comp, TR::DebugCounter::debugCounterName(comp, "profiledVersioning/unsuitableForVersioning/interfaceGuard/(%s)/bci=%d.%d", comp->signature(), guardNode->getByteCodeInfo().getCallerIndex(), guardNode->getByteCodeInfo().getByteCodeIndex()));
             }
@@ -2910,7 +2909,7 @@ bool TR_LoopVersioner::checkProfiledGuardSuitability(TR_ScratchList<TR::Block> *
         {
         if (trace())
            {
-           traceMsg(comp, "Found profiled guard %p is for a method subject to phase change - skipping versioning\n", guardNode);
+           comp->getLogger()->trprintf("Found profiled guard %p is for a method subject to phase change - skipping versioning\n", guardNode);
            }
         risky = true;
         }
@@ -2947,7 +2946,7 @@ bool TR_LoopVersioner::isBranchSuitableToVersion(TR_ScratchList<TR::Block> *loop
           if (valueInfo)
              {
              if (trace())
-               traceMsg(comp, "Profiled guard probability %.2f for guard %p\n", valueInfo->getTopProbability(), node);
+               comp->getLogger()->trprintf("Profiled guard probability %.2f for guard %p\n", valueInfo->getTopProbability(), node);
              if (valueInfo->getTopProbability() >= profiledGuardProbabilityThreshold)
                 {
                 suitableForVersioning = checkProfiledGuardSuitability(loopBlocks, node, comp->getInlinedCallerSymRef(node->getByteCodeInfo().getCallerIndex()), comp);
@@ -2973,7 +2972,8 @@ bool TR_LoopVersioner::isBranchSuitableToVersion(TR_ScratchList<TR::Block> *loop
           }
        else
           {
-          traceMsg(comp,"No callNode found for guard %p\n", node);
+          if (trace())
+             comp->getLogger()->trprintf("No callNode found for guard %p\n", node);
           }
        }
 #endif
@@ -2994,6 +2994,7 @@ bool TR_LoopVersioner::isBranchSuitableToDoLoopTransfer(TR_ScratchList<TR::Block
 
 bool TR_LoopVersioner::detectChecksToBeEliminated(TR_RegionStructure *whileLoop, List<TR::Node> *nullCheckedReferences, List<TR::TreeTop> *nullCheckTrees, List<int32_t> *numIndirections, List<TR::TreeTop> *boundCheckTrees, List<TR::TreeTop> *spineCheckTrees, List<int32_t> *numDimensions, List<TR::TreeTop> *conditionalTrees, List<TR::TreeTop> *divCheckTrees, List<TR::TreeTop> *awrtbariTrees, List<TR::TreeTop> *checkCastTrees, List<TR::TreeTop> *arrayStoreCheckTrees, List<TR::Node> *specializedInvariantNodes, List<TR_NodeParentSymRef> *invariantNodes, List<TR_NodeParentSymRefWeightTuple> *invariantTranslationNodesList, bool &discontinue)
    {
+   TR::Logger *log = comp()->getLogger();
    bool foundPotentialChecks = false;
    int32_t warmBranchCount = 0;
 
@@ -3185,7 +3186,7 @@ bool TR_LoopVersioner::detectChecksToBeEliminated(TR_RegionStructure *whileLoop,
             if (currentOpCode.isNullCheck())
                {
                if (trace())
-                  traceMsg(comp(), "Null check reference %p (%s)\n", _nullCheckReference, _nullCheckReference->getOpCode().getName());
+                  log->trprintf("Null check reference %p (%s)\n", _nullCheckReference, _nullCheckReference->getOpCode().getName());
 
                nullCheckedReferences->add(_nullCheckReference);
                nullCheckTrees->add(currentTree);
@@ -3199,7 +3200,7 @@ bool TR_LoopVersioner::detectChecksToBeEliminated(TR_RegionStructure *whileLoop,
                       && currentOpCode.getOpCodeValue() != TR::arraytranslateAndTest)
                {
                if (trace())
-                  traceMsg(comp(), "Bound check %p\n", currentTree->getNode());
+                  log->trprintf("Bound check %p\n", currentTree->getNode());
 
                boundCheckTrees->add(currentTree);
 
@@ -3211,7 +3212,7 @@ bool TR_LoopVersioner::detectChecksToBeEliminated(TR_RegionStructure *whileLoop,
              else if (currentOpCode.getOpCodeValue() == TR::SpineCHK)
                {
                if (trace())
-                  traceMsg(comp(), "Spine check %p\n", currentTree->getNode());
+                  log->trprintf("Spine check %p\n", currentTree->getNode());
                spineCheckTrees->add(currentTree);
 
                if (dupOfThisBlockAlreadyExecutedBeforeLoop)
@@ -3240,14 +3241,14 @@ bool TR_LoopVersioner::detectChecksToBeEliminated(TR_RegionStructure *whileLoop,
 
                   if (trace())
                      {
-                     traceMsg(comp(), "Conditional %p \n", currentTree->getNode());
+                     log->trprintf("Conditional %p \n", currentTree->getNode());
                      if (_postDominators)
                         {
-                        traceMsg(comp(), "    controls %d out of %d blocks\n",
+                        log->printf("    controls %d out of %d blocks\n",
                                         _postDominators->numberOfBlocksControlled(nextBlock->getNumber()),
                                         loop_size);
 
-                        traceMsg(comp(), "    post dominates loop entry: %s\n",
+                        log->printf("    post dominates loop entry: %s\n",
                                          postDominatesEntry ? "yes" : "no");
                         }
                      }
@@ -3257,7 +3258,7 @@ bool TR_LoopVersioner::detectChecksToBeEliminated(TR_RegionStructure *whileLoop,
             else if (currentOpCode.getOpCodeValue() == TR::DIVCHK)
                {
                if (trace())
-                  traceMsg(comp(), "DIVCHK %p\n", currentTree->getNode());
+                  log->trprintf("DIVCHK %p\n", currentTree->getNode());
 
                divCheckTrees->add(currentTree);
 
@@ -3280,7 +3281,7 @@ bool TR_LoopVersioner::detectChecksToBeEliminated(TR_RegionStructure *whileLoop,
                   else
                      {
                      if (trace()) //if we move the checkcast before the inlined body instanceof might fail because the class might not exist in the original code
-                         traceMsg(comp(), "Class for Checkcast %p is not loaded by the same classloader as the compiled method\n", currentTree->getNode());
+                         log->trprintf("Class for Checkcast %p is not loaded by the same classloader as the compiled method\n", currentTree->getNode());
                      }
                   }
                else
@@ -3293,7 +3294,7 @@ bool TR_LoopVersioner::detectChecksToBeEliminated(TR_RegionStructure *whileLoop,
             else if (currentOpCode.getOpCodeValue() == TR::ArrayStoreCHK)
                {
                if (trace())
-                  traceMsg(comp(), "Array store check %p\n", currentTree->getNode());
+                  log->trprintf("Array store check %p\n", currentTree->getNode());
 
                arrayStoreCheckTrees->add(currentTree);
 
@@ -3315,7 +3316,7 @@ bool TR_LoopVersioner::detectChecksToBeEliminated(TR_RegionStructure *whileLoop,
                    !hasWrtbarBeenSeen(awrtbariTrees, possibleAwrtbariNode))
                   {
                   if (trace())
-                     traceMsg(comp(), "awrtbari %p\n", currentTree->getNode());
+                     log->trprintf("awrtbari %p\n", currentTree->getNode());
 
                   awrtbariTrees->add(currentTree);
 
@@ -3468,7 +3469,7 @@ void TR_LoopVersioner::updateDefinitionsAndCollectProfiledExprs(TR::Node *parent
               !node->getSymbolReference()->getSymbol()->isAutoOrParm()) ||
              !node->getOpCode().hasSymbolReference()))
           {
-          if (trace()) traceMsg(comp(), "Added invariant node %p %s\n", node, node->getOpCode().getName());
+          if (trace()) comp()->getLogger()->trprintf("Added invariant node %p %s\n", node, node->getOpCode().getName());
           invariantNodes->add(new (trStackMemory()) TR_NodeParentSymRef(node, parent, NULL));
           }
        }
@@ -3651,7 +3652,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
          virtualGuardPair->_hotGuardBlock = nextBlock;
          virtualGuardPair->_coldGuardBlock = nextClonedBlock;
          if (trace())
-            traceMsg(comp(), "virtualGuardPair at guard node %p hotGuardBlock %d coldGuardBlock %d\n", nextBlock->getLastRealTreeTop()->getNode(), nextBlock->getNumber(), nextClonedBlock->getNumber());
+            comp()->getLogger()->trprintf("virtualGuardPair at guard node %p hotGuardBlock %d coldGuardBlock %d\n", nextBlock->getLastRealTreeTop()->getNode(), nextBlock->getNumber(), nextClonedBlock->getNumber());
          virtualGuardPair->_isGuarded = false;
          // check if the virtual guard is in an inner loop
          //
@@ -3800,7 +3801,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
                _cfg->addNode(newGotoBlock);
 
                if (trace())
-                  traceMsg(comp(), "Creating new goto block : %d for node %p\n", newGotoBlock->getNumber(), lastNode);
+                  comp()->getLogger()->trprintf("Creating new goto block : %d for node %p\n", newGotoBlock->getNumber(), lastNode);
 
                TR::TreeTop *gotoBlockEntryTree = newGotoBlock->getEntry();
                TR::TreeTop *gotoBlockExitTree = newGotoBlock->getExit();
@@ -4229,7 +4230,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
    // If aggressive loop versioning is requested, don't call buildNullCheckComparisonsTree based on hotness
    if (comp()->getOption(TR_EnableAggressiveLoopVersioning))
       {
-      if (trace()) traceMsg(comp(), "aggressiveLoopVersioning: raising hotnessThreshold for buildNullCheckComparisonsTree\n");
+      if (trace()) comp()->getLogger()->prints("aggressiveLoopVersioning: raising hotnessThreshold for buildNullCheckComparisonsTree\n");
       hotnessThreshold = maxHotness; // threshold which can't be matched by the > operator
       }
 
@@ -4593,7 +4594,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
          TR::Node *osrGuard = osrGuards.getListHead()->getData()->getNode();
          TR::Node *guard = osrGuard->duplicateTree();
          if (trace())
-            traceMsg(comp(), "OSRGuard n%dn has been created to guard against method invalidation\n", guard->getGlobalIndex());
+            comp()->getLogger()->printf("OSRGuard n%dn has been created to guard against method invalidation\n", guard->getGlobalIndex());
 
          guard->setBranchDestination(clonedLoopInvariantBlock->getEntry());
          comparisonTrees.add(guard);
@@ -4732,7 +4733,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
          _cfg->addNode(newGotoBlock);
 
          if (trace())
-            traceMsg(comp(), "Creating new goto block : %d for node %p\n", newGotoBlock->getNumber(), actualComparisonNode);
+            comp()->getLogger()->trprintf("Creating new goto block : %d for node %p\n", newGotoBlock->getNumber(), actualComparisonNode);
 
          actualComparisonNode->setBranchDestination(newGotoBlock->getEntry());
          TR::TreeTop *gotoBlockEntryTree = newGotoBlock->getEntry();
@@ -5183,7 +5184,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
       }
 
    if (trace())
-      comp()->dumpMethodTrees("Trees after this versioning");
+      comp()->dumpMethodTrees(comp()->getLogger(), "Trees after this versioning");
    }
 
 void TR_LoopVersioner::RemoveAsyncCheck::improveLoop()
@@ -5204,8 +5205,7 @@ void TR_LoopVersioner::RemoveAsyncCheck::improveLoop()
    whileLoop->getEntryBlock()->getStructureOf()->setIsEntryOfShortRunningLoop();
    if (_versioner->trace())
       {
-      traceMsg(
-         comp(),
+      comp()->getLogger()->trprintf(
          "Marked block %p with entry %p\n",
          whileLoop->getEntryBlock(),
          whileLoop->getEntryBlock()->getEntry()->getNode());
@@ -5699,7 +5699,7 @@ bool TR_LoopVersioner::buildLoopInvariantTree(List<TR_NodeParentSymRef> *invaria
       if (nodeSize(invariantNode) < 4)
          {
          if (trace())
-            traceMsg(comp(), "skipping undersized tree %p\n", nextInvariantNode->getData()->_node);
+            comp()->getLogger()->trprintf("skipping undersized tree %p\n", nextInvariantNode->getData()->_node);
          nextInvariantNode = nextInvariantNode->getNextElement();
          continue;
          }
@@ -6024,7 +6024,7 @@ void TR_LoopVersioner::buildConditionalTree(
             changeConditionalToUnconditionalInBothVersions = true;
 
          if (trace())
-            traceMsg(comp(), "changeConditionalToUnconditionalInBothVersions %d\n", changeConditionalToUnconditionalInBothVersions);
+            comp()->getLogger()->printf("changeConditionalToUnconditionalInBothVersions %d\n", changeConditionalToUnconditionalInBothVersions);
 
          bool reverseBranch = false;
 
@@ -6040,10 +6040,10 @@ void TR_LoopVersioner::buildConditionalTree(
          TR::Block *destBlock = dest ? dest->getNode()->getBlock() : NULL;
          TR::Block *fallThroughBlock = conditionalTree->getEnclosingBlock()->getNextBlock();
 
-         if (trace()) traceMsg(comp(), "Frequency Test for conditional node [%p], destination Frequency %d, fallThrough frequency %d\n", conditionalNode,destBlock->getFrequency(), fallThroughBlock->getFrequency());
+         if (trace()) comp()->getLogger()->trprintf("Frequency Test for conditional node [%p], destination Frequency %d, fallThrough frequency %d\n", conditionalNode,destBlock->getFrequency(), fallThroughBlock->getFrequency());
          if(reverseBranchInLoops[origConditionalNode->getGlobalIndex()])
             {
-            if (trace()) traceMsg(comp(), "Branch reversed for conditional node [%p], destination Frequency %d, fallThrough frequency %d\n", conditionalNode,destBlock->getFrequency(), fallThroughBlock->getFrequency());
+            if (trace()) comp()->getLogger()->trprintf("Branch reversed for conditional node [%p], destination Frequency %d, fallThrough frequency %d\n", conditionalNode,destBlock->getFrequency(), fallThroughBlock->getFrequency());
             reverseBranch = true;
             }
 
@@ -6795,6 +6795,7 @@ void TR_LoopVersioner::buildBoundCheckComparisonsTree(
    List<TR::TreeTop> *spineCheckTrees,
    bool reverseBranch)
    {
+   TR::Logger *log = comp()->getLogger();
    ListElement<TR::TreeTop> *nextTree = boundCheckTrees->getListHead();
    bool isAddition;
 
@@ -6873,7 +6874,7 @@ void TR_LoopVersioner::buildBoundCheckComparisonsTree(
          nextComparisonNode = TR::Node::createif(TR::ificmplt, indexNode->duplicateTreeForCodeMotion(), TR::Node::create(boundCheckNode, TR::iconst, 0, 0), _exitGotoTarget);
 
          if (trace())
-            traceMsg(comp(), "Index invariant in each iter -> Creating %p (%s)\n", nextComparisonNode, nextComparisonNode->getOpCode().getName());
+            log->trprintf("Index invariant in each iter -> Creating %p (%s)\n", nextComparisonNode, nextComparisonNode->getOpCode().getName());
 
          if (comp()->requiresSpineChecks())
              findAndReplaceContigArrayLen(NULL, nextComparisonNode, comp()->incVisitCount());
@@ -6887,7 +6888,7 @@ void TR_LoopVersioner::buildBoundCheckComparisonsTree(
             nextComparisonNode = TR::Node::createif(TR::ificmpgt, indexNode->duplicateTreeForCodeMotion(), arrayLengthNode->duplicateTreeForCodeMotion(), _exitGotoTarget);
 
          if (trace())
-            traceMsg(comp(), "Index invariant in each iter -> Creating %p (%s)\n", nextComparisonNode, nextComparisonNode->getOpCode().getName());
+            log->trprintf("Index invariant in each iter -> Creating %p (%s)\n", nextComparisonNode, nextComparisonNode->getOpCode().getName());
 
          if (comp()->requiresSpineChecks())
             findAndReplaceContigArrayLen(NULL, nextComparisonNode, comp()->incVisitCount());
@@ -7238,7 +7239,7 @@ void TR_LoopVersioner::buildBoundCheckComparisonsTree(
             //printf("Found an opportunity for special versioning in method %s\n", comp()->signature());
             nextComparisonNode = TR::Node::createif(TR::ificmplt, boundCheckNode->getChild(indexChildIndex)->duplicateTreeForCodeMotion(), TR::Node::create(boundCheckNode, TR::iconst, 0, 0), _exitGotoTarget);
             if (trace())
-               traceMsg(comp(), "Induction variable added in each iter -> Creating %p (%s)\n", nextComparisonNode, nextComparisonNode->getOpCode().getName());
+               log->trprintf("Induction variable added in each iter -> Creating %p (%s)\n", nextComparisonNode, nextComparisonNode->getOpCode().getName());
             }
          else
             {
@@ -7283,14 +7284,14 @@ void TR_LoopVersioner::buildBoundCheckComparisonsTree(
                nextComparisonNode = TR::Node::createif(TR::ificmplt, duplicateIndex, TR::Node::create(boundCheckNode, TR::iconst, 0, 0), _exitGotoTarget);
                nextComparisonNode->setIsVersionableIfWithMinExpr(comp());
                if (trace())
-                  traceMsg(comp(), "Induction variable added in each iter -> Creating %p (%s)\n", nextComparisonNode, nextComparisonNode->getOpCode().getName());
+                  log->trprintf("Induction variable added in each iter -> Creating %p (%s)\n", nextComparisonNode, nextComparisonNode->getOpCode().getName());
                }
             else
                {
                nextComparisonNode = TR::Node::createif(TR::ificmpge, duplicateIndex, arrayLengthNode->duplicateTreeForCodeMotion(), _exitGotoTarget);
                nextComparisonNode->setIsVersionableIfWithMaxExpr(comp());
                if (trace())
-                  traceMsg(comp(), "Induction variable subed in each iter -> Creating %p (%s)\n", nextComparisonNode, nextComparisonNode->getOpCode().getName());
+                  log->trprintf("Induction variable subed in each iter -> Creating %p (%s)\n", nextComparisonNode, nextComparisonNode->getOpCode().getName());
                }
             }
 
@@ -7511,7 +7512,7 @@ void TR_LoopVersioner::buildBoundCheckComparisonsTree(
 
             if (trace())
                {
-               traceMsg(comp(), "%s: reverseBranch %d stayInLoopOp %s incrNode n%dn numIterations n%dn maxValue n%dn loopLimit n%dn loopDrivingInductionVariable n%dn\n", __FUNCTION__,
+               log->printf("%s: reverseBranch %d stayInLoopOp %s incrNode n%dn numIterations n%dn maxValue n%dn loopLimit n%dn loopDrivingInductionVariable n%dn\n", __FUNCTION__,
                   reverseBranch, stayInLoopOp.getName(), incrNode->getGlobalIndex(), numIterations->getGlobalIndex(),
                   maxValue->getGlobalIndex(), loopLimit->getGlobalIndex(), _storeTrees[loopDrivingInductionVariable]->getNode()->getFirstChild()->getGlobalIndex());
                }
@@ -7579,7 +7580,7 @@ void TR_LoopVersioner::buildBoundCheckComparisonsTree(
             {
             nextComparisonNode = TR::Node::createif(TR::ifiucmpgt, boundCheckNode->getChild(indexChildIndex)->duplicateTree(), correctCheckNode->duplicateTree(), _exitGotoTarget);
             if (trace())
-               traceMsg(comp(), "Special Induction variable added in each iter -> Creating %p (%s)\n", nextComparisonNode, nextComparisonNode->getOpCode().getName());
+               log->trprintf("Special Induction variable added in each iter -> Creating %p (%s)\n", nextComparisonNode, nextComparisonNode->getOpCode().getName());
 
             if (comp()->requiresSpineChecks())
                findAndReplaceContigArrayLen(NULL, nextComparisonNode, comp()->incVisitCount());
@@ -7591,7 +7592,7 @@ void TR_LoopVersioner::buildBoundCheckComparisonsTree(
 
             nextComparisonNode = TR::Node::createif(TR::ifiucmpgt, correctCheckNode, arrayLengthNode->duplicateTree(), _exitGotoTarget);
             if (trace())
-               traceMsg(comp(), "Special Induction variable added in each iter -> Creating %p (%s)\n", nextComparisonNode, nextComparisonNode->getOpCode().getName());
+               log->trprintf("Special Induction variable added in each iter -> Creating %p (%s)\n", nextComparisonNode, nextComparisonNode->getOpCode().getName());
             }
          else
             {
@@ -7611,7 +7612,7 @@ void TR_LoopVersioner::buildBoundCheckComparisonsTree(
                   }
 
                if (trace())
-                  traceMsg(comp(), "Induction variable added in each iter -> Creating %p (%s)\n", nextComparisonNode, nextComparisonNode->getOpCode().getName());
+                  log->trprintf("Induction variable added in each iter -> Creating %p (%s)\n", nextComparisonNode, nextComparisonNode->getOpCode().getName());
                }
             else
                {
@@ -7627,7 +7628,7 @@ void TR_LoopVersioner::buildBoundCheckComparisonsTree(
                   }
 
                if (trace())
-                  traceMsg(comp(), "Induction variable subed in each iter -> Creating %p (%s)\n", nextComparisonNode, nextComparisonNode->getOpCode().getName());
+                  log->trprintf("Induction variable subed in each iter -> Creating %p (%s)\n", nextComparisonNode, nextComparisonNode->getOpCode().getName());
                }
             }
 
@@ -7704,7 +7705,7 @@ void TR_LoopVersioner::buildBoundCheckComparisonsTree(
                   }
 
                if (trace())
-                  traceMsg(comp(), "Induction variable added in each iter -> Creating %p (%s)\n", nextComparisonNode, nextComparisonNode->getOpCode().getName());
+                  log->trprintf("Induction variable added in each iter -> Creating %p (%s)\n", nextComparisonNode, nextComparisonNode->getOpCode().getName());
 
                if (comp()->requiresSpineChecks())
                   findAndReplaceContigArrayLen(NULL, nextComparisonNode, comp()->incVisitCount());
@@ -7727,14 +7728,16 @@ void TR_LoopVersioner::buildBoundCheckComparisonsTree(
                if((isAddition && !indVarOccursAsSecondChildOfSub) ||
                  (!isAddition && indVarOccursAsSecondChildOfSub))
                   {
-                  traceMsg(comp(), " Its addition indexsymref %d, duplicateMulNode %p \n",indexSymRef->getReferenceNumber(),duplicateMulNode);
+                  if (trace())
+                     log->trprintf(" Its addition indexsymref %d, duplicateMulNode %p \n",indexSymRef->getReferenceNumber(),duplicateMulNode);
                   vcount_t visitCount = comp()->incVisitCount();
                   replaceInductionVariable(NULL, duplicateMulNode, -1, indexSymRef->getReferenceNumber(), loopLimit->duplicateTree(), visitCount);
                   visitCount = comp()->incVisitCount();
                   replaceInductionVariable(NULL, duplicateMulHNode, -1, indexSymRef->getReferenceNumber(), loopLimit->duplicateTree(), visitCount);
                   }
 
-               traceMsg(comp(), " node : %p Loop limit %p )\n",nextComparisonNode,loopLimit);
+               if (trace())
+                  log->trprintf(" node : %p Loop limit %p )\n",nextComparisonNode,loopLimit);
                //If its negative
                nextComparisonNode = TR::Node::createif(TR::ificmplt, duplicateMulNode, TR::Node::create(boundCheckNode, TR::iconst, 0, 0), _exitGotoTarget);
                nextComparisonNode->setIsVersionableIfWithMaxExpr(comp());
@@ -7747,7 +7750,7 @@ void TR_LoopVersioner::buildBoundCheckComparisonsTree(
                   prep);
 
                if (trace())
-                  traceMsg(comp(), "Induction variable added in each iter -> Creating %p (%s)\n", nextComparisonNode, nextComparisonNode->getOpCode().getName());
+                  log->trprintf("Induction variable added in each iter -> Creating %p (%s)\n", nextComparisonNode, nextComparisonNode->getOpCode().getName());
 
                TR::Node::recreate(duplicateMulHNode,TR::imulh);
                nextComparisonNode = TR::Node::createif(TR::ifiucmpgt, duplicateMulHNode, TR::Node::create(boundCheckNode, TR::iconst, 0, 0), _exitGotoTarget);
@@ -7761,7 +7764,7 @@ void TR_LoopVersioner::buildBoundCheckComparisonsTree(
                   prep);
 
                if (trace())
-                  traceMsg(comp(), "Induction variable added in each iter -> Creating %p (%s)\n", nextComparisonNode, nextComparisonNode->getOpCode().getName());
+                  log->trprintf("Induction variable added in each iter -> Creating %p (%s)\n", nextComparisonNode, nextComparisonNode->getOpCode().getName());
 
                //Adding multiplicative factor greater than zero check for multiplicative BNDCHKS a.i+b; a>0
                nextComparisonNode = TR::Node::createif(TR::ificmple, strideNode->duplicateTree(), TR::Node::create(boundCheckNode, TR::iconst, 0, 0), _exitGotoTarget);
@@ -7944,7 +7947,7 @@ void TR_LoopVersioner::collectAllExpressionsToBeChecked(TR::Node *node, List<TR:
          true,
          false,
          "\t\t");
-      traceMsg(comp(), "\n");
+      comp()->getLogger()->println();
       }
 
    TR::NodeChecklist visited(comp());
@@ -8706,6 +8709,7 @@ int32_t TR_LoopVersioner::detectCanonicalizedPredictableLoops(TR_Structure *loop
    if (!loopStructure->getParent())
       return -3;
 
+   TR::Logger *log = comp()->getLogger();
    TR_ScratchList<TR::Block> blocksInWhileLoop(trMemory());
    loopStructure->getBlocks(&blocksInWhileLoop);
    int32_t loop_size = blocksInWhileLoop.getSize();
@@ -8728,14 +8732,14 @@ int32_t TR_LoopVersioner::detectCanonicalizedPredictableLoops(TR_Structure *loop
    if ((nodeCount/(MAX_SIZE_INCREASE_FACTOR/hotnessFactor)) > unsigned((_origNodeCount/nodeCountFactor)))
       {
       if (trace())
-         traceMsg(comp(), "Failing node count %d orig %d factor %d\n", nodeCount, _origNodeCount, nodeCountFactor);
+         log->printf("Failing node count %d orig %d factor %d\n", nodeCount, _origNodeCount, nodeCountFactor);
       return -2;
       }
 
    if ((comp()->getFlowGraph()->getNodes().getSize()/(MAX_SIZE_INCREASE_FACTOR/hotnessFactor)) > (_origBlockCount/blockCountFactor))
       {
       if (trace())
-         traceMsg(comp(), "Failing block count %d orig %d factor %d\n", comp()->getFlowGraph()->getNodes().getSize(), _origBlockCount, blockCountFactor);
+         log->printf("Failing block count %d orig %d factor %d\n", comp()->getFlowGraph()->getNodes().getSize(), _origBlockCount, blockCountFactor);
       return -2;
       }
 
@@ -8778,7 +8782,7 @@ int32_t TR_LoopVersioner::detectCanonicalizedPredictableLoops(TR_Structure *loop
           //_writtenAndNotJustForHeapification = new (trStackMemory()) TR_BitVector(symRefCount, trMemory(), stackAlloc);
 
           if (trace())
-             traceMsg(comp(), "\nChecking loop %d for predictability\n", loopStructure->getNumber());
+             log->printf("\nChecking loop %d for predictability\n", loopStructure->getNumber());
 
           _isAddition = false;
           _loopTestTree = NULL;
@@ -8846,7 +8850,7 @@ int32_t TR_LoopVersioner::detectCanonicalizedPredictableLoops(TR_Structure *loop
                          flushDerivedInductionVariables=true;
 
                       if (trace())
-                           traceMsg(comp(), "Version loop : %d with respect to induction variable %d\n", loopStructure->getNumber(), nextInductionVariableNumber);
+                           log->printf("Version loop : %d with respect to induction variable %d\n", loopStructure->getNumber(), nextInductionVariableNumber);
                       }
                    }
                 else if (isStoreInSpecialForm(nextInductionVariableNumber, loopStructure))
@@ -8856,7 +8860,7 @@ int32_t TR_LoopVersioner::detectCanonicalizedPredictableLoops(TR_Structure *loop
                    _specialVersionableInductionVariables.add(versionableInductionVariable);
 
                    if (trace())
-                        traceMsg(comp(), "Version loop : %d with respect to induction variable %d\n", loopStructure->getNumber(), nextInductionVariableNumber);
+                        log->printf("Version loop : %d with respect to induction variable %d\n", loopStructure->getNumber(), nextInductionVariableNumber);
                    }
                 }
 
@@ -9215,9 +9219,7 @@ bool TR_LoopVersioner::guardOkForExpr(TR::Node *node, bool onlySearching)
 
    if (trace())
       {
-      traceMsg(
-         comp(),
-         "guardOkForExpr? %s:%s\n",
+      comp()->getLogger()->printf("guardOkForExpr? %s:%s\n",
          comp()->getDebug()->getVirtualGuardKindName(kind),
          comp()->getDebug()->getVirtualGuardTestTypeName(test));
       }
@@ -9421,8 +9423,7 @@ const TR_LoopVersioner::Expr *TR_LoopVersioner::makeCanonicalExpr(TR::Node *node
 
    if (trace())
       {
-      traceMsg(
-         comp(),
+      comp()->getLogger()->trprintf(
          "Canonical n%un [%p] is expr %p\n",
          node->getGlobalIndex(),
          node,
@@ -9484,8 +9485,7 @@ const TR_LoopVersioner::Expr *TR_LoopVersioner::findCanonicalExpr(TR::Node *node
 
    if (trace())
       {
-      traceMsg(
-         comp(),
+      comp()->getLogger()->trprintf(
          "findCanonicalExpr: Canonical n%un [%p] is expr %p\n",
          node->getGlobalIndex(),
          node,
@@ -9578,8 +9578,7 @@ const TR_LoopVersioner::Expr *TR_LoopVersioner::substitutePrivTemps(
 
    if (trace())
       {
-      traceMsg(
-         comp(),
+      comp()->getLogger()->trprintf(
          "substitutePrivTemps: Canonical n%un [%p] is expr %p\n",
          node->getGlobalIndex(),
          node,
@@ -9672,8 +9671,7 @@ TR::Node *TR_LoopVersioner::emitExpr(const Expr *expr, EmitExprMemo &memo)
 
       if (trace())
          {
-         traceMsg(
-            comp(),
+         comp()->getLogger()->trprintf(
             "Emitted expr %p as privatized temp #%d load n%un [%p]\n",
             expr,
             temp->getReferenceNumber(),
@@ -9722,8 +9720,7 @@ TR::Node *TR_LoopVersioner::emitExpr(const Expr *expr, EmitExprMemo &memo)
 
    if (trace())
       {
-      traceMsg(
-         comp(),
+      comp()->getLogger()->trprintf(
          "Emitted expr %p as n%un [%p]\n",
          expr,
          node->getGlobalIndex(),
@@ -10066,6 +10063,7 @@ TR_LoopVersioner::LoopEntryPrep *TR_LoopVersioner::createLoopEntryPrep(
    TR::NodeChecklist *visited,
    LoopEntryPrep *prev)
    {
+   TR::Logger *log = comp()->getLogger();
    bool optDetails =
       comp()->getLoggingEnabled()
       && (trace() || comp()->getOption(TR_TraceOptDetails));
@@ -10092,14 +10090,14 @@ TR_LoopVersioner::LoopEntryPrep *TR_LoopVersioner::createLoopEntryPrep(
          comp()->getDebug()->clearNodeChecklist();
 
       comp()->getDebug()->printWithFixedPrefix(
-         comp()->getLogger(),
+         log,
          node,
          1,
          true,
          false,
          "\t\t");
 
-      traceMsg(comp(), "\n");
+      log->println();
       }
 
    const Expr *expr = makeCanonicalExpr(node);
@@ -10197,15 +10195,15 @@ TR_LoopVersioner::LoopEntryPrep *TR_LoopVersioner::createLoopEntryPrep(
 
       if (prep->_deps.empty())
          {
-         traceMsg(comp(), "none\n");
+         log->prints("none\n");
          }
       else
          {
          auto it = prep->_deps.begin();
-         traceMsg(comp(), "%p", *it);
+         log->trprintf("%p", *it);
          while (++it != prep->_deps.end())
-            traceMsg(comp(), ", %p", *it);
-         traceMsg(comp(), "\n");
+            log->trprintf(", %p", *it);
+         log->println();
          }
       }
 

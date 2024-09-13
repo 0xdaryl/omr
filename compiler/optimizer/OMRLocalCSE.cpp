@@ -103,7 +103,7 @@ bool OMR::LocalCSE::shouldCopyPropagateNode(TR::Node *parent, TR::Node *node, in
    if (_numCopyPropagations >= MAX_COPY_PROP)
       {
       if (trace())
-         traceMsg(comp(),"z^z : _numCopyPropagations %d >= max %d\n",_numCopyPropagations,MAX_COPY_PROP);
+         comp()->getLogger()->printf("z^z : _numCopyPropagations %d >= max %d\n",_numCopyPropagations,MAX_COPY_PROP);
       return false;
       }
 
@@ -130,7 +130,7 @@ TR::Node *OMR::LocalCSE::getNode(TR::Node *node)
       {
       TR::Node *toReturn = _simulatedNodesAsArray[node->getGlobalIndex()];
       if (trace())
-         traceMsg(comp(), "Updating comparison node n%dn to n%dn due to volatile simulation\n", node->getGlobalIndex(), toReturn->getGlobalIndex());
+         comp()->getLogger()->printf("Updating comparison node n%dn to n%dn due to volatile simulation\n", node->getGlobalIndex(), toReturn->getGlobalIndex());
       return toReturn;
       }
    return node;
@@ -146,8 +146,10 @@ bool OMR::LocalCSE::doExtraPassForVolatiles()
 
 int32_t OMR::LocalCSE::perform()
    {
+   TR::Logger *log = comp()->getLogger();
+
    if (trace())
-      traceMsg(comp(), "Starting LocalCommonSubexpressionElimination\n");
+      log->prints("Starting LocalCommonSubexpressionElimination\n");
 
    TR::Region &stackRegion = comp()->trMemory()->currentStackRegion();
    _storeMap = new (stackRegion) StoreMap((StoreMapComparator()), StoreMapAllocator(stackRegion));
@@ -160,11 +162,11 @@ int32_t OMR::LocalCSE::perform()
       if (doExtraPassForVolatiles())
          {
          if (trace())
-            traceMsg(comp(), "LocalCSE entering 2 pass mode for volatile elimination - pass 1 for volatiles ONLY\n");
+            log->prints("LocalCSE entering 2 pass mode for volatile elimination - pass 1 for volatiles ONLY\n");
          _volatileState = VOLATILE_ONLY;
          transformBlock(tt, exitTreeTop);
          if (trace())
-            traceMsg(comp(), "LocalCSE volatile only pass 1 complete - pass 2 for non-volatiles ONLY\n");
+            log->prints("LocalCSE volatile only pass 1 complete - pass 2 for non-volatiles ONLY\n");
          _volatileState = NON_VOLATILE_ONLY;
          transformBlock(tt, exitTreeTop);
          }
@@ -173,7 +175,7 @@ int32_t OMR::LocalCSE::perform()
       }
 
    if (trace())
-      traceMsg(comp(), "\nEnding LocalCommonSubexpressionElimination\n");
+      log->prints("\nEnding LocalCommonSubexpressionElimination\n");
 
    _storeMap = NULL;
    return 1; // actual cost
@@ -188,11 +190,11 @@ int32_t OMR::LocalCSE::performOnBlock(TR::Block *block)
       if (doExtraPassForVolatiles())
          {
          if (trace())
-            traceMsg(comp(), "LocalCSE entering 2 pass mode for volatile elimination - pass 1 for volatiles ONLY\n");
+            comp()->getLogger()->prints("LocalCSE entering 2 pass mode for volatile elimination - pass 1 for volatiles ONLY\n");
          _volatileState = VOLATILE_ONLY;
          transformBlock(block->getEntry(), block->getEntry()->getExtendedBlockExitTreeTop());
          if (trace())
-            traceMsg(comp(), "LocalCSE volatile only pass 1 complete - pass 2 for non-volatiles ONLY\n");
+            comp()->getLogger()->prints("LocalCSE volatile only pass 1 complete - pass 2 for non-volatiles ONLY\n");
          _volatileState = NON_VOLATILE_ONLY;
          transformBlock(block->getEntry(), block->getEntry()->getExtendedBlockExitTreeTop());
          }
@@ -362,7 +364,7 @@ OMR::LocalCSE::setIsInMemoryCopyPropFlag(TR::Node *rhsOfStoreDefNode)
        cg()->IsInMemoryType(rhsOfStoreDefNode->getType()))
       {
       if (cg()->traceBCDCodeGen() && _treeBeingExamined->getNode()->chkOpsIsInMemoryCopyProp() && !_treeBeingExamined->getNode()->isInMemoryCopyProp())
-         traceMsg(comp(),"\tset IsInMemoryCopyProp on %s (%p), rhsOfStoreDefNode %s (%p)\n",
+         comp()->getLogger()->trprintf("\tset IsInMemoryCopyProp on %s (%p), rhsOfStoreDefNode %s (%p)\n",
             _treeBeingExamined->getNode()->getOpCode().getName(),_treeBeingExamined->getNode(),rhsOfStoreDefNode->getOpCode().getName(),rhsOfStoreDefNode);
       _treeBeingExamined->getNode()->setIsInMemoryCopyProp(true);
       }
@@ -394,6 +396,8 @@ OMR::LocalCSE::allowNodeTypes(TR::Node *storeNode, TR::Node *node)
 
 void OMR::LocalCSE::examineNode(TR::Node *node, TR_BitVector &seenAvailableLoadedSymbolReferences, TR::Node *parent, int32_t childNum, int32_t *nextLoadIndex, bool *parentCanBeAvailable, int32_t depth)
    {
+   TR::Logger *log = comp()->getLogger();
+
    if (depth > MAX_DEPTH)
       {
       comp()->failCompilation<TR::ExcessiveComplexity>("scratch space in local CSE");
@@ -411,12 +415,12 @@ void OMR::LocalCSE::examineNode(TR::Node *node, TR_BitVector &seenAvailableLoade
    vcount_t visitCount = comp()->getVisitCount();
 
    if (trace())
-     traceMsg(comp(), "Examining node %p\n",node);
+     log->trprintf("Examining node %p\n",node);
 
    if (!isFirstReferenceToNode(parent, childNum, node, visitCount))
       {
       if (trace())
-         traceMsg(comp(), "\tNot first Reference to Node\n");
+         log->prints("\tNot first Reference to Node\n");
 
       doCommoningAgainIfPreviouslyCommoned(node, parent, childNum);
       return;
@@ -514,10 +518,10 @@ void OMR::LocalCSE::examineNode(TR::Node *node, TR_BitVector &seenAvailableLoade
    if (trace())
       {
       TR_BitVector tmpAliases(comp()->trMemory()->currentStackRegion());
-      traceMsg(comp(), "For Node %p UseDefAliases = ",node);
+      log->trprintf("For Node %p UseDefAliases = ",node);
       UseDefAliases.getAliasesAndUnionWith(tmpAliases);
-      tmpAliases.print(comp()->getLogger(), comp());
-      traceMsg(comp(), "\n");
+      tmpAliases.print(log, comp());
+      log->println();
       }
 
    // Step 2 : if this node is a potential kill point then update the fast and slow
@@ -528,7 +532,7 @@ void OMR::LocalCSE::examineNode(TR::Node *node, TR_BitVector &seenAvailableLoade
       // This node is a potential kill point
       //
       if (trace())
-         traceMsg(comp(), "\tnode %p isStore = %d or hasAliases = %d\n",node,node->getOpCode().isStore(),hasAliases);
+         log->trprintf("\tnode %p isStore = %d or hasAliases = %d\n",node,node->getOpCode().isStore(),hasAliases);
 
       int32_t symRefNum = node->getSymbolReference()->getReferenceNumber();
       bool previouslyAvailable = false;
@@ -607,16 +611,16 @@ void OMR::LocalCSE::examineNode(TR::Node *node, TR_BitVector &seenAvailableLoade
 
         if (trace())
            {
-           traceMsg(comp(), "For node %p tmp: ",node);
-           tmp.print(comp()->getLogger(), comp());
+           log->trprintf("For node %p tmp: ",node);
+           tmp.print(log, comp());
 
-           traceMsg(comp(), "\n_seenCallSymbolReferences: ");
-           _seenCallSymbolReferences.print(comp()->getLogger(), comp());
+           log->prints("\n_seenCallSymbolReferences: ");
+           _seenCallSymbolReferences.print(log, comp());
 
-           traceMsg(comp(), "\n seenAvailableLoadedSymbolReferences:");
-           seenAvailableLoadedSymbolReferences.print(comp()->getLogger(), comp());
+           log->prints("\n seenAvailableLoadedSymbolReferences:");
+           seenAvailableLoadedSymbolReferences.print(log, comp());
 
-           traceMsg(comp(), "\n");
+           log->println();
            }
 
         if (UseDefAliases.containsAny(tmp, comp()))
@@ -718,9 +722,9 @@ void OMR::LocalCSE::examineNode(TR::Node *node, TR_BitVector &seenAvailableLoade
    static char *verboseProcessing = feGetEnv("TR_VerboseLocalCSEAvailableSymRefs");
    if (verboseProcessing)
       {
-      traceMsg(comp(), "  after n%dn [%p] seenAvailableLoadedSymbolReferences:", node->getGlobalIndex(), node);
-      seenAvailableLoadedSymbolReferences.print(comp()->getLogger(), comp());
-      traceMsg(comp(), "\n");
+      log->trprintf("  after n%dn [%p] seenAvailableLoadedSymbolReferences:", node->getGlobalIndex(), node);
+      seenAvailableLoadedSymbolReferences.print(log, comp());
+      log->println();
       }
    }
 
@@ -889,7 +893,7 @@ void OMR::LocalCSE::doCommoningIfAvailable(TR::Node *node, TR::Node *parent, int
       else
          {
          if (trace())
-            traceMsg(comp(), "Simulating commoning of node n%dn with n%dn - current mode %n\n", node->getGlobalIndex(), availableExpression->getGlobalIndex(), _volatileState);
+            comp()->getLogger()->printf("Simulating commoning of node n%dn with n%dn - current mode %n\n", node->getGlobalIndex(), availableExpression->getGlobalIndex(), _volatileState);
          _simulatedNodesAsArray[node->getGlobalIndex()] = availableExpression;
          }
       }
@@ -1114,7 +1118,7 @@ TR::Node *OMR::LocalCSE::replaceCopySymbolReferenceByOriginalIn(TR::SymbolRefere
                   {
                   nodePrecision = overrideNodePrecision;
                   if (comp()->cg()->traceBCDCodeGen() || trace())
-                     traceMsg(comp(),"using overrideNodePrecision %d instead of node %s (%p)\n",overrideNodePrecision,node->getOpCode().getName(),node);
+                     comp()->getLogger()->trprintf("using overrideNodePrecision %d instead of node %s (%p)\n",overrideNodePrecision,node->getOpCode().getName(),node);
                   }
                else
                   {
@@ -1273,6 +1277,8 @@ bool OMR::LocalCSE::isAvailableNullCheck(TR::Node *node, TR_BitVector &seenAvail
 //
 TR::Node* OMR::LocalCSE::getAvailableExpression(TR::Node *parent, TR::Node *node)
    {
+   TR::Logger *log = comp()->getLogger();
+
    if (node->getOpCodeValue() == TR::NULLCHK)
       {
       for (int32_t i=0;i<_numNullCheckNodes;i++)
@@ -1289,9 +1295,9 @@ TR::Node* OMR::LocalCSE::getAvailableExpression(TR::Node *parent, TR::Node *node
 
    if (trace())
       {
-      traceMsg(comp(), "In getAvailableExpression _availableCallExprs = ");
-      _availableCallExprs.print(comp()->getLogger(), comp());
-      traceMsg(comp(),"\n");
+      log->prints("In getAvailableExpression _availableCallExprs = ");
+      _availableCallExprs.print(log, comp());
+      log->println();
       }
 
    HashTable *hashTable;
@@ -1317,14 +1323,14 @@ TR::Node* OMR::LocalCSE::getAvailableExpression(TR::Node *parent, TR::Node *node
       if (areSyntacticallyEquivalent(other, node, &remove))
          {
          if (trace())
-            traceMsg(comp(), "node %p is syntactically equivalent to other %p\n",node,other);
+            log->trprintf("node %p is syntactically equivalent to other %p\n",node,other);
          return other;
          }
 
       if (remove)
          {
          if (trace())
-            traceMsg(comp(), "remove is true, removing entry %p\n", other);
+            log->trprintf("remove is true, removing entry %p\n", other);
          auto nextIt = it;
          ++nextIt;
          hashTable->erase(it);
@@ -1418,7 +1424,6 @@ bool OMR::LocalCSE::killExpressionsIfVolatileLoad(TR::Node *node, TR_BitVector &
 //
 void OMR::LocalCSE::killAllAvailableExpressions()
    {
- //  traceMsg(comp(), "killAllAvailableExpressions 1 setting _availableCallExprs[0] to false\n");
    removeFromHashTable(_hashTable, 0);
    removeFromHashTable(_hashTableWithSyms, 0);
    _availableLoadExprs.reset(0);
@@ -1549,7 +1554,7 @@ void OMR::LocalCSE::killAvailableExpressionsAtGCSafePoints(TR::Node *node, TR::N
       // causing a crash when using the live local index to index into a bit vector.
       //
       if (trace())
-         traceMsg(comp(), "Node %p is detected as a method enter/exit point\n", node);
+         comp()->getLogger()->trprintf("Node %p is detected as a method enter/exit point\n", node);
 
       _storeMap->clear();
 
@@ -1569,7 +1574,7 @@ void OMR::LocalCSE::killAvailableExpressionsAtGCSafePoints(TR::Node *node, TR::N
    if (node->canGCandReturn())
       {
       if (trace())
-         traceMsg(comp(), "Node %p is detected as a GC safe point\n", node);
+         comp()->getLogger()->trprintf("Node %p is detected as a GC safe point\n", node);
 
       for (auto itr = _storeMap->begin(), end = _storeMap->end(); itr != end; )
          {
@@ -1701,8 +1706,6 @@ void OMR::LocalCSE::removeFromHashTable(HashTable *hashTable, int32_t hashValue)
 //
 bool OMR::LocalCSE::areSyntacticallyEquivalent(TR::Node *node1, TR::Node *node2, bool *remove)
    {
-   // traceMsg(comp(), "  Comparing node n%dn with n%dn for equivalence\n", node1->getGlobalIndex(), node2->getGlobalIndex());
-
    node1 = getNode(node1);
    node2 = getNode(node2);
 
@@ -1808,7 +1811,7 @@ void OMR::LocalCSE::collectAllReplacedNodes(TR::Node *node, TR::Node *replacingN
       _replacedNodesByAsArray[_nextReplacedNode++] = replacingNode;
 
       if (trace())
-         traceMsg(comp(), "Replaced node : %p Replacing node : %p\n", node, replacingNode);
+         comp()->getLogger()->trprintf("Replaced node : %p Replacing node : %p\n", node, replacingNode);
 
       node->setLocalIndex(REPLACE_MARKER);
       }

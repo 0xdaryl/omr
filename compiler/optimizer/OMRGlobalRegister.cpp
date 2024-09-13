@@ -31,6 +31,7 @@
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
 #include "infra/Cfg.hpp"
+#include "ras/Logger.hpp"
 
 #define keepAllStores false
 #define OPT_DETAILS "O^O GLOBAL REGISTER ASSIGNER: "
@@ -116,9 +117,10 @@ OMR::GlobalRegister::copyCurrentRegisterCandidate(TR::GlobalRegister *gr)
 TR::TreeTop *
 OMR::GlobalRegister::optimalPlacementForStore(TR::Block * currentBlock, TR::Compilation *comp)
    {
+   TR::Logger *log = comp->getLogger();
    bool traceGRA = comp->getOptions()->trace(OMR::tacticalGlobalRegisterAllocator);
    if (traceGRA)
-      traceMsg(comp, "           optimalPlacementForStore([%p], block_%d)\n", getValue(), currentBlock->getNumber());
+      log->trprintf("           optimalPlacementForStore([%p], block_%d)\n", getValue(), currentBlock->getNumber());
 
    TR::TreeTop * lastRefTreeTop = getLastRefTreeTop();
 
@@ -149,7 +151,7 @@ OMR::GlobalRegister::optimalPlacementForStore(TR::Block * currentBlock, TR::Comp
    if (lastRefBlock == currentBlock)
       {
       if (traceGRA)
-         traceMsg(comp, "           - lastRefBlock == currentBlock: returning [%p]\n", lastRefTreeTop->getNode());
+         log->trprintf("           - lastRefBlock == currentBlock: returning [%p]\n", lastRefTreeTop->getNode());
       return lastRefTreeTop;
       }
 
@@ -157,7 +159,7 @@ OMR::GlobalRegister::optimalPlacementForStore(TR::Block * currentBlock, TR::Comp
    if (!lastRefBlock->getStructureOf() || !currentBlock->getStructureOf())
       {
       if (traceGRA)
-         traceMsg(comp, "           - Structure info missing: returning [%p]\n", lastRefTreeTop->getNode());
+         log->trprintf("           - Structure info missing: returning [%p]\n", lastRefTreeTop->getNode());
       return lastRefTreeTop;
       }
 
@@ -169,7 +171,7 @@ OMR::GlobalRegister::optimalPlacementForStore(TR::Block * currentBlock, TR::Comp
    if (lastRefFreq <= currentFreq)  // used to be ==
       {
       if (traceGRA)
-         traceMsg(comp, "           - Frequency is low enough: returning [%p]\n", lastRefTreeTop->getNode());
+         log->trprintf("           - Frequency is low enough: returning [%p]\n", lastRefTreeTop->getNode());
       return lastRefTreeTop;
       }
 
@@ -183,7 +185,7 @@ OMR::GlobalRegister::optimalPlacementForStore(TR::Block * currentBlock, TR::Comp
             continue;
          }
       if (traceGRA)
-         traceMsg(comp, "           - Found a suitable block: returning [%p]\n", b->getEntry()->getNode());
+         log->trprintf("           - Found a suitable block: returning [%p]\n", b->getEntry()->getNode());
       return b->getEntry();
       }
 

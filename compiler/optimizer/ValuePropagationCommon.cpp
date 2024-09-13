@@ -484,7 +484,7 @@ TR::VPConstraint *OMR::ValuePropagation::getConstraint(TR::Node *node, bool &isG
       {
       if (trace())
          {
-         traceMsg(comp(), "   %s [%p] has existing constraint:", node->getOpCode().getName(), node);
+         comp()->getLogger()->trprintf("   %s [%p] has existing constraint:", node->getOpCode().getName(), node);
          rel->print(comp()->getLogger(), this, valueNumber, 1);
          }
       isGlobal = false;
@@ -517,7 +517,7 @@ TR::VPConstraint *OMR::ValuePropagation::getConstraint(TR::Node *node, bool &isG
       {
       if (trace())
          {
-         traceMsg(comp(), "   %s [%p] has existing global constraint:", node->getOpCode().getName(), node);
+         comp()->getLogger()->trprintf("   %s [%p] has existing global constraint:", node->getOpCode().getName(), node);
          rel->print(comp()->getLogger(), this, valueNumber, 1);
          }
       isGlobal = true;
@@ -628,7 +628,7 @@ void OMR::ValuePropagation::processTrees(TR::TreeTop *startTree, TR::TreeTop *en
       _curTree = treeTop;
       TR::Node *treeTopNode = treeTop->getNode();
       if (trace())
-         traceMsg(comp(), "Processing ttNode n%in %s\n", treeTopNode->getGlobalIndex(),
+         comp()->getLogger()->printf("Processing ttNode n%in %s\n", treeTopNode->getGlobalIndex(),
                treeTopNode->getOpCode().getName());
 
       if (_enableVersionBlocks && !_disableVersionBlockForThisBlock && treeTop == lastRealTreeTop &&
@@ -926,6 +926,7 @@ bool OMR::ValuePropagation::transformUnsafeCopyMemoryCall(TR::Node *arrayCopyNod
 
 void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
    {
+   TR::Logger *log = comp()->getLogger();
    bool is64BitTarget = comp()->target().is64Bit();
 
    // Check to see if this is a call to java/lang/System.arraycopy
@@ -985,7 +986,7 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
    TR_YesNoMaybe isSrcArrayCompTypePrimitiveValueType = TR_no;
 
    if (trace() && comp()->generateArraylets())
-      traceMsg(comp(), "Detected arraylet arraycopy: %p\n", node);
+      log->trprintf("Detected arraylet arraycopy: %p\n", node);
 
    bool isGlobal;
    TR::VPConstraint *srcObject = getConstraint(srcObjNode, isGlobal);
@@ -1109,7 +1110,7 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
          if (caller && strncmp(caller->nameChars(), sig, strlen(sig)) == 0)
             {
             if (trace())
-               traceMsg(comp(), "Detected real-time same leaf arraycopy: %p from java helper\n", node);
+               log->trprintf("Detected real-time same leaf arraycopy: %p from java helper\n", node);
 
             isRecognizedMultiLeafArrayCopy = true;
             }
@@ -1303,10 +1304,10 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
 
       if (trace())
          {
-         traceMsg(comp(), "%s: n%dn %p transformTheCall %d referenceArray1 %d referenceArray2 %d primitiveArray1 %d primitiveArray2 %d primitiveTransform %d referenceTransform %d\n", __FUNCTION__,
+         log->trprintf("%s: n%dn %p transformTheCall %d referenceArray1 %d referenceArray2 %d primitiveArray1 %d primitiveArray2 %d primitiveTransform %d referenceTransform %d\n", __FUNCTION__,
             node->getGlobalIndex(), node, transformTheCall,
             referenceArray1, referenceArray2, primitiveArray1, primitiveArray2, primitiveTransform, referenceTransform);
-         traceMsg(comp(), "%s: n%dn %p transformTheCall %d areFlattenableValueTypesEnabled %d srcObjNode n%dn %p dstObjNode n%dn %p srcVN %d dstVN %d\n", __FUNCTION__,
+         log->trprintf("%s: n%dn %p transformTheCall %d areFlattenableValueTypesEnabled %d srcObjNode n%dn %p dstObjNode n%dn %p srcVN %d dstVN %d\n", __FUNCTION__,
             node->getGlobalIndex(), node, transformTheCall, TR::Compiler->om.areFlattenableValueTypesEnabled(),
             srcObjNode->getGlobalIndex(), srcObjNode, dstObjNode->getGlobalIndex(), dstObjNode, srcVN, dstVN);
          }
@@ -1352,7 +1353,7 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
                   if (isValueTypeArrayFlatteningEnabled)
                      {
                      if (trace())
-                        traceMsg(comp(), "%s: n%dn %p isArrayElementFlattened dst %d src %d\n", __FUNCTION__, node->getGlobalIndex(), node,
+                        log->trprintf("%s: n%dn %p isArrayElementFlattened dst %d src %d\n", __FUNCTION__, node->getGlobalIndex(), node,
                            isArrayElementFlattened(dstObject), isArrayElementFlattened(srcObject));
 
                      if ((isArrayElementFlattened(dstObject) == TR_yes) &&
@@ -1362,7 +1363,7 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
                         elementSize = TR::Compiler->cls.flattenedArrayElementSize(comp(), dstObject->getClass());
 
                         if (trace())
-                           traceMsg(comp(), "%s: n%dn %p elementSize %d\n", __FUNCTION__, node->getGlobalIndex(), node, elementSize);
+                           log->trprintf("%s: n%dn %p elementSize %d\n", __FUNCTION__, node->getGlobalIndex(), node, elementSize);
                         }
                      else if ((isArrayElementFlattened(dstObject) != TR_no) ||
                               (isArrayElementFlattened(srcObject) != TR_no))
@@ -1396,7 +1397,7 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
                      if (isArrayElementFlattened(srcObject) == TR_yes)
                         {
                         if (trace())
-                           traceMsg(comp(), "%s: n%dn %p dst array is identity type and source array is flattened VT array\n", __FUNCTION__, node->getGlobalIndex(), node);
+                           log->trprintf("%s: n%dn %p dst array is identity type and source array is flattened VT array\n", __FUNCTION__, node->getGlobalIndex(), node);
 
                         transformTheCall = false;
                         }
@@ -1421,7 +1422,7 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
          }
 
       if (trace())
-         traceMsg(comp(), "%s: n%dn %p transformTheCall %d isSrcArrayCompTypePrimitiveValueType %d isDstArrayCompTypePrimitiveValueType %d doRuntimeNullRestrictedTest %d\n", __FUNCTION__,
+         log->trprintf("%s: n%dn %p transformTheCall %d isSrcArrayCompTypePrimitiveValueType %d isDstArrayCompTypePrimitiveValueType %d doRuntimeNullRestrictedTest %d\n", __FUNCTION__,
          node->getGlobalIndex(), node, transformTheCall, isSrcArrayCompTypePrimitiveValueType, isDstArrayCompTypePrimitiveValueType, doRuntimeNullRestrictedTest);
       }
 #else
@@ -1438,7 +1439,6 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
          {
          if (trace())
             {
-            TR::Logger *log = comp()->getLogger();
             comp()->dumpMethodTrees(log, "Trees before modifying for null restricted array check");
             comp()->getDebug()->print(log, comp()->getFlowGraph());
             }
@@ -1497,7 +1497,7 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
 
          TR::Node *oldCallNode = node;
          if (trace())
-            traceMsg(comp(),"Creating temps for children of the original call node n%dn %p. new call node n%dn %p\n", oldCallNode->getGlobalIndex(), oldCallNode, newCallNode->getGlobalIndex(), newCallNode);
+            log->trprintf("Creating temps for children of the original call node n%dn %p. new call node n%dn %p\n", oldCallNode->getGlobalIndex(), oldCallNode, newCallNode->getGlobalIndex(), newCallNode);
 
          // Create temporaries for System.arraycopy arguments and replace the children of the new call node with the temps
          for (int32_t i = 0 ; i < oldCallNode->getNumChildren(); ++i)
@@ -1519,14 +1519,14 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
                _curTree->insertBefore(savedChildTree);
 
                if (trace())
-                  traceMsg(comp(),"Created child n%dn %p for old child n%dn %p of the original call node\n", savedChildNode->getGlobalIndex(), savedChildNode, child->getGlobalIndex(), child);
+                  log->trprintf("Created child n%dn %p for old child n%dn %p of the original call node\n", savedChildNode->getGlobalIndex(), savedChildNode, child->getGlobalIndex(), child);
 
                // Create the child for the new call node with a load of the new sym ref
                value = TR::Node::createLoad(newCallNode, newSymbolReference);
                }
 
             if (trace())
-               traceMsg(comp(),"Created child n%dn %p for new call node n%dn %p\n", value->getGlobalIndex(), value, newCallNode->getGlobalIndex(), newCallNode);
+               log->trprintf("Created child n%dn %p for new call node n%dn %p\n", value->getGlobalIndex(), value, newCallNode->getGlobalIndex(), newCallNode);
 
             newCallNode->getChild(i)->recursivelyDecReferenceCount();
             newCallNode->setAndIncChild(i, value);
@@ -1542,7 +1542,7 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
             nextTT = nextTT->getNextTreeTop();
 
          if (trace())
-            traceMsg(comp(), "%s: n%dn %p current block_%d slowBlock block_%d newCallTree n%dn %p srcObjNode n%dn %p dstObjNode n%dn %p prevTT n%dn %p nextTT n%dn %p\n",
+            log->trprintf("%s: n%dn %p current block_%d slowBlock block_%d newCallTree n%dn %p srcObjNode n%dn %p dstObjNode n%dn %p prevTT n%dn %p nextTT n%dn %p\n",
                __FUNCTION__, node->getGlobalIndex(), node, _curTree->getEnclosingBlock()->getNumber(), slowBlock->getNumber(),
                newCallTree->getNode()->getGlobalIndex(), newCallTree->getNode(),
                srcObjNode->getGlobalIndex(), srcObjNode, dstObjNode->getGlobalIndex(), dstObjNode,
@@ -1944,7 +1944,7 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
       // -------------------------------------------------------------------
 
       if (trace())
-         traceMsg(comp(), "%s: n%dn %p elementSize %d stride n%dn %p\n", __FUNCTION__, node->getGlobalIndex(), node, elementSize, stride ? stride->getGlobalIndex() : -1, stride);
+         log->trprintf("%s: n%dn %p elementSize %d stride n%dn %p\n", __FUNCTION__, node->getGlobalIndex(), node, elementSize, stride ? stride->getGlobalIndex() : -1, stride);
 
       len = generateLenForArrayCopy(comp(), elementSize, stride, srcObjNode, copyLenNode, node);
 
@@ -2312,7 +2312,7 @@ TR::TreeTop* OMR::ValuePropagation::createPrimitiveArrayNodeWithoutFlags(TR::Tre
    ///node->setReferenceArrayCopy(false);
 
    if (trace())
-      traceMsg(comp(), "Created 3-child arraycopy %s from root node %s, type = %s\n",
+      comp()->getLogger()->printf("Created 3-child arraycopy %s from root node %s, type = %s\n",
               comp()->getDebug()->getName(node),
               comp()->getDebug()->getName(root),
               TR::DataType::getName(node->getArrayCopyElementType()));
@@ -3561,6 +3561,7 @@ void OMR::ValuePropagation::transformRTMultiLeafArrayCopy(TR_RealTimeArrayCopy *
    {
    //copied from transformRealTimeArrayCopy
    TR::CFG *cfg = comp()->getFlowGraph();
+   TR::Logger *log = comp()->getLogger();
 
    TR::TreeTop *vcallTree = rtArrayCopyTree->_treetop;
    TR::Node *vcallNode = vcallTree->getNode()->getFirstChild();
@@ -3570,7 +3571,7 @@ void OMR::ValuePropagation::transformRTMultiLeafArrayCopy(TR_RealTimeArrayCopy *
       return;
 
    if (trace())
-      traceMsg(comp(), "Transforming multi-leaf array copy: %p\n", vcallNode);
+      log->trprintf("Transforming multi-leaf array copy: %p\n", vcallNode);
 
    TR::TreeTop *prevTree = vcallTree->getPrevTreeTop();
    TR::DataType type = rtArrayCopyTree->_type;
@@ -3582,7 +3583,7 @@ void OMR::ValuePropagation::transformRTMultiLeafArrayCopy(TR_RealTimeArrayCopy *
    TR_OpaqueClassBlock *helperClass = comp()->getSystemClassPointer(); //fe()->getClassFromSignature("RTArrayCopy", 11, method);
 
    if (trace())
-      traceMsg(comp(), " class = %p\n", helperClass);
+      log->trprintf(" class = %p\n", helperClass);
    if (!helperClass)
      return;
 
@@ -3594,14 +3595,14 @@ void OMR::ValuePropagation::transformRTMultiLeafArrayCopy(TR_RealTimeArrayCopy *
       {
       char *sig = m->nameChars();
       if (trace())
-         traceMsg(comp(), " sig = %s\n", sig);
+         log->printf(" sig = %s\n", sig);
 
       if (!strncmp(sig, "multiLeafArrayCopy", 18))
          helperSymRef = getSymRefTab()->findOrCreateMethodSymbol(JITTED_METHOD_INDEX, -1, m, TR::MethodSymbol::Static);
       }
 
    if (trace())
-      traceMsg(comp(), " helper sym = %p\n", helperSymRef);
+      log->trprintf(" helper sym = %p\n", helperSymRef);
    if (!helperSymRef) return;
 
 
@@ -3804,7 +3805,7 @@ slowBlock-> n39n      BBStart <block_10> (freq 0) (cold)
          nextBlock = tmpBlock;
          if (trace())
             {
-            traceMsg(comp(), "%s: prevBlockOfExtendedBlockEmpty 1 prevTT n%dn prevBlock block_%d nextTT n%dn nextBlock block_%d\n", __FUNCTION__,
+            comp()->getLogger()->printf("%s: prevBlockOfExtendedBlockEmpty 1 prevTT n%dn prevBlock block_%d nextTT n%dn nextBlock block_%d\n", __FUNCTION__,
                prevTT->getNode()->getGlobalIndex(), prevBlock->getNumber(), nextTT->getNode()->getGlobalIndex(), nextBlock->getNumber());
             }
          }
@@ -3813,7 +3814,7 @@ slowBlock-> n39n      BBStart <block_10> (freq 0) (cold)
          nextBlock = nextBlock->split(nextTT, cfg, true, true);
          if (trace())
             {
-            traceMsg(comp(), "%s: split at nextTT. prevTT n%dn prevBlock block_%d nextTT n%dn nextBlock block_%d\n", __FUNCTION__,
+            comp()->getLogger()->printf("%s: split at nextTT. prevTT n%dn prevBlock block_%d nextTT n%dn nextBlock block_%d\n", __FUNCTION__,
                prevTT->getNode()->getGlobalIndex(), prevBlock->getNumber(), nextTT->getNode()->getGlobalIndex(), nextBlock->getNumber());
             }
          }
@@ -3834,10 +3835,10 @@ slowBlock-> n39n      BBStart <block_10> (freq 0) (cold)
 
    if (trace())
       {
-      traceMsg(comp(), "%s: srcArrayRefNode n%dn %p dstArrayRefNode n%dn %p originBlock block_%d slowBlock block_%d needTestSrcArray %d needTestDstArray %d\n", __FUNCTION__,
+      comp()->getLogger()->trprintf("%s: srcArrayRefNode n%dn %p dstArrayRefNode n%dn %p originBlock block_%d slowBlock block_%d needTestSrcArray %d needTestDstArray %d\n", __FUNCTION__,
          srcArrayRefNode->getGlobalIndex(), srcArrayRefNode, dstArrayRefNode->getGlobalIndex(), dstArrayRefNode, originBlock->getNumber(), slowBlock->getNumber(), needTestSrcArray, needTestDstArray);
 
-      traceMsg(comp(), "%s: prevTT n%dn prevBlock block_%d nextTT n%dn nextBlock block_%d\n", __FUNCTION__,
+      comp()->getLogger()->trprintf("%s: prevTT n%dn prevBlock block_%d nextTT n%dn nextBlock block_%d\n", __FUNCTION__,
          prevTT->getNode()->getGlobalIndex(), prevBlock->getNumber(), nextTT->getNode()->getGlobalIndex(), nextBlock->getNumber());
       }
 
@@ -4077,7 +4078,7 @@ void OMR::ValuePropagation::transformArrayCloneCall(TR::TreeTop *callTree, OMR::
        || (!isPrimitiveClass && !cg()->getSupportsReferenceArrayCopy()))
       {
       if (trace())
-         traceMsg(comp(), "\nNot transforming array clone call [%p] because %s array copy is not supported\n",
+         comp()->getLogger()->trprintf("\nNot transforming array clone call [%p] because %s array copy is not supported\n",
                   callNode, isPrimitiveClass ? "primitive" : "reference");
 
       return;
@@ -4414,7 +4415,7 @@ void OMR::ValuePropagation::transformConverterCall(TR::TreeTop *callTree)
       {
           threshold = atoi(overrideThreshold);
 
-          traceMsg(comp(), "Overriding arraytranslate fallback threshold to %d\n", threshold);
+          comp()->getLogger()->printf("Overriding arraytranslate fallback threshold to %d\n", threshold);
       }
 
       if (threshold > 0)
@@ -4578,6 +4579,7 @@ void TR::LocalValuePropagation::postPerformOnBlocks()
 
 TR::TreeTop *TR::LocalValuePropagation::processBlock(TR::TreeTop *startTree)
    {
+   TR::Logger *log = comp()->getLogger();
    _constNodeInfo.MakeEmpty();
    TR::Node *node = startTree->getNode();
    _curBlock     = node->getBlock();
@@ -4594,7 +4596,7 @@ TR::TreeTop *TR::LocalValuePropagation::processBlock(TR::TreeTop *startTree)
 #endif
 
    if (trace())
-      traceMsg(comp(), "\nStarting block_%d\n", _curBlock->getNumber());
+      log->printf("\nStarting block_%d\n", _curBlock->getNumber());
 
    // Go through the trees finding constraints
    //
@@ -4610,7 +4612,7 @@ TR::TreeTop *TR::LocalValuePropagation::processBlock(TR::TreeTop *startTree)
              ((comp()->getMethodHotness() > warm)  && (!_curBlock->isCold())))))
          {
          if (trace())
-            traceMsg(comp(), "\nSkipping block_%d (low frequency)\n", _curBlock->getNumber());
+            log->printf("\nSkipping block_%d (low frequency)\n", _curBlock->getNumber());
 
          _curBlock = startTree->getExtendedBlockExitTreeTop()->getNode()->getBlock();
          TR::TreeTop *tt = _curBlock->getExit()->getNextTreeTop();
@@ -4646,7 +4648,7 @@ TR::TreeTop *TR::LocalValuePropagation::processBlock(TR::TreeTop *startTree)
       if (isUnreachablePath(_curConstraints))
          {
          if (trace())
-            traceMsg(comp(), "\nSkipping unreachable block_%d (extension of previous block)\n", _curBlock->getNumber());
+            log->printf("\nSkipping unreachable block_%d (extension of previous block)\n", _curBlock->getNumber());
 
          _blocksToBeRemoved->add(_curBlock);
          startTree = _curBlock->getExit();
@@ -4654,7 +4656,7 @@ TR::TreeTop *TR::LocalValuePropagation::processBlock(TR::TreeTop *startTree)
          }
 
       if (trace())
-         traceMsg(comp(), "\nStarting block_%d (extension of previous block)\n", _curBlock->getNumber());
+         log->printf("\nStarting block_%d (extension of previous block)\n", _curBlock->getNumber());
       }
 
    return startTree;

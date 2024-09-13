@@ -206,6 +206,8 @@ template<class Container>void TR_BackwardDFSetAnalysis<Container *>::initializeG
 
 template<class Container>void TR_BackwardDFSetAnalysis<Container *>::initializeGenAndKillSetInfo(TR_RegionStructure *regionStructure, TR_BitVector &pendingList, TR_BitVector &exitNodes, bool lastIteration)
    {
+   TR::Logger *log = this->comp()->getLogger();
+
    while (this->_analysisQueue.getListHead() &&
           (this->_analysisQueue.getListHead()->getData()->getStructure() != regionStructure))
       {
@@ -237,7 +239,7 @@ template<class Container>void TR_BackwardDFSetAnalysis<Container *>::initializeG
          }
 
       if (traceBBVA())
-         traceMsg(this->comp(), "Begin analyzing node %p numbered %d\n", node, node->getNumber());
+         log->trprintf("Begin analyzing node %p numbered %d\n", node, node->getNumber());
 
       bool alreadyVisitedNode = false;
       if (this->_nodesInCycle->get(nodeStructure->getNumber()))
@@ -308,62 +310,62 @@ template<class Container>void TR_BackwardDFSetAnalysis<Container *>::initializeG
          typename TR_BasicDFSetAnalysis<Container *>::TR_ContainerNodeNumberPair *pair;
          if (analysisInfo->_regularGenSetInfo)
             {
-            traceMsg(this->comp(), "\nGen Set Info for Region or Block : %p numbered %d is : \n", nodeStructure->getStructure(), nodeStructure->getStructure()->getNumber());
+            log->trprintf("\nGen Set Info for Region or Block : %p numbered %d is : \n", nodeStructure->getStructure(), nodeStructure->getStructure()->getNumber());
             for (pair = analysisInfo->_regularGenSetInfo->getFirst(); pair; pair = pair->getNext())
                {
                if (pair->_container)
                   {
-                  traceMsg(this->comp(), "Exit or Succ numbered %d : ", pair->_nodeNumber);
-                  pair->_container->print(this->comp()->getLogger(), this->comp());
-                  traceMsg(this->comp(), "\n");
+                  log->printf("Exit or Succ numbered %d : ", pair->_nodeNumber);
+                  pair->_container->print(log, this->comp());
+                  log->println();
                   }
                }
-            traceMsg(this->comp(), "\n");
+            log->println();
             }
 
          if (analysisInfo->_regularKillSetInfo)
             {
-            traceMsg(this->comp(), "\nKill Set Info for Region or Block : %p numbered %d is : \n", nodeStructure->getStructure(), nodeStructure->getStructure()->getNumber());
+            log->trprintf("\nKill Set Info for Region or Block : %p numbered %d is : \n", nodeStructure->getStructure(), nodeStructure->getStructure()->getNumber());
             for (pair = analysisInfo->_regularKillSetInfo->getFirst(); pair; pair = pair->getNext())
                {
                if (pair->_container)
                   {
-                  traceMsg(this->comp(), "Exit or Succ numbered %d : ", pair->_nodeNumber);
-                  pair->_container->print(this->comp()->getLogger(), this->comp());
-                  traceMsg(this->comp(), "\n");
+                  log->printf("Exit or Succ numbered %d : ", pair->_nodeNumber);
+                  pair->_container->print(log, this->comp());
+                  log->println();
                   }
                }
-            traceMsg(this->comp(), "\n");
+            log->println();
             }
 
          if (analysisInfo->_exceptionGenSetInfo)
             {
-            traceMsg(this->comp(), "\nException Gen Set Info for Region or Block : %p numbered %d is : \n", nodeStructure->getStructure(), nodeStructure->getStructure()->getNumber());
+            log->trprintf("\nException Gen Set Info for Region or Block : %p numbered %d is : \n", nodeStructure->getStructure(), nodeStructure->getStructure()->getNumber());
             for (pair = analysisInfo->_exceptionGenSetInfo->getFirst(); pair; pair = pair->getNext())
                {
                if (pair->_container)
                   {
-                  traceMsg(this->comp(), "Exit or Succ numbered %d : ", pair->_nodeNumber);
-                  pair->_container->print(this->comp()->getLogger(), this->comp());
-                  traceMsg(this->comp(), "\n");
+                  log->printf("Exit or Succ numbered %d : ", pair->_nodeNumber);
+                  pair->_container->print(log, this->comp());
+                  log->println();
                   }
                }
-            traceMsg(this->comp(), "\n");
+            log->println();
             }
 
          if (analysisInfo->_exceptionKillSetInfo)
             {
-            traceMsg(this->comp(), "\nException Kill Set Info for Region or Block : %p numbered %d is : \n", nodeStructure->getStructure(), nodeStructure->getStructure()->getNumber());
+            log->trprintf("\nException Kill Set Info for Region or Block : %p numbered %d is : \n", nodeStructure->getStructure(), nodeStructure->getStructure()->getNumber());
             for (pair = analysisInfo->_exceptionKillSetInfo->getFirst(); pair; pair = pair->getNext())
                {
                if (pair->_container)
                   {
-                  traceMsg(this->comp(), "Exit or Succ numbered %d : ", pair->_nodeNumber);
-                  pair->_container->print(this->comp()->getLogger(), this->comp());
-                  traceMsg(this->comp(), "\n");
+                  log->printf("Exit or Succ numbered %d : ", pair->_nodeNumber);
+                  pair->_container->print(log, this->comp());
+                  log->println();
                   }
                }
-            traceMsg(this->comp(), "\n");
+            log->println();
             }
          }
 
@@ -615,62 +617,62 @@ template<class Container>void TR_BackwardDFSetAnalysis<Container *>::initializeG
          typename TR_BasicDFSetAnalysis<Container *>::TR_ContainerNodeNumberPair *pair;
          if (analysisInfo->_currentRegularGenSetInfo)
             {
-            traceMsg(this->comp(), "\nCurrent Gen Set Info for Region or Block : %p numbered %d is : \n", nodeStructure->getStructure(), nodeStructure->getStructure()->getNumber());
+            log->trprintf("\nCurrent Gen Set Info for Region or Block : %p numbered %d is : \n", nodeStructure->getStructure(), nodeStructure->getStructure()->getNumber());
             for (pair = analysisInfo->_currentRegularGenSetInfo->getFirst(); pair; pair = pair->getNext())
                {
                if (pair->_container)
                   {
-                  traceMsg(this->comp(), "Exit or Succ numbered %d : ", pair->_nodeNumber);
-                  pair->_container->print(this->comp()->getLogger(), this->comp());
-                  traceMsg(this->comp(), "\n");
+                  log->printf("Exit or Succ numbered %d : ", pair->_nodeNumber);
+                  pair->_container->print(log, this->comp());
+                  log->println();
                   }
                }
-            traceMsg(this->comp(), "\n");
+            log->println();
             }
 
          if (analysisInfo->_currentRegularKillSetInfo)
             {
-            traceMsg(this->comp(), "\nCurrent Kill Set Info for Region or Block : %p numbered %d is : \n", nodeStructure->getStructure(), nodeStructure->getStructure()->getNumber());
+            log->trprintf("\nCurrent Kill Set Info for Region or Block : %p numbered %d is : \n", nodeStructure->getStructure(), nodeStructure->getStructure()->getNumber());
             for (pair = analysisInfo->_currentRegularKillSetInfo->getFirst(); pair; pair = pair->getNext())
                {
                if (pair->_container)
                   {
-                  traceMsg(this->comp(), "Exit or Succ numbered %d : ", pair->_nodeNumber);
-                  pair->_container->print(this->comp()->getLogger(), this->comp());
-                  traceMsg(this->comp(), "\n");
+                  log->printf("Exit or Succ numbered %d : ", pair->_nodeNumber);
+                  pair->_container->print(log, this->comp());
+                  log->println();
                   }
                }
-            traceMsg(this->comp(), "\n");
+            log->println();
             }
 
          if (analysisInfo->_currentExceptionGenSetInfo)
             {
-            traceMsg(this->comp(), "\nCurrent Gen Set Info for Region or Block : %p numbered %d is : \n", nodeStructure->getStructure(), nodeStructure->getStructure()->getNumber());
+            log->trprintf("\nCurrent Gen Set Info for Region or Block : %p numbered %d is : \n", nodeStructure->getStructure(), nodeStructure->getStructure()->getNumber());
             for (pair = analysisInfo->_currentExceptionGenSetInfo->getFirst(); pair; pair = pair->getNext())
                {
                if (pair->_container)
                   {
-                  traceMsg(this->comp(), "Exit or Succ numbered %d : ", pair->_nodeNumber);
-                  pair->_container->print(this->comp()->getLogger(), this->comp());
-                  traceMsg(this->comp(), "\n");
+                  log->printf("Exit or Succ numbered %d : ", pair->_nodeNumber);
+                  pair->_container->print(log, this->comp());
+                  log->println();
                   }
                }
-            traceMsg(this->comp(), "\n");
+            log->println();
             }
 
          if (analysisInfo->_currentExceptionKillSetInfo)
             {
-            traceMsg(this->comp(), "\nCurrent Kill Set Info for Region or Block : %p numbered %d is : \n", nodeStructure->getStructure(), nodeStructure->getStructure()->getNumber());
+            log->trprintf("\nCurrent Kill Set Info for Region or Block : %p numbered %d is : \n", nodeStructure->getStructure(), nodeStructure->getStructure()->getNumber());
             for (pair = analysisInfo->_currentExceptionKillSetInfo->getFirst(); pair; pair = pair->getNext())
                {
                if (pair->_container)
                   {
-                  traceMsg(this->comp(), "Exit or Succ numbered %d : ", pair->_nodeNumber);
-                  pair->_container->print(this->comp()->getLogger(), this->comp());
-                  traceMsg(this->comp(), "\n");
+                  log->printf("Exit or Succ numbered %d : ", pair->_nodeNumber);
+                  pair->_container->print(log, this->comp());
+                  log->println();
                   }
                }
-            traceMsg(this->comp(), "\n");
+            log->println();
             }
          }
 
@@ -843,7 +845,7 @@ template<class Container>void TR_BackwardDFSetAnalysis<Container *>::initializeG
       changed = false;
 
       if (traceBBVA())
-         traceMsg(this->comp(), "\nREGION : %p NUMBER : %d ITERATION NUMBER : %d\n", region, region->getNumber(), numIterations);
+         this->comp()->getLogger()->trprintf("\nREGION : %p NUMBER : %d ITERATION NUMBER : %d\n", region, region->getNumber(), numIterations);
 
       numIterations++;
 
@@ -900,7 +902,7 @@ template<class Container>bool TR_BackwardDFSetAnalysis<Container *>::analyzeRegi
          {
          if (traceBBVA())
             {
-            traceMsg(this->comp(), "\nSkipping re-analysis of Region : %p numbered %d\n", regionStructure, regionStructure->getNumber());
+            this->comp()->getLogger()->trprintf("\nSkipping re-analysis of Region : %p numbered %d\n", regionStructure, regionStructure->getNumber());
             }
          return false;
          }
@@ -954,7 +956,7 @@ template<class Container>bool TR_BackwardDFSetAnalysis<Container *>::analyzeRegi
       changed = false;
 
       if (traceBBVA())
-         traceMsg(this->comp(), "\nREGION : %p NUMBER : %d ITERATION NUMBER : %d\n", regionStructure, regionStructure->getNumber(), numIterations);
+         this->comp()->getLogger()->trprintf("\nREGION : %p NUMBER : %d ITERATION NUMBER : %d\n", regionStructure, regionStructure->getNumber(), numIterations);
 
       numIterations++;
 
@@ -1013,21 +1015,22 @@ template<class Container>bool TR_BackwardDFSetAnalysis<Container *>::analyzeRegi
 
 template<class Container>bool TR_BackwardDFSetAnalysis<Container *>::analyzeNodeIfSuccessorsAnalyzed(TR_RegionStructure *regionStructure, TR_BitVector &pendingList, TR_BitVector &exitNodes)
    {
+   TR::Logger *log = this->comp()->getLogger();
    bool anyNodeChanged = false;
 
    while (this->_analysisQueue.getListHead() &&
       (this->_analysisQueue.getListHead()->getData()->getStructure() != regionStructure))
       {
       if (!this->_analysisInterrupted)
-	 {
+         {
          numIterations++;
          if ((numIterations % 20) == 0)
-	    {
-	    numIterations = 0;
+            {
+            numIterations = 0;
             if (this->comp()->compilationShouldBeInterrupted(BBVA_ANALYZE_CONTEXT))
                this->_analysisInterrupted = true;
-	    }
-	 }
+            }
+         }
 
       if (this->_analysisInterrupted)
          {
@@ -1046,7 +1049,7 @@ template<class Container>bool TR_BackwardDFSetAnalysis<Container *>::analyzeNode
          }
 
       if (traceBBVA())
-         traceMsg(this->comp(), "Begin analyzing node %p numbered %d\n", node, node->getNumber());
+         log->trprintf("Begin analyzing node %p numbered %d\n", node, node->getNumber());
 
 
       bool alreadyVisitedNode = false;
@@ -1273,18 +1276,18 @@ template<class Container>bool TR_BackwardDFSetAnalysis<Container *>::analyzeNode
 
      if (traceBBVA())
          {
-         traceMsg(this->comp(), "\nBEFORE Out Set Info for Region or Block : %p numbered %d is : \n", nodeStructure->getStructure(), nodeStructure->getStructure()->getNumber());
+         log->trprintf("\nBEFORE Out Set Info for Region or Block : %p numbered %d is : \n", nodeStructure->getStructure(), nodeStructure->getStructure()->getNumber());
          typename TR_BasicDFSetAnalysis<Container *>::TR_ContainerNodeNumberPair *pair;
          for (pair = analysisInfo->_outSetInfo->getFirst(); pair; pair = pair->getNext())
             {
-            traceMsg(this->comp(), "Exit or Succ numbered %d : ", pair->_nodeNumber);
-            pair->_container->print(this->comp()->getLogger(), this->comp());
-            _currentOutSetInfo[pair->_nodeNumber]->print(this->comp()->getLogger(), this->comp());
-            traceMsg(this->comp(), "\n");
+            log->printf("Exit or Succ numbered %d : ", pair->_nodeNumber);
+            pair->_container->print(log, this->comp());
+            _currentOutSetInfo[pair->_nodeNumber]->print(log, this->comp());
+            log->println();
             }
-         traceMsg(this->comp(), "\nBEFORE In Set Info for Region or Block : %p numbered %d is : \n", nodeStructure->getStructure(), nodeStructure->getStructure()->getNumber());
-         analysisInfo->_inSetInfo->print(this->comp()->getLogger(), this->comp());
-         traceMsg(this->comp(), "\n");
+         log->trprintf("\nBEFORE In Set Info for Region or Block : %p numbered %d is : \n", nodeStructure->getStructure(), nodeStructure->getStructure()->getNumber());
+         analysisInfo->_inSetInfo->print(log, this->comp());
+         log->println();
          }
 
       this->_nodesInCycle->empty();
@@ -1296,29 +1299,29 @@ template<class Container>bool TR_BackwardDFSetAnalysis<Container *>::analyzeNode
 
       if (traceBBVA())
          {
-         traceMsg(this->comp(), "\nOut Set Info for Region or Block : %p numbered %d is : \n", nodeStructure->getStructure(), nodeStructure->getStructure()->getNumber());
+         log->trprintf("\nOut Set Info for Region or Block : %p numbered %d is : \n", nodeStructure->getStructure(), nodeStructure->getStructure()->getNumber());
          typename TR_BasicDFSetAnalysis<Container *>::TR_ContainerNodeNumberPair *pair;
          for (pair = analysisInfo->_outSetInfo->getFirst(); pair; pair = pair->getNext())
             {
-            traceMsg(this->comp(), "Exit or Succ numbered %d : ", pair->_nodeNumber);
-            pair->_container->print(this->comp()->getLogger(), this->comp());
-            traceMsg(this->comp(), "\n");
+            log->printf("Exit or Succ numbered %d : ", pair->_nodeNumber);
+            pair->_container->print(log, this->comp());
+            log->println();
             }
-         traceMsg(this->comp(), "\nIn Set Info for Region or Block : %p numbered %d is : \n", nodeStructure->getStructure(), nodeStructure->getStructure()->getNumber());
-         analysisInfo->_inSetInfo->print(this->comp()->getLogger(), this->comp());
-         traceMsg(this->comp(), "\n");
+         log->trprintf("\nIn Set Info for Region or Block : %p numbered %d is : \n", nodeStructure->getStructure(), nodeStructure->getStructure()->getNumber());
+         analysisInfo->_inSetInfo->print(log, this->comp());
+         log->println();
 
 
-         traceMsg(this->comp(), "\nOut Set Info for parent region : %p numbered %d is : \n", regionStructure, regionStructure->getNumber());
+         log->trprintf("\nOut Set Info for parent region : %p numbered %d is : \n", regionStructure, regionStructure->getNumber());
          for (pair = regionAnalysisInfo->_outSetInfo->getFirst(); pair; pair = pair->getNext())
             {
-            traceMsg(this->comp(), "Succ numbered %d : ", pair->_nodeNumber);
-            pair->_container->print(this->comp()->getLogger(), this->comp());
-            traceMsg(this->comp(), "\n");
+            log->printf("Succ numbered %d : ", pair->_nodeNumber);
+            pair->_container->print(log, this->comp());
+            log->println();
             }
-         traceMsg(this->comp(), "\nIn Set Info for parent region : %p numbered %d is : \n", regionStructure, regionStructure->getNumber());
-         regionAnalysisInfo->_inSetInfo->print(this->comp()->getLogger(), this->comp());
-         traceMsg(this->comp(), "\n");
+         log->trprintf("\nIn Set Info for parent region : %p numbered %d is : \n", regionStructure, regionStructure->getNumber());
+         regionAnalysisInfo->_inSetInfo->print(log, this->comp());
+         log->println();
          }
 
       bool changed = inSetChanged;
@@ -1381,6 +1384,8 @@ template<class Container>bool TR_BackwardDFSetAnalysis<Container *>::analyzeNode
 
 template<class Container>bool TR_BackwardDFSetAnalysis<Container *>::analyzeBlockStructure(TR_BlockStructure *blockStructure, bool checkForChange)
    {
+   TR::Logger *log = this->comp()->getLogger();
+
    initializeInfo(this->_regularInfo);
    initializeInfo(this->_exceptionInfo);
 
@@ -1406,7 +1411,7 @@ template<class Container>bool TR_BackwardDFSetAnalysis<Container *>::analyzeBloc
          {
          if (traceBBVA())
             {
-            traceMsg(this->comp(), "\nSkipping re-analysis of Block : %p numbered %d\n", blockStructure, blockStructure->getNumber());
+            log->trprintf("\nSkipping re-analysis of Block : %p numbered %d\n", blockStructure, blockStructure->getNumber());
             }
          return false;
          }
@@ -1459,7 +1464,7 @@ template<class Container>bool TR_BackwardDFSetAnalysis<Container *>::analyzeBloc
          if (traceBBVA())
             {
             dumpOptDetails(this->comp(), "Normal info for %d : ", blockNum);
-            this->_regularInfo->print(this->comp()->getLogger(), this->comp());
+            this->_regularInfo->print(log, this->comp());
             dumpOptDetails(this->comp(), "\n");
             }
 
@@ -1469,7 +1474,7 @@ template<class Container>bool TR_BackwardDFSetAnalysis<Container *>::analyzeBloc
          if (traceBBVA())
             {
             dumpOptDetails(this->comp(), "Normal info for %d : ", blockNum);
-            this->_regularInfo->print(this->comp()->getLogger(), this->comp());
+            this->_regularInfo->print(log, this->comp());
             dumpOptDetails(this->comp(), "\n");
             }
 
@@ -1482,7 +1487,7 @@ template<class Container>bool TR_BackwardDFSetAnalysis<Container *>::analyzeBloc
          if (traceBBVA())
             {
             dumpOptDetails(this->comp(), "Normal info for %d : ", blockNum);
-            this->_regularInfo->print(this->comp()->getLogger(), this->comp());
+            this->_regularInfo->print(log, this->comp());
             dumpOptDetails(this->comp(), "\n");
             }
          }
@@ -1511,17 +1516,17 @@ template<class Container>bool TR_BackwardDFSetAnalysis<Container *>::analyzeBloc
 
    if (traceBBVA())
       {
-      traceMsg(this->comp(), "\nOut Set Info for Block : %p numbered %d is : \n", blockStructure, blockStructure->getNumber());
+      log->trprintf("\nOut Set Info for Block : %p numbered %d is : \n", blockStructure, blockStructure->getNumber());
       typename TR_BasicDFSetAnalysis<Container *>::TR_ContainerNodeNumberPair *pair;
       for (pair = analysisInfo->_outSetInfo->getFirst(); pair; pair = pair->getNext())
          {
-         traceMsg(this->comp(), "Succ numbered %d : ", pair->_nodeNumber);
-         pair->_container->print(this->comp()->getLogger(), this->comp());
-         traceMsg(this->comp(), "\n");
+         log->printf("Succ numbered %d : ", pair->_nodeNumber);
+         pair->_container->print(log, this->comp());
+         log->println();
          }
-      traceMsg(this->comp(), "\nIn Set Info for Block : %p numbered %d is : \n", blockStructure, blockStructure->getNumber());
-      analysisInfo->_inSetInfo->print(this->comp()->getLogger(), this->comp());
-      traceMsg(this->comp(), "\n");
+      log->trprintf("\nIn Set Info for Block : %p numbered %d is : \n", blockStructure, blockStructure->getNumber());
+      analysisInfo->_inSetInfo->print(log, this->comp());
+      log->println();
       }
 
    blockStructure->setAnalyzedStatus(true);

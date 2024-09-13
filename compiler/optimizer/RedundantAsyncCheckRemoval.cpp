@@ -220,7 +220,7 @@ int32_t TR_RedundantAsyncCheckRemoval::perform(TR_Structure *str, bool insideImp
          asyncCheckFlag = true;
 
       if (trace())
-         traceMsg(comp(), "sub node %d flag %d\n", node->getNumber(), asyncCheckFlag);
+         comp()->getLogger()->printf("sub node %d flag %d\n", node->getNumber(), asyncCheckFlag);
 
       if (region->isNaturalLoop())
          _asyncCheckInCurrentLoop = false;
@@ -229,7 +229,7 @@ int32_t TR_RedundantAsyncCheckRemoval::perform(TR_Structure *str, bool insideImp
    if (region->isNaturalLoop())
       {
       if (trace())
-         traceMsg(comp(), "region %d flag %d\n", region->getNumber(), asyncCheckFlag);
+         comp()->getLogger()->printf("region %d flag %d\n", region->getNumber(), asyncCheckFlag);
       _asyncCheckInCurrentLoop = asyncCheckFlag;
       int32_t retValue = processNaturalLoop(region, insideImproperRegion);
       if (asyncCheckFlag || origAsyncCheckFlag)
@@ -338,7 +338,7 @@ int32_t TR_RedundantAsyncCheckRemoval::processBlockStructure(TR_BlockStructure *
                //
                _asyncCheckInCurrentLoop = true;
                if (trace())
-                  traceMsg(comp(), "removing async check from block_%d\n", b->getNumber());
+                  comp()->getLogger()->printf("removing async check from block_%d\n", b->getNumber());
                if (performTransformation(comp(), "%sremoving async check from block_%d\n", OPT_DETAILS, b->getNumber()))
                   {
                   prev = treeTop->getPrevTreeTop();
@@ -569,7 +569,7 @@ void TR_RedundantAsyncCheckRemoval::computeCoverageInfo(TR_StructureSubGraphNode
       }
 
    if (trace())
-      traceMsg(comp(), "for node: %d coverage: %d\n", node->getNumber(), info->getCoverage());
+      comp()->getLogger()->printf("for node: %d coverage: %d\n", node->getNumber(), info->getCoverage());
    }
 
 bool TR_RedundantAsyncCheckRemoval::isMaxLoopIterationGuardedLoop(TR_RegionStructure *loop)
@@ -695,7 +695,7 @@ TR_RedundantAsyncCheckRemoval::containsImplicitInternalPointer(TR::Node *node)
          }
       }
    if (trace())
-      traceMsg(comp(), "    containsImplicitInternalPointer(%p) = %s\n", node, result?"true":"false");
+      comp()->getLogger()->trprintf("    containsImplicitInternalPointer(%p) = %s\n", node, result?"true":"false");
    return result;
    }
 
@@ -710,7 +710,7 @@ TR_RedundantAsyncCheckRemoval::markExtendees(TR::Block *block, bool canHaveAYiel
       AsyncInfo *ai = ((AsyncInfo*)s->getAnalysisInfo());
       if (trace())
          {
-         traceMsg(comp(), "    block_%d canHaveAYieldPoint %s -> %s\n",
+         comp()->getLogger()->trprintf("    block_%d canHaveAYieldPoint %s -> %s\n",
             cursor->getNumber(),
             ai->canHaveAYieldPoint()? "true":"false",
             canHaveAYieldPoint?       "true":"false");
@@ -883,6 +883,7 @@ bool TR_RedundantAsyncCheckRemoval::originatesFromShortRunningMethod(TR_RegionSt
 
 bool TR_RedundantAsyncCheckRemoval::hasEarlyExit(TR_RegionStructure *region)
    {
+   TR::Logger *log = comp()->getLogger();
    ListIterator<TR::CFGEdge> eit2(&region->getExitEdges());
    for (TR::CFGEdge *edge2 = eit2.getCurrent(); edge2 != 0; edge2 = eit2.getNext())
       {
@@ -895,8 +896,8 @@ bool TR_RedundantAsyncCheckRemoval::hasEarlyExit(TR_RegionStructure *region)
             {
             if (trace())
                {
-               traceMsg(comp(), "pred2 = %d\n", pred2 ? pred2->getNumber() : -1);
-               traceMsg(comp(), "edge->getFrom = %d\n", (*edge)->getFrom() ? (*edge)->getFrom()->getNumber() : -1);
+               log->printf("pred2 = %d\n", pred2 ? pred2->getNumber() : -1);
+               log->printf("edge->getFrom = %d\n", (*edge)->getFrom() ? (*edge)->getFrom()->getNumber() : -1);
                }
 
             earlyExit = false;
@@ -907,7 +908,7 @@ bool TR_RedundantAsyncCheckRemoval::hasEarlyExit(TR_RegionStructure *region)
        if (earlyExit)
           {
           if (trace())
-             traceMsg(comp(), "found earlyExit in region %d \n", region->getNumber());
+             log->printf("found earlyExit in region %d \n", region->getNumber());
           return true;
 	  }
       }
@@ -918,8 +919,9 @@ bool TR_RedundantAsyncCheckRemoval::hasEarlyExit(TR_RegionStructure *region)
 
 int32_t TR_RedundantAsyncCheckRemoval::processNaturalLoop(TR_RegionStructure *region, bool isInsideImproperRegion)
    {
+   TR::Logger *log = comp()->getLogger();
    if (trace())
-      traceMsg(comp(), "==> Forward Processing natural loop %d\n", region->getNumber());
+      log->printf("==> Forward Processing natural loop %d\n", region->getNumber());
    bool isShortRunning = false;
    bool needsForwardAnalysis = true;
 
@@ -936,15 +938,15 @@ int32_t TR_RedundantAsyncCheckRemoval::processNaturalLoop(TR_RegionStructure *re
             {
             isShortRunning = true;
             if (trace())
-               traceMsg(comp(), "Loop %d was created by TailRecursionElim.  Skipping\n", region->getNumber());
+               log->printf("Loop %d was created by TailRecursionElim.  Skipping\n", region->getNumber());
             }
          }
 
       if ((comp()->getMethodHotness() == scorching) && originatesFromShortRunningMethod(region))
-            {
-            isShortRunning = true;
-	 if (trace())
-	    traceMsg(comp(), "Loop %d originates from a trusted method, and therefore, is tagged as short running. Skipping\n", region->getNumber());
+         {
+         isShortRunning = true;
+         if (trace())
+            log->printf("Loop %d originates from a trusted method, and therefore, is tagged as short running. Skipping\n", region->getNumber());
          }
 
       // Async check did not exist in this loop at beginning of RACR
@@ -955,7 +957,7 @@ int32_t TR_RedundantAsyncCheckRemoval::processNaturalLoop(TR_RegionStructure *re
          {
          isShortRunning = true;
          if (trace())
-            traceMsg(comp(), "Loop %d is a Short running loop. Skipping\n", region->getNumber());
+            log->printf("Loop %d is a Short running loop. Skipping\n", region->getNumber());
          }
 
       // Spill Loops generated by the General Loop Unroller do not need any async checks
@@ -965,14 +967,14 @@ int32_t TR_RedundantAsyncCheckRemoval::processNaturalLoop(TR_RegionStructure *re
          {
          isShortRunning = true;
          if (trace())
-            traceMsg(comp(), "Loop %d is a Short running loop. Skipping\n", region->getNumber());
+            log->printf("Loop %d is a Short running loop. Skipping\n", region->getNumber());
          }
 
       if (!isShortRunning && (estimateLoopIterations(region) < SHORT_RUNNING_LOOP_BOUND))
          {
          isShortRunning = true;
          if (trace())
-            traceMsg(comp(), "Loop %d is short running. Skipping\n", region->getNumber());
+            log->printf("Loop %d is short running. Skipping\n", region->getNumber());
          }
       }
 
@@ -991,7 +993,7 @@ int32_t TR_RedundantAsyncCheckRemoval::processNaturalLoop(TR_RegionStructure *re
       if (GET_ASYNC_INFO(region->getEntry())->getCoverage() == FullyCovered)
          {
          if (trace())
-            traceMsg(comp(), "Region is completely covered.  No need to perform POSet analysis.\n");
+            log->prints("Region is completely covered.  No need to perform POSet analysis.\n");
          needsForwardAnalysis = false;
          }
 
@@ -1006,7 +1008,7 @@ int32_t TR_RedundantAsyncCheckRemoval::processNaturalLoop(TR_RegionStructure *re
          {
          AsyncInfo *info = GET_ASYNC_INFO(node);
          if (trace())
-            traceMsg(comp(), "Node %d, coverage: %d\n", node->getNumber(), info->getCoverage());
+            log->printf("Node %d, coverage: %d\n", node->getNumber(), info->getCoverage());
          }
 #endif
 
@@ -1081,17 +1083,17 @@ int32_t TR_RedundantAsyncCheckRemoval::processNaturalLoop(TR_RegionStructure *re
                for (node = ait.getFirst(); node; node = ait.getNext())
                   {
                   AsyncInfo *info = GET_ASYNC_INFO(node);
-                  traceMsg(comp(), "-------------------------- NODE %d ----------------------\n", node->getNumber());
+                  log->printf("-------------------------- NODE %d ----------------------\n", node->getNumber());
                   ListIterator<TR_StructureSubGraphNode> nit(&info->getChildren());
                   TR_StructureSubGraphNode *relative;
                   for (relative = nit.getFirst(); relative; relative = nit.getNext())
                      {
-                     traceMsg(comp(), "child ----> %d\n", relative->getNumber());
+                     log->printf("child ----> %d\n", relative->getNumber());
                      }
                   nit.set(&info->getParents());
                   for (relative = nit.getFirst(); relative; relative = nit.getNext())
                      {
-                     traceMsg(comp(), "parent ----> %d\n", relative->getNumber());
+                     log->printf("parent ----> %d\n", relative->getNumber());
                      }
                   }
                }
@@ -1106,15 +1108,15 @@ int32_t TR_RedundantAsyncCheckRemoval::processNaturalLoop(TR_RegionStructure *re
                //
                if (trace())
                   {
-                  traceMsg(comp(), "smallest is %d\n", node->getNumber());
+                  log->printf("smallest is %d\n", node->getNumber());
                   TR_RegionStructure::Cursor it(*region);
                   TR_StructureSubGraphNode *n0de;
                   for (n0de = it.getFirst(); n0de; n0de = it.getNext())
                      {
                      AsyncInfo *info = GET_ASYNC_INFO(n0de);
-                     traceMsg(comp(), "Node %d, coverage: %d\n", n0de->getNumber(), info->getCoverage());
+                     log->printf("Node %d, coverage: %d\n", n0de->getNumber(), info->getCoverage());
                      }
-                  traceMsg(comp(), "-----------------------------------------------------------\n");
+                  log->prints("-----------------------------------------------------------\n");
                   }
                }
 
@@ -1126,7 +1128,7 @@ int32_t TR_RedundantAsyncCheckRemoval::processNaturalLoop(TR_RegionStructure *re
       if (hasEarlyExit(region))
          {
          if (trace())
-            traceMsg(comp(), "found earlyExit in region %d, so cannotClaimFullCoverage\n", region->getNumber());
+            log->printf("found earlyExit in region %d, so cannotClaimFullCoverage\n", region->getNumber());
          cannotClaimFullCoverage = true;
          }
 
@@ -1152,7 +1154,7 @@ int32_t TR_RedundantAsyncCheckRemoval::processNaturalLoop(TR_RegionStructure *re
       }
 
    if (trace())
-      traceMsg(comp(), "==> Finished processing region %d\n", region->getNumber());
+      log->printf("==> Finished processing region %d\n", region->getNumber());
 
    return 0;
    }
@@ -1200,6 +1202,7 @@ static TR_StructureSubGraphNode *findNodeInHierarchy(TR_RegionStructure *region,
 
 void TR_RedundantAsyncCheckRemoval::insertAsyncCheckOnSubTree(TR_StructureSubGraphNode *node, TR_StructureSubGraphNode *entry)
    {
+   TR::Logger *log = comp()->getLogger();
    AsyncInfo *info = GET_ASYNC_INFO(node);
 
    if (info->getCoverage() == FullyCovered)
@@ -1230,7 +1233,7 @@ void TR_RedundantAsyncCheckRemoval::insertAsyncCheckOnSubTree(TR_StructureSubGra
          if (block)
             {
             if (trace())
-               traceMsg(comp(), "- added exit yield point in block_%d\n", block->getNumber());
+               log->printf("- added exit yield point in block_%d\n", block->getNumber());
             AsyncInfo *info = (AsyncInfo *)block->getAnalysisInfo();
             info->setSoftYieldPoint();
             }
@@ -1242,9 +1245,9 @@ void TR_RedundantAsyncCheckRemoval::insertAsyncCheckOnSubTree(TR_StructureSubGra
             {
             if (trace())
                {
-               traceMsg(comp(), "--------------------------------------\n");
-               traceMsg(comp(), "=======>Added asynccheck in %d<=======\n", succ->getNumber());
-               traceMsg(comp(), "--------------------------------------\n");
+               log->prints("--------------------------------------\n");
+               log->printf("=======>Added asynccheck in %d<=======\n", succ->getNumber());
+               log->prints("--------------------------------------\n");
                }
             succInfo->setSoftYieldPoint();
             }
@@ -1292,6 +1295,8 @@ void TR_RedundantAsyncCheckRemoval::markAncestors(TR_StructureSubGraphNode *node
    {
    return;  // Disable it for performance. For more details, refer to https://github.com/eclipse/omr/pull/1138
 
+   TR::Logger *log = comp()->getLogger();
+
    if (node == entry)
       return;
 
@@ -1301,7 +1306,7 @@ void TR_RedundantAsyncCheckRemoval::markAncestors(TR_StructureSubGraphNode *node
    node->setVisitCount(comp()->getVisitCount());
 
    if (trace())
-      traceMsg(comp(),"<===markAncestors start=== ssg node: %d, ssg entry: %d\n", node->getNumber(), entry->getNumber());
+      log->printf("<===markAncestors start=== ssg node: %d, ssg entry: %d\n", node->getNumber(), entry->getNumber());
 
    for (auto edge = node->getPredecessors().begin(); edge != node->getPredecessors().end(); ++edge)
       {
@@ -1341,7 +1346,7 @@ void TR_RedundantAsyncCheckRemoval::markAncestors(TR_StructureSubGraphNode *node
          }
 
       if (trace())
-         traceMsg(comp(),"<===markAncestors recursion=== ssg pred: %d, ssg entry: %d\n", pred->getNumber(), entry->getNumber());
+         log->printf("<===markAncestors recursion=== ssg pred: %d, ssg entry: %d\n", pred->getNumber(), entry->getNumber());
 
       markAncestors(pred, entry);
       }
@@ -1431,6 +1436,7 @@ void TR_RedundantAsyncCheckRemoval::enqueueSinks(TR_RegionStructure *region, TR_
 //
 bool TR_RedundantAsyncCheckRemoval::performRegionalBackwardAnalysis(TR_RegionStructure *region, bool inInfo)
    {
+   TR::Logger *log = comp()->getLogger();
    bool earlyExit = hasEarlyExit(region);
 
    TR_Queue<TR_StructureSubGraphNode> *q = new (trHeapMemory()) TR_Queue<TR_StructureSubGraphNode>(trMemory());
@@ -1449,7 +1455,7 @@ bool TR_RedundantAsyncCheckRemoval::performRegionalBackwardAnalysis(TR_RegionStr
       subNode->getStructure()->setAnalyzedStatus(false);
 
    if (trace())
-      traceMsg(comp(), "<== Start processing region %d, in = %d\n", region->getNumber(), inInfo);
+      log->printf("<== Start processing region %d, in = %d\n", region->getNumber(), inInfo);
 
    while (!q->isEmpty())
       {
@@ -1535,7 +1541,7 @@ bool TR_RedundantAsyncCheckRemoval::performRegionalBackwardAnalysis(TR_RegionStr
          // remove yield point
          //
          if (trace())
-            traceMsg(comp(), "\t\tremoved yield point from node %d\n", node->getNumber());
+            log->printf("\t\tremoved yield point from node %d\n", node->getNumber());
          info->removeYieldPoint();
          removedYieldPoint = true;
          }
@@ -1545,11 +1551,11 @@ bool TR_RedundantAsyncCheckRemoval::performRegionalBackwardAnalysis(TR_RegionStr
       info->setReverseCoverageInfo(out);
 
       if (trace())
-         traceMsg(comp(), "\tsubnode %d, in = %d, out = %d\n", node->getNumber(), in, out);
+         log->printf("\tsubnode %d, in = %d, out = %d\n", node->getNumber(), in, out);
       }
 
    if (trace())
-      traceMsg(comp(), "<== Finished processing region %d, out = %d\n", region->getNumber(),
+      log->printf("<== Finished processing region %d, out = %d\n", region->getNumber(),
                   GET_ASYNC_INFO(region->getEntry())->getReverseCoverageInfo());
 
    return GET_ASYNC_INFO(region->getEntry())->getReverseCoverageInfo();
@@ -1614,6 +1620,7 @@ TR_RedundantAsyncCheckRemoval::optDetailString() const throw()
 
 uint32_t TR_LoopEstimator::estimateLoopIterationsUpperBound()
    {
+   TR::Logger *log = comp()->getLogger();
    TR::StackMemoryRegion stackMemoryRegion(*trMemory());
 
    int32_t numSymRefs = comp()->getSymRefTab()->getNumSymRefs();
@@ -1621,7 +1628,7 @@ uint32_t TR_LoopEstimator::estimateLoopIterationsUpperBound()
    _numBlocks  = _cfg->getNextNodeNumber();
 
    if (trace())
-      traceMsg(comp(), "==> Begin Processing Loop %d for iteration estimate\n", _loop->getNumber());
+      log->printf("==> Begin Processing Loop %d for iteration estimate\n", _loop->getNumber());
 
    // BitVector marking interesing symbol references
    //
@@ -1663,7 +1670,7 @@ uint32_t TR_LoopEstimator::estimateLoopIterationsUpperBound()
          conditions.add(new (trStackMemory()) ExitCondition(op, symRef, limit));
 
          if (trace())
-            traceMsg(comp(), "found candidate symbol #%d (%d) in condition block_%d\n",
+            log->printf("found candidate symbol #%d (%d) in condition block_%d\n",
                         refNum, symRef->getSymbol()->getLocalIndex(), edge->getFrom()->getNumber());
          }
       else
@@ -1726,7 +1733,7 @@ uint32_t TR_LoopEstimator::estimateLoopIterationsUpperBound()
             {
             candidates.reset(refNum);
             if (trace())
-               traceMsg(comp(), "Symbol %d has unknown increment value\n", refIndex);
+               log->printf("Symbol %d has unknown increment value\n", refIndex);
             continue;
             }
 
@@ -1736,7 +1743,7 @@ uint32_t TR_LoopEstimator::estimateLoopIterationsUpperBound()
             {
             candidates.reset(refNum);
             if (trace())
-               traceMsg(comp(), "Symbol %d has unknown entry value\n", refNum);
+               log->printf("Symbol %d has unknown entry value\n", refNum);
             }
          else
             {
@@ -1762,7 +1769,7 @@ uint32_t TR_LoopEstimator::estimateLoopIterationsUpperBound()
                else
                   {
                   if (trace())
-                     traceMsg(comp(), "found geometric induction variable symbol #%d\n", refNum);
+                     log->printf("found geometric induction variable symbol #%d\n", refNum);
                   if (estimate < 32)
                      estimate = 32;
                   }
@@ -1798,8 +1805,8 @@ uint32_t TR_LoopEstimator::estimateLoopIterationsUpperBound()
 
                   if (trace())
                      {
-                     traceMsg(comp(), "loop iterations estimate based upon symbol #%d: %d\n", refNum, iters);
-                     traceMsg(comp(), "in val = %d, out val = %d, incr = %d\n", in, lim, incr);
+                     log->printf("loop iterations estimate based upon symbol #%d: %d\n", refNum, iters);
+                     log->printf("in val = %d, out val = %d, incr = %d\n", in, lim, incr);
                      }
                   if (iters > estimate)
                      estimate = iters;
