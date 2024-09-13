@@ -246,7 +246,7 @@ int32_t TR_ExtendBasicBlocks::orderBlocksWithoutFrequencyInfo()
       TR::Block *bestExtension = NULL;
 
       if (trace())
-         traceMsg(comp(), "    Current block [%d] looking for best successor to extend it...\n", prevBlock->getNumber());
+         comp()->getLogger()->printf("    Current block [%d] looking for best successor to extend it...\n", prevBlock->getNumber());
 
       //int32_t blockHotness = block->getHotness(cfg);
       int32_t blockFreq = block->getFrequency();
@@ -282,7 +282,7 @@ int32_t TR_ExtendBasicBlocks::orderBlocksWithoutFrequencyInfo()
          }
 
       if (trace())
-         traceMsg(comp(), "    Current block [%d] with freq %d, best extension is BB[%d]\n", prevBlock->getNumber(), block->getFrequency(), bestExtension?bestExtension->getNumber():-1);
+         comp()->getLogger()->printf("    Current block [%d] with freq %d, best extension is BB[%d]\n", prevBlock->getNumber(), block->getFrequency(), bestExtension?bestExtension->getNumber():-1);
 
       if (cannotExtendWithCurrentFallThrough ||
           (bestExtension &&
@@ -519,6 +519,8 @@ int32_t TR_ExtendBasicBlocks::orderBlocksWithFrequencyInfo()
    {
    TR::StackMemoryRegion stackMemoryRegion(*trMemory());
 
+   TR::Logger *log = comp()->getLogger();
+
    // Build sequences of blocks that are joined by edges with the highest
    // frequencies.
    //
@@ -599,7 +601,7 @@ int32_t TR_ExtendBasicBlocks::orderBlocksWithFrequencyInfo()
    int32_t extendedBlockPreference = extendedBlockPointPreference * (MAX_BLOCK_COUNT+MAX_COLD_BLOCK_COUNT) / 10000;
 
    if (trace())
-      traceMsg(comp(), "Start block re-ordering\n");
+      log->prints("Start block re-ordering\n");
 
    // Merge sequences
    //
@@ -655,7 +657,7 @@ int32_t TR_ExtendBasicBlocks::orderBlocksWithFrequencyInfo()
          sequences[bestTo].first        = NULL;
          numSequences--;
          if (trace())
-            traceMsg(comp(), "   add %d to %d\n", bestTo, bestFrom);
+            log->printf("   add %d to %d\n", bestTo, bestFrom);
          }
       }
 
@@ -664,13 +666,13 @@ int32_t TR_ExtendBasicBlocks::orderBlocksWithFrequencyInfo()
     {
     if (sequences[i].first != NULL)
        {
-       traceMsg(comp(), "Seq %3d: ", i);
+       log->printf("Seq %3d: ", i);
        for (TR_SequenceEntry *entry = sequences[i].first; entry; entry = entry->next)
           {
           TR::Block *block = entry->block;
-          traceMsg(comp(), "%3d(%5d) ", block->getNumber(), block->getFrequency());
+          log->printf("%3d(%5d) ", block->getNumber(), block->getFrequency());
           }
-       traceMsg(comp(), "\n");
+       log->println();
        }
     }
 
@@ -691,7 +693,7 @@ int32_t TR_ExtendBasicBlocks::orderBlocksWithFrequencyInfo()
          if (!block->getEntry())
             continue;
          if (trace())
-            traceMsg(comp(), "   Insert block_%d %s\n", block->getNumber(), block->isCold() ? "cold" : "" );
+            log->printf("   Insert block_%d %s\n", block->getNumber(), block->isCold() ? "cold" : "" );
 
          // Join this block's trees to the previously processed block
          //
@@ -885,7 +887,7 @@ TR::Block *TR_BlockManipulator::getBestChoiceForExtension(TR::Block *block1)
       int32_t nextHotness = estimatedHotness(*nextEdge, nextBlock);
 
       if (trace())
-         traceMsg(comp(), "    Estimating hotness for BB [%d], next BB [%d], estimated hotness %d\n", block1->getNumber(), nextBlock->getNumber(), nextHotness);
+         comp()->getLogger()->printf("    Estimating hotness for BB [%d], next BB [%d], estimated hotness %d\n", block1->getNumber(), nextBlock->getNumber(), nextHotness);
 
       if (nextHotness > hotness)
          {
@@ -2778,7 +2780,7 @@ int32_t TR_SimplifyAnds::process(TR::TreeTop *startTree, TR::TreeTop *endTree)
             TR::ILOpCodes lastRealOpCodeValue = lastRealNode->getOpCodeValue();
 
             if (trace())
-               traceMsg(comp(), "Comparing current AND node %p with old AND node\n", lastRealNode, andNode);
+               comp()->getLogger()->trprintf("Comparing current AND node %p with old AND node\n", lastRealNode, andNode);
             if ((andNode->getFirstChild() == lastRealNode->getFirstChild()) &&
                 (andNode->getSecondChild() == lastRealNode->getSecondChild()))
                {
@@ -2933,7 +2935,7 @@ int32_t TR_SimplifyAnds::process(TR::TreeTop *startTree, TR::TreeTop *endTree)
                       isAndOfTwoFlags(comp(), andNode, lastRealNode, TR::iflcmpeq,  TR::land)))
                {
                if (trace())
-                   traceMsg(comp(), "Found two iand nodes: %p %p\n", andNode, lastRealNode);
+                   comp()->getLogger()->trprintf("Found two iand nodes: %p %p\n", andNode, lastRealNode);
                TR::DataType trType = andNode->getFirstChild()->getType();
                newOrOpcode = trType.isInt32() ? TR::ior : TR::lor;
                seenAndBefore = true;
@@ -3074,7 +3076,7 @@ int32_t TR_SimplifyAnds::process(TR::TreeTop *startTree, TR::TreeTop *endTree)
             if (!removingConditional)
                {
                if (trace())
-                  traceMsg(comp(), "Adding new AND node %p\n", lastRealNode);
+                  comp()->getLogger()->trprintf("Adding new AND node %p\n", lastRealNode);
                seenAndNodes.add(lastRealNode);
                noSideEffectsInBetween = true;
                }
@@ -3444,7 +3446,7 @@ int32_t TR_EliminateRedundantGotos::process(TR::TreeTop *startTree, TR::TreeTop 
                {
                TR::Block *from = excSuccs.front()->getFrom()->asBlock();
                TR::Block *to = excSuccs.front()->getTo()->asBlock();
-               traceMsg(comp(), "Remove exception edge: block_%d (isValid %d) -> block_%d (isValid %d)\n", from->getNumber(), from->isValid(), to->getNumber(), to->isValid());
+               comp()->getLogger()->printf("Remove exception edge: block_%d (isValid %d) -> block_%d (isValid %d)\n", from->getNumber(), from->isValid(), to->getNumber(), to->isValid());
                }
 
             cfg->removeEdge(excSuccs.front());
@@ -4077,6 +4079,7 @@ TR_ByteCodeInfo TR_ProfiledNodeVersioning::temporarilySetProfilingBcInfoOnNewArr
 int32_t TR_ProfiledNodeVersioning::perform()
    {
 #ifdef J9_PROJECT_SPECIFIC
+   TR::Logger *log = comp()->getLogger();
    TR::TreeTop *continuationPoint = NULL;
    TR::Block   *block = NULL;
    for (TR::TreeTop *tt = comp()->findLastTree(); tt; tt = continuationPoint)
@@ -4120,7 +4123,7 @@ int32_t TR_ProfiledNodeVersioning::perform()
                      {
                      static char *versionNewarrayForMultipleSizes = feGetEnv("TR_versionNewarrayForMultipleSizes");
                      if (trace())
-                        traceMsg(comp(), "Node %s has %d profiled values:\n", getDebug()->getName(node), totalFrequency);
+                        log->printf("Node %s has %d profiled values:\n", getDebug()->getName(node), totalFrequency);
                      TR_ScratchList<TR_ExtraValueInfo> valuesSortedByFrequency(trMemory());
                      numElementsInfo->getSortedList(comp(), &valuesSortedByFrequency);
                      ListIterator<TR_ExtraValueInfo> i(&valuesSortedByFrequency);
@@ -4128,7 +4131,7 @@ int32_t TR_ProfiledNodeVersioning::perform()
                         {
                         float probability = (float)profiledInfo->_frequency / totalFrequency;
                         if (trace())
-                           traceMsg(comp(), "%8d %5.1f%%\n", profiledInfo->_value, 100.0 * probability);
+                           log->printf("%8d %5.1f%%\n", profiledInfo->_value, 100.0 * probability);
 
                         // The heuristic: accumulate values until we hit the
                         // threshold where it's worth versioning.  After that
@@ -4235,7 +4238,7 @@ int32_t TR_ProfiledNodeVersioning::perform()
                         int16_t slowFrequency = std::max<int16_t>(originalFrequency * (1 - combinedProbability), MAX_COLD_BLOCK_COUNT+1);
                         if (trace())
                            {
-                           traceMsg(comp(), " -> Setting fast block_%d frequency = %d; slow block_%d frequency = %d\n",
+                           log->printf(" -> Setting fast block_%d frequency = %d; slow block_%d frequency = %d\n",
                               fastTree->getEnclosingBlock()->getNumber(), fastFrequency,
                               slowTree->getEnclosingBlock()->getNumber(), slowFrequency);
                            }
@@ -4245,7 +4248,7 @@ int32_t TR_ProfiledNodeVersioning::perform()
                      }
                   else if (trace())
                      {
-                     traceMsg(comp(), "Not versioning %s node %s because size node %s top probability is %.0f%% < %.0f%%\n",
+                     log->printf("Not versioning %s node %s because size node %s top probability is %.0f%% < %.0f%%\n",
                              node->getOpCode().getName(),
                              comp()->getDebug()->getName(node),
                              comp()->getDebug()->getName(numElementsNode),
@@ -4255,7 +4258,7 @@ int32_t TR_ProfiledNodeVersioning::perform()
                   }
                else if (trace())
                   {
-                  traceMsg(comp(), "No profiling info for size of %s node %s\n",
+                  log->printf("No profiling info for size of %s node %s\n",
                           node->getOpCode().getName(),
                           comp()->getDebug()->getName(node));
                   }
@@ -4820,6 +4823,7 @@ bool TR_Rematerialization::examineNode(TR::TreeTop *treeTop, TR::Node *parent, T
                                        TR_RematAdjustments & adjustments
                                       )
    {
+   TR::Logger *log = comp()->getLogger();
 
    node->decFutureUseCount();
 
@@ -4861,7 +4865,7 @@ bool TR_Rematerialization::examineNode(TR::TreeTop *treeTop, TR::Node *parent, T
              _prefetchNodes.find(node))
             {
             if (trace())
-               traceMsg(comp(), "Removing node %p\n", node);
+               log->trprintf("Removing node %p\n", node);
             if (isRematerializableLoad(node, parent) || _prefetchNodes.find(node))
                removeNodeFromList(node, &state->_currentlyCommonedLoads, &state->_parentsOfCommonedLoads, false);
             else
@@ -4909,7 +4913,7 @@ bool TR_Rematerialization::examineNode(TR::TreeTop *treeTop, TR::Node *parent, T
    if (node->getOpCodeValue() == TR::GlRegDeps)
       _underGlRegDeps = true;
 
-    if (trace()) traceMsg(comp(), "Parent adjust %d node %p parent %p\n", adjustments.adjustmentFromParent, node, parent);
+    if (trace()) log->trprintf("Parent adjust %d node %p parent %p\n", adjustments.adjustmentFromParent, node, parent);
 
    //TR_ScratchList<TR::Node> seenChildren(trMemory());
    TR_BitVector seenChildren(node->getNumChildren(), trMemory(), stackAlloc);
@@ -4923,7 +4927,7 @@ bool TR_Rematerialization::examineNode(TR::TreeTop *treeTop, TR::Node *parent, T
       //if (child->getVisitCount() == visitCount)
       if ((child->getFutureUseCount() & 0x7fff) < child->getReferenceCount())
          {
-         if (trace()) traceMsg(comp(), "Adding child %p to parent %p\n", child, node);
+         if (trace()) log->trprintf("Adding child %p to parent %p\n", child, node);
          seenChildren.set(i);
 
          TR_RematAdjustments newAdjustments = {
@@ -5006,7 +5010,7 @@ bool TR_Rematerialization::examineNode(TR::TreeTop *treeTop, TR::Node *parent, T
            else
               {
               childAdjustment++;
-              if (trace()) traceMsg(comp(), "Child adjust %d child %p node %p\n", childAdjustment, maxChild, node);
+              if (trace()) log->trprintf("Child adjust %d child %p node %p\n", childAdjustment, maxChild, node);
               }
             }
          }
@@ -5017,7 +5021,7 @@ bool TR_Rematerialization::examineNode(TR::TreeTop *treeTop, TR::Node *parent, T
    /*
    if (node->getNumChildren() != seenChildren.getSize())
       {
-      traceMsg(comp(), "Node %p num children %d seen children %d\n", node, node->getNumChildren(), seenChildren.getSize());
+      log->trprintf("Node %p num children %d seen children %d\n", node, node->getNumChildren(), seenChildren.getSize());
       TR_ASSERT(0, "Did not visit all children\n");
       }
    */
@@ -5043,7 +5047,7 @@ bool TR_Rematerialization::examineNode(TR::TreeTop *treeTop, TR::Node *parent, T
       if (node->getSecondChild()->getOpCode().isLoadConst() ||
           isRematerializableLoad(node->getSecondChild(), node))
          {
-         if (trace()) traceMsg(comp(), "1Removing node %p\n", node);
+         if (trace()) log->trprintf("1Removing node %p\n", node);
          if (node->getOpCode().isFloatingPoint())
             removeNodeFromList(node->getFirstChild(), &state->_currentlyCommonedFPLoads, &state->_parentsOfCommonedFPLoads, true);
          else if (node->getOpCode().isVectorResult())
@@ -5093,7 +5097,7 @@ bool TR_Rematerialization::examineNode(TR::TreeTop *treeTop, TR::Node *parent, T
 
    if (removeNodes)
       {
-      if (trace()) traceMsg(comp(), "2Removing node %p\n", node);
+      if (trace()) log->trprintf("2Removing node %p\n", node);
       if (node->getOpCode().isFloatingPoint())
          removeNodeFromList(node, &state->_currentlyCommonedFPLoads,
                            &state->_parentsOfCommonedFPLoads, true,
@@ -5152,8 +5156,8 @@ bool TR_Rematerialization::examineNode(TR::TreeTop *treeTop, TR::Node *parent, T
 
     if (trace())
        {
-       traceMsg(comp(), "At node %p parent %p GPR pressure is %d (child adjust %d parent adjust %d) limit is %d\n", node, parent, numRegisters + childAdjustment + adjustments.adjustmentFromParent, childAdjustment, adjustments.adjustmentFromParent, (cg()->getMaximumNumbersOfAssignableGPRs()-1));
-       traceMsg(comp(), "candidate nodes size %d candidate loads size %d\n", state->_currentlyCommonedCandidates.getSize(), state->_currentlyCommonedLoads.getSize());
+       log->trprintf("At node %p parent %p GPR pressure is %d (child adjust %d parent adjust %d) limit is %d\n", node, parent, numRegisters + childAdjustment + adjustments.adjustmentFromParent, childAdjustment, adjustments.adjustmentFromParent, (cg()->getMaximumNumbersOfAssignableGPRs()-1));
+       log->printf("candidate nodes size %d candidate loads size %d\n", state->_currentlyCommonedCandidates.getSize(), state->_currentlyCommonedLoads.getSize());
        }
 
     if ((!considerRegPressure ||
@@ -5167,8 +5171,8 @@ bool TR_Rematerialization::examineNode(TR::TreeTop *treeTop, TR::Node *parent, T
 
       if (trace() && node->getOpCode().isFloatingPoint())
       {
-      traceMsg(comp(), "At node %p FPR pressure is %d (child adjust %d parent adjust %d) limit is %d\n", node, state->_currentlyCommonedFPNodes.getSize() + fpChildAdjustment + adjustments.fpAdjustmentFromParent, fpChildAdjustment, adjustments.fpAdjustmentFromParent, (cg()->getMaximumNumbersOfAssignableFPRs()-1));
-      traceMsg(comp(), "candidate nodes size %d candidate loads size %d\n", state->_currentlyCommonedFPCandidates.getSize(), state->_currentlyCommonedFPLoads.getSize());
+      log->trprintf("At node %p FPR pressure is %d (child adjust %d parent adjust %d) limit is %d\n", node, state->_currentlyCommonedFPNodes.getSize() + fpChildAdjustment + adjustments.fpAdjustmentFromParent, fpChildAdjustment, adjustments.fpAdjustmentFromParent, (cg()->getMaximumNumbersOfAssignableFPRs()-1));
+      log->printf("candidate nodes size %d candidate loads size %d\n", state->_currentlyCommonedFPCandidates.getSize(), state->_currentlyCommonedFPLoads.getSize());
       }
 
    if ((!considerRegPressure || ((state->_currentlyCommonedFPNodes.getSize() + fpChildAdjustment + adjustments.fpAdjustmentFromParent) > cg()->getMaximumNumbersOfAssignableFPRs() /* -1 */)) &&
@@ -5181,8 +5185,8 @@ bool TR_Rematerialization::examineNode(TR::TreeTop *treeTop, TR::Node *parent, T
 
       if (trace() && node->getOpCode().isVectorResult())
       {
-      traceMsg(comp(), "At node %p VSR pressure is %d (child adjust %d parent adjust %d) limit is %d\n", node, state->_currentlyCommonedVector128Nodes.getSize() + vector128ChildAdjustment + adjustments.vector128AdjustmentFromParent, vector128ChildAdjustment, adjustments.vector128AdjustmentFromParent, vector128ChildAdjustment + adjustments.vector128AdjustmentFromParent);
-      traceMsg(comp(), "candidate nodes size %d candidate loads size %d\n", state->_currentlyCommonedVector128Candidates.getSize(), state->_currentlyCommonedVector128Loads.getSize());
+      log->trprintf("At node %p VSR pressure is %d (child adjust %d parent adjust %d) limit is %d\n", node, state->_currentlyCommonedVector128Nodes.getSize() + vector128ChildAdjustment + adjustments.vector128AdjustmentFromParent, vector128ChildAdjustment, adjustments.vector128AdjustmentFromParent, vector128ChildAdjustment + adjustments.vector128AdjustmentFromParent);
+      log->printf("candidate nodes size %d candidate loads size %d\n", state->_currentlyCommonedVector128Candidates.getSize(), state->_currentlyCommonedVector128Loads.getSize());
       }
 
    if ((!considerRegPressure || ((state->_currentlyCommonedVector128Nodes.getSize() + vector128ChildAdjustment + adjustments.vector128AdjustmentFromParent) > cg()->getMaximumNumbersOfAssignableVRs() )) &&
@@ -5209,7 +5213,7 @@ bool TR_Rematerialization::examineNode(TR::TreeTop *treeTop, TR::Node *parent, T
                state->_currentlyCommonedNodes.add(node);
             }
 
-         //traceMsg(comp(), "Adding node %p\n", node);
+         // log->trprintf("Adding node %p\n", node);
          if (parent && !_underGlRegDeps &&
             !parent->getOpCode().isStoreReg() &&
             isRematerializable(parent, node) &&
@@ -5221,7 +5225,7 @@ bool TR_Rematerialization::examineNode(TR::TreeTop *treeTop, TR::Node *parent, T
                   {
                   if (!state->_fpLoadsAlreadyVisitedThatCannotBeRematerialized.find(node))
                      {
-                     //traceMsg(comp(), "1Adding node %p to _currentlyCommonedFPLoads\n", node);
+                     // log->trprintf("1Adding node %p to _currentlyCommonedFPLoads\n", node);
                      state->_currentlyCommonedFPLoads.add(node);
                      TR_ScratchList<TR::Node> *parentList = new (trStackMemory()) TR_ScratchList<TR::Node>(trMemory());
                      parentList->add(parent);
@@ -5232,7 +5236,7 @@ bool TR_Rematerialization::examineNode(TR::TreeTop *treeTop, TR::Node *parent, T
                   {
                   if (!state->_vector128LoadsAlreadyVisitedThatCannotBeRematerialized.find(node))
                      {
-                     //traceMsg(comp(), "1Adding node %p to _currentlyCommonedVector128Loads\n", node);
+                     //log->trprintf("1Adding node %p to _currentlyCommonedVector128Loads\n", node);
                      state->_currentlyCommonedVector128Loads.add(node);
                      TR_ScratchList<TR::Node> *parentList = new (trStackMemory()) TR_ScratchList<TR::Node>(trMemory());
                      parentList->add(parent);
@@ -5243,7 +5247,7 @@ bool TR_Rematerialization::examineNode(TR::TreeTop *treeTop, TR::Node *parent, T
                   {
                   if (!state->_loadsAlreadyVisitedThatCannotBeRematerialized.find(node))
                      {
-                     //traceMsg(comp(), "1Adding node %p to _currentlyCommonedLoads\n", node);
+                     //log->trprintf("1Adding node %p to _currentlyCommonedLoads\n", node);
                      state->_currentlyCommonedLoads.add(node);
                      TR_ScratchList<TR::Node> *parentList = new (trStackMemory()) TR_ScratchList<TR::Node>(trMemory());
                      parentList->add(parent);
@@ -5255,7 +5259,7 @@ bool TR_Rematerialization::examineNode(TR::TreeTop *treeTop, TR::Node *parent, T
                {
                if (node->getOpCode().isFloatingPoint())
                   {
-                  //traceMsg(comp(), "2Adding node %p to _currentlyCommonedFPCandidates\n", node);
+                  //log->trprintf("2Adding node %p to _currentlyCommonedFPCandidates\n", node);
                   state->_currentlyCommonedFPCandidates.add(node);
                   TR_ScratchList<TR::Node> *parentList = new (trStackMemory()) TR_ScratchList<TR::Node>(trMemory());
                   parentList->add(parent);
@@ -5263,7 +5267,7 @@ bool TR_Rematerialization::examineNode(TR::TreeTop *treeTop, TR::Node *parent, T
                   }
                else if (node->getOpCode().isVectorResult())
                   {
-                  //traceMsg(comp(), "2Adding node %p to _currentlyCommonedVector128Candidates\n", node);
+                  //log->trprintf("2Adding node %p to _currentlyCommonedVector128Candidates\n", node);
                   state->_currentlyCommonedVector128Candidates.add(node);
                   TR_ScratchList<TR::Node> *parentList = new (trStackMemory()) TR_ScratchList<TR::Node>(trMemory());
                   parentList->add(parent);
@@ -5271,7 +5275,7 @@ bool TR_Rematerialization::examineNode(TR::TreeTop *treeTop, TR::Node *parent, T
                   }
                else
                   {
-                  //traceMsg(comp(), "2Adding node %p to _currentlyCommonedCandidates\n", node);
+                  //log->trprintf("2Adding node %p to _currentlyCommonedCandidates\n", node);
                   state->_currentlyCommonedCandidates.add(node);
                   TR_ScratchList<TR::Node> *parentList = new (trStackMemory()) TR_ScratchList<TR::Node>(trMemory());
                   parentList->add(parent);
@@ -5308,7 +5312,7 @@ static List<TR::Node> *getParentList(TR::Node *node, List< List<TR::Node> > *par
 void TR_Rematerialization::rematerializeNode(TR::TreeTop *treeTop, TR::Node *parent, TR::Node *node, vcount_t visitCount, List<TR::Node> *currentlyCommonedNodes, List<TR::Node> *currentlyCommonedCandidates, List< List<TR::Node> > *parents, List<TR::Node> *currentlyCommonedLoads, List< List<TR::Node> > *parentsOfCommonedLoads, List<TR::Node> *loadsAlreadyVisited, List<TR::Node> *loadsAlreadyVisitedThatCannotBeRematerialized, bool rematSpecialNode)
    {
    if (trace())
-      traceMsg(comp(), "rematerializeNode: parent = %p node = %p\n", parent, node);
+      comp()->getLogger()->trprintf("rematerializeNode: parent = %p node = %p\n", parent, node);
 
    bool mustBeAnchored = false;
    TR::Node *nodeToBeRematerialized = NULL;
@@ -5387,7 +5391,7 @@ void TR_Rematerialization::rematerializeNode(TR::TreeTop *treeTop, TR::Node *par
    bool isAdjunctNode = nodeToBeRematerialized->isAdjunct();
 
    if (isAdjunctNode)
-      traceMsg (comp(), "Prevented adjunct node %p from being rematerialized\n", nodeToBeRematerialized);
+      comp()->getLogger()->trprintf("Prevented adjunct node %p from being rematerialized\n", nodeToBeRematerialized);
 
    if (!isAdjunctNode && performTransformation(comp(), "%sRematerializing node %p(%s)\n", optDetailString(), nodeToBeRematerialized, nodeToBeRematerialized->getOpCode().getName()))
       {
@@ -5429,7 +5433,7 @@ void TR_Rematerialization::rematerializeNode(TR::TreeTop *treeTop, TR::Node *par
                    }
                 }
 
-             //traceMsg(comp(), "new node %p new first child %p\n", newNode, newFirstChild);
+             //log->trprintf("new node %p new first child %p\n", newNode, newFirstChild);
              newNode->setChild(0, newFirstChild);
              //firstChild->recursivelyDecReferenceCount();
              }
@@ -5469,7 +5473,7 @@ void TR_Rematerialization::rematerializeNode(TR::TreeTop *treeTop, TR::Node *par
                if (parentNode->getChild(j) == nodeToBeRematerialized)
                   {
                   if (trace())
-                     traceMsg(comp(), "\tin parent node %p\n", parentNode);
+                     comp()->getLogger()->trprintf("\tin parent node %p\n", parentNode);
                   parentNode->setAndIncChild(j, newNode);
                   nodeToBeRematerialized->recursivelyDecReferenceCount();
 
@@ -5566,15 +5570,17 @@ bool TR_BlockSplitter::disableSynergy()
 
 int32_t TR_BlockSplitter::perform()
    {
+   TR::Logger *log = comp()->getLogger();
+
    if(trace() && disableSynergy())
-      traceMsg(comp(), "Block splitting hotness = %d, method = %s\n", comp()->getMethodHotness(), comp()->signature());
+      log->printf("Block splitting hotness = %d, method = %s\n", comp()->getMethodHotness(), comp()->signature());
    // There must be profiling information available for this optimization
    //
    TR::CFG *cfg = comp()->getFlowGraph();
    if (!cfg)
       {
       if(trace())
-         traceMsg(comp(), "No cfg, aborting BlockSplitter\n");
+         log->prints("No cfg, aborting BlockSplitter\n");
       return 0;
       }
 
@@ -5582,7 +5588,7 @@ int32_t TR_BlockSplitter::perform()
    if (!recompilationInfo)
       {
       if(trace())
-         traceMsg(comp(), "No recompilation info, aborting BlockSplitter\n");
+         log->prints("No recompilation info, aborting BlockSplitter\n");
       return 0;
       }
 
@@ -5591,7 +5597,7 @@ int32_t TR_BlockSplitter::perform()
    if (disableSynergy() && comp()->isOptServer())
       {
       if(trace())
-         traceMsg(comp(), "Large app detected, making BlockSplitter very conservative to avoid cloning code (increases i-cache pressure)\n");
+         log->prints("Large app detected, making BlockSplitter very conservative to avoid cloning code (increases i-cache pressure)\n");
       }
 
    //static const char *doit = feGetEnv("TR_BlockSplitting");
@@ -5649,7 +5655,7 @@ int32_t TR_BlockSplitter::perform()
    static int32_t skipBlock = (p = feGetEnv("TR_SkipMergeBlock")) ? atoi(p) : -1;
 
    if (trace())
-      traceMsg(comp(), "  alpha=%f maxDepth=%d totalFrequency=%d splitFrequency=%d splitPredFrequency=%d\n",
+      log->printf("  alpha=%f maxDepth=%d totalFrequency=%d splitFrequency=%d splitPredFrequency=%d\n",
                          alpha,   maxDepth,   totalFrequency,   splitFrequency,   splitPredFrequency);
 
    // Find all the merge nodes and order them by hotness
@@ -5676,7 +5682,7 @@ int32_t TR_BlockSplitter::perform()
    // by this index to obtain optimal splitting
 
    if (trace())
-      traceMsg(comp(), "  Starting search for merge points\n");
+      log->prints("  Starting search for merge points\n");
    while (children->size() > 0)
       {
       TR::CFGEdge * unvisitedEdge = NULL;
@@ -5691,7 +5697,7 @@ int32_t TR_BlockSplitter::perform()
 
       if (unvisitedEdge != NULL)
          {
-         //traceMsg(comp(), "Found unvisited edge, pushing block_%d\n", toBlock(unvisitedEdge->getTo())->getNumber());
+         //log->printf("Found unvisited edge, pushing block_%d\n", toBlock(unvisitedEdge->getTo())->getNumber());
          unvisitedEdge->getTo()->setVisitCount(comp()->getVisitCount());
          children->push(unvisitedEdge->getTo());
          continue;
@@ -5709,42 +5715,42 @@ int32_t TR_BlockSplitter::perform()
       if (mergeNode->isOSRCodeBlock() || mergeNode->isOSRInduceBlock())
          {
          if (trace())
-            traceMsg(comp(), "    rejecting osr block_%d\n", mergeNode->getNumber());
+            log->printf("    rejecting osr block_%d\n", mergeNode->getNumber());
          children->pop();
          continue;
          }
       if (!mergeNode->getEntry())
          {
          if (trace())
-            traceMsg(comp(), "    rejecting empty block_%d\n", mergeNode->getNumber());
+            log->printf("    rejecting empty block_%d\n", mergeNode->getNumber());
          children->pop();
          continue;
          }
       if (mergeNode->getFrequency() < splitFrequency)
          {
          if (trace())
-            traceMsg(comp(), "    rejecting block_%d, frequency is %d, threshold is %d\n", mergeNode->getNumber(), mergeNode->getFrequency(), splitFrequency);
+            log->printf("    rejecting block_%d, frequency is %d, threshold is %d\n", mergeNode->getNumber(), mergeNode->getFrequency(), splitFrequency);
          children->pop();
          continue;
          }
       if (isLoopHeader(mergeNode))
          {
          if(trace())
-            traceMsg(comp(), "    rejecting loop header block_%d\n", mergeNode->getNumber());
+            log->printf("    rejecting loop header block_%d\n", mergeNode->getNumber());
          children->pop();
          continue;
          }
       if (hasIVUpdate(mergeNode))
          {
          if (trace())
-            traceMsg(comp(), "    reject merge block_%d: IV update\n", mergeNode->getNumber());
+            log->printf("    reject merge block_%d: IV update\n", mergeNode->getNumber());
          children->pop();
          continue;
          }
       if (hasLoopAsyncCheck(mergeNode))
          {
          if (trace())
-            traceMsg(comp(), "    reject merge block_%d: asynccheck\n", mergeNode->getNumber());
+            log->printf("    reject merge block_%d: asynccheck\n", mergeNode->getNumber());
          children->pop();
          continue;
          }
@@ -5752,7 +5758,7 @@ int32_t TR_BlockSplitter::perform()
       if (mergeNode->getNumber() == skipBlock)
          {
          if (trace())
-            traceMsg(comp(), "     rejecting block_%d, magic skip block found\n", mergeNode->getNumber());
+            log->printf("     rejecting block_%d, magic skip block found\n", mergeNode->getNumber());
          children->pop();
          continue;
          }
@@ -5763,13 +5769,13 @@ int32_t TR_BlockSplitter::perform()
       if (disableSynergy() && comp()->isOptServer() && !mergeNode->isEmptyBlock())
          {
          if(trace())
-            traceMsg(comp(), "    opt server mode for mergeNode %d\n", mergeNode->getNumber());
+            log->printf("    opt server mode for mergeNode %d\n", mergeNode->getNumber());
          // very restrictive block splitting
          if (mergeNode->getNumberOfRealTreeTops()>1)
             {
             children->pop();
             if(trace())
-               traceMsg(comp(), "    rejecting because mergeNode %d has more than 1 treetop\n", mergeNode->getNumber());
+               log->printf("    rejecting because mergeNode %d has more than 1 treetop\n", mergeNode->getNumber());
             continue;
             }
 
@@ -5785,7 +5791,7 @@ int32_t TR_BlockSplitter::perform()
                {
                allSimplePreds = false;
                if(trace())
-                  traceMsg(comp(), "    rejecting because predecessor block %d has more than 4 treetops\n", predBlock->getNumber());
+                  log->printf("    rejecting because predecessor block %d has more than 4 treetops\n", predBlock->getNumber());
                break;
                }
             }
@@ -5802,7 +5808,7 @@ int32_t TR_BlockSplitter::perform()
       if (!mergeNode->isEmptyBlock())
          {
          if(trace())
-            traceMsg(comp(), "    adding merge block_%d to heap\n", mergeNode->getNumber());
+            log->printf("    adding merge block_%d to heap\n", mergeNode->getNumber());
          TR_IndexedBinaryHeapElement* temp = new (trStackMemory()) TR_IndexedBinaryHeapElement(mergeNode, index++);
          heap->add(temp);
          }
@@ -5811,14 +5817,14 @@ int32_t TR_BlockSplitter::perform()
    heapElementQuickSort((TR_Array<TR_IndexedBinaryHeapElement*>*)heap, 0, heap->lastIndex());
    if (trace())
       {
-      traceMsg(comp(), "  Finished search for merge points\n");
+      log->prints("  Finished search for merge points\n");
       heap->dumpList(comp());
       }
 
    if (!hasNonZeroFrequencies)
       {
       if(trace())
-         traceMsg(comp(), "Terminating: found merge blocks with nonzero frequency\n");
+         log->prints("Terminating: found merge blocks with nonzero frequency\n");
       return 0;
       }
 
@@ -5849,7 +5855,7 @@ int32_t TR_BlockSplitter::perform()
          {
          node = (*edge)->getFrom();
          if (trace())
-            traceMsg(comp(), "Consider %d -> %d\n", toBlock(node)->getNumber(), mergeNode->getNumber());
+            log->printf("Consider %d -> %d\n", toBlock(node)->getNumber(), mergeNode->getNumber());
          predFrequency += node->getFrequency();
          predEdgeFrequency += (*edge)->getFrequency();
          if(toBlock(node)->getEntry() &&
@@ -5884,7 +5890,7 @@ int32_t TR_BlockSplitter::perform()
              splitPred = toBlock(node);
              splitPred_to_mergeNode_edge = *edge;
              if (trace())
-                traceMsg(comp(), "mergeNode(%d) splitPred(%d) blockfreq = %d edgefreq = %d candidate\n",mergeNode->getNumber(),splitPred->getNumber(),splitPred->getFrequency(),(*edge)->getFrequency());
+                log->printf("mergeNode(%d) splitPred(%d) blockfreq = %d edgefreq = %d candidate\n",mergeNode->getNumber(),splitPred->getNumber(),splitPred->getFrequency(),(*edge)->getFrequency());
              }
          }
 
@@ -5901,7 +5907,7 @@ int32_t TR_BlockSplitter::perform()
           (predEdgeFrequency <= 0))
          {
          if (trace())
-            traceMsg(comp(), "Merge block_%d has no suitable predecessor\n", mergeNode->getNumber());
+            log->printf("Merge block_%d has no suitable predecessor\n", mergeNode->getNumber());
          continue;
          }
 
@@ -5924,7 +5930,7 @@ int32_t TR_BlockSplitter::perform()
       while (depth > 1)
          {
          if (trace())
-            traceMsg(comp(), "  Processing block_%d, depth budget %d\n", target->getNumber(), depth);
+            log->printf("  Processing block_%d, depth budget %d\n", target->getNumber(), depth);
 
          TR::Block *child;
          int32_t startDepth = depth;
@@ -5939,28 +5945,28 @@ int32_t TR_BlockSplitter::perform()
             if (!child->getEntry())
                {
                if (trace())
-                  traceMsg(comp(), "    Reject successor block_%d: has no trees\n", child->getNumber());
+                  log->printf("    Reject successor block_%d: has no trees\n", child->getNumber());
                continue;
                }
 
             if (child->getFrequency() <= (target->getFrequency() - tollerance))
                {
                if (trace())
-                  traceMsg(comp(), "    Reject successor block_%d: frequency is too low (%d < %d)\n", child->getNumber(), child->getFrequency(), (target->getFrequency() - tollerance));
+                  log->printf("    Reject successor block_%d: frequency is too low (%d < %d)\n", child->getNumber(), child->getFrequency(), (target->getFrequency() - tollerance));
                continue;
                }
 
             if (child->hasExceptionPredecessors())
                {
                if (trace())
-                  traceMsg(comp(), "    Reject successor block_%d: catch block\n", child->getNumber());
+                  log->printf("    Reject successor block_%d: catch block\n", child->getNumber());
                continue;
                }
 
             if (!(child->getPredecessors().size() == 1))
                {
                if (trace())
-                  traceMsg(comp(), "    Reject successor block_%d: merge block -- we'll process this separately\n", child->getNumber());
+                  log->printf("    Reject successor block_%d: merge block -- we'll process this separately\n", child->getNumber());
                continue;
                }
 
@@ -5979,35 +5985,35 @@ int32_t TR_BlockSplitter::perform()
             if (isLoopHeader(toCheck))
                {
                if (trace())
-                  traceMsg(comp(), "    Reject successor block_%d: loop header\n", child->getNumber());
+                  log->printf("    Reject successor block_%d: loop header\n", child->getNumber());
                continue;
                }
 
             if (hasIVUpdate(toCheck))
                {
                if (trace())
-                  traceMsg(comp(), "    Reject successor block_%d: IV update\n", child->getNumber());
+                  log->printf("    Reject successor block_%d: IV update\n", child->getNumber());
                continue;
                }
 
             if (hasLoopAsyncCheck(toCheck))
                {
                if (trace())
-                  traceMsg(comp(), "    Reject successor block_%d: asynccheck\n", child->getNumber());
+                  log->printf("    Reject successor block_%d: asynccheck\n", child->getNumber());
                continue;
                }
 
             if (isExitEdge(target, toCheck))
                {
                if (trace())
-                  traceMsg(comp(), "    Reject successor block_%d: outside of loop\n", child->getNumber());
+                  log->printf("    Reject successor block_%d: outside of loop\n", child->getNumber());
                continue;
                }
 
             if (containCycle(child, &bMap))
                {
                if (trace())
-                  traceMsg(comp(), "    Reject successor block_%d: would cause cycle in block mapper\n", child->getNumber());
+                  log->printf("    Reject successor block_%d: would cause cycle in block mapper\n", child->getNumber());
                continue;
                }
 
@@ -6018,14 +6024,14 @@ int32_t TR_BlockSplitter::perform()
                 lastRealNode->getBranchDestination()->getNode()->getBlock()->getNumber() == child->getNumber())
                {
                if (trace())
-                  traceMsg(comp(), "    Reject successor block_%d: virtual guard branch that can't be reversed\n", child->getNumber());
+                  log->printf("    Reject successor block_%d: virtual guard branch that can't be reversed\n", child->getNumber());
                continue;
                }
 
             //if we reach this point, we passed all the checks so we are good to split through the
             //child we are checking
             if (trace())
-               traceMsg(comp(), "  Split through successor block_%d\n", child->getNumber());
+               log->printf("  Split through successor block_%d\n", child->getNumber());
 
             //create an empty block ready to be filled by the cloner and add it to the block mapper
             bMap.append(new (trStackMemory()) BlockMapper(child, NULL));
@@ -6066,23 +6072,23 @@ int32_t TR_BlockSplitter::perform()
          splitBlock(splitPred, &bMap);
 
          if (trace())
-            traceMsg(comp(),"splitPred=%d, mergeNode=%d\n",splitPred->getNumber(),mergeNode->getNumber());
+            log->printf("splitPred=%d, mergeNode=%d\n",splitPred->getNumber(),mergeNode->getNumber());
 
          // Update block frequencies
          if (trace())
             {
-            traceMsg(comp(), "  New block frequencies are cold: %d hot: %d\n", coldFreq, hotFreq);
-            traceMsg(comp(), "  New edge frequencies are cold: %d hot: %d\n", coldEdgeFreq, hotEdgeFreq);
+            log->printf("  New block frequencies are cold: %d hot: %d\n", coldFreq, hotFreq);
+            log->printf("  New edge frequencies are cold: %d hot: %d\n", coldEdgeFreq, hotEdgeFreq);
             }
          for (BlockMapper* itr = bMap.getFirst(); itr; itr = itr->getNext())
             {
             if (trace())
-               traceMsg(comp(), "    setting block_%d cold and block_%d hot\n", itr->_from->getNumber(), itr->_to->getNumber());
+               log->printf("    setting block_%d cold and block_%d hot\n", itr->_from->getNumber(), itr->_to->getNumber());
 
             int32_t origFreq = itr->_from->getFrequency();
 
             if (trace())
-               traceMsg(comp(),"block %d origFreq = %d ",itr->_from->getNumber(),origFreq);
+               log->printf("block %d origFreq = %d ",itr->_from->getNumber(),origFreq);
 
             itr->_from->setFrequency(coldFreq);
 
@@ -6103,7 +6109,7 @@ int32_t TR_BlockSplitter::perform()
                      freq = MAX_COLD_BLOCK_COUNT;
 
                   if (trace())
-                     traceMsg(comp(),"predEdge freq=%d. set it to %d instead\n",(*predEdge)->getFrequency(),freq);
+                     log->printf("predEdge freq=%d. set it to %d instead\n",(*predEdge)->getFrequency(),freq);
 
                   (*predEdge)->setFrequency(freq);
                   }
@@ -6122,7 +6128,7 @@ int32_t TR_BlockSplitter::perform()
                      freq = MAX_COLD_BLOCK_COUNT;
 
                   if (trace())
-                     traceMsg(comp(),"succEdge freq=%d. set it to %d instead\n",(*succEdge)->getFrequency(),freq);
+                     log->printf("succEdge freq=%d. set it to %d instead\n",(*succEdge)->getFrequency(),freq);
 
                   (*succEdge)->setFrequency(freq);
                   }
@@ -6131,7 +6137,7 @@ int32_t TR_BlockSplitter::perform()
                   {
                   TR::CFGEdge * predEdge = itr->_from->getPredecessors().front();
                   if (trace())
-                     traceMsg(comp(),"single predEdge freq=%d. set it to %d instead\n",predEdge->getFrequency(),coldEdgeFreq);
+                     log->printf("single predEdge freq=%d. set it to %d instead\n",predEdge->getFrequency(),coldEdgeFreq);
                   predEdge->setFrequency(coldEdgeFreq);
                   }
 
@@ -6139,7 +6145,7 @@ int32_t TR_BlockSplitter::perform()
                   {
                   TR::CFGEdge * succEdge = itr->_from->getSuccessors().front();
                   if (trace())
-                     traceMsg(comp(),"single succEdge freq=%d. set it to %d instead\n",succEdge->getFrequency(),coldEdgeFreq);
+                     log->printf("single succEdge freq=%d. set it to %d instead\n",succEdge->getFrequency(),coldEdgeFreq);
                   succEdge->setFrequency(coldEdgeFreq);
                   }
                }
@@ -6150,14 +6156,14 @@ int32_t TR_BlockSplitter::perform()
             if (itr->_to->getPredecessors().size() == 1)
                {
                if (trace())
-                  traceMsg(comp(),"predEdge freq=%d. set it to %d instead\n",itr->_to->getPredecessors().front()->getFrequency(),hotEdgeFreq);
+                  log->printf("predEdge freq=%d. set it to %d instead\n",itr->_to->getPredecessors().front()->getFrequency(),hotEdgeFreq);
                itr->_to->getPredecessors().front()->setFrequency(hotEdgeFreq);
                }
 
             if (itr->_to->getSuccessors().size() == 1)
                {
                if (trace())
-                  traceMsg(comp(),"succEdge freq=%d. set it to %d instead\n",itr->_to->getSuccessors().front()->getFrequency(),hotEdgeFreq);
+                  log->printf("succEdge freq=%d. set it to %d instead\n",itr->_to->getSuccessors().front()->getFrequency(),hotEdgeFreq);
                itr->_to->getSuccessors().front()->setFrequency(hotEdgeFreq);
                }
             }
@@ -6231,6 +6237,7 @@ void TR_BlockSplitter::quickSortSwap(TR_Array<TR_IndexedBinaryHeapElement*>* arr
 
 int32_t TR_BlockSplitter::pruneAndPopulateBlockMapper(TR_LinkHeadAndTail<BlockMapper>* bMap, int32_t depth)
    {
+   TR::Logger *log = comp()->getLogger();
    int32_t cloned = 0;
    if (depth)
       {
@@ -6238,7 +6245,7 @@ int32_t TR_BlockSplitter::pruneAndPopulateBlockMapper(TR_LinkHeadAndTail<BlockMa
          {
          for (BlockMapper* itr = bMap->getFirst(); itr; itr = itr->getNext())
             {
-            traceMsg(comp(), "prune bMap iterator, from 0x%p to 0x%p\n", itr->_from, itr->_to);
+            log->trprintf("prune bMap iterator, from 0x%p to 0x%p\n", itr->_from, itr->_to);
             }
          }
 
@@ -6256,7 +6263,7 @@ int32_t TR_BlockSplitter::pruneAndPopulateBlockMapper(TR_LinkHeadAndTail<BlockMa
          {
          ++cloned;
          if (trace())
-            traceMsg(comp(), "prune bMap iterator for join, from 0x%p to 0x%p\n", itr->_from, itr->_to);
+            log->trprintf("prune bMap iterator for join, from 0x%p to 0x%p\n", itr->_from, itr->_to);
 
          itr->_to = new (trHeapMemory()) TR::Block(*itr->_from, TR::TreeTop::create(comp(), NULL), OMR::TreeTop::create(comp(), NULL));
          itr->_to->getEntry()->join(itr->_to->getExit());
@@ -6266,18 +6273,20 @@ int32_t TR_BlockSplitter::pruneAndPopulateBlockMapper(TR_LinkHeadAndTail<BlockMa
          }
       }
    if (trace())
-      traceMsg(comp(), "  pruneAndPopulateBlockMapper returning depth of %d\n", cloned);
+      log->printf("  pruneAndPopulateBlockMapper returning depth of %d\n", cloned);
    return cloned;
    }
 
 int32_t TR_BlockSplitter::synergisticDepthCalculator(TR_LinkHeadAndTail<BlockMapper>* bMap, TR::Block * startPoint)
    {
+   TR::Logger *log = comp()->getLogger();
+
    //Step 1 - find the start of the preamble
    TR_Stack<TR::Block *> preamble = TR_Stack<TR::Block *>(trMemory());
    preamble.push(startPoint);
 
    if (trace())
-      traceMsg(comp(), "  Starting synergisticDepthCalculator\n");
+      log->prints("  Starting synergisticDepthCalculator\n");
 
    if (!startPoint->getPredecessors().empty())
       {
@@ -6290,7 +6299,7 @@ int32_t TR_BlockSplitter::synergisticDepthCalculator(TR_LinkHeadAndTail<BlockMap
           )
           {
           if (trace())
-             traceMsg(comp(), "preamble.push from %d to %d\n", itr->getFrom()->getNumber(), itr->getTo()->getNumber());
+             log->printf("preamble.push from %d to %d\n", itr->getFrom()->getNumber(), itr->getTo()->getNumber());
           preamble.push(toBlock(itr->getFrom()));
           }
           preamble.push(toBlock(itr->getFrom()));
@@ -6299,10 +6308,10 @@ int32_t TR_BlockSplitter::synergisticDepthCalculator(TR_LinkHeadAndTail<BlockMap
    //print out the preamble if we are printing opt trace
    if (trace())
       {
-      traceMsg(comp(), "    Find synergy in preamble blocks");
+      log->prints("    Find synergy in preamble blocks");
       for (int32_t i = preamble.lastIndex(); i >= 0; --i)
-         traceMsg(comp(), " %d", preamble[i]->getNumber());
-      traceMsg(comp(), "\n");
+         log->printf(" %d", preamble[i]->getNumber());
+      log->println();
       }
 
    //Step 2 - process the preamble to preload the symbol information
@@ -6321,7 +6330,7 @@ int32_t TR_BlockSplitter::synergisticDepthCalculator(TR_LinkHeadAndTail<BlockMap
 
    //Step 3 - process each item in the BlockMapper to calculate synergies
    if (trace())
-      traceMsg(comp(), "    Find synergy in blocks being split\n");
+      log->prints("    Find synergy in blocks being split\n");
    comp()->incVisitCount();
    TR_Array<Synergy> synergies(trMemory());
    int32_t blockIndex = 2;
@@ -6402,7 +6411,7 @@ int32_t TR_BlockSplitter::synergisticDepthCalculator(TR_LinkHeadAndTail<BlockMap
       }
 
    if(trace())
-      traceMsg(comp(), "  Suggested new depth is %d\n", newDepth);
+      log->printf("  Suggested new depth is %d\n", newDepth);
    return newDepth;
    }
 
@@ -6423,7 +6432,7 @@ int32_t TR_BlockSplitter::processNode(TR::Node* node, int32_t blockIndex, TR_Arr
          if (previousDefinition && previousDefinition != blockIndex)
             {
             if (trace())
-               traceMsg(comp(), "      Synergy on #%d for [%p]\n", node->getSymbolReference()->getReferenceNumber(), node);
+               comp()->getLogger()->trprintf("      Synergy on #%d for [%p]\n", node->getSymbolReference()->getReferenceNumber(), node);
             ++(*synergies)[previousDefinition].downwardSynergy;
             ++(*synergies)[blockIndex].upwardSynergy;
             }
@@ -6455,9 +6464,10 @@ void TR_BlockSplitter::dumpSynergies(TR_Array<Synergy>* toDump)
    {
    if (trace())
       {
-      traceMsg(comp(), "  Synergy results:\n    Score     Up     Down   Cost   Frequency\n");
+      TR::Logger *log = comp()->getLogger();
+      log->prints("  Synergy results:\n    Score     Up     Down   Cost   Frequency\n");
       for (uint32_t i = 2; i < toDump->size(); ++i)
-         traceMsg(comp(), "    %-9.3f %-6d %-6d %-6d %d\n", calculateBlockSplitScore((*toDump)[i]),
+         log->printf("    %-9.3f %-6d %-6d %-6d %d\n", calculateBlockSplitScore((*toDump)[i]),
                                             (*toDump)[i].upwardSynergy,   (*toDump)[i].downwardSynergy,
                                             (*toDump)[i].replicationCost, (*toDump)[i].blockFrequency);
       }
@@ -6467,16 +6477,17 @@ void TR_BlockSplitter::dumpBlockMapper(TR_LinkHeadAndTail<BlockMapper>* bMap)
    {
    if (trace())
       {
+      TR::Logger *log = comp()->getLogger();
       for (BlockMapper* itr = bMap->getFirst(); itr; itr = itr->getNext())
          {
          if (itr == bMap->getFirst())
-            traceMsg(comp(), "    Splitting block_%d for %s", itr->_from->getNumber(), comp()->signature());
+            log->printf("    Splitting block_%d for %s", itr->_from->getNumber(), comp()->signature());
          else if (itr == bMap->getFirst()->getNext())
-            traceMsg(comp(), "\n      Splitting additional block(s): %d", itr->_from->getNumber());
+            log->printf("\n      Splitting additional block(s): %d", itr->_from->getNumber());
          else
-            traceMsg(comp(), " %d", itr->_from->getNumber());
+            log->printf(" %d", itr->_from->getNumber());
          }
-      traceMsg(comp(), "\n");
+      log->println();
       }
    }
 
@@ -6512,30 +6523,33 @@ bool TR_BlockSplitter::isLoopHeader(TR::Block * block)
 
 bool TR_BlockSplitter::isExitEdge(TR::Block *mergeNode, TR::Block *successor)
    {
+   TR::Logger *log = comp()->getLogger();
+
    if (trace())
-      traceMsg(comp(), "    considering isExit on %d and %d\n", mergeNode->getNumber(), successor->getNumber());
+      log->printf("    considering isExit on %d and %d\n", mergeNode->getNumber(), successor->getNumber());
    TR_RegionStructure *parent = getParentStructure(mergeNode);
 
    if (!parent || !parent->isNaturalLoop())
       return false;
 
    if (trace())
-      traceMsg(comp(), "    parent region is %p (%d) and isNaturalLoop is %d\n", parent, parent->getNumber(), (parent ? parent->isNaturalLoop() : 0));
+      log->trprintf("    parent region is %p (%d) and isNaturalLoop is %d\n", parent, parent->getNumber(), (parent ? parent->isNaturalLoop() : 0));
 
    TR_RegionStructure *child = getParentStructure(successor);
    if (trace())
-      traceMsg(comp(), "    child region is %p\n", child);
+      log->trprintf("    child region is %p\n", child);
    return parent != child;
    }
 
 bool TR_BlockSplitter::hasIVUpdate(TR::Block *block)
    {
+   TR::Logger *log = comp()->getLogger();
    TR_RegionStructure *parent = getParentStructure(block);
    if (getLastRun() || comp()->getProfilingMode() == JitProfiling || !parent || !parent->isNaturalLoop())
       return false;
 
    if (trace())
-      traceMsg(comp(), "   checking for IVUpdate in block_%d\n", block->getNumber());
+      log->printf("   checking for IVUpdate in block_%d\n", block->getNumber());
    for (OMR::TreeTop* treeTopItr = block->getEntry(); treeTopItr && treeTopItr != block->getExit()->getNextTreeTop(); treeTopItr = treeTopItr->getNextTreeTop())
       {
       if (treeTopItr->getNode()->getOpCode().isStoreDirect()
@@ -6551,12 +6565,12 @@ bool TR_BlockSplitter::hasIVUpdate(TR::Block *block)
           )
          {
          if (trace())
-            traceMsg(comp(), "    treetop %p has IVUpdate\n", treeTopItr->getNode());
+            log->trprintf("    treetop %p has IVUpdate\n", treeTopItr->getNode());
          return true;
          }
       }
    if (trace())
-      traceMsg(comp(), "    no IVUpdate found\n");
+      log->prints("    no IVUpdate found\n");
    return false;
    }
 
@@ -6567,13 +6581,13 @@ bool TR_BlockSplitter::hasLoopAsyncCheck(TR::Block *block)
       return false;
 
    if (trace())
-      traceMsg(comp(), "   checking for loopAsyncCheck in block_%d\n", block->getNumber());
+      comp()->getLogger()->printf("   checking for loopAsyncCheck in block_%d\n", block->getNumber());
    for (OMR::TreeTop* treeTopItr = block->getEntry(); treeTopItr && treeTopItr != block->getExit()->getNextTreeTop(); treeTopItr = treeTopItr->getNextTreeTop())
       {
       if (treeTopItr->getNode()->getOpCodeValue() == TR::asynccheck)
          {
          if (trace())
-            traceMsg(comp(), "    treetop %p is asncycheck\n", treeTopItr->getNode());
+            comp()->getLogger()->trprintf("    treetop %p is asncycheck\n", treeTopItr->getNode());
          return true;
          }
       }
@@ -6583,6 +6597,7 @@ bool TR_BlockSplitter::hasLoopAsyncCheck(TR::Block *block)
 
 TR::Block *TR_BlockSplitter::splitBlock(TR::Block *pred, TR_LinkHeadAndTail<BlockMapper>* bMap)
    {
+   TR::Logger *log = comp()->getLogger();
    TR::Block *candidate = bMap->getFirst()->_from;
    TR::Block *target = bMap->getLast()->_from;
 
@@ -6596,15 +6611,15 @@ TR::Block *TR_BlockSplitter::splitBlock(TR::Block *pred, TR_LinkHeadAndTail<Bloc
    //
    TR_BlockCloner cloner(cfg, false, true);
    if (trace())
-      traceMsg(comp(), "  about to clone %d to %d\n", candidate->getNumber(), target->getNumber());
+      log->printf("  about to clone %d to %d\n", candidate->getNumber(), target->getNumber());
    TR::Block *cloneStart = cloner.cloneBlocks(bMap);
    TR::Block *cloneEnd   = cloner.getLastClonedBlock();
 
    if (trace())
       {
-      traceMsg(comp(), "  CLONE from block_%d to block_%d\n", cloneStart->getNumber(), cloneEnd->getNumber());
+      log->printf("  CLONE from block_%d to block_%d\n", cloneStart->getNumber(), cloneEnd->getNumber());
       if (target->getEntry() && target->getNextBlock())
-         traceMsg(comp(), "    target next real block_%d\n", target->getNextBlock()->getNumber());
+         log->printf("    target next real block_%d\n", target->getNextBlock()->getNumber());
       }
 
    cfg->addEdge(pred, cloneStart);
@@ -6616,9 +6631,9 @@ TR::Block *TR_BlockSplitter::splitBlock(TR::Block *pred, TR_LinkHeadAndTail<Bloc
    if(trace())
       {
       if (pred)
-         traceMsg(comp(), "  join %d to %d\n", pred->getNumber(), cloneStart->getNumber());
+         log->printf("  join %d to %d\n", pred->getNumber(), cloneStart->getNumber());
       if (pred && pred->getNextBlock() && pred->getNextBlock()->getEntry())
-         traceMsg(comp(), "  join %d to %d\n", cloneEnd->getNumber(), pred->getNextBlock()->getNumber());
+         log->printf("  join %d to %d\n", cloneEnd->getNumber(), pred->getNextBlock()->getNumber());
       }
 
    //if we have a valid predecessor we just add the new code as normal
@@ -6639,14 +6654,14 @@ TR::Block *TR_BlockSplitter::splitBlock(TR::Block *pred, TR_LinkHeadAndTail<Bloc
                {
                lastRealNode->reverseBranch(cloneEnd->getExit()->getNextTreeTop());
                if (trace())
-                  traceMsg(comp(), "  Reversing branch, node %d now jumps to block_%d\n", pred->getNumber(), lastRealNode->getBranchDestination()->getNode()->getBlock()->getNumber());
+                  log->printf("  Reversing branch, node %d now jumps to block_%d\n", pred->getNumber(), lastRealNode->getBranchDestination()->getNode()->getBlock()->getNumber());
                //this check handles splitting through a loop header in a region where we have not detected a valid loop header
                if (bMap->getLast()->_from->getNumber() == pred->getNumber())
                   {
                   lastRealNode = bMap->getLast()->_to->getExit()->getPrevRealTreeTop()->getNode();
                   lastRealNode->reverseBranch(cloneEnd->getExit()->getNextTreeTop());
                   if (trace())
-                     traceMsg(comp(), "    Also reversing cloned branch, node %d now jumps to block_%d\n", bMap->getLast()->_to->getNumber(), lastRealNode->getBranchDestination()->getNode()->getBlock()->getNumber());
+                     log->printf("    Also reversing cloned branch, node %d now jumps to block_%d\n", bMap->getLast()->_to->getNumber(), lastRealNode->getBranchDestination()->getNode()->getBlock()->getNumber());
                   }
                }
             }
@@ -6701,13 +6716,13 @@ TR::Block *TR_BlockSplitter::splitBlock(TR::Block *pred, TR_LinkHeadAndTail<Bloc
           if (lastRealNode->getBranchDestination()->getNode()->getBlock()->getNumber() == nextTree->getNode()->getBlock()->getNumber())
              {
              if (trace())
-                traceMsg(comp(), "   Redirecting branch %d->%d to %d\n", cloneEnd->getNumber(), nextTree->getNode()->getBlock()->getNumber(), newBlock->getNumber());
+                log->printf("   Redirecting branch %d->%d to %d\n", cloneEnd->getNumber(), nextTree->getNode()->getBlock()->getNumber(), newBlock->getNumber());
              lastRealNode->setBranchDestination(newBlock->getEntry());
              }
           cfg->removeEdge(cloneEnd, nextTree->getNode()->getBlock());
 
           if (trace())
-             traceMsg(comp(), "   Create extra goto block_%d --> %d\n", newBlock->getNumber(), nextTree->getNode()->getBlock()->getNumber());
+             log->printf("   Create extra goto block_%d --> %d\n", newBlock->getNumber(), nextTree->getNode()->getBlock()->getNumber());
          }
       else if (
                !lastRealNode->getOpCode().isBranch() &&
@@ -6719,7 +6734,7 @@ TR::Block *TR_BlockSplitter::splitBlock(TR::Block *pred, TR_LinkHeadAndTail<Bloc
          {
          itr->_to->append(TR::TreeTop::create(comp(), TR::Node::create(lastRealNode, TR::Goto, 0, nextTree)));
          if (trace())
-            traceMsg(comp(), "   Add goto %d --> %d\n", cloneEnd->getNumber(), nextTree->getNode()->getBlock()->getNumber());
+            log->printf("   Add goto %d --> %d\n", cloneEnd->getNumber(), nextTree->getNode()->getBlock()->getNumber());
          }
       }
 
@@ -6751,11 +6766,12 @@ int32_t TR_InvariantArgumentPreexistence::perform()
    TR::ResolvedMethodSymbol *methodSymbol = optimizer()->getMethodSymbol();
    TR_ResolvedMethod       *feMethod     = methodSymbol->getResolvedMethod();
    bool enableTrace = trace();
+   TR::Logger *log = comp()->getLogger();
 
    if (comp()->mustNotBeRecompiled())
       {
       if (enableTrace)
-         traceMsg(comp(), "PREX: Aborting preexistence because %s mustNotBeRecompiled\n", feMethod->signature(trMemory()));
+         log->printf("PREX: Aborting preexistence because %s mustNotBeRecompiled\n", feMethod->signature(trMemory()));
       return 0;
       }
 
@@ -6770,7 +6786,7 @@ int32_t TR_InvariantArgumentPreexistence::perform()
    _isOutermostMethod = ((comp()->getInlineDepth() == 0) && (!comp()->isPeekingMethod()));
 
    if (enableTrace)
-      traceMsg(comp(), "PREX: Starting preexistence for %s\n", feMethod->signature(trMemory()));
+      log->printf("PREX: Starting preexistence for %s\n", feMethod->signature(trMemory()));
 
    int32_t numParms = methodSymbol->getParameterList().getSize();
    _parmInfo = (ParmInfo*) trMemory()->allocateStackMemory(numParms * sizeof(ParmInfo));
@@ -6800,7 +6816,7 @@ int32_t TR_InvariantArgumentPreexistence::perform()
             _parmInfo[index].setNotInvariant();
             --numInvariantArgs;
             if (enableTrace)
-               traceMsg(comp(), "PREX:    Arg %d (%s) is not invariant\n", index, node->getSymbolReference()->getName(comp()->getDebug()));
+               log->printf("PREX:    Arg %d (%s) is not invariant\n", index, node->getSymbolReference()->getName(comp()->getDebug()));
             }
          }
       }
@@ -6838,24 +6854,24 @@ int32_t TR_InvariantArgumentPreexistence::perform()
           parmInfo.setClassIsFixed();
           parmInfo.setClass(fixedClazz);
           if (enableTrace)
-             traceMsg(comp(), "PREX:      parm %d is known object obj.%d\n", index, koi);
+             log->printf("PREX:      parm %d is known object obj.%d\n", index, koi);
           }
        else
           {
           parmInfo.setClass(clazz);
           if (enableTrace)
-             traceMsg(comp(), "PREX:      parm %d class %p is %.*s\n", index, clazz, len, sig);
+             log->trprintf("PREX:      parm %d class %p is %.*s\n", index, clazz, len, sig);
 
           if (TR::Compiler->cls.isClassFinal(comp(), clazz))
              {
              if (enableTrace)
-                traceMsg(comp(), "PREX:      parm %d class is final\n", index);
+                log->printf("PREX:      parm %d class is final\n", index);
              parmInfo.setClassIsFixed();
              }
           else if (classIsCurrentlyFinal(clazz))
              {
              if (enableTrace)
-                traceMsg(comp(), "PREX:      parm %d class is currently final\n", index);
+                log->printf("PREX:      parm %d class is currently final\n", index);
              parmInfo.setClassIsCurrentlyFinal();
              }
           }
@@ -6867,7 +6883,7 @@ int32_t TR_InvariantArgumentPreexistence::perform()
       {
       TR_PeekingArgInfo *peekInfo = comp()->getCurrentPeekingArgInfo();
       if (enableTrace)
-         traceMsg(comp(), "PREX:    Populating parmInfo of peeked method %s %p\n", feMethod->signature(trMemory()), peekInfo);
+         log->trprintf("PREX:    Populating parmInfo of peeked method %s %p\n", feMethod->signature(trMemory()), peekInfo);
 
       if (peekInfo)
          {
@@ -6894,9 +6910,9 @@ int32_t TR_InvariantArgumentPreexistence::perform()
                if (!clazz || clazz == clazzFromMethod)
                   {
                   if (!clazz && enableTrace)
-                     traceMsg(comp(), "Can't obtain class for sig %.*s\n", len, sig);
+                     log->printf("Can't obtain class for sig %.*s\n", len, sig);
                   else if (clazz == clazzFromMethod && enableTrace)
-                     traceMsg(comp(), "class from peeking arg info is the same as class from method\n");
+                     log->prints("class from peeking arg info is the same as class from method\n");
                   continue;
                   }
 
@@ -6904,7 +6920,7 @@ int32_t TR_InvariantArgumentPreexistence::perform()
                if (fe()->isInstanceOf(clazz, clazzFromMethod, true, true, true) != TR_yes)
                   {
                   if (enableTrace)
-                     traceMsg(comp(), "Peeking arg info is not compatible with the method, bail out\n");
+                     log->prints("Peeking arg info is not compatible with the method, bail out\n");
                   return 1;
                   }
 
@@ -6929,7 +6945,7 @@ int32_t TR_InvariantArgumentPreexistence::perform()
       if (argInfo)
          {
          if (enableTrace)
-            traceMsg(comp(), "PREX:    Populating parmInfo of inlined method %s from argInfo %p\n", feMethod->signature(trMemory()), argInfo);
+            log->trprintf("PREX:    Populating parmInfo of inlined method %s from argInfo %p\n", feMethod->signature(trMemory()), argInfo);
 
          for (TR::ParameterSymbol *p = parms.getFirst(); p != NULL; p = parms.getNext())
             {
@@ -6943,7 +6959,7 @@ int32_t TR_InvariantArgumentPreexistence::perform()
                // Clear non-invariant arg info
                argInfo->set(index, NULL);
                if (enableTrace)
-                  traceMsg(comp(), "PREX:       parm %d is not invariant\n", index);
+                  log->printf("PREX:       parm %d is not invariant\n", index);
                continue;
                }
 
@@ -6951,32 +6967,32 @@ int32_t TR_InvariantArgumentPreexistence::perform()
                {
                TR_ASSERT_FATAL(parmInfo.getKnownObjectIndex() == arg->getKnownObjectIndex(), "Prex arg info should match existing arg info");
                if (enableTrace)
-                  traceMsg(comp(), "PREX:       parm %d is obj.%d\n", index, parmInfo.getKnownObjectIndex());
+                  log->printf("PREX:       parm %d is obj.%d\n", index, parmInfo.getKnownObjectIndex());
                continue;
                }
             if (!clazzFromMethod)
                {
                if (enableTrace)
-                  traceMsg(comp(), "PREX:       Can't get method class for parm %d, skipping\n", index);
+                  log->printf("PREX:       Can't get method class for parm %d, skipping\n", index);
                continue;
                }
 
             if (!arg)
                {
                if (enableTrace)
-                  traceMsg(comp(), "PREX:      No argInfo for parm %d\n", index);
+                  log->printf("PREX:      No argInfo for parm %d\n", index);
                continue;
                }
 
             if (enableTrace)
-               traceMsg(comp(), "PREX:      Parm %d is arg %p parmInfo %p\n", index, arg, &parmInfo);
+               log->trprintf("PREX:      Parm %d is arg %p parmInfo %p\n", index, arg, &parmInfo);
 
             if (arg->hasKnownObjectIndex()
                && !comp()->isOutOfProcessCompilation()
                )
                {
                if (enableTrace)
-                  traceMsg(comp(), "PREX:        Parm %d is known object obj%d\n", index, arg->getKnownObjectIndex());
+                  log->printf("PREX:        Parm %d is known object obj%d\n", index, arg->getKnownObjectIndex());
 
                if (!(arg->getClass() && arg->classIsFixed()))
                   {
@@ -7003,31 +7019,31 @@ int32_t TR_InvariantArgumentPreexistence::perform()
             parmInfo.setClass(clazz);
 
             if (enableTrace)
-               traceMsg(comp(), "PREX:          Parm %d is class %p sig %s\n", index, clazz, TR::Compiler->cls.classSignature(comp(), clazz, trMemory()));
+               log->trprintf("PREX:          Parm %d is class %p sig %s\n", index, clazz, TR::Compiler->cls.classSignature(comp(), clazz, trMemory()));
 
             if (clazz != clazzFromMethod)
                {
                parmInfo.setClassIsRefined();
                if (enableTrace)
-                  traceMsg(comp(), "PREX:          Parm %d class is refined\n", index);
+                  log->printf("PREX:          Parm %d class is refined\n", index);
                }
 
             if (classIsFixed || TR::Compiler->cls.isClassFinal(comp(), clazz))
                {
                parmInfo.setClassIsFixed();
                if (enableTrace)
-                  traceMsg(comp(), "PREX:        Parm %d class is final\n", index);
+                  log->printf("PREX:        Parm %d class is final\n", index);
                }
             else if (classIsPreexistent)
                {
                if (enableTrace)
-                  traceMsg(comp(), "PREX:        Parm %d class is preexistent\n", index);
+                  log->printf("PREX:        Parm %d class is preexistent\n", index);
                parmInfo.setClassIsPreexistent();
                if (classIsCurrentlyFinal(clazz))
                   {
                   parmInfo.setClassIsCurrentlyFinal();
                   if (enableTrace)
-                     traceMsg(comp(), "PREX:            Parm %d class is currently final\n", index);
+                     log->printf("PREX:            Parm %d class is currently final\n", index);
                   }
                }
             }
@@ -7035,14 +7051,14 @@ int32_t TR_InvariantArgumentPreexistence::perform()
       else if (!_isOutermostMethod)
          {
          if (enableTrace)
-            traceMsg(comp(), "PREX:    No argInfo -- can't populate parmInfo for inlined method %s\n", feMethod->signature(trMemory()));
+            log->printf("PREX:    No argInfo -- can't populate parmInfo for inlined method %s\n", feMethod->signature(trMemory()));
          }
       }
 
    if (numInvariantArgs == 0)
       {
       if (enableTrace)
-         traceMsg(comp(), "PREX: No invariant arguments\n");
+         log->prints("PREX: No invariant arguments\n");
       return 1;
       }
 
@@ -7050,7 +7066,7 @@ int32_t TR_InvariantArgumentPreexistence::perform()
    // to direct calls
    //
    if (enableTrace)
-      traceMsg(comp(), "PREX:    Walking nodes in %s\n", feMethod->signature(trMemory()));
+      log->printf("PREX:    Walking nodes in %s\n", feMethod->signature(trMemory()));
 
    vcount_t visitCount = comp()->incOrResetVisitCount();
    for (tt = methodSymbol->getFirstTreeTop(); tt; tt = tt->getNextTreeTop())
@@ -7059,7 +7075,7 @@ int32_t TR_InvariantArgumentPreexistence::perform()
    } // scope of the stack memory region
 
    if (enableTrace)
-      traceMsg(comp(), "PREX: Done preexistence for %s\n", feMethod->signature(trMemory()));
+      log->printf("PREX: Done preexistence for %s\n", feMethod->signature(trMemory()));
    return 3;
    }
 
@@ -7159,7 +7175,7 @@ bool TR_InvariantArgumentPreexistence::devirtualizeVirtualCall(TR::Node *node, T
    if (!resolvedMethod)
       {
       if (trace())
-         traceMsg(comp(), "Method is not resolved, can't devirtualize\n");
+         comp()->getLogger()->prints("Method is not resolved, can't devirtualize\n");
       return false;
       }
 
@@ -7171,7 +7187,7 @@ bool TR_InvariantArgumentPreexistence::devirtualizeVirtualCall(TR::Node *node, T
    if (!refinedMethod)
       {
       if (trace())
-         traceMsg(comp(), "Can't find a method from class %p with offset %d\n", clazz, offset);
+         comp()->getLogger()->trprintf("Can't find a method from class %p with offset %d\n", clazz, offset);
       return false;
       }
 
@@ -7197,14 +7213,15 @@ bool TR_InvariantArgumentPreexistence::devirtualizeVirtualCall(TR::Node *node, T
 void TR_InvariantArgumentPreexistence::processIndirectCall(TR::Node *node, TR::TreeTop *treeTop, vcount_t visitCount)
    {
 #ifdef J9_PROJECT_SPECIFIC
+   TR::Logger *log = comp()->getLogger();
 
    if (trace())
-      traceMsg(comp(), "PREX:      [%p] %s %s\n", node, node->getOpCode().getName(), node->getSymbolReference()->getName(comp()->getDebug()));
+      log->printf("PREX:      [%p] %s %s\n", node, node->getOpCode().getName(), node->getSymbolReference()->getName(comp()->getDebug()));
 
    if (!node->getSymbol()->castToMethodSymbol()->firstArgumentIsReceiver())
       {
       if (trace())
-         traceMsg(comp(), "PREX:        - First arg is not receiver\n");
+         log->prints("PREX:        - First arg is not receiver\n");
       return;
       }
 
@@ -7233,7 +7250,7 @@ void TR_InvariantArgumentPreexistence::processIndirectCall(TR::Node *node, TR::T
       else
          {
          if (trace())
-            traceMsg(comp(), "PREX:        - Unresolved\n");
+            log->prints("PREX:        - Unresolved\n");
          return;
          }
       }
@@ -7245,7 +7262,7 @@ void TR_InvariantArgumentPreexistence::processIndirectCall(TR::Node *node, TR::T
       if (!existingInfo)
          {
          if (trace())
-            traceMsg(comp(), "PREX:        - No parm info for receiver\n");
+            log->prints("PREX:        - No parm info for receiver\n");
          return;
          }
 
@@ -7261,12 +7278,12 @@ void TR_InvariantArgumentPreexistence::processIndirectCall(TR::Node *node, TR::T
             // Let's not get fancy with these guys
             // They are the java/lang/Object.newInstancePrototype special methods
             if (trace())
-               traceMsg(comp(), "PREX:        - newInstancePrototype\n");
+               log->prints("PREX:        - newInstancePrototype\n");
             return;
             }
 
          if (trace())
-            traceMsg(comp(), "PREX:        Receiver is %p incoming Parm %d parmInfo %p\n", receiver, receiverParmOrdinal, existingInfo);
+            log->trprintf("PREX:        Receiver is %p incoming Parm %d parmInfo %p\n", receiver, receiverParmOrdinal, existingInfo);
          }
       }
 
@@ -7278,7 +7295,7 @@ void TR_InvariantArgumentPreexistence::processIndirectCall(TR::Node *node, TR::T
       )
       {
       if (trace())
-         traceMsg(comp(), "PREX:          Receiver is obj%d\n", receiver->getSymbolReference()->getKnownObjectIndex());
+         log->printf("PREX:          Receiver is obj%d\n", receiver->getSymbolReference()->getKnownObjectIndex());
 
       receiverInfo->setKnownObjectIndex(receiver->getSymbolReference()->getKnownObjectIndex());
       receiverInfo->setClassIsFixed();
@@ -7297,7 +7314,7 @@ void TR_InvariantArgumentPreexistence::processIndirectCall(TR::Node *node, TR::T
    if (resolvedMethod && receiverInfo->getClass() && !classIsCompatibleWithMethod(receiverInfo->getClass(), resolvedMethod))
       {
       if (trace())
-         traceMsg(comp(), "PREX:        - Receiver type incompatible with method \n");
+         log->prints("PREX:        - Receiver type incompatible with method \n");
 
       return;
       }
@@ -7313,9 +7330,7 @@ void TR_InvariantArgumentPreexistence::processIndirectCall(TR::Node *node, TR::T
          {
          if (trace())
             {
-            traceMsg(
-               comp(),
-               "PREX:        - No class type bound for interface call receiver\n");
+            log->prints("PREX:        - No class type bound for interface call receiver\n");
             }
 
          return;
@@ -7331,9 +7346,7 @@ void TR_InvariantArgumentPreexistence::processIndirectCall(TR::Node *node, TR::T
          {
          if (trace())
             {
-            traceMsg(
-               comp(),
-               "PREX:        - Failed to identify interface for interface call\n");
+            log->prints("PREX:        - Failed to identify interface for interface call\n");
             }
 
          return;
@@ -7343,9 +7356,7 @@ void TR_InvariantArgumentPreexistence::processIndirectCall(TR::Node *node, TR::T
          {
          if (trace())
             {
-            traceMsg(
-               comp(),
-               "PREX:        - Insufficient class type bound for interface call receiver\n");
+            log->prints("PREX:        - Insufficient class type bound for interface call receiver\n");
             }
 
          return;
@@ -7386,7 +7397,7 @@ void TR_InvariantArgumentPreexistence::processIndirectCall(TR::Node *node, TR::T
       if (canDevirtualize && devirtualizeVirtualCall(node, treeTop, receiverInfo->getClass()))
          {
          if (trace())
-            traceMsg(comp(), "devirtualize with assumption\n");
+            log->prints("devirtualize with assumption\n");
          // improve receiverInfo
          receiverInfo->setClassIsFixed();
          // For the outer most method, we have to carry the information of fixed type to inliner,
@@ -7441,7 +7452,7 @@ void TR_InvariantArgumentPreexistence::processIndirectCall(TR::Node *node, TR::T
                performTransformation(comp(), "%sdevirtualizing invoke [%p] on preexistent argument %d [%p]\n", optDetailString(), node, receiverParmOrdinal, receiverSymbol))
             {
             if (trace())
-               traceMsg(comp(), "secs devirtualizing invoke on preexistent argument %d in %s\n", receiverParmOrdinal, comp()->signature());
+               log->printf("secs devirtualizing invoke on preexistent argument %d in %s\n", receiverParmOrdinal, comp()->signature());
 
             node->devirtualizeCall(treeTop);
             bool inc = comp()->getCHTable()->recompileOnMethodOverride(comp(), resolvedMethod);
@@ -7476,9 +7487,7 @@ void TR_InvariantArgumentPreexistence::processIndirectCall(TR::Node *node, TR::T
                   {
                   if (trace())
                      {
-                     traceMsg(
-                        comp(),
-                        "PREX:        - Failed to find interface callee\n");
+                     log->prints("PREX:        - Failed to find interface callee\n");
                      }
                   return;
                   }
@@ -7641,12 +7650,12 @@ void TR_InvariantArgumentPreexistence::processIndirectLoad(TR::Node *node, TR::T
       return;
 
    if (trace())
-      traceMsg(comp(), "PREX:        [%p] %s %s\n", node, node->getOpCode().getName(), node->getSymbolReference()->getName(comp()->getDebug()));
+      comp()->getLogger()->trprintf("PREX:        [%p] %s %s\n", node, node->getOpCode().getName(), node->getSymbolReference()->getName(comp()->getDebug()));
 
    if (addressChild->getSymbolReference()->isUnresolved())
       {
       if (trace())
-         traceMsg(comp(), "PREX:          - unresolved\n");
+         comp()->getLogger()->prints("PREX:          - unresolved\n");
       return;
       }
 
@@ -7673,7 +7682,7 @@ void TR_InvariantArgumentPreexistence::processIndirectLoad(TR::Node *node, TR::T
       int32_t index = addressChild->getSymbol()->castToParmSymbol()->getOrdinal();
       ParmInfo *info = _parmInfo + index;
       if (trace())
-         traceMsg(comp(), "PREX:          Indirect load through incoming Parm %d parmInfo %p\n", index, info);
+         comp()->getLogger()->trprintf("PREX:          Indirect load through incoming Parm %d parmInfo %p\n", index, info);
       if (info && info->hasKnownObjectIndex())
          somethingMayHaveChanged = TR::TransformUtil::transformIndirectLoadChain(comp(), node, addressChild, info->getKnownObjectIndex(), &removedNode);
       }
@@ -7709,7 +7718,7 @@ void TR_InvariantArgumentPreexistence::processIndirectLoad(TR::Node *node, TR::T
       ttNode->getAndDecChild(0);
       ttNode->setAndIncChild(0, TR::Node::create(TR::PassThrough, 1, nodeToNullCheck));
       if (trace())
-         traceMsg(comp(), "PREX:          Anchored [%p] formerly under %s [%p]\n", node, ttNode->getOpCode().getName(), ttNode);
+         comp()->getLogger()->trprintf("PREX:          Anchored [%p] formerly under %s [%p]\n", node, ttNode->getOpCode().getName(), ttNode);
       }
 
    }
@@ -7724,6 +7733,8 @@ int32_t TR_CheckcastAndProfiledGuardCoalescer::perform()
    {
    if (comp()->getOption(TR_DisableCheckcastAndProfiledGuardCoalescer))
       return 1;
+
+   TR::Logger *log = comp()->getLogger();
 
    TR::SymbolReferenceTable *srTab = comp()->getSymRefTab();
 
@@ -7840,8 +7851,7 @@ int32_t TR_CheckcastAndProfiledGuardCoalescer::perform()
                checkcastTree = NULL;
                if (trace())
                   {
-                  traceMsg(
-                     comp(),
+                  log->printf(
                      "Cannot transform because the reference "
                      "can no longer be recognized in block_%d\n",
                      curBlock->getNumber());
@@ -7898,8 +7908,7 @@ int32_t TR_CheckcastAndProfiledGuardCoalescer::perform()
 
             if (trace())
                {
-               traceMsg(
-                  comp(),
+               log->trprintf(
                   "\nConsidering checkcast n%un [%p]\nCast object is n%un [%p]",
                   cast->getGlobalIndex(),
                   cast,
@@ -7907,18 +7916,17 @@ int32_t TR_CheckcastAndProfiledGuardCoalescer::perform()
                   castObj);
 
                if (castObjAuto != NULL)
-                  traceMsg(comp(), " or #%d", castObjAuto->getReferenceNumber());
+                  log->printf(" or #%d", castObjAuto->getReferenceNumber());
 
-               traceMsg(comp(), "\n");
+               log->println();
 
                if (castCatchBlock == NULL)
                   {
-                  traceMsg(comp(), "Exception escapes\n");
+                  log->prints("Exception escapes\n");
                   }
                else
                   {
-                  traceMsg(
-                     comp(),
+                  log->printf(
                      "Exception will be caught by block_%d\n",
                      castCatchBlock->getNumber());
                   }
@@ -7949,8 +7957,7 @@ int32_t TR_CheckcastAndProfiledGuardCoalescer::perform()
 
             if (trace())
                {
-               traceMsg(
-                  comp(),
+               log->trprintf(
                   "Found profiled guard n%un [%p]\n",
                   node->getGlobalIndex(),
                   node);
@@ -8109,8 +8116,7 @@ int32_t TR_CheckcastAndProfiledGuardCoalescer::perform()
 
                if (trace())
                   {
-                  traceMsg(
-                     comp(),
+                  log->trprintf(
                      "Merge point block_%d is ok because "
                      "the only other predecessor is the conditional n%un [%p]\n",
                      slowPathBlock->getNumber(),
@@ -8187,8 +8193,7 @@ int32_t TR_CheckcastAndProfiledGuardCoalescer::perform()
 
                if (trace())
                   {
-                  traceMsg(
-                     comp(),
+                  log->printf(
                      "Created temp #%d for checkcast reference\n",
                      castObjAuto->getReferenceNumber());
                   }
@@ -8283,8 +8288,7 @@ int32_t TR_CheckcastAndProfiledGuardCoalescer::perform()
                         castObjAuto = NULL; // it is no longer possible to remat
                         if (trace())
                            {
-                           traceMsg(
-                              comp(),
+                           log->trprintf(
                               "astore n%un [%p] updates #%d, "
                               "which may now differ from n%un [%p]\n",
                               node->getGlobalIndex(),
@@ -8381,7 +8385,7 @@ int32_t TR_CheckcastAndProfiledGuardCoalescer::perform()
       }
 
    if (trace())
-      traceMsg(comp(), "\n");
+      log->println();
 
    return done;
    }
@@ -8458,8 +8462,7 @@ void TR_CheckcastAndProfiledGuardCoalescer::traceCannotTransform(
    if (!trace())
       return;
 
-   traceMsg(
-      comp(),
+   comp()->getLogger()->trprintf(
       "Cannot transform because %s n%un [%p] %s\n",
       node->getOpCode().getName(),
       node->getGlobalIndex(),
@@ -8473,8 +8476,7 @@ void TR_CheckcastAndProfiledGuardCoalescer::traceCannotTransformDueToMerge(
    if (!trace())
       return;
 
-   traceMsg(
-      comp(),
+   comp()->getLogger()->printf(
       "Cannot transform because the start of block_%d is a merge point\n",
       mergeBlock->getNumber());
 }
@@ -8618,7 +8620,7 @@ TR_ColdBlockMarker::isBlockCold(TR::Block *block)
          {
          if (trace())
             {
-            traceMsg(comp(), "%s n%dn [%p] has not yet run\n", node->getOpCode().getName(), node->getGlobalIndex(), node);
+            comp()->getLogger()->trprintf("%s n%dn [%p] has not yet run\n", node->getOpCode().getName(), node->getGlobalIndex(), node);
             }
          return UNRESOLVED_COLD_BLOCK_COUNT;
          }
@@ -8636,7 +8638,7 @@ TR_ColdBlockMarker::isBlockCold(TR::Block *block)
             {
             if (trace())
                {
-               traceMsg(comp(), "Infrequent interpreted call node %p\n", node);
+               comp()->getLogger()->trprintf("Infrequent interpreted call node %p\n", node);
                }
             return INTERP_CALLEE_COLD_BLOCK_COUNT;
             }
@@ -8759,7 +8761,7 @@ TR_ColdBlockOutlining::perform()
    if (trace())
       {
       comp()->dumpMethodTrees(comp()->getLogger(), "Before cold block outlining");
-      traceMsg(comp(), "Original ");
+      comp()->getLogger()->prints("Original ");
       orderBlocks.dumpBlockOrdering(comp()->getMethodSymbol()->getFirstTreeTop());
       }
 
@@ -8768,7 +8770,7 @@ TR_ColdBlockOutlining::perform()
 
    if (trace())
       {
-      traceMsg(comp(), "After outlining cold Block ");
+      comp()->getLogger()->prints("After outlining cold Block ");
       orderBlocks.dumpBlockOrdering(comp()->getMethodSymbol()->getFirstTreeTop());
       comp()->dumpMethodTrees(comp()->getLogger(), "After cold block outlining");
       }
@@ -8905,7 +8907,7 @@ TR_ColdBlockOutlining::reorderColdBlocks()
       exitTree = prevOfStart->getExit();
       }
    if (trace())
-      traceMsg(comp(), "Cold Block Outlining: outlined %d cold blocks so far:\n", numBlocksSoFar);
+      comp()->getLogger()->printf("Cold Block Outlining: outlined %d cold blocks so far:\n", numBlocksSoFar);
    }
 
 const char *
@@ -8976,6 +8978,7 @@ TR_BlockManipulator::breakFallThrough(TR::Block *faller, TR::Block *fallee, bool
 void
 TR_TrivialDeadTreeRemoval::preProcessTreetop(TR::TreeTop *treeTop, List<TR::TreeTop> &commonedTreeTopList, const char *optDetails, TR::Compilation *comp)
    {
+   TR::Logger *log = comp->getLogger();
    TR::Node *ttNode = treeTop->getNode();
    if (ttNode->getOpCodeValue() == TR::treetop &&
        ttNode->getFirstChild()->getReferenceCount() >= 1)
@@ -8988,7 +8991,7 @@ TR_TrivialDeadTreeRemoval::preProcessTreetop(TR::TreeTop *treeTop, List<TR::Tree
                 optDetails, treeTop->getNode()->getOpCode().getName(),treeTop->getNode(),firstChild->getOpCode().getName(),firstChild))
             {
             if (trace())
-               traceMsg(comp,"\tfound trivially anchored ttNode %p with firstChild %s (%p -- refCount == 1)\n",
+               log->trprintf("\tfound trivially anchored ttNode %p with firstChild %s (%p -- refCount == 1)\n",
                   ttNode,firstChild->getOpCode().getName(),firstChild);
             for (int32_t i=0; i < firstChild->getNumChildren(); i++)
                {
@@ -8996,14 +8999,14 @@ TR_TrivialDeadTreeRemoval::preProcessTreetop(TR::TreeTop *treeTop, List<TR::Tree
                if (!grandChild->getOpCode().isLoadConst() || grandChild->anchorConstChildren())
                   {
                   if (trace())
-                     traceMsg(comp,"\t\tcreate new treetop for firstChild->getChild(%d) = %s (%p)\n",i,grandChild->getOpCode().getName(),grandChild);
+                     log->trprintf("\t\tcreate new treetop for firstChild->getChild(%d) = %s (%p)\n",i,grandChild->getOpCode().getName(),grandChild);
                   // use insertAfter so the newly anchored trees get visited in the next interation(s)
                   treeTop->insertAfter(TR::TreeTop::create(comp,
                                                               TR::Node::create(TR::treetop, 1, grandChild)));
                   }
                }
             if (trace())
-               traceMsg(comp,"\t\tremove trivially anchored ttNode %p with firstChild %s (%p) treetop\n",
+               log->trprintf("\t\tremove trivially anchored ttNode %p with firstChild %s (%p) treetop\n",
                   ttNode,firstChild->getOpCode().getName(),firstChild);
             treeTop->unlink(true);
             }
@@ -9013,7 +9016,7 @@ TR_TrivialDeadTreeRemoval::preProcessTreetop(TR::TreeTop *treeTop, List<TR::Tree
                (firstChild->getOpCode().isLoad() && !firstChild->getOpCode().isStore()))
          {
          if (trace())
-            traceMsg(comp,"\tadd ttNode %p with firstChild %s (%p, refCount %d) to commonedTreeTopList\n",
+            log->trprintf("\tadd ttNode %p with firstChild %s (%p, refCount %d) to commonedTreeTopList\n",
                ttNode,firstChild->getOpCode().getName(),firstChild,firstChild->getReferenceCount());
          commonedTreeTopList.add(treeTop);
          }
@@ -9026,7 +9029,7 @@ TR_TrivialDeadTreeRemoval::postProcessTreetop(TR::TreeTop *treeTop, List<TR::Tre
    if (treeTop->isPossibleDef())
       {
       if (trace())
-         traceMsg(comp,"\tfound a possible def at node %p so clear _commonedTreeTopList list\n",treeTop->getNode());
+         comp->getLogger()->trprintf("\tfound a possible def at node %p so clear _commonedTreeTopList list\n",treeTop->getNode());
       commonedTreeTopList.deleteAll();
       }
    }
@@ -9034,6 +9037,7 @@ TR_TrivialDeadTreeRemoval::postProcessTreetop(TR::TreeTop *treeTop, List<TR::Tre
 void
 TR_TrivialDeadTreeRemoval::processCommonedChild(TR::Node *child, TR::TreeTop *treeTop, List<TR::TreeTop> &commonedTreeTopList, const char *optDetails, TR::Compilation *comp)
    {
+   TR::Logger *log = comp->getLogger();
    if (child->getReferenceCount() > 1)
       {
       if (!commonedTreeTopList.isEmpty())
@@ -9042,7 +9046,7 @@ TR_TrivialDeadTreeRemoval::processCommonedChild(TR::Node *child, TR::TreeTop *tr
          ListElement<TR::TreeTop> *prevElement = NULL;
          TR::TreeTop *listTT = listIt.getFirst();
          if (trace())
-            traceMsg(comp,"commonedTreeTopList is not empty and found a commoned child %s (%p, refCount %d)\n",child->getOpCode().getName(),child,child->getReferenceCount());
+            log->trprintf("commonedTreeTopList is not empty and found a commoned child %s (%p, refCount %d)\n",child->getOpCode().getName(),child,child->getReferenceCount());
          while (listTT)
             {
             TR_ASSERT(listTT->getNode()->getOpCodeValue() == TR::treetop,"only TR::treetop nodes should be in commonedTreeTopList\n");
@@ -9052,7 +9056,7 @@ TR_TrivialDeadTreeRemoval::processCommonedChild(TR::Node *child, TR::TreeTop *tr
             //   =>a
             //
             if (trace())
-               traceMsg(comp,"\tcomparing listTT %p with firstChild %s (%p) to commoned child %s (%p, refCount %d) (listTT == _currentTreeTop -- %s)\n",
+               log->trprintf("\tcomparing listTT %p with firstChild %s (%p) to commoned child %s (%p, refCount %d) (listTT == _currentTreeTop -- %s)\n",
                   listTT->getNode(),listTT->getNode()->getFirstChild()->getOpCode().getName(),listTT->getNode()->getFirstChild(),child->getOpCode().getName(),child,child->getReferenceCount(),listTT == treeTop?"yes":"no");
             if (listTT->getNode()->getFirstChild() == child)
                {
@@ -9082,7 +9086,7 @@ TR_TrivialDeadTreeRemoval::processCommonedChild(TR::Node *child, TR::TreeTop *tr
             prevElement = listIt.getCurrentElement();
             listTT = listIt.getNext();
             }
-            if (trace()) traceMsg(comp,"\n");
+            log->println();
          }
       else
          {
@@ -9103,13 +9107,13 @@ TR_TrivialDeadTreeRemoval::examineNode(TR::Node *node, vcount_t visitCount)
    {
    node->setVisitCount(visitCount);
 //   if (trace())
-//      traceMsg(comp(),"examineNode parent %s (%p) node %s (%p, refCount %d)\n",parent?parent->getOpCode().getName():"NULL",parent,node->getOpCode().getName(),node,node->getReferenceCount());
+//      comp()->getLogger()->trprintf("examineNode parent %s (%p) node %s (%p, refCount %d)\n",parent?parent->getOpCode().getName():"NULL",parent,node->getOpCode().getName(),node,node->getReferenceCount());
    int32_t i;
    for (i = 0; i < node->getNumChildren(); i++)
       {
       TR::Node *child = node->getChild(i);
     //  if (trace())
-   //      traceMsg(comp(),"\tlooking at index %d : child %s (%p, refCount %d) -- childVC %d, VC %d (descend=%s)\n",i,child->getOpCode().getName(),child,child->getReferenceCount(),child->getVisitCount(),visitCount,child->getVisitCount() != visitCount?"yes":"no");
+    //     comp()->getLogger()->trprintf("\tlooking at index %d : child %s (%p, refCount %d) -- childVC %d, VC %d (descend=%s)\n",i,child->getOpCode().getName(),child,child->getReferenceCount(),child->getVisitCount(),visitCount,child->getVisitCount() != visitCount?"yes":"no");
       if (child->getVisitCount() != visitCount)
          {
          examineNode(child, visitCount);
@@ -9119,7 +9123,7 @@ TR_TrivialDeadTreeRemoval::examineNode(TR::Node *node, vcount_t visitCount)
          processCommonedChild(child, _currentTreeTop, _commonedTreeTopList, OPT_DETAILS_TDTR, comp());
          }
       }
-  // if (trace()) traceMsg(comp(),"\n");
+   //comp()->getLogger()->println();
    }
 
 
@@ -9133,7 +9137,7 @@ TR_TrivialDeadTreeRemoval::transformBlock(TR::TreeTop * entryTree, TR::TreeTop *
    _currentBlock = entryTree->getNode()->getBlock();
    _commonedTreeTopList.deleteAll();
    if (trace())
-      traceMsg(comp(),"TrivialDeadTreeRemoval on block_%d : entryTreeNode %p -> exitTreeNode %p\n",_currentBlock->getNumber(),entryTree->getNode(),exitTree->getNode());
+      comp()->getLogger()->trprintf("TrivialDeadTreeRemoval on block_%d : entryTreeNode %p -> exitTreeNode %p\n",_currentBlock->getNumber(),entryTree->getNode(),exitTree->getNode());
    for (TR::TreeTop * currentTree = entryTree->getNextRealTreeTop();
         currentTree != exitTree;
         currentTree = currentTree->getNextRealTreeTop())
@@ -9188,13 +9192,15 @@ int32_t TR_TrivialBlockExtension::perform()
 
 int32_t TR_TrivialBlockExtension::performOnBlock(TR::Block *block)
    {
+   TR::Logger *log = comp()->getLogger();
+
    // Please resist the urge to put more logic in this opt.  Block extension is
    // a straightforward, well-defined transformation.  If you want more than
    // just marking blocks as extensions, you probably want a new optimization.
    if (block->isExtensionOfPreviousBlock())
       {
       if (trace())
-         traceMsg(comp(), "BlockExtension: block_%d is already an extension of the previous block\n", block->getNumber());
+         log->printf("BlockExtension: block_%d is already an extension of the previous block\n", block->getNumber());
       }
    else if (block->getPredecessors().size() == 1)
       {
@@ -9202,17 +9208,17 @@ int32_t TR_TrivialBlockExtension::performOnBlock(TR::Block *block)
       if (pred != block->getPrevBlock())
          {
          if (trace())
-            traceMsg(comp(), "BlockExtension: block_%d predecessor is not the previous block\n", block->getNumber());
+            log->printf("BlockExtension: block_%d predecessor is not the previous block\n", block->getNumber());
          }
       else if (!pred->canFallThroughToNextBlock())
          {
          if (trace())
-            traceMsg(comp(), "BlockExtension: block_%d does not fall through to block_%d\n", pred->getNumber(), block->getNumber());
+            log->printf("BlockExtension: block_%d does not fall through to block_%d\n", pred->getNumber(), block->getNumber());
          }
       else if (pred->getLastRealTreeTop()->getNode()->getOpCode().isJumpWithMultipleTargets())
          {
          if (trace())
-            traceMsg(comp(), "BlockExtension: block_%d ends in a switch and so we will not mark block_%d as an extension\n", pred->getNumber(), block->getNumber());
+            log->printf("BlockExtension: block_%d ends in a switch and so we will not mark block_%d as an extension\n", pred->getNumber(), block->getNumber());
          }
       else
          {
@@ -9223,7 +9229,7 @@ int32_t TR_TrivialBlockExtension::performOnBlock(TR::Block *block)
    else
       {
       if (trace())
-         traceMsg(comp(), "BlockExtension: block_%d has %d predecessors\n", block->getNumber(), block->getPredecessors().size());
+         log->printf("BlockExtension: block_%d has %d predecessors\n", block->getNumber(), block->getPredecessors().size());
       }
 
    return 1;

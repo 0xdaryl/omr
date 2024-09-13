@@ -365,7 +365,7 @@ OMR::Simplifier::simplifyExtendedBlock(TR::TreeTop * treeTop)
       block = b;
 
       if (trace())
-         traceMsg(comp(), "simplifying block_%d\n", block->getNumber());
+         comp()->getLogger()->printf("simplifying block_%d\n", block->getNumber());
 
       simplify(block);
 
@@ -373,7 +373,7 @@ OMR::Simplifier::simplifyExtendedBlock(TR::TreeTop * treeTop)
          {
          auto treeNodePair = *cursor;
          if (trace())
-            traceMsg(comp(), "process _performLowerTreeNodePairs treetop %p node %p\n", treeNodePair.first, treeNodePair.second);
+            comp()->getLogger()->trprintf("process _performLowerTreeNodePairs treetop %p node %p\n", treeNodePair.first, treeNodePair.second);
          TR::Node *performLowerNode = postWalkLowerTreeSimplifier(treeNodePair.first, treeNodePair.second, block, (TR::Simplifier *) this);
          treeNodePair.first->setNode(performLowerNode);
          }
@@ -599,7 +599,7 @@ OMR::Simplifier::unaryCancelOutWithChild(TR::Node * node, TR::Node * firstChild,
             {
             disallow = false;
             if (trace())
-               traceMsg(comp(),"do allow unaryCancel of node %s (%p) and firstChild %s (%p) as grandChild %s (%p) zeros the %d truncated bytes\n",
+               comp()->getLogger()->trprintf("do allow unaryCancel of node %s (%p) and firstChild %s (%p) as grandChild %s (%p) zeros the %d truncated bytes\n",
                        node->getOpCode().getName(),node,firstChild->getOpCode().getName(),firstChild,
                        grandChild->getOpCode().getName(),grandChild,truncatedBits/8);
             }
@@ -608,7 +608,7 @@ OMR::Simplifier::unaryCancelOutWithChild(TR::Node * node, TR::Node * firstChild,
       if (disallow)
          {
          if (trace())
-            traceMsg(comp(),"disallow unaryCancel of node %s (%p) and firstChild %s (%p) due to unequal sizes (nodeSize %d, firstChildSize %d, firstChild->childSize %d)\n",
+            comp()->getLogger()->trprintf("disallow unaryCancel of node %s (%p) and firstChild %s (%p) due to unequal sizes (nodeSize %d, firstChildSize %d, firstChild->childSize %d)\n",
                     node->getOpCode().getName(),node,firstChild->getOpCode().getName(),firstChild,
                     node->getSize(),firstChild->getSize(),firstChild->getFirstChild()->getSize());
          return NULL;
@@ -684,7 +684,7 @@ OMR::Simplifier::anchorOrderDependentNodesInSubtree(TR::Node *node, TR::Node *re
    if (nodeIsOrderDependent(node, 0, false))
       {
       if (trace())
-         traceMsg(comp(), "anchor detached node %p\n", node);
+         comp()->getLogger()->trprintf("anchor detached node %p\n", node);
 
       generateAnchor(node, anchorTree);
       }

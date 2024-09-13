@@ -46,6 +46,7 @@
 #include "optimizer/Optimizer.hpp"
 #include "optimizer/Simplifier.hpp"
 #include "optimizer/TransformUtil.hpp"
+#include "ras/Logger.hpp"
 
 #define MAX_DEPTH_FOR_SMART_ANCHORING 3
 
@@ -195,12 +196,12 @@ OMR::Optimization::anchorAllChildren(TR::Node * node, TR::TreeTop *anchorTree)
    {
    TR_ASSERT(anchorTree != NULL, "Can't anchor children to a NULL TR::TreeTop\n");
    if (self()->trace())
-      traceMsg(self()->comp(), "%sanchoring children of node [" POINTER_PRINTF_FORMAT "]\n", self()->optDetailString(), node);
+      self()->comp()->getLogger()->trprintf("%sanchoring children of node [" POINTER_PRINTF_FORMAT "]\n", self()->optDetailString(), node);
    for (int i = 0; i <node->getNumChildren(); i++)
       {
       TR::TreeTop *tt = TR::TreeTop::create(self()->comp(), TR::Node::create(TR::treetop, 1, node->getChild(i)));
       if (self()->trace())
-         traceMsg(self()->comp(), "TreeTop [" POINTER_PRINTF_FORMAT "] is created to anchor child [" POINTER_PRINTF_FORMAT "]\n", tt, node->getChild(i));
+         self()->comp()->getLogger()->trprintf("TreeTop [" POINTER_PRINTF_FORMAT "] is created to anchor child [" POINTER_PRINTF_FORMAT "]\n", tt, node->getChild(i));
       anchorTree->insertBefore(tt);
       }
    }
@@ -223,7 +224,7 @@ OMR::Optimization::anchorChildren(TR::Node *node, TR::TreeTop* anchorTree, uint3
       {
       hasCommonedAncestor = (node->getReferenceCount() > 1);
       if (self()->trace())
-         traceMsg(self()->comp(),"set hasCommonedAncestor = %s as %s %p has refCount %d %s 1\n",
+         self()->comp()->getLogger()->trprintf("set hasCommonedAncestor = %s as %s %p has refCount %d %s 1\n",
             hasCommonedAncestor ? "true" : "false",
             node->getOpCode().getName(),node,node->getReferenceCount(),
             hasCommonedAncestor ? ">" : "<=");

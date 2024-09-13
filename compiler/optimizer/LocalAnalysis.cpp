@@ -293,7 +293,7 @@ TR_LocalAnalysisInfo::TR_LocalAnalysisInfo(TR::Compilation *c, bool t)
                {
                if (trace())
                   {
-                  traceMsg(comp(), "\nExpression #%d is : \n", _numNodes);
+                  comp()->getLogger()->printf("\nExpression #%d is : \n", _numNodes);
                   comp()->getDebug()->print(comp()->getLogger(), firstNodeInTree, 6, true);
                   }
 
@@ -312,7 +312,7 @@ TR_LocalAnalysisInfo::TR_LocalAnalysisInfo(TR::Compilation *c, bool t)
                   {
                   if (trace())
                      {
-                     traceMsg(comp(), "\nExpression #%d is : \n", _numNodes);
+                     comp()->getLogger()->printf("\nExpression #%d is : \n", _numNodes);
                      comp()->getDebug()->print(comp()->getLogger(), firstNodeInTree->getFirstChild(), 6, true);
                      }
 
@@ -988,7 +988,7 @@ bool TR_LocalAnalysisInfo::countSupportedNodes(TR::Node *node, TR::Node *parent,
          {
          if (trace())
             {
-            traceMsg(comp(), "\nExpression #%d is : \n", _numNodes);
+            comp()->getLogger()->printf("\nExpression #%d is : \n", _numNodes);
             _compilation->getDebug()->print(comp()->getLogger(), node, 6, true);
             }
 
@@ -1015,7 +1015,7 @@ bool isExceptional(TR::Compilation *comp, TR::Node * node)
    if (comp->cg()->nodeMayCauseException(node))
       {
       if (comp->cg()->traceBCDCodeGen())
-         traceMsg(comp,"d^d: %s (%p) may cause on exception so do not speculate in PRE\n",node->getOpCode().getName(),node);
+         comp->getLogger()->printf("d^d: %s (%p) may cause on exception so do not speculate in PRE\n",node->getOpCode().getName(),node);
       return true;
       }
 

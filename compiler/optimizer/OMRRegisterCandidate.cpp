@@ -222,7 +222,7 @@ void OMR::RegisterCandidate::addAllBlocksInStructure(TR_Structure *structure, TR
       addBlock(block, 0);
 
       if (description)
-         traceMsg(comp, "\nAdded %s #%d (symRef %p) as global reg candidate in block_%d\n", description, getSymbolReference()->getReferenceNumber(), getSymbolReference(), block->getNumber());
+         comp->getLogger()->trprintf("\nAdded %s #%d (symRef %p) as global reg candidate in block_%d\n", description, getSymbolReference()->getReferenceNumber(), getSymbolReference(), block->getNumber());
       }
    else
       {
@@ -400,7 +400,7 @@ OMR::RegisterCandidate::printLoopInfo(TR::Compilation *comp)
    {
    for (LoopInfo * li = _loops.getFirst(); li; li = li->getNext())
       {
-      traceMsg(comp, "Candidate #%d has %d loads and stores in loop %d\n",
+      comp()->getLogger()->printf("Candidate #%d has %d loads and stores in loop %d\n",
                      getSymbolReference()->getReferenceNumber(),
                      li->_numberOfLoadsAndStores,
                      li->_loop->getNumber());
@@ -477,7 +477,7 @@ OMR::RegisterCandidate::removeAssignedCandidateFromLoop(TR::Compilation *comp, T
       liveOnExitUsage->reset(blockNumber);
 
       if (trace)
-         traceMsg(comp, "Removed candidate #%d from block_%d entry and exit\n",
+         comp()->getLogger()->printf("Removed candidate #%d from block_%d entry and exit\n",
                         getSymbolReference()->getReferenceNumber(), blockNumber);
 
 
@@ -740,6 +740,8 @@ OMR::RegisterCandidate::processLiveOnEntryBlocks(TR::Block * * blocks, int32_t *
    {
    LexicalTimer t("processLiveOnEntryBlocks", comp->phaseTimer());
 
+   TR::Logger *log = comp->getLogger();
+
    TR::SymbolReference *symRef = getSymbolReference();
    TR::Symbol * sym = getSymbolReference()->getSymbol();
    bool trace = comp->getOptions()->trace(OMR::tacticalGlobalRegisterAllocator);
@@ -843,7 +845,7 @@ OMR::RegisterCandidate::processLiveOnEntryBlocks(TR::Block * * blocks, int32_t *
    // is not live on exit then remove the block from the _liveOnEntry bitVector
    //
    if (lookForBlocksToRemove && trace)
-      traceMsg(comp, "Trim live ranges upward:\n");
+      log->prints("Trim live ranges upward:\n");
 
    while (lookForBlocksToRemove)
       {
@@ -854,7 +856,7 @@ OMR::RegisterCandidate::processLiveOnEntryBlocks(TR::Block * * blocks, int32_t *
          int32_t blockNumber = bvi.getNextElement();
 
          if (trace)
-            traceMsg(comp, "\tExamining live-on-entry block_%d with loads and stores = %d\n", blockNumber, _blocks.getNumberOfLoadsAndStores(blockNumber));
+            log->printf("\tExamining live-on-entry block_%d with loads and stores = %d\n", blockNumber, _blocks.getNumberOfLoadsAndStores(blockNumber));
 
          if (_blocks.getNumberOfLoadsAndStores(blockNumber) == 0)
             {
@@ -877,7 +879,7 @@ OMR::RegisterCandidate::processLiveOnEntryBlocks(TR::Block * * blocks, int32_t *
             if (!liveOnExit)
                {
                if (trace)
-                 traceMsg(comp, "\tNot referenced and not live on exit, re-setting block %d \n", blockNumber);
+                 log->printf("\tNot referenced and not live on exit, re-setting block %d \n", blockNumber);
                _liveOnEntry.reset(blockNumber);
                lookForBlocksToRemove = true;
                }
@@ -971,7 +973,7 @@ OMR::RegisterCandidate::processLiveOnEntryBlocks(TR::Block * * blocks, int32_t *
             }
 
          if (trace)
-            traceMsg(comp, "At frequency %d for %d numBlocks %d numUnreferencedBlocks %d\n", frequency, getSymbolReference()->getReferenceNumber(), numBlocksAtThisFrequency, numUnreferencedBlocksAtThisFrequency);
+            log->printf("At frequency %d for %d numBlocks %d numUnreferencedBlocks %d\n", frequency, getSymbolReference()->getReferenceNumber(), numBlocksAtThisFrequency, numUnreferencedBlocksAtThisFrequency);
 
          TR_ScratchList<TR_Structure> unreferencedLoops(comp->trMemory());
          TR_ScratchList<TR_Structure> referencedLoops(comp->trMemory());
@@ -1147,7 +1149,7 @@ OMR::RegisterCandidate::processLiveOnEntryBlocks(TR::Block * * blocks, int32_t *
                               if (trace)
                                  {
                                  dumpOptDetails(comp, "\n1Loop %d does not use candidate, removing the following blocks from live ranges of candidate #%d \n", parent->getNumber(), getSymbolReference()->getReferenceNumber());
-                                 comp->getOptimizer()->getResetExitsGRA()->print(comp->getLogger(), comp);
+                                 comp->getOptimizer()->getResetExitsGRA()->print(log, comp);
                                  }
                               _liveOnEntry -= *comp->getOptimizer()->getResetExitsGRA();
                               *resetLiveOnEntry |= *comp->getOptimizer()->getResetExitsGRA(); // Added by Nakaike
@@ -1421,7 +1423,7 @@ OMR::RegisterCandidate::processLiveOnEntryBlocks(TR::Block * * blocks, int32_t *
          loadsAndStores = loadsAndStores + blockWeight;
 
          if (trace)
-            traceMsg(comp, "Increased weight of candidate %d by %d (new weight %d) because of live on exit from block_%d\n", getSymbolReference()->getReferenceNumber(), blockWeight, loadsAndStores, blockNumber);
+            log->printf("Increased weight of candidate %d by %d (new weight %d) because of live on exit from block_%d\n", getSymbolReference()->getReferenceNumber(), blockWeight, loadsAndStores, blockNumber);
          }
       }
 
@@ -1468,7 +1470,7 @@ OMR::RegisterCandidate::processLiveOnEntryBlocks(TR::Block * * blocks, int32_t *
                         loadsAndStores = loadsAndStores - blockWeight;
                         reduction = reduction + blockWeight;
                         if (trace)
-                           traceMsg(comp, "Reduced weight of candidate %d by %d (new weight %d) because of end in live range at block_%d succ %d\n", getSymbolReference()->getReferenceNumber(), blockWeight, loadsAndStores, blockNumber, (*succ)->getTo()->getNumber());
+                           log->printf("Reduced weight of candidate %d by %d (new weight %d) because of end in live range at block_%d succ %d\n", getSymbolReference()->getReferenceNumber(), blockWeight, loadsAndStores, blockNumber, (*succ)->getTo()->getNumber());
                         foundEndOfRange = true;
                         break;
                         }
@@ -1533,7 +1535,7 @@ OMR::RegisterCandidate::processLiveOnEntryBlocks(TR::Block * * blocks, int32_t *
                             loadsAndStores = loadsAndStores - blockWeight;
                             reduction = reduction + blockWeight;
                             if (trace)
-                               traceMsg(comp, "Reduced weight of candidate %d by %d (new weight %d) because of start of live range at block_%d succ %d\n", getSymbolReference()->getReferenceNumber(), blockWeight, loadsAndStores, blockNumber, (*succ)->getTo()->getNumber());
+                               log->printf("Reduced weight of candidate %d by %d (new weight %d) because of start of live range at block_%d succ %d\n", getSymbolReference()->getReferenceNumber(), blockWeight, loadsAndStores, blockNumber, (*succ)->getTo()->getNumber());
                             foundEndOfRange = true;
                             break;
                             }
@@ -1597,7 +1599,7 @@ OMR::RegisterCandidate::processLiveOnEntryBlocks(TR::Block * * blocks, int32_t *
       else
          {
          if (trace)
-             traceMsg(comp, "handle negative weight\n");
+             log->prints("handle negative weight\n");
 
          if (!callToRemoveUnusedLoops)
             {
@@ -1634,7 +1636,7 @@ OMR::RegisterCandidate::extendLiveRangesForLiveOnExit(TR::Compilation *comp, TR:
 
    bool trace = comp->getOptions()->trace(OMR::tacticalGlobalRegisterAllocator);
    if (trace)
-      traceMsg(comp, "Extending live ranges due to live on exits\n");
+      comp->getLogger()->prints("Extending live ranges due to live on exits\n");
 
    TR_BitVector blocksVisited(comp->trMemory()->currentStackRegion());
    TR_BitVector *blocksReferencing = comp->getGlobalRegisterCandidates()->getBlocksReferencingSymRef(getSymbolReference()->getReferenceNumber());
@@ -1701,7 +1703,7 @@ OMR::RegisterCandidate::extendLiveRangesForLiveOnExit(TR::Compilation *comp, TR:
                   !blocksReferencing->get(currBlock->getNumber()))
                   {
                   if (trace)
-                     traceMsg(comp, "\tFor candidate #%d, set live on block_%d entry due to live on exit\n", getSymbolReference()->getReferenceNumber(), currBlock->getNumber());
+                     comp->getLogger()->printf("\tFor candidate #%d, set live on block_%d entry due to live on exit\n", getSymbolReference()->getReferenceNumber(), currBlock->getNumber());
 
                   _liveOnEntry.set(currBlock->getNumber());
                   }
@@ -1787,7 +1789,7 @@ OMR::RegisterCandidates::candidatesOverlap(
       if (entrySymbolInTree && seenExitSymbol)
          {
          if (trace)
-            traceMsg(comp(), "Returning true in block_%d node %p entry cand %d exit cand %d\n", block->getNumber(), node, candidateOnEntry->getSymbolReference()->getReferenceNumber(), candidateOnExit->getSymbolReference()->getReferenceNumber());
+            comp()->getLogger()->trprintf("Returning true in block_%d node %p entry cand %d exit cand %d\n", block->getNumber(), node, candidateOnEntry->getSymbolReference()->getReferenceNumber(), candidateOnExit->getSymbolReference()->getReferenceNumber());
          return true;
          }
       }
@@ -1885,15 +1887,16 @@ scanPressureSimulatorCacheForConflicts(TR::RegisterCandidate *rc, TR_BitVector &
    {
    LexicalTimer t("scanPressureSimulatorCacheForConflicts", comp->phaseTimer());
 
+   TR::Logger *log = comp->getLogger();
    bool trace = comp->getOptions()->trace(OMR::tacticalGlobalRegisterAllocator);
 
    if(trace)
      {
-     traceMsg(comp,"\tscanPressureSimulatorCacheForConflits: Candidate #%d\n",rc->getSymbolReference()->getReferenceNumber());
-     traceMsg(comp,"\t blocks candidate is live: ");
-     blocks.print(comp->getLogger(), comp);
-     traceMsg(comp, "\n");
-     traceMsg(comp,"\t   adding conflicts as reg#: { [Entry|Exit](block#) [Entry|Exit](block#) ...}\n");
+     log->printf("\tscanPressureSimulatorCacheForConflits: Candidate #%d\n",rc->getSymbolReference()->getReferenceNumber());
+     log->prints("\t blocks candidate is live: ");
+     blocks.print(log, comp);
+     log->println();
+     log->prints("\t   adding conflicts as reg#: { [Entry|Exit](block#) [Entry|Exit](block#) ...}\n");
      }
 
    TR_BitVectorIterator blockIterator(blocks);
@@ -1905,8 +1908,8 @@ scanPressureSimulatorCacheForConflicts(TR::RegisterCandidate *rc, TR_BitVector &
 
       if(trace)
         {
-        traceMsg(comp,"\t  Adding conflicts in block_%d\n",blockNum);
-        traceMsg(comp,"\t   spilled regs: ");
+        log->printf("\t  Adding conflicts in block_%d\n",blockNum);
+        log->prints("\t   spilled regs: ");
         TR_BitVector tmpSpilledRegs(*spilledRegs);
         TR_BitVectorIterator ri(tmpSpilledRegs);
         while (ri.hasMoreElements())
@@ -1915,8 +1918,8 @@ scanPressureSimulatorCacheForConflicts(TR::RegisterCandidate *rc, TR_BitVector &
          if (r < firstRegister ||  r > lastRegister)
            tmpSpilledRegs.reset(r);
          }
-  tmpSpilledRegs.print(comp->getLogger(), comp);
-        traceMsg(comp, "\n");
+        tmpSpilledRegs.print(log, comp);
+        log->println();
         }
 
       TR_BitVectorIterator regIterator(*spilledRegs);
@@ -1930,7 +1933,7 @@ scanPressureSimulatorCacheForConflicts(TR::RegisterCandidate *rc, TR_BitVector &
 
             if(trace)
               {
-              traceMsg(comp,"\t    reg %d: {",regNum);
+              log->printf("\t    reg %d: {",regNum);
               }
             // Trim live ranges up
             TR::Block *curr = all_blocks[blockNum];
@@ -1942,7 +1945,7 @@ scanPressureSimulatorCacheForConflicts(TR::RegisterCandidate *rc, TR_BitVector &
                liveOnEntryConflicts[regNum].set(currBlockNum);
                if(trace)
                  {
-                 traceMsg(comp," Entry(%d)",currBlockNum);
+                 log->printf(" Entry(%d)",currBlockNum);
                  }
 
                if (!curr->isExtensionOfPreviousBlock())
@@ -1959,7 +1962,7 @@ scanPressureSimulatorCacheForConflicts(TR::RegisterCandidate *rc, TR_BitVector &
                liveOnExitConflicts[regNum].set(currBlockNum);
                if(trace)
                  {
-                 traceMsg(comp," Exit(%d)",currBlockNum);
+                 log->printf(" Exit(%d)",currBlockNum);
                  }
                }
 
@@ -1973,7 +1976,7 @@ scanPressureSimulatorCacheForConflicts(TR::RegisterCandidate *rc, TR_BitVector &
                   liveOnExitConflicts[regNum].set(currBlockNum);
                   if(trace)
                     {
-                    traceMsg(comp," Exit(%d)",currBlockNum);
+                    log->printf(" Exit(%d)",currBlockNum);
                     }
                   }
 
@@ -1987,27 +1990,27 @@ scanPressureSimulatorCacheForConflicts(TR::RegisterCandidate *rc, TR_BitVector &
                liveOnEntryConflicts[regNum].set(currBlockNum);
                if(trace)
                  {
-                 traceMsg(comp," Entry(%d)",currBlockNum);
+                 log->printf(" Entry(%d)",currBlockNum);
                  }
                }
 
             if(trace)
               {
-              traceMsg(comp," }\n");
+              log->prints(" }\n");
               }
             }
          }
       }
 
    if (trace)
-     traceMsg(comp, "\t Update conflicts on entry due to conflicts on predecessor exits:\n");
+     log->prints("\t Update conflicts on entry due to conflicts on predecessor exits:\n");
 
    int32_t i;
    for (i = firstRegister; i <= lastRegister; ++i)
       {
       if(trace)
          {
-         traceMsg(comp,"\t    reg %d: {",i);
+         log->printf("\t    reg %d: {",i);
          }
       TR_BitVectorIterator bvi(liveOnExitConflicts[i]);
       while (bvi.hasMoreElements())
@@ -2020,7 +2023,7 @@ scanPressureSimulatorCacheForConflicts(TR::RegisterCandidate *rc, TR_BitVector &
             if (trace)
                {
                if(!liveOnEntryConflicts[i].isSet(succ->getNumber()))
-                  traceMsg(comp," Entry(%d)<-Exit(%d)",succ->getNumber(), block->getNumber());
+                  log->printf(" Entry(%d)<-Exit(%d)",succ->getNumber(), block->getNumber());
                }
 
             liveOnEntryConflicts[i].set(succ->getNumber());
@@ -2028,12 +2031,12 @@ scanPressureSimulatorCacheForConflicts(TR::RegisterCandidate *rc, TR_BitVector &
          }
       if(trace)
          {
-         traceMsg(comp," }\n");
+         log->prints(" }\n");
          }
       // In WCode, we allow entry-exit conflicts
       if(trace)
          {
-         traceMsg(comp,"\t    reg %d: {",i);
+         log->printf("\t    reg %d: {",i);
          }
       bvi.setBitVector(entryExitConflicts[i]);
       while (bvi.hasMoreElements())
@@ -2045,32 +2048,32 @@ scanPressureSimulatorCacheForConflicts(TR::RegisterCandidate *rc, TR_BitVector &
 
             if (trace)
                if(!liveOnEntryConflicts[i].isSet(succ->getNumber()))
-                  traceMsg(comp," Entry(%d)<-EntryExit(%d)",succ->getNumber(), block->getNumber());
+                  log->printf(" Entry(%d)<-EntryExit(%d)",succ->getNumber(), block->getNumber());
 
             liveOnEntryConflicts[i].set(succ->getNumber());
             }
          }
       if(trace)
          {
-         traceMsg(comp," }\n");
+         log->prints(" }\n");
          }
       }
 
    if (trace)
       {
-      traceMsg(comp, "\tDone scanning for conflicts\n");
+      log->prints("\tDone scanning for conflicts\n");
       TR_BitVectorIterator regIterator(*spilledRegs);
       while (regIterator.hasMoreElements())
          {
          int32_t regNum = regIterator.getNextElement();
          if (firstRegister <= regNum && regNum <= lastRegister)
             {
-            traceMsg(comp, "\tFor candidate #%d, on entry block conflicts with register %d ", rc->getSymbolReference()->getReferenceNumber(), regNum);
-            liveOnEntryConflicts[regNum].print(comp->getLogger(), comp);
-            traceMsg(comp, "\n");
-            traceMsg(comp, "\tFor candidate #%d, on exit block conflicts with register %d ", rc->getSymbolReference()->getReferenceNumber(), regNum);
-            liveOnExitConflicts[regNum].print(comp->getLogger(), comp);
-            traceMsg(comp, "\n");
+            log->printf("\tFor candidate #%d, on entry block conflicts with register %d ", rc->getSymbolReference()->getReferenceNumber(), regNum);
+            liveOnEntryConflicts[regNum].print(log, comp);
+            log->println();
+            log->printf("\tFor candidate #%d, on exit block conflicts with register %d ", rc->getSymbolReference()->getReferenceNumber(), regNum);
+            liveOnExitConflicts[regNum].print(log, comp);
+            log->println();
             }
          }
       }
@@ -2143,6 +2146,8 @@ OMR::RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, 
    static const char __func__[] = "OMR::RegisterCandidates::assign";
 #endif
    LexicalTimer t("assign", comp()->phaseTimer());
+
+   TR::Logger *log = comp()->getLogger();
    //ReferenceTable ot(0, comp()->allocator());
    ReferenceTable ot((ReferenceTableComparator()), (ReferenceTableAllocator(comp()->trMemory()->currentStackRegion())));
    overlapTable = &ot;
@@ -2412,10 +2417,10 @@ OMR::RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, 
 
    if (trace)
       {
-      traceMsg(comp(),"Prioritized list of candidates\n");
+      log->prints("Prioritized list of candidates\n");
       for (rc = first; rc; rc = rc->getNext())
          {
-         traceMsg(comp()," Candidate #%d (weight=%d)\n",rc->getSymbolReference()->getReferenceNumber(),rc->getWeight());
+         log->printf(" Candidate #%d (weight=%d)\n",rc->getSymbolReference()->getReferenceNumber(),rc->getWeight());
          }
       }
 
@@ -2529,7 +2534,7 @@ OMR::RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, 
          if ((rc->getWeight() < unsigned(weightThreshold)) && (((float) numAssigns) > (float) (numCandsThresholdFactor * (float) numCands)))
             {
             if(trace)
-               traceMsg(comp(),"Leaving candidate because the compile time cost is not worth it\n");
+               log->prints("Leaving candidate because the compile time cost is not worth it\n");
 
             continue;
             }
@@ -2549,14 +2554,14 @@ OMR::RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, 
       if (type.isInt64() && cg->getDisableLongGRA())
          {
          if (trace)
-            traceMsg(comp(),"Leaving candidate because LongGRA is disabled and candidate is 64 bit\n");
+            log->prints("Leaving candidate because LongGRA is disabled and candidate is 64 bit\n");
          continue;
          }
 
       if (dt == TR::Aggregate && (1 || rc->getSymbolReference()->getSymbol()->getSize() > 8))
          {
          if (trace)
-            traceMsg(comp(),"Leaving candidate because its an aggregate and > 64 bits\n");
+            log->prints("Leaving candidate because its an aggregate and > 64 bits\n");
          continue;
          }
 
@@ -2565,7 +2570,7 @@ OMR::RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, 
            rc->getSymbolReference()->getSymbol()->holdsMonitoredObject())
          {
          if (trace)
-            traceMsg(comp(),"Leaving candidate because it holdsMonitoredObject\n");
+            log->prints("Leaving candidate because it holdsMonitoredObject\n");
          continue; // todo: handle statics and fields?
          }
 
@@ -2573,14 +2578,14 @@ OMR::RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, 
       if (aliasesPreventAllocation(comp(),rc->getSymbolReference()))
          {
          if (trace)
-            traceMsg(comp(),"Leaving candidate because it has use_def_aliases\n");
+            log->prints("Leaving candidate because it has use_def_aliases\n");
          continue;
          }
 
       if (dt.isVector() && !comp()->cg()->hasGlobalVRF())
          {
          if (trace)
-            traceMsg(comp(),"Leaving candidate because it has vector type but no global vector registers provided\n");
+            log->prints("Leaving candidate because it has vector type but no global vector registers provided\n");
          TR_ASSERT(!comp()->target().cpu.isZ(),"ed : debug : Should never get here for vector GRA on z");
          continue;
          }
@@ -2821,9 +2826,9 @@ OMR::RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, 
       computeAvailableRegisters(rc, firstRegister, lastRegister, blocks, &availableRegisters);
       if (trace)
          {
-         traceMsg(comp(), "available registers : ");
-         availableRegisters.print(comp()->getLogger(), comp());
-         traceMsg(comp(), "\n");
+         log->prints("available registers : ");
+         availableRegisters.print(log, comp());
+         log->println();
          }
       TR::CodeGenerator * cg = comp()->cg();
       cg->removeUnavailableRegisters(rc, blocks, availableRegisters);
@@ -2872,8 +2877,7 @@ OMR::RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, 
                TR_GlobalRegisterNumber overlappedReg = cg->getOverlappedAliasForGRN(i);
                if (trace)
                   {
-                  traceMsg(comp(),
-                        "removing %s (%d) from available list since it is aliased with %s (%d)\n",
+                  log->printf("removing %s (%d) from available list since it is aliased with %s (%d)\n",
                         cg->getDebug()->getGlobalRegisterName(i),i,
                         cg->getDebug()->getGlobalRegisterName(overlappedReg),overlappedReg);
                   }
@@ -2917,7 +2921,7 @@ OMR::RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, 
         if (!rc->canBeReprioritized()) // only reprioritize a certain number of times based on hotness
            {
            if (trace)
-              traceMsg(comp(), "Can't reprioritize anymore\n");
+              log->prints("Can't reprioritize anymore\n");
 
            }
         // If there's no available registers then attempt to remove some of the blocks from the
@@ -2972,7 +2976,7 @@ OMR::RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, 
               {
               if (trace)
                  {
-                 traceMsg(comp(),"Searching for blocks/structures with max frequency for reg: %d\n",i);
+                 log->printf("Searching for blocks/structures with max frequency for reg: %d\n",i);
                  }
               if (!useRegisterPressureInfo && availableRegisters.get(i))
                  {
@@ -2992,9 +2996,9 @@ OMR::RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, 
 
               if (trace)
                  {
-                 traceMsg(comp(), "Final live on entry conflicts with register : %d\n", i);
-                 _liveOnEntryConflicts[i].print(comp()->getLogger(), comp());
-                 traceMsg(comp(), "\n");
+                 log->printf("Final live on entry conflicts with register : %d\n", i);
+                 _liveOnEntryConflicts[i].print(log, comp());
+                 log->println();
                  }
 
               int32_t numBlocksAtMaxFrequency = 0;
@@ -3061,7 +3065,7 @@ OMR::RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, 
 
                  if (trace)
                    {
-                   traceMsg(comp(), "block_%d has max freq (%d)\n", maxBlock, maxFrequency);
+                   log->printf("block_%d has max freq (%d)\n", maxBlock, maxFrequency);
                    }
 
                  if (numBlocksAtMaxFrequency == 0)
@@ -3146,10 +3150,10 @@ OMR::RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, 
                  //
                  if (trace)
                     {
-                    traceMsg(comp(), "Register : %d\n", i);
-                    traceMsg(comp(), "max freq %d; smallest max freq %d\n", maxFrequency, smallestMaxFrequency);
-                    traceMsg(comp(), "num clear structures %d; max clear structures %d\n", numClearStructures, maxClearStructures);
-                    traceMsg(comp(), "num blocks at max freq %d;  min num conflicts %d\n", numBlocksAtMaxFrequency, numberOfConflicts);
+                    log->printf("Register : %d\n", i);
+                    log->printf("max freq %d; smallest max freq %d\n", maxFrequency, smallestMaxFrequency);
+                    log->printf("num clear structures %d; max clear structures %d\n", numClearStructures, maxClearStructures);
+                    log->printf("num blocks at max freq %d;  min num conflicts %d\n", numBlocksAtMaxFrequency, numberOfConflicts);
                     }
 
                  if (conflictingRegister == -1 ||
@@ -3195,9 +3199,9 @@ OMR::RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, 
                  {
                  if (trace)
                     {
-                    traceMsg(comp(), "\nBlocks to be freed for candidate #%d: ", rc->getSymbolReference()->getReferenceNumber());
-                    blocksToBeFreed.print(comp()->getLogger(), comp());
-                    traceMsg(comp(),"\n");
+                    log->printf("\nBlocks to be freed for candidate #%d: ", rc->getSymbolReference()->getReferenceNumber());
+                    blocksToBeFreed.print(log, comp());
+                    log->println();
                     }
 
                  bvi.setBitVector(blocksToBeFreed);
@@ -3232,10 +3236,10 @@ OMR::RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, 
               if (trace)
                  {
                  TR::RegisterCandidate *rc2;
-                 traceMsg(comp(),"Prioritized list of candidates\n");
+                 log->prints("Prioritized list of candidates\n");
                  for (rc2 = next; rc2; rc2 = rc2->getNext())
                     {
-                    traceMsg(comp()," Candidate #%d (weight=%d)\n",rc2->getSymbolReference()->getReferenceNumber(),rc2->getWeight());
+                    log->printf(" Candidate #%d (weight=%d)\n",rc2->getSymbolReference()->getReferenceNumber(),rc2->getWeight());
                     }
                  }
               }
@@ -3365,7 +3369,7 @@ OMR::RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, 
         {
         int32_t nextElement = bvi.getNextElement();
         if (trace)
-           traceMsg(comp(), "Register %d in block_%d is candidate %d on entry\n", registerNumber, nextElement, rc->getSymbolReference()->getReferenceNumber());
+           log->printf("Register %d in block_%d is candidate %d on entry\n", registerNumber, nextElement, rc->getSymbolReference()->getReferenceNumber());
 
         blocks[nextElement]->getGlobalRegisters(comp())[registerNumber].setRegisterCandidateOnEntry(rc);
         if (needs2Regs)
@@ -3382,7 +3386,7 @@ OMR::RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, 
         TR_ASSERT(comp()->getOptimizer()->cachedExtendedBBInfoValid(), "Incorrect value in _startOfExtendedBBForBB");
 
         if (trace)
-           traceMsg(comp(), "Register %d in block_%d is candidate %d on exit\n", registerNumber, blockNumber, rc->getSymbolReference()->getReferenceNumber());
+           log->printf("Register %d in block_%d is candidate %d on exit\n", registerNumber, blockNumber, rc->getSymbolReference()->getReferenceNumber());
 
         if (b->getGlobalRegisters(comp())[registerNumber].getRegisterCandidateOnExit() != rc)
            {
@@ -3390,15 +3394,15 @@ OMR::RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, 
                (b->getGlobalRegisters(comp())[registerNumber].getRegisterCandidateOnExit() != b->getGlobalRegisters(comp())[registerNumber].getRegisterCandidateOnEntry()) &&
                (rc != b->getGlobalRegisters(comp())[registerNumber].getRegisterCandidateOnEntry()))
               {
-              traceMsg(comp(), "Candidate %d instead of candidate %d is required in register %d on exit out of block_%d\n", b->getGlobalRegisters(comp())[registerNumber].getRegisterCandidateOnExit()->getSymbolReference()->getReferenceNumber(), rc->getSymbolReference()->getReferenceNumber(), registerNumber, blockNumber);
+              log->printf("Candidate %d instead of candidate %d is required in register %d on exit out of block_%d\n", b->getGlobalRegisters(comp())[registerNumber].getRegisterCandidateOnExit()->getSymbolReference()->getReferenceNumber(), rc->getSymbolReference()->getReferenceNumber(), registerNumber, blockNumber);
               TR_ASSERT(0, "Candidate is required on exit out of block\n");
               }
            else if ((rc != b->getGlobalRegisters(comp())[registerNumber].getRegisterCandidateOnEntry()) ||
                     (b->getGlobalRegisters(comp())[registerNumber].getRegisterCandidateOnExit() == NULL))
               {
-                //traceMsg(comp(), "block_%d reg %d cand %d\n", b->getNumber(), registerNumber, rc->getSymbolReference()->getReferenceNumber());
+              //log->printf("block_%d reg %d cand %d\n", b->getNumber(), registerNumber, rc->getSymbolReference()->getReferenceNumber());
               b->getGlobalRegisters(comp())[registerNumber].setRegisterCandidateOnExit(rc);
-              //traceMsg(comp(), "block_%d reg %d cand %d\n", b->getNumber(), registerNumber, b->getGlobalRegisters(comp())[registerNumber].getRegisterCandidateOnExit()->getSymbolReference()->getReferenceNumber());
+              //log->printf("block_%d reg %d cand %d\n", b->getNumber(), registerNumber, b->getGlobalRegisters(comp())[registerNumber].getRegisterCandidateOnExit()->getSymbolReference()->getReferenceNumber());
               }
            }
 
@@ -3410,7 +3414,7 @@ OMR::RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, 
                  (b->getGlobalRegisters(comp())[highRegisterNumber].getRegisterCandidateOnExit() != b->getGlobalRegisters(comp())[highRegisterNumber].getRegisterCandidateOnEntry()) &&
                  (rc != b->getGlobalRegisters(comp())[highRegisterNumber].getRegisterCandidateOnEntry()))
                  {
-                 traceMsg(comp(), "Candidate %d instead of candidate %d is required in register %d on exit out of block_%d\n", b->getGlobalRegisters(comp())[highRegisterNumber].getRegisterCandidateOnExit()->getSymbolReference()->getReferenceNumber(), rc->getSymbolReference()->getReferenceNumber(), highRegisterNumber, blockNumber);
+                 log->printf("Candidate %d instead of candidate %d is required in register %d on exit out of block_%d\n", b->getGlobalRegisters(comp())[highRegisterNumber].getRegisterCandidateOnExit()->getSymbolReference()->getReferenceNumber(), rc->getSymbolReference()->getReferenceNumber(), highRegisterNumber, blockNumber);
                  TR_ASSERT(0, "Candidate is required on exit out of block\n");
                  }
               else if ((rc != b->getGlobalRegisters(comp())[highRegisterNumber].getRegisterCandidateOnEntry()) ||
@@ -3509,18 +3513,18 @@ OMR::RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, 
 
      if (trace)
         {
-        traceMsg(comp(), "After assigning candidate %d real register %d, entry usage : \n", rc->getSymbolReference()->getReferenceNumber(), registerNumber);
-        _liveOnEntryUsage[registerNumber].print(comp()->getLogger(), comp());
-        traceMsg(comp(), "\n");
+        log->printf("After assigning candidate %d real register %d, entry usage : \n", rc->getSymbolReference()->getReferenceNumber(), registerNumber);
+        _liveOnEntryUsage[registerNumber].print(log, comp());
+        log->println();
         }
 
      _liveOnExitUsage[registerNumber] |= rc->getBlocksLiveOnExit();
 
      if (trace)
         {
-        traceMsg(comp(), "After assigning candidate %d real register %d, exit usage : \n", rc->getSymbolReference()->getReferenceNumber(), registerNumber);
-        _liveOnExitUsage[registerNumber].print(comp()->getLogger(), comp());
-        traceMsg(comp(), "\n");
+        log->printf("After assigning candidate %d real register %d, exit usage : \n", rc->getSymbolReference()->getReferenceNumber(), registerNumber);
+        _liveOnExitUsage[registerNumber].print(log, comp());
+        log->println();
         }
 
      if (needs2Regs)
@@ -3529,18 +3533,18 @@ OMR::RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, 
 
         if (trace)
            {
-           traceMsg(comp(), "After assigning candidate %d real register %d, entry usage : \n", rc->getSymbolReference()->getReferenceNumber(), highRegisterNumber);
-           _liveOnEntryUsage[highRegisterNumber].print(comp()->getLogger(), comp());
-           traceMsg(comp(), "\n");
+           log->printf("After assigning candidate %d real register %d, entry usage : \n", rc->getSymbolReference()->getReferenceNumber(), highRegisterNumber);
+           _liveOnEntryUsage[highRegisterNumber].print(log, comp());
+           log->println();
            }
 
         _liveOnExitUsage[highRegisterNumber] |= rc->getBlocksLiveOnExit();
 
         if (trace)
            {
-           traceMsg(comp(), "After assigning candidate %d real register %d, exit usage : \n", rc->getSymbolReference()->getReferenceNumber(), highRegisterNumber);
-           _liveOnEntryUsage[highRegisterNumber].print(comp()->getLogger(), comp());
-           traceMsg(comp(), "\n");
+           log->printf("After assigning candidate %d real register %d, exit usage : \n", rc->getSymbolReference()->getReferenceNumber(), highRegisterNumber);
+           _liveOnEntryUsage[highRegisterNumber].print(log, comp());
+           log->println();
            }
         }
       }
@@ -3714,16 +3718,17 @@ OMR::RegisterCandidates::computeAvailableRegisters(TR::RegisterCandidate *rc, in
 
       if (trace)
          {
-         traceMsg(comp(), "For candidate %d real register %d : \n", rc->getSymbolReference()->getReferenceNumber(), i);
-         traceMsg(comp(), "live on entry conflicts : ");
-         liveOnEntryConflicts.print(comp()->getLogger(), comp());
-         traceMsg(comp(), "\nlive on exit conflicts : ");
-         liveOnExitConflicts.print(comp()->getLogger(), comp());
-         traceMsg(comp(), "\nentry exit conflicts : ");
-         entryExitConflicts.print(comp()->getLogger(), comp());
-         traceMsg(comp(), "\nexit entry conflicts : ");
-         exitEntryConflicts.print(comp()->getLogger(), comp());
-         traceMsg(comp(), "\n");
+         TR::Logger *log = comp()->getLogger();
+         log->printf("For candidate %d real register %d : \n", rc->getSymbolReference()->getReferenceNumber(), i);
+         log->prints("live on entry conflicts : ");
+         liveOnEntryConflicts.print(log, comp());
+         log->prints("\nlive on exit conflicts : ");
+         liveOnExitConflicts.print(log, comp());
+         log->prints("\nentry exit conflicts : ");
+         entryExitConflicts.print(log, comp());
+         log->prints("\nexit entry conflicts : ");
+         exitEntryConflicts.print(log, comp());
+         log->println();
          }
 
       if (liveOnEntryConflicts.isEmpty() && liveOnExitConflicts.isEmpty() &&
