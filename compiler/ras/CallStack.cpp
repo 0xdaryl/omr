@@ -28,6 +28,7 @@
 #include "ras/CallStackIterator.hpp"
 #include "compile/Compilation.hpp"
 #include "omrformatconsts.h"
+#include "ras/Logger.hpp"
 
 
 void TR_CallStackIterator::printStackBacktrace(TR::Compilation *comp)
@@ -35,7 +36,10 @@ void TR_CallStackIterator::printStackBacktrace(TR::Compilation *comp)
    while (!isDone())
       {
       if (comp)
-         traceMsg(comp, "%s+0x%" OMR_PRIxPTR "\n", getProcedureName(), getOffsetInProcedure());
+         {
+         if (comp->getLoggingEnabled())
+            comp->getLogger()->printf("%s+0x%" OMR_PRIxPTR "\n", getProcedureName(), getOffsetInProcedure());
+         }
       else
          fprintf(stderr, "%s+0x%" OMR_PRIxPTR "\n", getProcedureName(), getOffsetInProcedure());
       getNext();
@@ -217,11 +221,14 @@ void TR_LinuxCallStackIterator::printSymbol(int32_t frame, char *sig, TR::Compil
       char *demangled = abi::__cxa_demangle(func, buffer, &length, &status);
       if (status == 0) funcToPrint = demangled;
       if (comp)
-         traceMsg(comp, "#%" OMR_PRId32 ": function %s+%#" OMR_PRIxPTR " [%#" OMR_PRIxPTR "]\n",
-              frame,
-              funcToPrint,
-              offset,
-              address);
+         {
+         if (comp->getLoggingEnabled())
+            comp->getLogger()->printf("#%" OMR_PRId32 ": function %s+%#" OMR_PRIxPTR " [%#" OMR_PRIxPTR "]\n",
+                 frame,
+                 funcToPrint,
+                 offset,
+                 address);
+         }
       else
          fprintf(stderr, "#%" OMR_PRId32 ": function %s+%#" OMR_PRIxPTR" [%#" OMR_PRIxPTR "]\n",
                  frame,
@@ -233,7 +240,10 @@ void TR_LinuxCallStackIterator::printSymbol(int32_t frame, char *sig, TR::Compil
    else
       {
       if (comp)
-         traceMsg(comp, "#%" OMR_PRId32 ": %s\n", frame, sig);
+         {
+         if (comp->getLoggingEnabled())
+            comp->getLogger()->printf("#%" OMR_PRId32 ": %s\n", frame, sig);
+         }
       else
          fprintf(stderr, "#%" OMR_PRId32 ": %s\n", frame, sig);
       }
