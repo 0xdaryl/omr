@@ -25,6 +25,7 @@
 #include "control/Options_inlines.hpp"
 #include "il/DataTypes.hpp"
 #include "il/Node.hpp"
+#include "ras/Logger.hpp"
 
 bool
 TR_AddressTree::isILLoad(TR::Node * node)
@@ -340,11 +341,11 @@ TR_AddressTree::process(TR::Node * aiaddNode, bool onlyConsiderConstAiaddSecondC
    }
 
 void TR_Pattern::tracePattern(TR::Node *node) {
-   traceMsg(TR::comp(), "{ Trying %s pattern on %s n%dn\n", getName(), node->getOpCode().getName(), node->getGlobalIndex());
+   TR::comp()->getLogger()->printf("{ Trying %s pattern on %s n%dn\n", getName(), node->getOpCode().getName(), node->getGlobalIndex());
 }
 
 void TR_OpCodePattern::tracePattern(TR::Node *node) {
-   traceMsg(TR::comp(), "{ Trying %s [%s] pattern on %s n%dn\n", getName(), TR::ILOpCode(_opCode).getName(), node->getOpCode().getName(), node->getGlobalIndex());
+   TR::comp()->getLogger()->printf("{ Trying %s [%s] pattern on %s n%dn\n", getName(), TR::ILOpCode(_opCode).getName(), node->getOpCode().getName(), node->getGlobalIndex());
 }
 
 bool TR_Pattern::matches(TR::Node *node, TR_Unification &uni, TR::Compilation *comp)
@@ -372,7 +373,7 @@ bool TR_Pattern::matches(TR::Node *node, TR_Unification &uni, TR::Compilation *c
       uni.undoTo(mark);
 
    if (comp->getOption(TR_TraceTreePatternMatching))
-      traceMsg(comp, "} result: %s\n", result? "true":"false");
+      comp->getLogger()->printf("} result: %s\n", result? "true":"false");
 
    return result;
    }
@@ -381,9 +382,9 @@ bool TR_UnifyPattern::thisMatches(TR::Node *node, TR_Unification &uni, TR::Compi
    {
    if (comp->getOption(TR_TraceTreePatternMatching))
       {
-      traceMsg(comp, "Unify %d with %s in state ", _index, comp->getDebug()->getName(node));
+      comp->getLogger()->printf("Unify %d with %s in state ", _index, comp->getDebug()->getName(node));
       uni.dump(comp);
-      traceMsg(comp, "\n");
+      comp->getLogger()->println();
       }
 
    if (uni.node(_index))
