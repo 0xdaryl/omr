@@ -28,6 +28,7 @@
 #include "infra/Cfg.hpp"
 #include "optimizer/Optimization.hpp"
 #include "optimizer/Optimization_inlines.hpp"
+#include "ras/Logger.hpp"
 
 #include <stdarg.h>
 
@@ -67,11 +68,11 @@ void TR::TreeTopIteratorImpl::logCurrentLocation()
       if (currentTree())
          {
          TR::Node *node = currentTree()->getNode();
-         traceMsg(_comp, "TREE  %s @ %s n%dn [%p]\n", _name, node->getOpCode().getName(), node->getGlobalIndex(), node);
+         _comp->getLogger()->printf("TREE  %s @ %s n%dn [%p]\n", _name, node->getOpCode().getName(), node->getGlobalIndex(), node);
          }
       else
          {
-         traceMsg(_comp, "TREE  %s finished\n", _name);
+         _comp->getLogger()->printf("TREE  %s finished\n", _name);
          }
       }
    }
@@ -123,30 +124,31 @@ void TR::NodeIterator::logCurrentLocation()
    {
    if (_name && comp() && comp()->getOption(TR_TraceILWalks))
       {
+      TR::Logger *log = comp()->getLogger();
       if (currentTree())
          {
          TR::Node *node = currentNode();
-         traceMsg(comp(), "NODE  %s  ", _name);
+         log->printf("NODE  %s  ", _name);
          if (stackDepth() >= 2)
             {
-            traceMsg(comp(), " ");
+            log->printc(' ');
             for (int32_t i = 0; i < stackDepth()-2; i++)
                {
                if (_stack[i]._isBetweenChildren)
-                  traceMsg(comp(), " |");
+                  log->prints(" |");
                else
-                  traceMsg(comp(), "  ");
+                  log->prints("  ");
                }
-            traceMsg(comp(), " %d: ", _stack[_stack.topIndex()-1]._child);
+            log->printf(" %d: ", _stack[_stack.topIndex()-1]._child);
             }
-         traceMsg(comp(), "%s n%dn [%p]\n", node->getOpCode().getName(), node->getGlobalIndex(), node);
+         log->trprintf("%s n%dn [%p]\n", node->getOpCode().getName(), node->getGlobalIndex(), node);
          }
       else
          {
          // Usualy this one doesn't print, because when the iterator finishes
          // naturally, logCurrentLocation is not even called.
          //
-         traceMsg(comp(), "NODE  %s finished\n", _name );
+         log->printf("NODE  %s finished\n", _name );
          }
       }
    }
@@ -292,30 +294,31 @@ void TR::NodeOccurrenceIterator::logCurrentLocation()
    {
    if (_name && comp() && comp()->getOption(TR_TraceILWalks))
       {
+      TR::Logger *log = comp()->getLogger();
       if (currentTree())
          {
          TR::Node *node = currentNode();
-         traceMsg(comp(), "WALK  %s  ", _name);
+         log->printf("WALK  %s  ", _name);
          if (stackDepth() >= 1)
             {
-            traceMsg(comp(), " ");
+            log->printc(' ');
             for (int32_t i = 0; i < stackDepth()-1; i++)
                {
                if (_stack[i]._isBetweenChildren)
-                  traceMsg(comp(), " |");
+                  log->prints(" |");
                else
-                  traceMsg(comp(), "  ");
+                  log->prints("  ");
                }
-            traceMsg(comp(), " %d: ", _stack[_stack.topIndex()]._child);
+            log->printf(" %d: ", _stack[_stack.topIndex()]._child);
             }
-         traceMsg(comp(), "%s n%dn [%p]\n", node->getOpCode().getName(), node->getGlobalIndex(), node);
+         log->printf("%s n%dn [%p]\n", node->getOpCode().getName(), node->getGlobalIndex(), node);
          }
       else
          {
          // Usually this one doesn't print, because when the iterator finishes
          // naturally, logCurrentLocation is not even called.
          //
-         traceMsg(comp(), "WALK  %s finished\n", _name );
+         log->printf("WALK  %s finished\n", _name );
          }
       }
    }
@@ -447,10 +450,11 @@ TR::ReversePostorderSnapshotBlockIterator::ReversePostorderSnapshotBlockIterator
    takeSnapshot(cfg->getStart()->asBlock());
    if (isLoggingEnabled())
       {
-      traceMsg(comp, "BLOCK  %s Snapshot:", _name);
+      TR::Logger *log = comp->getLogger();
+      log->printf("BLOCK  %s Snapshot:", _name);
       for (int32_t i = _postorder.lastIndex(); i >= 0; --i)
-         traceMsg(comp, " %d", _postorder[i]->getNumber());
-      traceMsg(comp, "\n");
+         log->printf(" %d", _postorder[i]->getNumber());
+      log->println();
       }
    logCurrentLocation();
    }
@@ -510,7 +514,7 @@ bool TR::ReversePostorderSnapshotBlockIterator::isStepOperationFinished()
       return true; // Reached the next block in the walk
 
    if (isLoggingEnabled())
-      traceMsg(comp(), "BLOCK  %s Skip block_%d removed during walk\n", _name, currentBlock()->getNumber());
+      comp()->getLogger()->printf("BLOCK  %s Skip block_%d removed during walk\n", _name, currentBlock()->getNumber());
    return false;
    }
 
@@ -519,9 +523,9 @@ void TR::ReversePostorderSnapshotBlockIterator::logCurrentLocation()
    if (isLoggingEnabled())
       {
       if (currentBlock())
-         traceMsg(comp(), "BLOCK  %s @ block_%d\n", _name, currentBlock()->getNumber());
+         comp()->getLogger()->printf("BLOCK  %s @ block_%d\n", _name, currentBlock()->getNumber());
       else
-         traceMsg(comp(), "BLOCK  %s finished\n", _name);
+         comp()->getLogger()->printf("BLOCK  %s finished\n", _name);
       }
    }
 
@@ -585,7 +589,7 @@ void TR::AllBlockIterator::stepForward()
             // Found one!
             //
             if (isLoggingEnabled())
-               traceMsg(comp(), "BLOCK  %s REMOVED_BLOCKS_CAN_BE_REINSERTED: block_%d found via extra scan\n", _name, next->asBlock()->getNumber());
+               comp()->getLogger()->printf("BLOCK  %s REMOVED_BLOCKS_CAN_BE_REINSERTED: block_%d found via extra scan\n", _name, next->asBlock()->getNumber());
             break;
             }
          }
@@ -619,9 +623,9 @@ void TR::AllBlockIterator::logCurrentLocation()
    if (isLoggingEnabled())
       {
       if (currentBlock())
-         traceMsg(comp(), "BLOCK  %s @ block_%d\n", _name, currentBlock()->getNumber());
+         comp()->getLogger()->printf("BLOCK  %s @ block_%d\n", _name, currentBlock()->getNumber());
       else
-         traceMsg(comp(), "BLOCK  %s finished\n", _name);
+         comp()->getLogger()->printf("BLOCK  %s finished\n", _name);
       }
    }
 
@@ -676,11 +680,11 @@ void TR::TreeTopOrderExtendedBlockIterator::logCurrentLocation()
       {
       if (getFirst() != NULL)
          {
-         traceMsg(comp(), "BLOCK %s @ block_%d\n", _name, getFirst()->getNumber());
+         comp()->getLogger()->printf("BLOCK %s @ block_%d\n", _name, getFirst()->getNumber());
          }
       else
          {
-         traceMsg(comp(), "BLOCK %s finished\n", _name);
+         comp()->getLogger()->printf("BLOCK %s finished\n", _name);
          }
       }
    }

@@ -138,7 +138,7 @@ OMR::CFG::addEdge(TR::CFGEdge *e)
    {
    if (comp()->getOption(TR_TraceAddAndRemoveEdge))
       {
-      traceMsg(comp(),"\nAdding edge %d-->%d:\n", e->getFrom()->getNumber(), e->getTo()->getNumber());
+      comp()->getLogger()->printf("\nAdding edge %d-->%d:\n", e->getFrom()->getNumber(), e->getTo()->getNumber());
       }
 
      _numEdges++;
@@ -150,7 +150,7 @@ OMR::CFG::addEdge(TR::CFGEdge *e)
       getStructure()->addEdge(e, false);
       if (comp()->getOption(TR_TraceAddAndRemoveEdge))
          {
-         traceMsg(comp(), "\nStructures after adding edge %d-->%d:\n", e->getFrom()->getNumber(), e->getTo()->getNumber());
+         comp()->getLogger()->printf("\nStructures after adding edge %d-->%d:\n", e->getFrom()->getNumber(), e->getTo()->getNumber());
          comp()->getDebug()->print(comp()->getLogger(), _rootStructure, 6);
          }
       }
@@ -163,7 +163,7 @@ OMR::CFG::addEdge(TR::CFGNode *f, TR::CFGNode *t)
 
    if (comp()->getOption(TR_TraceAddAndRemoveEdge))
       {
-      traceMsg(comp(), "\nAdding real edge %d-->%d:\n", f->getNumber(), t->getNumber());
+      comp()->getLogger()->printf("\nAdding real edge %d-->%d:\n", f->getNumber(), t->getNumber());
       }
 
    TR_ASSERT(!f->hasExceptionSuccessor(t), "adding a non exception edge when there's already an exception edge");
@@ -180,7 +180,7 @@ OMR::CFG::addExceptionEdge(
    {
    if (comp()->getOption(TR_TraceAddAndRemoveEdge))
       {
-      traceMsg(comp(),"\nAttempting to add exception edge %d-->%d:\n", f->getNumber(), t->getNumber());
+      comp()->getLogger()->printf("\nAttempting to add exception edge %d-->%d:\n", f->getNumber(), t->getNumber());
       }
 
    TR::Block * newCatchBlock = toBlock(t);
@@ -216,7 +216,7 @@ OMR::CFG::addExceptionEdge(
          {
          if (comp()->getOption(TR_TraceAddAndRemoveEdge))
             {
-            traceMsg(comp(),"\nAddition of exception edge aborted - existing catch alredy handles this case!");
+            comp()->getLogger()->prints("\nAddition of exception edge aborted - existing catch alredy handles this case!");
             }
          return;
          }
@@ -232,7 +232,7 @@ OMR::CFG::addExceptionEdgeUnchecked(
    {
    if (comp()->getOption(TR_TraceAddAndRemoveEdge))
       {
-      traceMsg(comp(),"\nAdding exception edge %d-->%d:\n", f->getNumber(), t->getNumber());
+      comp()->getLogger()->printf("\nAdding exception edge %d-->%d:\n", f->getNumber(), t->getNumber());
       }
 
    TR_ASSERT(!f->hasSuccessor(t), "adding an exception edge when there's already a non exception edge");
@@ -246,7 +246,7 @@ OMR::CFG::addExceptionEdgeUnchecked(
       getStructure()->addEdge(e, true);
       if (comp()->getOption(TR_TraceAddAndRemoveEdge))
          {
-         traceMsg(comp(),"\nStructures after adding exception edge %d-->%d:\n", f->getNumber(), t->getNumber());
+         comp()->getLogger()->printf("\nStructures after adding exception edge %d-->%d:\n", f->getNumber(), t->getNumber());
          comp()->getDebug()->print(comp()->getLogger(), _rootStructure, 6);
          }
       }
@@ -544,7 +544,7 @@ bool OMR::CFG::updateBlockFrequency(TR::Block *block, int32_t newFreq)
    if (newFreq != oldFreq && newFreq >= 0)
       {
       if (comp()->getOption(TR_TraceBFGeneration))
-         traceMsg(comp(), "updated block %d freq from %d to %d\n", block->getNumber(), oldFreq, newFreq);
+         comp()->getLogger()->printf("updated block %d freq from %d to %d\n", block->getNumber(), oldFreq, newFreq);
       block->setFrequency(newFreq);
       return true;
       }
@@ -713,7 +713,7 @@ TR::CFGNode *OMR::CFG::removeNode(TR::CFGNode *node)
 
    _nodes.remove(node);
    if (comp()->getOption(TR_TraceAddAndRemoveEdge))
-      traceMsg(comp(),"\nRemoving node %d\n", node->getNumber());
+      comp()->getLogger()->printf("\nRemoving node %d\n", node->getNumber());
 
 
    node->removeFromCFG(comp());
@@ -798,7 +798,7 @@ the edge If the edge is not found in either combination, we return false
 */
 bool OMR::CFG::removeEdge(TR::CFGEdge *edge)
    {
-
+   TR::Logger *log = comp()->getLogger();
    bool blocksWereRemoved = false;
 
    TR::CFGNode *from = edge->getFrom();
@@ -834,7 +834,7 @@ bool OMR::CFG::removeEdge(TR::CFGEdge *edge)
    _numEdges--;
 
    if (comp()->getOption(TR_TraceAddAndRemoveEdge))
-      traceMsg(comp(), "\nRemoving edge %d-->%d (depth %d):\n", from->getNumber(), to->getNumber(), _removeEdgeNestingDepth);
+      log->printf("\nRemoving edge %d-->%d (depth %d):\n", from->getNumber(), to->getNumber(), _removeEdgeNestingDepth);
 
    TR_ScratchList<TR::CFGNode> nodesToBeRemoved(trMemory());
    bool doWalk = false;
@@ -844,12 +844,12 @@ bool OMR::CFG::removeEdge(TR::CFGEdge *edge)
       {
       if (comp()->getOption(TR_TraceAddAndRemoveEdge))
          {
-         traceMsg(comp(),"\nblock_%d is an orphan now with type=%d:\n", to->getNumber(), orphan);
+         log->printf("\nblock_%d is an orphan now with type=%d:\n", to->getNumber(), orphan);
          }
 
          {
          if (comp()->getOption(TR_TraceAddAndRemoveEdge))
-            traceMsg(comp(), "\nAdding node %d to nodesToBeRemoved from %d\n", to->getNumber(), from->getNumber());
+            log->printf("\nAdding node %d to nodesToBeRemoved from %d\n", to->getNumber(), from->getNumber());
 
          nodesToBeRemoved.add(to);
          blocksVisited = new (trStackMemory()) TR_BitVector(getNextNodeNumber(), trMemory(), stackAlloc);
@@ -871,7 +871,7 @@ bool OMR::CFG::removeEdge(TR::CFGEdge *edge)
 
       if (comp()->getOption(TR_TraceAddAndRemoveEdge))
          {
-         traceMsg(comp(),"\nStructures changed after removing edge %d-->%d:\n", from->getNumber(), to->getNumber());
+         log->printf("\nStructures changed after removing edge %d-->%d:\n", from->getNumber(), to->getNumber());
          }
       }
 
@@ -885,7 +885,7 @@ bool OMR::CFG::removeEdge(TR::CFGEdge *edge)
          from = nodeq.dequeue();
 
          if (comp()->getOption(TR_TraceAddAndRemoveEdge))
-            traceMsg(comp(), "\ndo walk for node %d\n", from->getNumber());
+            log->printf("\ndo walk for node %d\n", from->getNumber());
 
          if (blocksVisited->get(from->getNumber()))
             continue;
@@ -896,7 +896,7 @@ bool OMR::CFG::removeEdge(TR::CFGEdge *edge)
              continue;
 
          if (comp()->getOption(TR_TraceAddAndRemoveEdge))
-            traceMsg(comp(), "Processing unreachable node %d\n", from->getNumber());
+            log->printf("Processing unreachable node %d\n", from->getNumber());
 
          blocksVisited->set(from->getNumber());
 
@@ -907,7 +907,7 @@ bool OMR::CFG::removeEdge(TR::CFGEdge *edge)
             _numEdges--;
 
             if (comp()->getOption(TR_TraceAddAndRemoveEdge))
-               traceMsg(comp(), "\n2Removing edge %d-->%d (depth %d):\n", from->getNumber(), to->getNumber(), _removeEdgeNestingDepth);
+               log->printf("\n2Removing edge %d-->%d (depth %d):\n", from->getNumber(), to->getNumber(), _removeEdgeNestingDepth);
             if (std::find(from->getSuccessors().begin(), from->getSuccessors().end(), e) != from->getSuccessors().end())
                from->getSuccessors().remove(e);
             else
@@ -928,7 +928,7 @@ bool OMR::CFG::removeEdge(TR::CFGEdge *edge)
 
                   {
                   if (comp()->getOption(TR_TraceAddAndRemoveEdge))
-                     traceMsg(comp(), "\nAdding node %d to nodesToBeRemoved from %d\n", to->getNumber(), from->getNumber());
+                     log->printf("\nAdding node %d to nodesToBeRemoved from %d\n", to->getNumber(), from->getNumber());
 
                   if (orphan == IsOrphanedNode)
                      nodesToBeRemoved.add(to);
@@ -949,7 +949,7 @@ bool OMR::CFG::removeEdge(TR::CFGEdge *edge)
 
                if (comp()->getOption(TR_TraceAddAndRemoveEdge))
                   {
-                  traceMsg(comp(),"\nStructure changed after removing edge %d-->%d:\n", from->getNumber(), to->getNumber());
+                  log->printf("\nStructure changed after removing edge %d-->%d:\n", from->getNumber(), to->getNumber());
                   }
                }
             }
@@ -958,7 +958,7 @@ bool OMR::CFG::removeEdge(TR::CFGEdge *edge)
       // finally remove all the unreachable nodes
       //
       if (comp()->getOption(TR_TraceAddAndRemoveEdge))
-         traceMsg(comp(),"\nNow actually removing nodes\n");
+         log->prints("\nNow actually removing nodes\n");
 
       ListIterator<TR::CFGNode> nodesIt(&nodesToBeRemoved);
       for (TR::CFGNode *n = nodesIt.getFirst(); n; n = nodesIt.getNext())
@@ -967,7 +967,7 @@ bool OMR::CFG::removeEdge(TR::CFGEdge *edge)
             if (_nodes.remove(n))
                {
                if (comp()->getOption(TR_TraceAddAndRemoveEdge))
-                  traceMsg(comp(),"\nRemoved node %d\n", n->getNumber());
+                  log->printf("\nRemoved node %d\n", n->getNumber());
 
                n->removeFromCFG(comp());
                n->removeNode();
@@ -976,7 +976,7 @@ bool OMR::CFG::removeEdge(TR::CFGEdge *edge)
          }
 
       if (comp()->getOption(TR_TraceAddAndRemoveEdge))
-         traceMsg(comp(), "\n_doesHaveUnreachableBlocks %d\n", _doesHaveUnreachableBlocks);
+         log->printf("\n_doesHaveUnreachableBlocks %d\n", _doesHaveUnreachableBlocks);
 
       if (!_ignoreUnreachableBlocks && _doesHaveUnreachableBlocks)
          {
@@ -995,7 +995,7 @@ bool OMR::CFG::removeEdge(TR::CFGEdge *edge, bool recursiveImpl)
 
    if (comp()->getOption(TR_TraceAddAndRemoveEdge))
       {
-      traceMsg(comp(), "\nRemoving edge %d-->%d (depth %d):\n", from->getNumber(), to->getNumber(), _removeEdgeNestingDepth);
+      comp()->getLogger()->printf("\nRemoving edge %d-->%d (depth %d):\n", from->getNumber(), to->getNumber(), _removeEdgeNestingDepth);
       }
 
    // Keep track of recursion level for this method.
@@ -1094,7 +1094,7 @@ bool OMR::CFG::removeEdge(TR::CFGEdge *edge, bool recursiveImpl)
 
       if (comp()->getOption(TR_TraceAddAndRemoveEdge))
          {
-         traceMsg(comp(),"\nStructures after removing edge %d-->%d:\n", from->getNumber(), to->getNumber());
+         comp()->getLogger()->printf("\nStructures after removing edge %d-->%d:\n", from->getNumber(), to->getNumber());
          comp()->getDebug()->print(comp()->getLogger(), getStructure(), 6);
          }
       }
@@ -1103,7 +1103,7 @@ bool OMR::CFG::removeEdge(TR::CFGEdge *edge, bool recursiveImpl)
    // definitely found, remove it now before returning.
    //
    if (comp()->getOption(TR_TraceAddAndRemoveEdge))
-      traceMsg(comp(), "\n_doesHaveUnreachableBlocks %d\n", _doesHaveUnreachableBlocks);
+      comp()->getLogger()->printf("\n_doesHaveUnreachableBlocks %d\n", _doesHaveUnreachableBlocks);
 
    if (_removeEdgeNestingDepth == 1 && _doesHaveUnreachableBlocks)
       {
@@ -1170,7 +1170,7 @@ OMR::CFG::removeUnreachableBlocks()
       {
       node = unreachableNodes.pop();
       if (comp()->getOption(TR_TraceAddAndRemoveEdge))
-         traceMsg(comp(),"\nBlock_%d [%p] is now unreachable, with 0 predecessors=%d\n", node->getNumber(), node,node->isUnreachable());
+         comp()->getLogger()->trprintf("\nBlock_%d [%p] is now unreachable, with 0 predecessors=%d\n", node->getNumber(), node,node->isUnreachable());
 
 
       if (node->isUnreachable())
@@ -2800,7 +2800,7 @@ void OMR::CFG::getBranchCounters(TR::Node *node, TR::Block *block, int32_t *take
      *notTaken = fallThroughFrequency; //(fallThroughFrequency*blockFreq)/(branchToFrequency + fallThroughFrequency);
 
      if (comp->getOption(TR_TraceBFGeneration))
-        traceMsg(comp, "taken %d NOT taken %d branch %d fall through %d  block freq %d\n", *taken, *notTaken, branchToFrequency, fallThroughFrequency, blockFreq);
+        comp->getLogger()->printf("taken %d NOT taken %d branch %d fall through %d  block freq %d\n", *taken, *notTaken, branchToFrequency, fallThroughFrequency, blockFreq);
 
      if (*taken > _max_edge_freq)
         *taken = _max_edge_freq;
@@ -2812,7 +2812,7 @@ void OMR::CFG::getBranchCounters(TR::Node *node, TR::Block *block, int32_t *take
         rawScalingFactor = _maxEdgeFrequency;
 
      if (comp->getOption(TR_TraceBFGeneration))
-        traceMsg(comp, "raw scaling %d max edge %d old max edge %d\n", rawScalingFactor, _maxEdgeFrequency, _oldMaxEdgeFrequency);
+        comp->getLogger()->printf("raw scaling %d max edge %d old max edge %d\n", rawScalingFactor, _maxEdgeFrequency, _oldMaxEdgeFrequency);
 
      if (rawScalingFactor > 0)
         {
@@ -2852,7 +2852,7 @@ void OMR::CFG::getBranchCounters(TR::Node *node, TR::Block *block, int32_t *take
          rawScalingFactor = _maxFrequency;
 
       if (comp->getOption(TR_TraceBFGeneration))
-         traceMsg(comp, "raw scaling %d max %d old max %d\n", rawScalingFactor, _maxFrequency, _oldMaxFrequency);
+         comp->getLogger()->printf("raw scaling %d max %d old max %d\n", rawScalingFactor, _maxFrequency, _oldMaxFrequency);
 
       if (rawScalingFactor > 0)
          {
@@ -3070,11 +3070,11 @@ void OMR::CFG::normalizeNodeFrequencies(TR_BitVector *nodesToBeNormalized, TR_Ar
          {
          int32_t frequency = node->getFrequency();
          if (comp()->getOption(TR_TraceBFGeneration))
-            traceMsg(comp(), "11maxFrequency old %d new %d node %d\n", _maxFrequency, frequency, node->getNumber());
+            comp()->getLogger()->printf("11maxFrequency old %d new %d node %d\n", _maxFrequency, frequency, node->getNumber());
          if (frequency > _maxFrequency)
             {
             if (comp()->getOption(TR_TraceBFGeneration))
-               traceMsg(comp(), "22maxFrequency old %d new %d node %d\n", _maxFrequency, frequency, node->getNumber());
+               comp()->getLogger()->printf("22maxFrequency old %d new %d node %d\n", _maxFrequency, frequency, node->getNumber());
             _maxFrequency = frequency;
             }
          TR_SuccessorIterator sit(node);
@@ -3100,12 +3100,12 @@ void OMR::CFG::normalizeNodeFrequencies(TR_BitVector *nodesToBeNormalized, TR_Ar
          {
          int32_t frequency = node->getFrequency();
          if (comp()->getOption(TR_TraceBFGeneration))
-            traceMsg(comp(), "normalize : max frequency %d freq %d node %d\n", _maxFrequency, frequency, node->getNumber());
+            comp()->getLogger()->printf("normalize : max frequency %d freq %d node %d\n", _maxFrequency, frequency, node->getNumber());
 
          node->normalizeFrequency(_maxFrequency);
 
          if (comp()->getOption(TR_TraceBFGeneration))
-            traceMsg(comp(), "normalize : final freq %d node %d\n", node->getFrequency(), node->getNumber());
+            comp()->getLogger()->printf("normalize : final freq %d node %d\n", node->getFrequency(), node->getNumber());
          }
       TR_SuccessorIterator sit(node);
       for(TR::CFGEdge * edge = sit.getFirst(); edge; edge = sit.getNext())
@@ -3132,12 +3132,12 @@ void OMR::CFG::normalizeEdgeFrequencies(TR_Array<TR::CFGEdge *> * edgesArray)
          TR_ASSERT(edge != NULL,"Array of edges should not have null entries");
          int32_t frequency = edge->getFrequency();
          if (comp()->getOption(TR_TraceBFGeneration))
-            traceMsg(comp(), "11maxEdgeFrequency old %d new %d edge (%d -> %d) %p\n", _maxEdgeFrequency, frequency, edge->getFrom()->getNumber(), edge->getTo()->getNumber(), edge);
+            comp()->getLogger()->trprintf("11maxEdgeFrequency old %d new %d edge (%d -> %d) %p\n", _maxEdgeFrequency, frequency, edge->getFrom()->getNumber(), edge->getTo()->getNumber(), edge);
 
          if (frequency > _maxEdgeFrequency)
             {
             if (comp()->getOption(TR_TraceBFGeneration))
-               traceMsg(comp(), "22maxEdgeFrequency old %d new %d edge (%d -> %d) %p\n", _maxEdgeFrequency, frequency, edge->getFrom()->getNumber(), edge->getTo()->getNumber(), edge);
+               comp()->getLogger()->trprintf("22maxEdgeFrequency old %d new %d edge (%d -> %d) %p\n", _maxEdgeFrequency, frequency, edge->getFrom()->getNumber(), edge->getTo()->getNumber(), edge);
             _maxEdgeFrequency = frequency;
             }
          }
