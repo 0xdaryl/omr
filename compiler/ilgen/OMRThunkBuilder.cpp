@@ -24,11 +24,12 @@
 #include "ilgen/IlBuilder.hpp"
 #include "ilgen/ThunkBuilder.hpp"
 #include "ilgen/TypeDictionary.hpp"
+#include "ras/Logger.hpp"
 
 #define OPT_DETAILS "O^O THUNKBUILDER: "
 
 #define TraceEnabled    (comp()->getOption(TR_TraceILGen))
-#define TraceIL(m, ...) {if (TraceEnabled) {traceMsg(comp(), m, ##__VA_ARGS__);}}
+#define TraceIL(m, ...) {if (TraceEnabled) {comp()->getLogger()->printf(m, ##__VA_ARGS__);}}
 
 /**
  * ThunkBuilder is a MethodBuilder object representing a thunk for

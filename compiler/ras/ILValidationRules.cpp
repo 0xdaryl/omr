@@ -28,6 +28,7 @@
 #include "infra/ILWalk.hpp"
 #include "ras/ILValidationStrategies.hpp"
 #include "ras/ILValidationUtils.hpp"
+#include "ras/Logger.hpp"
 
 /**
  * The ILValidation Rules are identified by the TR::ILValidator via
@@ -268,15 +269,16 @@ void TR::ValidateLivenessBoundaries::updateNodeState(TR::Node *node,
       {
       if (!liveNodes.isEmpty())
          {
-         traceMsg(comp(), "    -- Live nodes: {");
+         TR::Logger *log = comp()->getLogger();
+         log->prints("    -- Live nodes: {");
          const char *separator = "";
          for (TR::LiveNodeWindow::Iterator lnwi(liveNodes); lnwi.currentNode(); ++lnwi)
             {
-            traceMsg(comp(), "%sn%dn", separator,
+            log->printf("%sn%dn", separator,
                      lnwi.currentNode()->getGlobalIndex());
             separator = ", ";
             }
-         traceMsg(comp(), "}\n");
+         log->prints("}\n");
          }
       }
    }

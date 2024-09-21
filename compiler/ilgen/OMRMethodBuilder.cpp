@@ -52,6 +52,7 @@
 #include "ilgen/BytecodeBuilder.hpp"
 #include "ilgen/TypeDictionary.hpp"
 #include "ilgen/VirtualMachineState.hpp"
+#Include "ras/Logger.hpp"
 
 #define OPT_DETAILS "O^O ILBLD: "
 
@@ -59,7 +60,7 @@
 #define MEM_SEGMENT_SIZE 1 << 16   // i.e. 65536 bytes (~64KB)
 
 #define TraceEnabled    (comp()->getOption(TR_TraceILGen))
-#define TraceIL(m, ...) {if (TraceEnabled) {traceMsg(comp(), m, ##__VA_ARGS__);}}
+#define TraceIL(m, ...) {if (TraceEnabled) {comp()->getLogger()->printf(m, ##__VA_ARGS__);}}
 
 // MethodBuilder is an IlBuilder object representing an entire method /
 // function, so it conceptually has an entry point (though multiple entry

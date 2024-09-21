@@ -237,7 +237,8 @@ printCompFailureInfo(TR::JitConfig *jitConfig, TR::Compilation * comp, const cha
    {
    if (comp)
       {
-      traceMsg(comp, "\n=== EXCEPTION THROWN (%s) ===\n", reason);
+      if (comp->getLoggingEnabled())
+         comp->getLogger()->printf("\n=== EXCEPTION THROWN (%s) ===\n", reason);
 
       if (debug("traceCompilationException"))
          {
@@ -252,7 +253,7 @@ printCompFailureInfo(TR::JitConfig *jitConfig, TR::Compilation * comp, const cha
          }
 
       if (comp->getOption(TR_TraceAll))
-         traceMsg(comp, "<result success=\"false\">exception thrown by the compiler</result>\n");
+         comp->getLogger()->prints("<result success=\"false\">exception thrown by the compiler</result>\n");
       }
    }
 
@@ -354,7 +355,8 @@ compileMethodFromDetails(
       if (compiler.getOption(TR_TraceAll))
          {
          const char *signature = compilee.signature(&trMemory);
-         traceMsg((&compiler), "<compile hotness=\"%s\" method=\"%s\">\n",
+
+         compiler.getLogger()->printf("<compile hotness=\"%s\" method=\"%s\">\n",
                                compiler.getHotnessName(compiler.getMethodHotness()),
                                signature);
          }
@@ -422,7 +424,7 @@ compileMethodFromDetails(
             }
 
          if (compiler.getOption(TR_TraceAll))
-            traceMsg((&compiler), "<result success=\"true\" startPC=\"%#p\" time=\"%lld.%lldms\"/>\n",
+            compiler.getLogger()->trprintf("<result success=\"true\" startPC=\"%#p\" time=\"%lld.%lldms\"/>\n",
                                   startPC,
                                   translationTime/1000,
                                   translationTime%1000);
