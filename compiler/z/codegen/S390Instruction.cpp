@@ -231,7 +231,7 @@ bool TR::S390LabeledInstruction::isNopCandidate()
                      {
                      isNopCandidate = true;
                      if (comp->getOption(TR_TraceCG))
-                        comp->getLogger()->prints("Insert NOP instructions for loop alignment\n");
+                        comp->log()->prints("Insert NOP instructions for loop alignment\n");
                      break;
                      }
                   else
@@ -446,7 +446,7 @@ TR::S390LabelInstruction::assignRegistersAndDependencies(TR_RegisterKinds kindTo
       {
       TR::Machine *machine = cg()->machine();
       if (comp->getOption(TR_TraceRA))
-         comp->getLogger()->prints("\nOOL: taking register state snap shot\n");
+         comp->log()->prints("\nOOL: taking register state snap shot\n");
       cg()->setIsOutOfLineHotPath(true);
       machine->takeRegisterStateSnapShot();
       }
@@ -521,13 +521,13 @@ TR::S390BranchInstruction::assignRegistersAndDependencies(TR_RegisterKinds kindT
          // Start RA for OOL cold path, restore register state from snap shot
          TR::Machine *machine = cg()->machine();
          if (comp->getOption(TR_TraceRA))
-            comp->getLogger()->prints("\nOOL: Restoring Register state from snap shot\n");
+            comp->log()->prints("\nOOL: Restoring Register state from snap shot\n");
          cg()->setIsOutOfLineHotPath(false);
          machine->restoreRegisterStateFromSnapShot();
          }
       // Reusing the OOL Section merge label for other branches might be unsafe.
       else if (comp->getOption(TR_TraceRA))
-         comp->getLogger()->prints("\nOOL: Reusing the OOL Section merge label for other branches might be unsafe.\n");
+         comp->log()->prints("\nOOL: Reusing the OOL Section merge label for other branches might be unsafe.\n");
       }
    }
 
@@ -1083,7 +1083,7 @@ TR::S390DebugCounterBumpInstruction::generateBinaryEncoding()
    TR_ASSERT(scratchReg!=NULL, "TR_S390DebugCounterBumpInstruction::generateBinaryEncoding -- A scratch reg should always be found.");
 
    if (comp->getOption(TR_TraceCG))
-      comp->getLogger()->printf("[%p] DCB using %s as scratch reg with spill=%s\n", this, cg()->getDebug()->getName(scratchReg), spillNeeded ? "true" : "false");
+      comp->log()->printf("[%p] DCB using %s as scratch reg with spill=%s\n", this, cg()->getDebug()->getName(scratchReg), spillNeeded ? "true" : "false");
 
    if (spillNeeded)
       {
@@ -5213,7 +5213,7 @@ TR::S390AlignmentNopInstruction::generateBinaryEncoding()
    {
    TR::Compilation *comp = cg()->comp();
    bool trace = comp->getOption(TR_TraceCG);
-   TR::Logger *log = comp->getLogger();
+   TR::Logger *log = comp->log();
    uint32_t currentMisalign = reinterpret_cast<uintptr_t>(cg()->getBinaryBufferCursor()) % _alignment;
 
    if (currentMisalign != 0)

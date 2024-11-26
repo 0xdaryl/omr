@@ -580,13 +580,13 @@ int estimateLikeliness(TR::CodeGenerator *cg, TR::Node *n)
          float fallThroughBlockFreq = std::max<float>(fallThroughBlock->getFrequency(), 1.0f);
 
          if (comp->getOption(TR_TraceCG))
-            comp->getLogger()->printf("target block: %d, fall through block: %d\n", destBlock->getNumber(), fallThroughBlock->getNumber());
+            comp->log()->printf("target block: %d, fall through block: %d\n", destBlock->getNumber(), fallThroughBlock->getNumber());
 
          bool biased = false;
          bool likeliness;
 
          if (comp->getOption(TR_TraceCG))
-            comp->getLogger()->printf("targetBlockFreq: %f, fallThroughBlockFreq: %f\n", targetBlockFreq, fallThroughBlockFreq);
+            comp->log()->printf("targetBlockFreq: %f, fallThroughBlockFreq: %f\n", targetBlockFreq, fallThroughBlockFreq);
 
          if (fallThroughBlockFreq/targetBlockFreq > predictBranchRatio)
             return -1;

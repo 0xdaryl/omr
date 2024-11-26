@@ -77,7 +77,7 @@ TR::LocalDeadStoreElimination::isFirstReferenceToNode(TR::Node *parent, int32_t 
 int32_t TR::LocalDeadStoreElimination::perform()
    {
    if (trace())
-      comp()->getLogger()->prints("Starting LocalDeadStoreElimination\n");
+      comp()->log()->prints("Starting LocalDeadStoreElimination\n");
 
    TR::TreeTop *tt, *exitTreeTop;
    for (tt = comp()->getStartTree(); tt; tt = exitTreeTop->getNextTreeTop())
@@ -92,7 +92,7 @@ int32_t TR::LocalDeadStoreElimination::perform()
       requestDeadTreesCleanup();
 
    if (trace())
-      comp()->getLogger()->prints("\nEnding LocalDeadStoreElimination\n");
+      comp()->log()->prints("\nEnding LocalDeadStoreElimination\n");
 
    return 1;
    }
@@ -218,7 +218,7 @@ void TR::LocalDeadStoreElimination::transformBlock(TR::TreeTop * entryTree, TR::
                                                      // the one extra incVisitCount that might occur if we remove a store tree.
          {
          if (trace())
-            comp()->getLogger()->prints("Bailing out of local deadstore to avoid visit count overflow\n");
+            comp()->log()->prints("Bailing out of local deadstore to avoid visit count overflow\n");
          break;
          }
 
@@ -697,7 +697,7 @@ bool TR::LocalDeadStoreElimination::seenIdenticalStore(TR::Node *node)
       if (storeNode == node)
          {
          if (trace())
-            comp()->getLogger()->printf("seenIdentical nodes %p and %p\n", node, storeNode);
+            comp()->log()->printf("seenIdentical nodes %p and %p\n", node, storeNode);
          return false;
          }
       if (areLhsOfStoresSyntacticallyEquivalent(storeNode, node))
@@ -1047,13 +1047,13 @@ bool TR::LocalDeadStoreElimination::examineNewUsesForKill(TR::Node *node, TR::No
         parent->getOpCode().isCall())))
        {
        if (trace())
-          comp()->getLogger()->printf("going to remove new %p at node %p\n", newNode, node);
+          comp()->log()->printf("going to remove new %p at node %p\n", newNode, node);
        if ((childNum == 0) && (storeNode == parent))
           return true;
        else
           {
           if (trace())
-             comp()->getLogger()->printf("removing new %p at node %p\n", newNode, node);
+             comp()->log()->printf("removing new %p at node %p\n", newNode, node);
           currentNews->remove(newNode);
           if (!removedNews->find(newNode))
              removedNews->add(newNode);

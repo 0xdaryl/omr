@@ -27,7 +27,7 @@
 #include "state.hpp"
 
 #define TraceEnabled    (state->comp()->getOption(TR_TraceILGen))
-#define TraceIL(m, ...) {if (TraceEnabled) {state->comp()->getLogger()->printf(m, ##__VA_ARGS__);}}
+#define TraceIL(m, ...) {if (TraceEnabled) {state->comp()->log()->printf(m, ##__VA_ARGS__);}}
 
 namespace Tril {
 

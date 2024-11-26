@@ -215,7 +215,7 @@ TR::IA32SystemLinkage::layoutParm(TR::Node *parmNode, int32_t &dataCursor, uint1
    layoutResult.abstract |= TR::parmLayoutResult::ON_STACK;
    int32_t align = layoutTypeOnStack(parmNode->getDataType(), dataCursor, layoutResult);
    if (comp()->getOption(TR_TraceCG))
-      comp()->getLogger()->printf("layout param node %p on stack\n", parmNode);
+      comp()->log()->printf("layout param node %p on stack\n", parmNode);
    return align;
    }
 
@@ -225,7 +225,7 @@ TR::IA32SystemLinkage::layoutParm(TR::ParameterSymbol *parmSymbol, int32_t &data
    layoutResult.abstract |= TR::parmLayoutResult::ON_STACK;
    int32_t align = layoutTypeOnStack(parmSymbol->getDataType(), dataCursor, layoutResult);
    if (comp()->getOption(TR_TraceCG))
-      comp()->getLogger()->printf("layout param symbol %p on stack\n", parmSymbol);
+      comp()->log()->printf("layout param symbol %p on stack\n", parmSymbol);
    return align;
    }
 
@@ -247,7 +247,7 @@ TR::IA32SystemLinkage::setUpStackSizeForCallNode(TR::Node* node)
       {
       cg()->setLargestOutgoingArgSize(sizeOfOutGoingArgs);
       if (comp()->getOption(TR_TraceCG))
-         comp()->getLogger()->printf("setUpStackSizeForCallNode setLargestOutgoingArgSize %d(for call node %p)\n", sizeOfOutGoingArgs, node);
+         comp()->log()->printf("setUpStackSizeForCallNode setLargestOutgoingArgSize %d(for call node %p)\n", sizeOfOutGoingArgs, node);
       }
 
    }

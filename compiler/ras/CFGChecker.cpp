@@ -57,7 +57,7 @@ TR_CFGChecker::TR_CFGChecker(TR::ResolvedMethodSymbol *methodSymbol, TR_Debug * 
    : _cfg(methodSymbol->getFlowGraph()),
      _loggingEnabled(debug->_comp->getLoggingEnabled()),
      _fe(debug->_fe),
-     _logger(debug->_comp->getLogger())
+     _logger(debug->_comp->log())
    {
    _blockChecklist.init(0, debug->_comp->trMemory(), heapAlloc, growable);
    }

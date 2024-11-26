@@ -153,7 +153,7 @@ int32_t TR_FieldPrivatizer::detectCanonicalizedPredictableLoops(TR_Structure *lo
        !regionStructure->isNaturalLoop())
       return 0;
 
- //  comp()->getLogger()->printf("Considering Loop %d\n", regionStructure->getNumber());
+ //  comp()->log()->printf("Considering Loop %d\n", regionStructure->getNumber());
 
    TR_ScratchList<TR::Block> blocksInRegion(trMemory());
    regionStructure->getBlocks(&blocksInRegion);
@@ -290,7 +290,7 @@ int32_t TR_FieldPrivatizer::detectCanonicalizedPredictableLoops(TR_Structure *lo
        _criticalEdgeBlock = 0;
 
        if (trace())
-          comp()->getLogger()->printf("\nChecking loop %d for predictability\n", loopStructure->getNumber());
+          comp()->log()->printf("\nChecking loop %d for predictability\n", loopStructure->getNumber());
 
        _isAddition = false;
        int32_t isPredictableLoop = checkLoopForPredictability(loopStructure, loopInvariantBlock->getBlock(), 0);
@@ -344,7 +344,7 @@ int32_t TR_FieldPrivatizer::detectCanonicalizedPredictableLoops(TR_Structure *lo
 
              if (trace())
                 {
-                TR::Logger *log = comp()->getLogger();
+                TR::Logger *log = comp()->log();
                 log->printf("\nDetected a predictable loop %d\n", loopStructure->getNumber());
 
                 log->prints("Fields that cannot be privatized:\n");
@@ -1137,7 +1137,7 @@ void TR_FieldPrivatizer::placeStoresBackInExits(List<TR::Block> *exitBlocks, Lis
                 TR::CFGEdge *newEdge = comp()->getFlowGraph()->addEdge(nnext, next);
                 newEdge->setFrequency(current->getFrequency());
                 if (trace())
-                   comp()->getLogger()->printf("placeStoresBackInExits: added block %d freq %d\n",
+                   comp()->log()->printf("placeStoresBackInExits: added block %d freq %d\n",
                          nnext->getNumber(), nnext->getFrequency());
                 }
              TR::CFGEdge *newEdge = comp()->getFlowGraph()->addEdge(exitBlock, nnext);
@@ -1147,13 +1147,13 @@ void TR_FieldPrivatizer::placeStoresBackInExits(List<TR::Block> *exitBlocks, Lis
                 TR::Block *from = newEdge->getFrom()->asBlock();
                 TR::Block *to = newEdge->getTo()->asBlock();
 
-                comp()->getLogger()->printf("new edge %d(%d) -> %d(%d) freq %d\n",
+                comp()->log()->printf("new edge %d(%d) -> %d(%d) freq %d\n",
                       from->getNumber(), from->getFrequency(),
                       to->getNumber(), to->getFrequency(),
                       current->getFrequency());
                 from = current->getFrom()->asBlock();
                 to = current->getTo()->asBlock();
-                comp()->getLogger()->printf("instead of orig edge %d(%d) -> %d(%d) freq %d\n",
+                comp()->log()->printf("instead of orig edge %d(%d) -> %d(%d) freq %d\n",
                       from->getNumber(), from->getFrequency(),
                       to->getNumber(), to->getFrequency(),
                       current->getFrequency());

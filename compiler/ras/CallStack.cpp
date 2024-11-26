@@ -38,7 +38,7 @@ void TR_CallStackIterator::printStackBacktrace(TR::Compilation *comp)
       if (comp)
          {
          if (comp->getLoggingEnabled())
-            comp->getLogger()->printf("%s+0x%" OMR_PRIxPTR "\n", getProcedureName(), getOffsetInProcedure());
+            comp->log()->printf("%s+0x%" OMR_PRIxPTR "\n", getProcedureName(), getOffsetInProcedure());
          }
       else
          fprintf(stderr, "%s+0x%" OMR_PRIxPTR "\n", getProcedureName(), getOffsetInProcedure());
@@ -232,7 +232,7 @@ void TR_LinuxCallStackIterator::printSymbol(int32_t frame, char *sig, TR::Compil
       if (comp)
          {
          if (comp->getLoggingEnabled())
-            comp->getLogger()->printf("#%" OMR_PRId32 ": function %s+%#" OMR_PRIxPTR " [%#" OMR_PRIxPTR "]\n",
+            comp->log()->printf("#%" OMR_PRId32 ": function %s+%#" OMR_PRIxPTR " [%#" OMR_PRIxPTR "]\n",
                  frame,
                  funcToPrint,
                  offset,
@@ -251,7 +251,7 @@ void TR_LinuxCallStackIterator::printSymbol(int32_t frame, char *sig, TR::Compil
       if (comp)
          {
          if (comp->getLoggingEnabled())
-            comp->getLogger()->printf("#%" OMR_PRId32 ": %s\n", frame, sig);
+            comp->log()->printf("#%" OMR_PRId32 ": %s\n", frame, sig);
          }
       else
          fprintf(stderr, "#%" OMR_PRId32 ": %s\n", frame, sig);

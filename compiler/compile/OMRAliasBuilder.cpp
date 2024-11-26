@@ -91,7 +91,7 @@ TR_BitVector *
 OMR::AliasBuilder::methodAliases(TR::SymbolReference *symRef)
    {
    if (comp()->getOption(TR_TraceAliases))
-      comp()->getLogger()->printf("For method sym %d default aliases\n", symRef->getReferenceNumber());
+      comp()->log()->printf("For method sym %d default aliases\n", symRef->getReferenceNumber());
 
    return &defaultMethodDefAliases();
    }
@@ -171,7 +171,7 @@ OMR::AliasBuilder::createAliasInfo()
 
    if (comp()->getOption(TR_TraceAliases) && comp()->getLoggingEnabled())
       {
-      comp()->getDebug()->printAliasInfo(comp()->getLogger(), symRefTab());
+      comp()->getDebug()->printAliasInfo(comp()->log(), symRefTab());
       }
 
    }

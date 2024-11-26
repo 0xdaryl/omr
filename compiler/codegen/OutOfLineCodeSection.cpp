@@ -244,7 +244,7 @@ TR_OutOfLineCodeSection::assignRegisters(TR_RegisterKinds kindsToBeAssigned)
          {
          (*li)->getBackingStorage()->setMaxSpillDepth(1);
          if (comp->getOption(TR_TraceCG))
-            comp->getLogger()->printf("Adding virtReg:%s from _firstTimeLiveOOLRegisterList to _spilledRegisterList \n", _cg->getDebug()->getName((*li)));
+            comp->log()->printf("Adding virtReg:%s from _firstTimeLiveOOLRegisterList to _spilledRegisterList \n", _cg->getDebug()->getName((*li)));
          spilledRegisterList->push_front((*li));
          }
       }

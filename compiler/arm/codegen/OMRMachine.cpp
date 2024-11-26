@@ -1003,7 +1003,7 @@ OMR::ARM::Machine::takeRegisterStateSnapShot()
       _assignedRegisterSnapShot[i] = _registerFile[i]->getAssignedRegister();
       _registerFlagsSnapShot[i] = _registerFile[i]->getFlags();
       if (comp->getOption(TR_TraceRA))
-         comp->getLogger()->printf("OOL: Taking snap shot %d, %x, %x, %x\n", i, _registerStatesSnapShot[i], _assignedRegisterSnapShot[i], _registerFlagsSnapShot[i]);
+         comp->log()->printf("OOL: Taking snap shot %d, %x, %x, %x\n", i, _registerStatesSnapShot[i], _assignedRegisterSnapShot[i], _registerFlagsSnapShot[i]);
       }
 #if (defined(__VFP_FP__) && !defined(__SOFTFP__))
    //snapshot is used only for OOL. For now, single precision registers are used only for DirectToJNI.
@@ -1013,7 +1013,7 @@ OMR::ARM::Machine::takeRegisterStateSnapShot()
       _assignedRegisterSnapShot[i] = _registerFile[i]->getAssignedRegister();
       _registerFlagsSnapShot[i] = _registerFile[i]->getFlags();
       if (comp->getOption(TR_TraceRA))
-         comp->getLogger()->printf("OOL: Taking snap shot %d, %x, %x, %x\n", i, _registerStatesSnapShot[i], _assignedRegisterSnapShot[i], _registerFlagsSnapShot[i]);
+         comp->log()->printf("OOL: Taking snap shot %d, %x, %x, %x\n", i, _registerStatesSnapShot[i], _assignedRegisterSnapShot[i], _registerFlagsSnapShot[i]);
       }
 #endif
    }
@@ -1044,7 +1044,7 @@ OMR::ARM::Machine::restoreRegisterStateFromSnapShot()
          _registerFile[i]->getAssignedRegister()->setAssignedRegister(_registerFile[i]);
          }
       if (comp->getOption(TR_TraceRA))
-         comp->getLogger()->printf("OOL: Restoring snap shot %d, %x, %x, %x\n", i, _registerFile[i]->getState(), _registerFile[i]->getAssignedRegister(), _registerFile[i]->getFlags());
+         comp->log()->printf("OOL: Restoring snap shot %d, %x, %x, %x\n", i, _registerFile[i]->getState(), _registerFile[i]->getAssignedRegister(), _registerFile[i]->getFlags());
       }
 #if (defined(__VFP_FP__) && !defined(__SOFTFP__))
    //snapshot is used only for OOL. For now, single precision registers are used only for DirectToJNI.
@@ -1067,7 +1067,7 @@ OMR::ARM::Machine::restoreRegisterStateFromSnapShot()
          _registerFile[i]->getAssignedRegister()->setAssignedRegister(_registerFile[i]);
          }
       if (comp->getOption(TR_TraceRA))
-         comp->getLogger()->printf("OOL: Restoring snap shot %d, %x, %x, %x\n", i, _registerFile[i]->getState(), _registerFile[i]->getAssignedRegister(), _registerFile[i]->getFlags());
+         comp->log()->printf("OOL: Restoring snap shot %d, %x, %x, %x\n", i, _registerFile[i]->getState(), _registerFile[i]->getAssignedRegister(), _registerFile[i]->getFlags());
       }
 #endif
    }

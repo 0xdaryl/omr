@@ -536,7 +536,7 @@ OMR::SymbolReferenceTable::createRefinedArrayShadowSymbolRef(
       }
    if (trace && comp()->getLoggingEnabled())
       {
-      TR::Logger *log = comp()->getLogger();
+      TR::Logger *log = comp()->log();
       log->printf("Created new array shadow %d\nRefinedAddress shadows:",index);
       aliasBuilder.refinedAddressArrayShadows().print(log, comp());
       log->prints("\nRefined Int Array shadows:");
@@ -990,7 +990,7 @@ OMR::SymbolReferenceTable::methodSymRefFromName(TR::ResolvedMethodSymbol * ownin
       {
       TR::SymbolReference *result = _methodsBySignature[hashIndex];
       if (comp()->getOption(TR_TraceMethodIndex))
-         comp()->getLogger()->printf("-- MBS cache hit (1): M%p\n", result->getSymbol()->getResolvedMethodSymbol()->getResolvedMethod());
+         comp()->log()->printf("-- MBS cache hit (1): M%p\n", result->getSymbol()->getResolvedMethodSymbol()->getResolvedMethod());
       return result;
       }
    else
@@ -999,7 +999,7 @@ OMR::SymbolReferenceTable::methodSymRefFromName(TR::ResolvedMethodSymbol * ownin
       //
       key = OwningMethodAndString(owningMethodSymbol->getResolvedMethodIndex(), self()->strdup(fullSignature));
       if (comp()->getOption(TR_TraceMethodIndex))
-         comp()->getLogger()->printf("-- MBS cache miss (1) owning method #%d, signature %s\n", owningMethodSymbol->getResolvedMethodIndex().value(), fullSignature);
+         comp()->log()->printf("-- MBS cache miss (1) owning method #%d, signature %s\n", owningMethodSymbol->getResolvedMethodIndex().value(), fullSignature);
       }
 
    //

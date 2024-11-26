@@ -2905,7 +2905,7 @@ TR::Instruction *armLoadConstant(TR::Node *node, int32_t value, TR::Register *tr
 
      if (comp->getOption(TR_TraceCG))
         {
-        TR::Logger *log = comp->getLogger();
+        TR::Logger *log = comp->log();
         log->prints("In armLoadConstant with\n");
         log->printf("\tvalue = %d\n", value);
         log->printf("\tnotBits = %d\n", notBits);

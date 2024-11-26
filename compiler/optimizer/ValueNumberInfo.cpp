@@ -66,7 +66,7 @@ TR_ValueNumberInfo::TR_ValueNumberInfo(TR::Compilation *comp, TR::Optimizer *opt
      _valueNumbers(comp->allocator()),
      _nextInRing(comp->allocator())
    {
-   TR::Logger *log = comp->getLogger();
+   TR::Logger *log = comp->log();
    dumpOptDetails(comp, "PREPARTITION VN   (Building value number info)\n");
 
    // For now, don't allow global value numbering because of
@@ -265,7 +265,7 @@ void TR_ValueNumberInfo::buildValueNumberInfo()
 bool TR_ValueNumberInfo::congruentNodes(TR::Node * node, TR::Node * entryNode)
    {
 #ifdef J9_PROJECT_SPECIFIC
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
 
    if (node->getOpCode().isSetSignOnNode() && node->getSetSign() != entryNode->getSetSign())
       return false;
@@ -403,7 +403,7 @@ bool TR_ValueNumberInfo::congruentNodes(TR::Node * node, TR::Node * entryNode)
 
 void TR_ValueNumberInfo::initializeNode(TR::Node *node, int32_t &negativeValueNumber)
    {
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
 
    int32_t index = node->getGlobalIndex();
    if (_nodes.ElementAt(index) != NULL)
@@ -753,7 +753,7 @@ bool TR_ValueNumberInfo::canShareValueNumber(TR::Node *node)
 
 void TR_ValueNumberInfo::allocateValueNumber(TR::Node *node)
    {
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
 
    int32_t index = node->getGlobalIndex();
    if (_valueNumbers.ElementAt(index) >= 0 ||
@@ -964,7 +964,7 @@ void TR_ValueNumberInfo::allocateValueNumber(TR::Node *node)
 
 TR::Node *TR_ValueNumberInfo::getValueNumberForLoad(TR::Node *node)
    {
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
 
    uint16_t useDefIndex = node->getUseDefIndex();
    if (!_useDefInfo ||
@@ -1409,7 +1409,7 @@ void TR_ValueNumberInfo::growTo(int32_t index)
 
 void TR_ValueNumberInfo::printValueNumberInfo(TR::Node *node)
    {
-   comp()->getLogger()->printf("Node : %p    Index = %d    Value number = %d\n", node, node->getUseDefIndex(), getVN(node));
+   comp()->log()->printf("Node : %p    Index = %d    Value number = %d\n", node, node->getUseDefIndex(), getVN(node));
 
    for (int i = 0; i < node->getNumChildren(); i++)
       {
@@ -1489,7 +1489,7 @@ TR_HashValueNumberInfo::TR_HashValueNumberInfo(TR::Compilation *comp, TR::Optimi
    _optimizer = optimizer;
    _trace = comp->getOption(TR_TraceValueNumbers);
 
-   TR::Logger *log = comp->getLogger();
+   TR::Logger *log = comp->log();
 
    dumpOptDetails(comp, " HASHVN  (Building value number info)\n");
 
@@ -1651,7 +1651,7 @@ void TR_HashValueNumberInfo::initializeNode(TR::Node * node, int32_t & negativeV
 
 void TR_HashValueNumberInfo::allocateValueNumber(TR::Node * node)
 {
-      TR::Logger *log = comp()->getLogger();
+      TR::Logger *log = comp()->log();
 
       int32_t index = node->getGlobalIndex();
       if (_valueNumbers.ElementAt(index) >= 0 ||

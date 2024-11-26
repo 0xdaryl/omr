@@ -1930,7 +1930,7 @@ TR::Register *toMaskConversionHelper(TR::Node *node, bool omitNot, TR::CodeGener
          TR::Compilation *comp = cg->comp();
          if (comp->getOption(TR_TraceCG))
             {
-            comp->getLogger()->printf("omitting vnot instruction at node %p\n", node);
+            comp->log()->printf("omitting vnot instruction at node %p\n", node);
             }
          }
       else
@@ -2430,7 +2430,7 @@ vcmpHelper(TR::Node *node, VectorCompareOps compareOp, bool omitNot, bool *flipC
          TR::Compilation *comp = cg->comp();
          if (comp->getOption(TR_TraceCG))
             {
-            comp->getLogger()->printf("omitting vnot instruction at node %p\n", node);
+            comp->log()->printf("omitting vnot instruction at node %p\n", node);
             }
          }
       }

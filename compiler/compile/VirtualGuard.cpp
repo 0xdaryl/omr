@@ -85,7 +85,7 @@ TR_VirtualGuard::TR_VirtualGuard(TR_VirtualGuardTestType test, TR_VirtualGuardKi
       }
 
    if (comp->getOption(TR_TraceRelocatableDataDetailsCG))
-      comp->getLogger()->printf("addVirtualGuard %p, guardkind = %d, virtualGuardTestType %d, bc index %d, callee index %d, callNode %p, guardNode %p, currentInlinedSiteIdx %d\n", this, _kind, test, this->getByteCodeIndex(), this->getCalleeIndex(), callNode, guardNode, _currentInlinedSiteIndex);
+      comp->log()->printf("addVirtualGuard %p, guardkind = %d, virtualGuardTestType %d, bc index %d, callee index %d, callNode %p, guardNode %p, currentInlinedSiteIdx %d\n", this, _kind, test, this->getByteCodeIndex(), this->getCalleeIndex(), callNode, guardNode, _currentInlinedSiteIndex);
    }
 
 
@@ -120,7 +120,7 @@ TR_VirtualGuard::TR_VirtualGuard(TR_VirtualGuardTestType test, TR_VirtualGuardKi
       comp->addVirtualGuard(this);
 
    if (comp->getOption(TR_TraceRelocatableDataDetailsCG))
-      comp->getLogger()->printf("addVirtualGuard %p, guardkind = %d, virtualGuardTestType %d, bc index %d, callee index %d, callNode %p, guardNode %p, currentInlinedSiteIdx %d\n", this, _kind, test, this->getByteCodeIndex(), this->getCalleeIndex(), callNode, guardNode, _currentInlinedSiteIndex);
+      comp->log()->printf("addVirtualGuard %p, guardkind = %d, virtualGuardTestType %d, bc index %d, callee index %d, callNode %p, guardNode %p, currentInlinedSiteIdx %d\n", this, _kind, test, this->getByteCodeIndex(), this->getCalleeIndex(), callNode, guardNode, _currentInlinedSiteIndex);
 
    }
 
@@ -191,7 +191,7 @@ TR_VirtualGuard::createVftGuardWithReceiver
    TR::Node*guard = TR::Node::createif(TR::ifacmpne, vft, aconstNode, destination);
 
    TR_VirtualGuard *vg = new (comp->trHeapMemory()) TR_VirtualGuard(TR_VftTest, kind, comp, callNode, guard, calleeIndex, comp->getCurrentInlinedSiteIndex(), thisClass);
-   //comp->getLogger()->printf("guard %p virtualguard %p\n", guard, vg);
+   //comp->log()->printf("guard %p virtualguard %p\n", guard, vg);
 
    if (comp->compileRelocatableCode())
       vg->setCannotBeRemoved();
@@ -280,7 +280,7 @@ TR_VirtualGuard::createBreakpointGuard
       vg->dontGenerateChildrenCode();
 
    if (comp->getOption(TR_TraceRelocatableDataDetailsCG))
-      comp->getLogger()->printf("create breakpoint guard: callNode %p guardNode %p isBreakpointGuard %d\n", callNode, guard, guard->isBreakpointGuard());
+      comp->log()->printf("create breakpoint guard: callNode %p guardNode %p isBreakpointGuard %d\n", callNode, guard, guard->isBreakpointGuard());
 
    return guard;
    }

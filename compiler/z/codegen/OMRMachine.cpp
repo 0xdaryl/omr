@@ -1801,7 +1801,7 @@ OMR::Z::Machine::freeBestRegisterPair(TR::RealRegister ** firstReg, TR::RealRegi
       {
       if (self()->cg()->getDebug() != NULL)
          {
-         self()->cg()->getDebug()->printGPRegisterStatus(comp->getLogger(), machine);
+         self()->cg()->getDebug()->printGPRegisterStatus(comp->log(), machine);
          }
 
       TR_ASSERT_FATAL(0, "Ran out of register pairs to use as a pair on instruction [%p]", currInst);
@@ -2544,7 +2544,7 @@ OMR::Z::Machine::freeBestRegister(TR::Instruction * currentInstruction, TR::Regi
          {
          if (self()->cg()->getDebug() != NULL)
             {
-            self()->cg()->getDebug()->printGPRegisterStatus(comp->getLogger(), machine);
+            self()->cg()->getDebug()->printGPRegisterStatus(comp->log(), machine);
             }
 
          TR_ASSERT_FATAL(false, "Ran out of register candidates to free on instruction [%p]", currentInstruction);
@@ -3360,7 +3360,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
       {
       if (comp->getOption(TR_TraceCG))
          {
-         TR::Logger *log = comp->getLogger();
+         TR::Logger *log = comp->log();
          log->printf("    WARNING: Assigning a Locked register %s to %s\n",
                                          getRegisterName(targetRegister,self()->cg()),
                                          getRegisterName(virtualRegister,self()->cg()));

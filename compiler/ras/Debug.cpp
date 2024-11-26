@@ -224,7 +224,7 @@ TR_Debug::TR_Debug( TR::Compilation * c)
       _cg = c->cg();
       _fe = c->fe();
       _file = c->getOutFile();
-      _logger = c->getLogger();
+      _logger = c->log();
       resetDebugData();
 
       _nodeChecklist.init(0, c->trMemory(), heapAlloc, growable);
@@ -474,7 +474,7 @@ TR_Debug::performTransformationImpl(bool canOmitTransformation, const char * for
    if (!_comp->getLoggingEnabled())
       return true;
 
-   TR::Logger *log = _comp->getLogger();
+   TR::Logger *log = _comp->log();
 
    if (canOmitTransformation)
       {

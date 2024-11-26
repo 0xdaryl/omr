@@ -186,7 +186,7 @@ OMR::CodeGenPhase::performProcessRelocationsPhase(TR::CodeGenerator * cg, TR::Co
 
    if (cg->getAheadOfTimeCompile() && (comp->getOption(TR_TraceRelocatableDataCG) || comp->getOption(TR_TraceRelocatableDataDetailsCG)))
       {
-      TR::Logger *log = comp->getLogger();
+      TR::Logger *log = comp->log();
       log->prints("\n<relocatableDataCG>\n");
       if (comp->getOption(TR_TraceRelocatableDataDetailsCG)) // verbose output
          {
@@ -226,7 +226,7 @@ OMR::CodeGenPhase::performProcessRelocationsPhase(TR::CodeGenerator * cg, TR::Co
 
    if (comp->getOption(TR_TraceCG))
       {
-      TR::Logger *log = comp->getLogger();
+      TR::Logger *log = comp->log();
       const char * title = "Post Relocation Instructions";
       comp->getDebug()->dumpMethodInstrs(log, title, false, true);
 
@@ -277,7 +277,7 @@ OMR::CodeGenPhase::performEmitSnippetsPhase(TR::CodeGenerator * cg, TR::CodeGenP
 
    if (comp->getOption(TR_TraceCG))
       {
-      TR::Logger *log = comp->getLogger();
+      TR::Logger *log = comp->log();
       diagnostic("\nbuffer start = %8x, code start = %8x, buffer length = %d\n", cg->getBinaryBufferStart(), cg->getCodeStart(), cg->getEstimatedCodeLength());
       const char * title = "Post Binary Instructions";
 
@@ -349,7 +349,7 @@ OMR::CodeGenPhase::performPeepholePhase(TR::CodeGenerator * cg, TR::CodeGenPhase
       bool performed = peephole.perform();
 
       if (performed && comp->getOption(TR_TraceCG))
-         comp->getDebug()->dumpMethodInstrs(comp->getLogger(), "Post Peephole Instructions", false);
+         comp->getDebug()->dumpMethodInstrs(comp->log(), "Post Peephole Instructions", false);
       }
    }
 
@@ -369,7 +369,7 @@ OMR::CodeGenPhase::performMapStackPhase(TR::CodeGenerator *cg, TR::CodeGenPhase 
      cg->getLinkage()->mapStack(comp->getJittedMethodSymbol());
 
      if (comp->getOption(TR_TraceCG))
-        comp->getDebug()->dumpMethodInstrs(comp->getLogger(), "Post Stack Map", false);
+        comp->getDebug()->dumpMethodInstrs(comp->log(), "Post Stack Map", false);
      }
    cg->setMappingAutomatics();
 
@@ -401,7 +401,7 @@ OMR::CodeGenPhase::performRegisterAssigningPhase(TR::CodeGenerator * cg, TR::Cod
       }
 
    if (comp->getOption(TR_TraceCG))
-      comp->getDebug()->dumpMethodInstrs(comp->getLogger(), "Post Register Assignment Instructions", false, true);
+      comp->getDebug()->dumpMethodInstrs(comp->log(), "Post Register Assignment Instructions", false, true);
    }
 
 
@@ -422,7 +422,7 @@ OMR::CodeGenPhase::performInstructionSelectionPhase(TR::CodeGenerator * cg, TR::
    phase->reportPhase(InstructionSelectionPhase);
 
    if (comp->getOption(TR_TraceCG))
-      comp->dumpMethodTrees(comp->getLogger(), "Pre Instruction Selection Trees");
+      comp->dumpMethodTrees(comp->log(), "Pre Instruction Selection Trees");
 
    TR::LexicalMemProfiler mp(phase->getName(), comp->phaseMemProfiler());
    LexicalTimer pt(phase->getName(), comp->phaseTimer());
@@ -430,7 +430,7 @@ OMR::CodeGenPhase::performInstructionSelectionPhase(TR::CodeGenerator * cg, TR::
    cg->doInstructionSelection();
 
    if (comp->getOption(TR_TraceCG))
-      comp->getDebug()->dumpMethodInstrs(comp->getLogger(), "Post Instruction Selection Instructions", false, true);
+      comp->getDebug()->dumpMethodInstrs(comp->log(), "Post Instruction Selection Instructions", false, true);
 
    // check reference counts
 #if defined(DEBUG) || defined(PROD_WITH_ASSUMES)
@@ -468,7 +468,7 @@ OMR::CodeGenPhase::performSetupForInstructionSelectionPhase(TR::CodeGenerator * 
    // Dump preIR
    if (comp->getOption(TR_TraceRegisterPressureDetails) && !comp->getOption(TR_DisableRegisterPressureSimulation))
       {
-      comp->getLogger()->prints("         { Post optimization register pressure simulation\n");
+      comp->log()->prints("         { Post optimization register pressure simulation\n");
       TR_BitVector emptyBitVector;
       vcount_t vc = comp->incVisitCount();
       cg->initializeRegisterPressureSimulator();
@@ -479,7 +479,7 @@ OMR::CodeGenPhase::performSetupForInstructionSelectionPhase(TR::CodeGenerator * 
          TR::CodeGenerator::TR_RegisterPressureSummary summary(state._gprPressure, state._fprPressure, state._vrfPressure);
          cg->simulateBlockEvaluation(block, &state, &summary);
          }
-      comp->getLogger()->prints("         }\n");
+      comp->log()->prints("         }\n");
       }
 
    TR::LexicalMemProfiler mp(phase->getName(), comp->phaseMemProfiler());
@@ -500,7 +500,7 @@ OMR::CodeGenPhase::performLowerTreesPhase(TR::CodeGenerator * cg, TR::CodeGenPha
    cg->lowerTrees();
 
    if (comp->getOption(TR_TraceCG))
-      comp->dumpMethodTrees(comp->getLogger(), "Post Lower Trees");
+      comp->dumpMethodTrees(comp->log(), "Post Lower Trees");
    }
 
 
@@ -511,14 +511,14 @@ OMR::CodeGenPhase::performUncommonCallConstNodesPhase(TR::CodeGenerator * cg, TR
 
    if(comp->getOption(TR_DisableCallConstUncommoning))
       {
-      comp->getLogger()->prints("Skipping Uncommon Call Constant Node phase\n");
+      comp->log()->prints("Skipping Uncommon Call Constant Node phase\n");
       return;
       }
 
    phase->reportPhase(UncommonCallConstNodesPhase);
 
    if (comp->getOption(TR_TraceCG))
-      comp->dumpMethodTrees(comp->getLogger(), "Pre Uncommon Call Constant Node Trees");
+      comp->dumpMethodTrees(comp->log(), "Pre Uncommon Call Constant Node Trees");
 
    TR::LexicalMemProfiler mp(phase->getName(), comp->phaseMemProfiler());
    LexicalTimer pt(phase->getName(), comp->phaseTimer());
@@ -526,7 +526,7 @@ OMR::CodeGenPhase::performUncommonCallConstNodesPhase(TR::CodeGenerator * cg, TR
    cg->uncommonCallConstNodes();
 
    if (comp->getOption(TR_TraceCG))
-      comp->dumpMethodTrees(comp->getLogger(), "Post Uncommon Call Constant Node Trees");
+      comp->dumpMethodTrees(comp->log(), "Post Uncommon Call Constant Node Trees");
   }
 
 void
@@ -587,7 +587,7 @@ OMR::CodeGenPhase::performExpandInstructionsPhase(TR::CodeGenerator * cg, TR::Co
    cg->expandInstructions();
 
    if (comp->getOption(TR_TraceCG))
-      comp->getDebug()->dumpMethodInstrs(comp->getLogger(), "Post Instruction Expansion Instructions", false, true);
+      comp->getDebug()->dumpMethodInstrs(comp->log(), "Post Instruction Expansion Instructions", false, true);
    }
 
 const char *
@@ -650,7 +650,7 @@ LexicalXmlTag::LexicalXmlTag(TR::CodeGenerator * cg): cg(cg)
    if (comp->getOption(TR_TraceOptDetails) || comp->getOption(TR_TraceCG))
       {
       const char *hotnessString = comp->getHotnessName(comp->getMethodHotness());
-      comp->getLogger()->printf("<codegen\n"
+      comp->log()->printf("<codegen\n"
               "\tmethod=\"%s\"\n"
                "\thotness=\"%s\">\n",
                comp->signature(), hotnessString);
@@ -661,5 +661,5 @@ LexicalXmlTag::~LexicalXmlTag()
    {
    TR::Compilation *comp = cg->comp();
    if (comp->getOption(TR_TraceOptDetails) || comp->getOption(TR_TraceCG))
-      comp->getLogger()->prints("</codegen>\n");
+      comp->log()->prints("</codegen>\n");
    }

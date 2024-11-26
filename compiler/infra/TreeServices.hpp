@@ -159,7 +159,7 @@ class TR_Unification
 
    void dump(TR::Compilation *comp)
       {
-      TR::Logger *log = comp->getLogger();
+      TR::Logger *log = comp->log();
       log->printc('{');
       const char *sep = "";
       for (TR_Mark i = 0; i < _undoCount; i++)

@@ -347,7 +347,7 @@ void OMR::ValuePropagation::initialize()
             myTimer.stopTiming(comp());
             if (comp()->getLoggingEnabled())
                {
-               TR::Logger *log = comp()->getLogger();
+               TR::Logger *log = comp()->log();
                log->printf("Time taken for %s = ", myTimer.title());
                log->printf("%9.6f seconds\n", myTimer.secondsTaken());
                }
@@ -484,8 +484,8 @@ TR::VPConstraint *OMR::ValuePropagation::getConstraint(TR::Node *node, bool &isG
       {
       if (trace())
          {
-         comp()->getLogger()->printf("   %s [%p] has existing constraint:", node->getOpCode().getName(), node);
-         rel->print(comp()->getLogger(), this, valueNumber, 1);
+         comp()->log()->printf("   %s [%p] has existing constraint:", node->getOpCode().getName(), node);
+         rel->print(comp()->log(), this, valueNumber, 1);
          }
       isGlobal = false;
       constraint = rel->constraint;
@@ -517,8 +517,8 @@ TR::VPConstraint *OMR::ValuePropagation::getConstraint(TR::Node *node, bool &isG
       {
       if (trace())
          {
-         comp()->getLogger()->printf("   %s [%p] has existing global constraint:", node->getOpCode().getName(), node);
-         rel->print(comp()->getLogger(), this, valueNumber, 1);
+         comp()->log()->printf("   %s [%p] has existing global constraint:", node->getOpCode().getName(), node);
+         rel->print(comp()->log(), this, valueNumber, 1);
          }
       isGlobal = true;
       constraint = rel->constraint;
@@ -628,7 +628,7 @@ void OMR::ValuePropagation::processTrees(TR::TreeTop *startTree, TR::TreeTop *en
       _curTree = treeTop;
       TR::Node *treeTopNode = treeTop->getNode();
       if (trace())
-         comp()->getLogger()->printf("Processing ttNode n%in %s\n", treeTopNode->getGlobalIndex(),
+         comp()->log()->printf("Processing ttNode n%in %s\n", treeTopNode->getGlobalIndex(),
                treeTopNode->getOpCode().getName());
 
       if (_enableVersionBlocks && !_disableVersionBlockForThisBlock && treeTop == lastRealTreeTop &&
@@ -926,7 +926,7 @@ bool OMR::ValuePropagation::transformUnsafeCopyMemoryCall(TR::Node *arrayCopyNod
 
 void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
    {
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
    bool is64BitTarget = comp()->target().is64Bit();
 
    // Check to see if this is a call to java/lang/System.arraycopy
@@ -1567,7 +1567,7 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
                                                                                                                      needRuntimeTestDstArray));
          if (trace())
             {
-            TR::Logger *log = comp()->getLogger();
+            TR::Logger *log = comp()->log();
             comp()->dumpMethodTrees(log, "Trees after modifying for null restricted array check");
             comp()->getDebug()->print(log, comp()->getFlowGraph());
             }
@@ -2325,7 +2325,7 @@ TR::TreeTop* OMR::ValuePropagation::createPrimitiveArrayNodeWithoutFlags(TR::Tre
    ///node->setReferenceArrayCopy(false);
 
    if (trace())
-      comp()->getLogger()->printf("Created 3-child arraycopy %s from root node %s, type = %s\n",
+      comp()->log()->printf("Created 3-child arraycopy %s from root node %s, type = %s\n",
               comp()->getDebug()->getName(node),
               comp()->getDebug()->getName(root),
               TR::DataType::getName(node->getArrayCopyElementType()));
@@ -3573,7 +3573,7 @@ void OMR::ValuePropagation::transformRTMultiLeafArrayCopy(TR_RealTimeArrayCopy *
    {
    //copied from transformRealTimeArrayCopy
    TR::CFG *cfg = comp()->getFlowGraph();
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
 
    TR::TreeTop *vcallTree = rtArrayCopyTree->_treetop;
    TR::Node *vcallNode = vcallTree->getNode()->getFirstChild();
@@ -3815,7 +3815,7 @@ slowBlock-> n39n      BBStart <block_10> (freq 0) (cold)
          nextBlock = tmpBlock;
          if (trace())
             {
-            comp()->getLogger()->printf("%s: prevBlockOfExtendedBlockEmpty 1 prevTT n%dn prevBlock block_%d nextTT n%dn nextBlock block_%d\n", __FUNCTION__,
+            comp()->log()->printf("%s: prevBlockOfExtendedBlockEmpty 1 prevTT n%dn prevBlock block_%d nextTT n%dn nextBlock block_%d\n", __FUNCTION__,
                prevTT->getNode()->getGlobalIndex(), prevBlock->getNumber(), nextTT->getNode()->getGlobalIndex(), nextBlock->getNumber());
             }
          }
@@ -3824,7 +3824,7 @@ slowBlock-> n39n      BBStart <block_10> (freq 0) (cold)
          nextBlock = nextBlock->split(nextTT, cfg, true, true);
          if (trace())
             {
-            comp()->getLogger()->printf("%s: split at nextTT. prevTT n%dn prevBlock block_%d nextTT n%dn nextBlock block_%d\n", __FUNCTION__,
+            comp()->log()->printf("%s: split at nextTT. prevTT n%dn prevBlock block_%d nextTT n%dn nextBlock block_%d\n", __FUNCTION__,
                prevTT->getNode()->getGlobalIndex(), prevBlock->getNumber(), nextTT->getNode()->getGlobalIndex(), nextBlock->getNumber());
             }
          }
@@ -3847,10 +3847,10 @@ slowBlock-> n39n      BBStart <block_10> (freq 0) (cold)
 
    if (trace())
       {
-      comp()->getLogger()->printf("%s: srcArrayRefNode n%dn %p dstArrayRefNode n%dn %p originBlock block_%d slowBlock block_%d needTestSrcArray %d needTestDstArray %d\n", __FUNCTION__,
+      comp()->log()->printf("%s: srcArrayRefNode n%dn %p dstArrayRefNode n%dn %p originBlock block_%d slowBlock block_%d needTestSrcArray %d needTestDstArray %d\n", __FUNCTION__,
          srcArrayRefNode->getGlobalIndex(), srcArrayRefNode, dstArrayRefNode->getGlobalIndex(), dstArrayRefNode, originBlock->getNumber(), slowBlock->getNumber(), needTestSrcArray, needTestDstArray);
 
-      comp()->getLogger()->printf("%s: prevTT n%dn prevBlock block_%d nextTT n%dn nextBlock block_%d\n", __FUNCTION__,
+      comp()->log()->printf("%s: prevTT n%dn prevBlock block_%d nextTT n%dn nextBlock block_%d\n", __FUNCTION__,
          prevTT->getNode()->getGlobalIndex(), prevBlock->getNumber(), nextTT->getNode()->getGlobalIndex(), nextBlock->getNumber());
       }
 
@@ -4090,7 +4090,7 @@ void OMR::ValuePropagation::transformArrayCloneCall(TR::TreeTop *callTree, OMR::
        || (!isPrimitiveClass && !cg()->getSupportsReferenceArrayCopy()))
       {
       if (trace())
-         comp()->getLogger()->printf("\nNot transforming array clone call [%p] because %s array copy is not supported\n",
+         comp()->log()->printf("\nNot transforming array clone call [%p] because %s array copy is not supported\n",
                   callNode, isPrimitiveClass ? "primitive" : "reference");
 
       return;
@@ -4427,7 +4427,7 @@ void OMR::ValuePropagation::transformConverterCall(TR::TreeTop *callTree)
       {
           threshold = atoi(overrideThreshold);
 
-          comp()->getLogger()->printf("Overriding arraytranslate fallback threshold to %d\n", threshold);
+          comp()->log()->printf("Overriding arraytranslate fallback threshold to %d\n", threshold);
       }
 
       if (threshold > 0)
@@ -4453,7 +4453,7 @@ void OMR::ValuePropagation::transformConverterCall(TR::TreeTop *callTree)
       }
 
      if (trace())
-         comp()->dumpMethodTrees(comp()->getLogger(), "Trees after reducing converter call to intrinsic arraytranslate");
+         comp()->dumpMethodTrees(comp()->log(), "Trees after reducing converter call to intrinsic arraytranslate");
 
    return;
    }
@@ -4547,7 +4547,7 @@ void TR::LocalValuePropagation::prePerformOnBlocks()
 
    if (trace())
       {
-      comp()->dumpMethodTrees(comp()->getLogger(), "Trees before Local Value Propagation");
+      comp()->dumpMethodTrees(comp()->log(), "Trees before Local Value Propagation");
       }
 
    initialize();
@@ -4578,7 +4578,7 @@ void TR::LocalValuePropagation::postPerformOnBlocks()
 
 
    if (trace())
-      comp()->dumpMethodTrees(comp()->getLogger(), "Trees after Local Value Propagation");
+      comp()->dumpMethodTrees(comp()->log(), "Trees after Local Value Propagation");
 
    // Invalidate usedef and value number information if necessary
    //
@@ -4591,7 +4591,7 @@ void TR::LocalValuePropagation::postPerformOnBlocks()
 
 TR::TreeTop *TR::LocalValuePropagation::processBlock(TR::TreeTop *startTree)
    {
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
    _constNodeInfo.MakeEmpty();
    TR::Node *node = startTree->getNode();
    _curBlock     = node->getBlock();

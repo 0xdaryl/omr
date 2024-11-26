@@ -52,7 +52,7 @@ TR_LocalAnticipatability::TR_LocalAnticipatability(TR_LocalAnalysisInfo &info, T
    : _localTransparency(lt),
     TR_LocalAnalysis(info, t)
    {
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
    if (trace())
       log->prints("Starting LocalAnticipatability\n");
 
@@ -132,7 +132,7 @@ void TR_LocalAnticipatability::analyzeBlock(TR::Block *block, vcount_t visitCoun
    {
    TR::StackMemoryRegion stackMemoryRegion(*trMemory());
 
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
    TR::TreeTop *currentTree = block->getEntry();
    TR::TreeTop *exitTree = block->getExit();
    int32_t symRefCount = comp()->getMaxAliasIndex();
@@ -574,7 +574,7 @@ void TR_LocalAnticipatability::analyzeBlock(TR::Block *block, vcount_t visitCoun
 
 bool TR_LocalAnticipatability::updateAnticipatabilityForSupportedNodes(TR::Node *node, ContainerType *seenDefinedSymbolReferences, ContainerType *seenStoredSymbolReferences, TR::Block *block, ContainerType *killedExpressions, ContainerType *allSymbolReferences, ContainerType *allSymbolReferencesInNullCheckReference, TR_BitVector *allSymbolReferencesInStore, ContainerType *storeNodes, vcount_t visitCount)
    {
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
    TR::ILOpCode &opCode = node->getOpCode();
 
    if (visitCount <= node->getVisitCount())
@@ -821,7 +821,7 @@ bool TR_LocalAnticipatability::updateAnticipatabilityForSupportedNodes(TR::Node 
   */
 bool TR_LocalAnticipatability::adjustInfoForAddressAdd(TR::Node *node, TR::Node *child, ContainerType *seenDefinedSymbolReferences, ContainerType *seenStoredSymbolReferences, ContainerType *killedExpressions, ContainerType *storeNodes, TR::Block *block)
    {
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
    bool childHasSupportedOpCode = false;
 
    TR::ILOpCode &childOpCode = child->getOpCode();

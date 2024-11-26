@@ -1351,7 +1351,7 @@ TR::Register *OMR::X86::TreeEvaluator::iselectEvaluator(TR::Node *node, TR::Code
    if (falseReg->containsCollectedReference())
       {
       if (comp->getOption(TR_TraceCG))
-         comp->getLogger()->printf(
+         comp->log()->printf(
             "Setting containsCollectedReference on result of select node in register %s\n",
             cg->getDebug()->getName(trueReg));
       trueReg->setContainsCollectedReference();
@@ -1432,7 +1432,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerIfCmpeqEvaluator(TR::Node *node, T
          cg->decReferenceCount(secondChild);
 
          if (cg->comp()->getOption(TR_TraceCG))
-            cg->comp()->getLogger()->printf("inserting long lookaside versioning overflow check @ node %p\n", node);
+            cg->comp()->log()->printf("inserting long lookaside versioning overflow check @ node %p\n", node);
 
          return NULL;
          }
@@ -1507,7 +1507,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerIfCmpneEvaluator(TR::Node *node, T
             cg->decReferenceCount(secondChild);
 
             if (comp->getOption(TR_TraceCG))
-               comp->getLogger()->printf("inserting long lookaside versioning overflow check @ node %p\n", node);
+               comp->log()->printf("inserting long lookaside versioning overflow check @ node %p\n", node);
 
             return NULL;
             }

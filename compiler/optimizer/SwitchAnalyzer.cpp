@@ -74,7 +74,7 @@ int32_t TR::SwitchAnalyzer::perform()
 
    if (trace())
       {
-      comp()->dumpMethodTrees(comp()->getLogger(), "Trees Before Performing Switch Analysis");
+      comp()->dumpMethodTrees(comp()->log(), "Trees Before Performing Switch Analysis");
       }
 
    TR::TreeTop *tt, *exitTree;
@@ -103,7 +103,7 @@ int32_t TR::SwitchAnalyzer::perform()
 
    if (trace())
       {
-      comp()->dumpMethodTrees(comp()->getLogger(), "Trees After Performing Switch Analysis");
+      comp()->dumpMethodTrees(comp()->log(), "Trees After Performing Switch Analysis");
       }
 
    return 1;
@@ -119,7 +119,7 @@ void TR::SwitchAnalyzer::analyze(TR::Node *node, TR::Block *block)
    {
    if (_blocksGeneratedByMe->isSet(block->getNumber())) return;
 
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
 
    _switch     = node;
    _switchTree = block->getLastRealTreeTop();
@@ -293,8 +293,8 @@ void TR::SwitchAnalyzer::findDenseSets(TR_LinkHead<SwitchInfo> *chain)
 
    if (trace())
       {
-      comp()->getLogger()->prints("After finding dense sets\n");
-      printInfo(comp()->getLogger(), comp()->fe(), chain);
+      comp()->log()->prints("After finding dense sets\n");
+      printInfo(comp()->log(), comp()->fe(), chain);
       }
 
    }
@@ -347,8 +347,8 @@ bool TR::SwitchAnalyzer::mergeDenseSets(TR_LinkHead<SwitchInfo> *chain)
 
    if (trace())
       {
-      comp()->getLogger()->prints("After merging dense sets\n");
-      printInfo(comp()->getLogger(), comp()->fe(), chain);
+      comp()->log()->prints("After merging dense sets\n");
+      printInfo(comp()->log(), comp()->fe(), chain);
       }
    return change;
    }
@@ -402,7 +402,7 @@ TR_LinkHead<TR::SwitchAnalyzer::SwitchInfo> *TR::SwitchAnalyzer::gather(TR_LinkH
 
    if (trace())
       {
-      TR::Logger *log = comp()->getLogger();
+      TR::Logger *log = comp()->log();
       log->prints("After Gathering\nPrimary Chain:\n");
       printInfo(log, comp()->fe(), chain);
       log->prints("Bound Chain:\n");
@@ -583,14 +583,14 @@ TR::Block *TR::SwitchAnalyzer::peelOffTheHottestValue(TR_LinkHead<SwitchInfo> *c
 
    if (trace())
       {
-      printInfo(comp()->getLogger(), comp()->fe(), chain);
+      printInfo(comp()->log(), comp()->fe(), chain);
       }
 
    float cutOffFrequency = 0.33f;
 
    if (trace())
       {
-      comp()->getLogger()->prints("\nLooking to see if we have a value that's more than 33%% of all cases.\n");
+      comp()->log()->prints("\nLooking to see if we have a value that's more than 33%% of all cases.\n");
       }
 
    TR_LinkHead<SwitchInfo> *list = chain;
@@ -627,8 +627,8 @@ TR::Block *TR::SwitchAnalyzer::peelOffTheHottestValue(TR_LinkHead<SwitchInfo> *c
 
       if (trace())
          {
-         comp()->getLogger()->printf("Found a dominant entry in a dense node for target 0x%p with frequency of %f.\n", topNode->_target->getNode(), maxFreq);
-         comp()->getLogger()->prints("Peeling off a quick test for this entry.\n");
+         comp()->log()->printf("Found a dominant entry in a dense node for target 0x%p with frequency of %f.\n", topNode->_target->getNode(), maxFreq);
+         comp()->log()->prints("Peeling off a quick test for this entry.\n");
          }
 
       return newBlock;
@@ -645,7 +645,7 @@ TR::Block *TR::SwitchAnalyzer::checkIfDefaultIsDominant(SwitchInfo *start)
    if (!start)
       return NULL;
 
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
    bool hasChildWithDecentFrequency = false;
    int32_t numCases      = _switch->getNumChildren() - 2;
    float cutOffFrequency = .5f / ((float)numCases);
@@ -792,7 +792,7 @@ void TR::SwitchAnalyzer::emit(TR_LinkHead<SwitchInfo> *chain, TR_LinkHead<Switch
    if (_switch->getOpCodeValue() == TR::lookup && (!comp()->isOptServer() || numCases>LOOKUP_SWITCH_GEN_IN_IL_OVERRIDE))
       {
       if (trace())
-         comp()->getLogger()->printf("numMajors %d, majorsInBound %d, numCases %d\n", numMajors, majorsInBound, numCases);
+         comp()->log()->printf("numMajors %d, majorsInBound %d, numCases %d\n", numMajors, majorsInBound, numCases);
 
       // if the number of cases is so small that it's always better to convert the switch to ifs, skip checks for backing out
       if (numCases > SWITCH_TO_IFS_THRESHOLD)
@@ -1135,7 +1135,7 @@ TR::SwitchAnalyzer::SwitchInfo *TR::SwitchAnalyzer::sortedListByFrequency(Switch
 
 TR::Block *TR::SwitchAnalyzer::linearSearch(SwitchInfo *start)
    {
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
 
    // FIXME: use profiling info
    //
@@ -1338,7 +1338,7 @@ int32_t *TR::SwitchAnalyzer::setupFrequencies(TR::Node *node)
       frequencies[i] = frequency;
 
       if (trace())
-         comp()->getLogger()->printf("Switch analyser: Frequency at pos %d is %d\n", i, frequencies[i]);
+         comp()->log()->printf("Switch analyser: Frequency at pos %d is %d\n", i, frequencies[i]);
       }
 
    // For each case value, lists the frequency of the selector being of that value

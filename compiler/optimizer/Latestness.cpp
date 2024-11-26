@@ -77,7 +77,7 @@ TR_Latestness::TR_Latestness(TR::Compilation *comp, TR::Optimizer *optimizer, TR
    _supportedNodesAsArray = _delayedness->_supportedNodesAsArray;
 
    if (trace)
-      comp->getLogger()->prints("Starting Latestness\n");
+      comp->log()->prints("Starting Latestness\n");
 
    TR::CFG *cfg = comp->getFlowGraph();
    _numberOfNodes = cfg->getNextNodeNumber();
@@ -127,13 +127,13 @@ TR_Latestness::TR_Latestness(TR::Compilation *comp, TR::Optimizer *optimizer, TR
 
       if (trace)
          {
-         comp->getLogger()->printf("\nIn Set of Block : %d\n", blockStructure->getNumber());
-         _inSetInfo[blockStructure->getNumber()]->print(comp->getLogger(), comp);
+         comp->log()->printf("\nIn Set of Block : %d\n", blockStructure->getNumber());
+         _inSetInfo[blockStructure->getNumber()]->print(comp->log(), comp);
          }
       }
 
    if (trace)
-      comp->getLogger()->prints("\nEnding Latestness\n");
+      comp->log()->prints("\nEnding Latestness\n");
 
    // Null out info that will not be used by callers
    _delayedness->_inSetInfo = NULL;
