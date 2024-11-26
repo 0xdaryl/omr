@@ -612,10 +612,10 @@ private:
 
          for (i = _nextIndex; i > 0 && _array[i/2]->objectGT(t->getObject()); i /=2 )
             {
-            //comp->getLogger()->printf("\tMoving %d to %d\n", i, i/2);
+            //comp->log()->printf("\tMoving %d to %d\n", i, i/2);
             _array[i] = _array[i/2];
             }
-         //comp->getLogger()->printf("Storing new item at location %d, _nextIndex is %d\n", i, _nextIndex);
+         //comp->log()->printf("Storing new item at location %d, _nextIndex is %d\n", i, _nextIndex);
          _array[i] = t;
 
          return _nextIndex++;
@@ -651,7 +651,7 @@ private:
 
       void dumpList(TR::Compilation * comp)
          {
-         TR::Logger *log = comp->getLogger();
+         TR::Logger *log = comp->log();
          log->prints("heap dump\n");
          for (uint32_t i = 0; i < _nextIndex; i++)
             {

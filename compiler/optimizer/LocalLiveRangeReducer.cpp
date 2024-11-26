@@ -103,7 +103,7 @@ int32_t TR_LocalLiveRangeReduction::perform()
       }
 
    if (trace())
-      comp()->getLogger()->prints("\nEnding LocalLiveRangeReducer\n");
+      comp()->log()->prints("\nEnding LocalLiveRangeReducer\n");
 
    return 2;
    }
@@ -458,7 +458,7 @@ static bool nodeMaybeMonitor(TR::Node *node)
 // Returns true if there is any constraint to the move
 bool TR_LocalLiveRangeReduction::isAnySymInDefinedOrUsedBy(TR_TreeRefInfo *currentTreeRefInfo, TR::Node *currentNode, TR_TreeRefInfo *movingTreeRefInfo )
    {
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
    TR::Node *movingNode = movingTreeRefInfo->getTreeTop()->getNode();
    // ignore anchors
    //
@@ -599,7 +599,7 @@ bool TR_LocalLiveRangeReduction::isAnySymInDefinedOrUsedBy(TR_TreeRefInfo *curre
 
 bool TR_LocalLiveRangeReduction::moveTreeBefore(TR_TreeRefInfo *treeToMove,TR_TreeRefInfo *anchor,int32_t passNumber)
    {
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
    TR::TreeTop *treeToMoveTT = treeToMove->getTreeTop();
    TR::TreeTop *anchorTT = anchor->getTreeTop();
    if (treeToMoveTT->getNextRealTreeTop() == anchorTT)
@@ -995,7 +995,7 @@ void TR_LocalLiveRangeReduction::printRefInfo(TR_TreeRefInfo *treeRefInfo)
    {
    if (trace())
       {
-      TR::Logger *log = comp()->getLogger();
+      TR::Logger *log = comp()->log();
       TR::Node *n;
       ListIterator<TR::Node> lit(treeRefInfo->getFirstRefNodesList());
       log->printf("[%p]:F={",treeRefInfo->getTreeTop()->getNode());
@@ -1037,7 +1037,7 @@ bool TR_LocalLiveRangeReduction::verifyRefInfo(List<TR::Node> *verifier,List<TR:
       else
          {
          if (trace())
-            comp()->getLogger()->printf("LocalLiveRangeReduction:node %p should not have beed in the List\n",node);
+            comp()->log()->printf("LocalLiveRangeReduction:node %p should not have beed in the List\n",node);
          return false;
          }
       }
@@ -1045,7 +1045,7 @@ bool TR_LocalLiveRangeReduction::verifyRefInfo(List<TR::Node> *verifier,List<TR:
    if (!verifier->isEmpty())
       {
       if (trace())
-         comp()->getLogger()->prints("LocalLiveRangeReduction: there are nodes that should have been in the List\n");
+         comp()->log()->prints("LocalLiveRangeReduction: there are nodes that should have been in the List\n");
       return false;
       }
    return true;
@@ -1056,7 +1056,7 @@ void TR_LocalLiveRangeReduction::printOnVerifyError(TR_TreeRefInfo *optRefInfo,T
    {
    if (trace())
       {
-      TR::Logger *log = comp()->getLogger();
+      TR::Logger *log = comp()->log();
       log->prints("from opt:");
       printRefInfo(optRefInfo);
       log->prints("verifier:");

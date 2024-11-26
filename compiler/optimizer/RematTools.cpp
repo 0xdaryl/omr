@@ -45,7 +45,7 @@ void RematSafetyInformation::add(TR::TreeTop *argStore, TR::TreeTop *rematStore)
 
 void RematSafetyInformation::dumpInfo(TR::Compilation *comp)
    {
-   TR::Logger *log = comp->getLogger();
+   TR::Logger *log = comp->log();
    for (uint32_t i = 0; i < dependentSymRefs.size(); ++i)
       {
       log->printf("  Arg Remat Safety Info for priv arg store node %d", argumentTreeTops[i]->getNode()->getGlobalIndex());
@@ -140,7 +140,7 @@ TR_YesNoMaybe RematTools::gatherNodesToCheck(TR::Compilation *comp,
       TR::Node *privArg, TR::Node *currentNode, TR::SparseBitVector &scanTargets,
       TR::SparseBitVector &symRefsToCheck, bool trace, TR::SparseBitVector &visitedNodes)
    {
-   TR::Logger *log = comp->getLogger();
+   TR::Logger *log = comp->log();
    visitedNodes[currentNode->getGlobalIndex()] = true;
 
    TR::ILOpCode &opCode = currentNode->getOpCode();
@@ -256,7 +256,7 @@ void RematTools::walkNodesCalculatingRematSafety(TR::Compilation *comp,
       TR::SparseBitVector &enabledSymRefs, TR::SparseBitVector &unsafeSymRefs,
       bool trace, TR::SparseBitVector &visitedNodes)
    {
-   TR::Logger *log = comp->getLogger();
+   TR::Logger *log = comp->log();
 
    for (uint16_t i = 0; i < currentNode->getNumChildren(); ++i)
       {
@@ -355,7 +355,7 @@ bool RematTools::walkTreesCalculatingRematSafety(TR::Compilation *comp,
       if (!getNextTreeTop(start, blocks, firstBlock))
          {
          if (trace)
-            comp->getLogger()->printf("  remat tools: failed to follow path for remat safety at [%p]\n", start->getNode());
+            comp->log()->printf("  remat tools: failed to follow path for remat safety at [%p]\n", start->getNode());
          return false;
          }
       }
@@ -391,7 +391,7 @@ bool RematTools::walkTreeTopsCalculatingRematFailureAlternatives(TR::Compilation
    TR::SparseBitVector &scanTargets, RematSafetyInformation &rematInfo, TR_BitVector *blocksToVisit,
    bool trace)
    {
-   TR::Logger *log = comp->getLogger();
+   TR::Logger *log = comp->log();
    TR::Block *firstBlock = start->getEnclosingBlock();
    TR_BitVector *blocks = blocksToVisit;
 #if defined(DEBUG) || defined(PROD_WITH_ASSUMES)

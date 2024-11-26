@@ -40,7 +40,7 @@ TR_ReachabilityAnalysis::TR_ReachabilityAnalysis(TR::Compilation *comp):_comp(co
 void
 TR_ReachabilityAnalysis::perform(TR_BitVector *result)
    {
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
    TR::CFG *cfg = comp()->getFlowGraph();
    int32_t numBlockIndexes = cfg->getNextNodeNumber();
    int32_t numBlocks       = cfg->getNumberOfNodes();
@@ -86,13 +86,13 @@ TR_ReachabilityAnalysis::propagateOneInput(blocknum_t inputBlockNum, blocknum_t 
    if (result->isSet(inputBlockNum))
       {
       if (comp()->getOption(TR_TraceReachability))
-         comp()->getLogger()->printf("    Propagate block_%d to block_%d\n", blockNum, inputBlockNum);
+         comp()->log()->printf("    Propagate block_%d to block_%d\n", blockNum, inputBlockNum);
       result->set(blockNum);
       }
    else
       {
       if (comp()->getOption(TR_TraceReachability))
-         comp()->getLogger()->printf("    No change to block_%d from block_%d\n", blockNum, inputBlockNum);
+         comp()->log()->printf("    No change to block_%d from block_%d\n", blockNum, inputBlockNum);
       }
    }
 
@@ -110,7 +110,7 @@ TR_ReachabilityAnalysis::traverse(blocknum_t blockNum, int32_t depth, blocknum_t
    depthMap[blockNum] = depth;
    bool value = isOrigin(getBlock(blockNum));
    if (trace)
-      comp()->getLogger()->printf("  traverse %sblock_%d depth %d\n", value? "origin ":"", blockNum, depth);
+      comp()->log()->printf("  traverse %sblock_%d depth %d\n", value? "origin ":"", blockNum, depth);
    result->setTo(blockNum, value);
 
    // Recursively propagate from inputs
@@ -132,7 +132,7 @@ TR_ReachabilityAnalysis::traverse(blocknum_t blockNum, int32_t depth, blocknum_t
          else
             {
             if (trace)
-               comp()->getLogger()->printf("    Loop: propagate block_%d to block_%d\n", blockNum, top);
+               comp()->log()->printf("    Loop: propagate block_%d to block_%d\n", blockNum, top);
             result->setTo(top, result->isSet(blockNum));
             }
          }

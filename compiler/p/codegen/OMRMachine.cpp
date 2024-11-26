@@ -1989,7 +1989,7 @@ OMR::Power::Machine::decFutureUseCountAndUnlatch(TR::Register *virtualRegister)
          {
          if (trace)
             {
-            comp->getLogger()->printf("\nOOL: %s's remaining uses are out-of-line, unlatching\n", self()->cg()->getDebug()->getName(virtualRegister));
+            comp->log()->printf("\nOOL: %s's remaining uses are out-of-line, unlatching\n", self()->cg()->getDebug()->getName(virtualRegister));
             }
          }
       virtualRegister->getAssignedRealRegister()->setState(TR::RealRegister::Unlatched);
@@ -2005,7 +2005,7 @@ OMR::Power::Machine::decFutureUseCountAndUnlatch(TR::Register *virtualRegister)
       TR_ASSERT(cg->isFreeSpillListLocked(), "Expecting the free spill list to be locked on this path");
       int32_t size = spillSizeForRegister(virtualRegister);
       if (trace)
-         comp->getLogger()->printf("\nFreeing backing storage " POINTER_PRINTF_FORMAT " of size %u from dead virtual %s\n", location, size, cg->getDebug()->getName(virtualRegister));
+         comp->log()->printf("\nFreeing backing storage " POINTER_PRINTF_FORMAT " of size %u from dead virtual %s\n", location, size, cg->getDebug()->getName(virtualRegister));
       cg->unlockFreeSpillList();
       cg->freeSpill(location, size, 0);
       virtualRegister->setBackingStorage(NULL);
@@ -2052,7 +2052,7 @@ OMR::Power::Machine::disassociateUnspilledBackingStorage()
             {
             int32_t size = spillSizeForRegister(virtReg);
             if (trace)
-               comp->getLogger()->printf("\nDisassociating backing storage " POINTER_PRINTF_FORMAT " of size %u from assigned virtual %s\n", location, size, cg->getDebug()->getName(virtReg));
+               comp->log()->printf("\nDisassociating backing storage " POINTER_PRINTF_FORMAT " of size %u from assigned virtual %s\n", location, size, cg->getDebug()->getName(virtReg));
             cg->freeSpill(location, size, 0);
             virtReg->setBackingStorage(NULL);
             location->setMaxSpillDepth(0);

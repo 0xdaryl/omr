@@ -187,7 +187,7 @@ OMR::X86::RegisterDependencyConditions::RegisterDependencyConditions(
                if (prevPrevInstr)
                   {
                   if (comp->getOption(TR_TraceCG))
-                     comp->getLogger()->printf("Moving reg reg copy earlier (after %p) in %s\n", prevPrevInstr, comp->signature());
+                     comp->log()->printf("Moving reg reg copy earlier (after %p) in %s\n", prevPrevInstr, comp->signature());
                   placeToAdd = prevPrevInstr;
                   }
                }

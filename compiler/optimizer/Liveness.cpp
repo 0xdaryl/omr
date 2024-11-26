@@ -83,7 +83,7 @@ TR_Liveness::TR_Liveness(TR::Compilation           *comp,
 
 void TR_Liveness::perform(TR_Structure *rootStructure)
    {
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
 
    if (traceLiveness())
       log->prints("Starting Liveness analysis\n");
@@ -124,7 +124,7 @@ bool TR_Liveness::postInitializationProcessing()
    {
    if (traceLiveness())
       {
-      TR::Logger *log = comp()->getLogger();
+      TR::Logger *log = comp()->log();
 
       for (int32_t i = 1; i < _numberOfNodes; ++i)
          {
@@ -132,22 +132,22 @@ bool TR_Liveness::postInitializationProcessing()
          if (_regularGenSetInfo[i])
             {
             log->prints(" gen set ");
-            _regularGenSetInfo[i]->print(comp()->getLogger(), comp());
+            _regularGenSetInfo[i]->print(comp()->log(), comp());
             }
          if (_regularKillSetInfo[i])
             {
             log->prints(" kill set ");
-            _regularKillSetInfo[i]->print(comp()->getLogger(), comp());
+            _regularKillSetInfo[i]->print(comp()->log(), comp());
             }
          if (_exceptionGenSetInfo[i])
             {
             log->prints(" exception gen set ");
-            _exceptionGenSetInfo[i]->print(comp()->getLogger(), comp());
+            _exceptionGenSetInfo[i]->print(comp()->log(), comp());
             }
          if (_exceptionKillSetInfo[i])
             {
             log->prints(" exception kill set ");
-            _exceptionKillSetInfo[i]->print(comp()->getLogger(), comp());
+            _exceptionKillSetInfo[i]->print(comp()->log(), comp());
             }
          }
       }

@@ -50,7 +50,7 @@ class Delimiter
 
       if (_trace)
          {
-         TR::Logger *log = _comp->getLogger();
+         TR::Logger *log = _comp->log();
          if (!comment0)
             log->printf("<%s>\n",_tag);
          else
@@ -74,7 +74,7 @@ class Delimiter
    ~Delimiter()
       {
       if (_trace)
-         _comp->getLogger()->printf("</%s>\n",_tag);
+         _comp->log()->printf("</%s>\n",_tag);
       }
 
    protected:

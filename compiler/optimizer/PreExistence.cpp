@@ -73,7 +73,7 @@ TR_PrexArgument::TR_PrexArgument(
 void TR_PrexArgInfo::dumpTrace()
    {
    TR::Compilation *comp = TR::comp();
-   TR::Logger *log = comp->getLogger();
+   TR::Logger *log = comp->log();
 
    log->printf("<argInfo address = %p numArgs = %d>\n", this, getNumArgs());
    for (int i = 0 ; i < getNumArgs(); i++)

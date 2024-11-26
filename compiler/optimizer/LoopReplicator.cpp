@@ -103,7 +103,7 @@ int32_t TR_LoopReplicator::perform()
       {
       dumpOptDetails(comp(), "Need profiling information in order to replicate...\n");
       if (trace())
-         comp()->getLogger()->printf("method is %s \n", comp()->signature());
+         comp()->log()->printf("method is %s \n", comp()->signature());
       if (!testLR)
          return 0;
       }
@@ -135,8 +135,8 @@ int32_t TR_LoopReplicator::perform()
 
    if (trace())
       {
-      comp()->getLogger()->prints("structure before replication :\n");
-      getDebug()->print(comp()->getLogger(), _rootStructure, 6);
+      comp()->log()->prints("structure before replication :\n");
+      getDebug()->print(comp()->log(), _rootStructure, 6);
       }
 
    // collect info about potential
@@ -194,7 +194,7 @@ int32_t TR_LoopReplicator::perform(TR_Structure *str)
    //  (2) originator of back-edge - (do-while loops)
 
    if (trace())
-      comp()->getLogger()->printf("analyzing loop (%d)\n", region->getNumber());
+      comp()->log()->printf("analyzing loop (%d)\n", region->getNumber());
 
    // case 1
    TR_StructureSubGraphNode *entryNode = region->getEntry();
@@ -208,7 +208,7 @@ int32_t TR_LoopReplicator::perform(TR_Structure *str)
             if (isWellFormedLoop(region, entry))
                {
                if (trace())
-                  comp()->getLogger()->prints("found while loop\n");
+                  comp()->log()->prints("found while loop\n");
                _loopType = whileDo;
                return replicateLoop(region, entryNode);
                }
@@ -243,7 +243,7 @@ int32_t TR_LoopReplicator::perform(TR_Structure *str)
    if (branchNode)
       {
       if (trace())
-         comp()->getLogger()->prints("found do-while loop\n");
+         comp()->log()->prints("found do-while loop\n");
       _loopType = doWhile;
       return replicateLoop(region, branchNode);
       }
@@ -257,7 +257,7 @@ int32_t TR_LoopReplicator::perform(TR_Structure *str)
 
 bool TR_LoopReplicator::isWellFormedLoop(TR_RegionStructure *region, TR_Structure *condBlock)
    {
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
 
    // FIXME:very simple checks for now
    //
@@ -350,7 +350,7 @@ bool TR_LoopReplicator::isWellFormedLoop(TR_RegionStructure *region, TR_Structur
 int32_t TR_LoopReplicator::replicateLoop(TR_RegionStructure *region,
                                          TR_StructureSubGraphNode *branchNode)
    {
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
 
    TR::Block *cBlock = branchNode->getStructure()->asBlock()->getBlock();
    TR::TreeTop *lastTT = cBlock->getLastRealTreeTop();
@@ -471,7 +471,7 @@ static void collectNonColdLoops(TR::Compilation *c, TR_RegionStructure *region, 
 
 bool TR_LoopReplicator::checkInnerLoopFrequencies(TR_RegionStructure *region, LoopInfo *lInfo)
    {
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
 
    // dont bother with small traces
    //
@@ -555,7 +555,7 @@ bool TR_LoopReplicator::shouldReplicateWithHotInnerLoops(
    if (hotInnerLoopHeaders->isEmpty())
       return true;
 
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
 
    // When there are hot inner loops, we only want to replicate when we'll
    // remove confounding paths leading into those inner loops. Right now we're
@@ -667,7 +667,7 @@ bool TR_LoopReplicator::shouldReplicateWithHotInnerLoops(
 
 bool TR_LoopReplicator::heuristics(LoopInfo *lInfo)
    {
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
 
    // pick a trace in the loop based on some heuristics [basic block frequencies]
    // any algorithm can be implemented here; however it should probably have the side
@@ -774,7 +774,7 @@ void TR_LoopReplicator::logTrace(LoopInfo *lInfo)
    if (!trace())
       return;
 
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
 
    log->prints("trace selected in loop :\n");
    log->prints("{ ");
@@ -796,13 +796,13 @@ TR::Block * TR_LoopReplicator::nextCandidate(TR::Block *X, TR_RegionStructure *r
       if (!edge)
          {
          if (trace())
-            comp()->getLogger()->printf("   candidate is %d\n", Y->getNumber());
+            comp()->log()->printf("   candidate is %d\n", Y->getNumber());
          cand = Y;
          }
       else if (computeWeight(edge))
          {
          if (trace())
-            comp()->getLogger()->printf("   candidate (%d) satisfied weight computation\n", Y->getNumber());
+            comp()->log()->printf("   candidate (%d) satisfied weight computation\n", Y->getNumber());
          cand = Y;
          }
       }
@@ -835,7 +835,7 @@ void TR_LoopReplicator::processBlock(TR::Block *X, TR_RegionStructure *region, L
       if (computeWeight(*e))
          {
          if (trace())
-            comp()->getLogger()->printf("   candidate (%d) satisfied weight computation, extending trace\n", dest->getNumber());
+            comp()->log()->printf("   candidate (%d) satisfied weight computation, extending trace\n", dest->getNumber());
          // favorable block found, extend the trace
          BlockEntry *bE = new (trStackMemory()) BlockEntry;
          bE->_block = dest;
@@ -886,8 +886,8 @@ bool TR_LoopReplicator::computeWeight(TR::CFGEdge *edge)
    float w2 = ((float)Yfreq)/(float)seedFreq;
    if (trace())
       {
-      comp()->getLogger()->printf("   weighing candidate : %d (Y)  predeccessor : %d (X)\n", Y->getNumber(), X->getNumber());
-      comp()->getLogger()->printf("      w(Y): %d w(X): %d w(seed): %d w(Y)/w(X): %.4f w(Y)/w(seed): %.4f\n", Yfreq, Xfreq,
+      comp()->log()->printf("   weighing candidate : %d (Y)  predeccessor : %d (X)\n", Y->getNumber(), X->getNumber());
+      comp()->log()->printf("      w(Y): %d w(X): %d w(seed): %d w(Y)/w(X): %.4f w(Y)/w(seed): %.4f\n", Yfreq, Xfreq,
                            seedFreq, w1, w2);
       }
    return (w1 >= BLOCK_THRESHOLD && w2 >= SEED_THRESHOLD) ? true : false;
@@ -896,7 +896,7 @@ bool TR_LoopReplicator::computeWeight(TR::CFGEdge *edge)
 // return the potential successor node in the CFG
 TR::Block * TR_LoopReplicator::bestSuccessor(TR_RegionStructure *region, TR::Block *node, TR::CFGEdge **edge)
    {
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
    TR::Block *cand = NULL;
 
    if (trace())
@@ -952,7 +952,7 @@ TR::Block * TR_LoopReplicator::bestSuccessor(TR_RegionStructure *region, TR::Blo
 // analyzed]; this routine skips the loop, picking the inner loop exit
 void TR_LoopReplicator::nextSuccessor(TR_RegionStructure *region, TR::Block **cand, TR::CFGEdge **edge)
    {
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
    TR::CFGEdge *succEdge = NULL;
    TR_Structure *candStructure = (*cand)->getStructureOf();
    TR_RegionStructure *parentStructure = candStructure->getParent()->asRegion();
@@ -1028,7 +1028,7 @@ void TR_LoopReplicator::nextSuccessor(TR_RegionStructure *region, TR::Block **ca
 // is replicated
 bool TR_LoopReplicator::gatherBlocksToBeCloned(LoopInfo *lInfo)
    {
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
    TR_RegionStructure *region = lInfo->_region;
    TR::Block *entry = region->getEntryBlock();
 
@@ -1160,7 +1160,7 @@ bool TR_LoopReplicator::gatherBlocksToBeCloned(LoopInfo *lInfo)
 /// side-entrance into the trace
 void TR_LoopReplicator::doTailDuplication(LoopInfo *lInfo)
    {
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
    TR_RegionStructure *region = lInfo->_region;
    TR::Block *loopHeader = region->getEntryBlock();
    // find the original last treetop
@@ -1335,7 +1335,7 @@ void TR_LoopReplicator::doTailDuplication(LoopInfo *lInfo)
 // add cloned blocks and fixup the cfg edges
 void TR_LoopReplicator::addBlocksAndFixEdges(LoopInfo *lInfo)
    {
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
    TR_RegionStructure *region = lInfo->_region;
 
    TR::Block *loopHeader = region->getEntryBlock();
@@ -1799,7 +1799,7 @@ TR::Block * TR_LoopReplicator::createEmptyGoto(TR::Block *source, TR::Block *des
       freq = source->getFrequency();
    TR::Block *gotoBlock = TR::Block::createEmptyBlock(destEntry->getNode(), comp(), freq, source);
    if (trace())
-      comp()->getLogger()->printf("goto block %p freq %d src freq %d dst freq %d\n", gotoBlock, freq, source->getFrequency(), dest->getFrequency());
+      comp()->log()->printf("goto block %p freq %d src freq %d dst freq %d\n", gotoBlock, freq, source->getFrequency(), dest->getFrequency());
    TR::TreeTop *gotoEntry = gotoBlock->getEntry();
    TR::TreeTop *gotoExit = gotoBlock->getExit();
    TR::TreeTop *target = NULL;
@@ -1868,7 +1868,7 @@ TR_LoopReplicator::BlockEntry * TR_LoopReplicator::searchList(TR::Block *block, 
 // and chooses loops to be modified
 void TR_LoopReplicator::modifyLoops()
    {
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
    for (LoopInfo *lInfo = _loopInfo.getFirst(); lInfo; lInfo = lInfo->getNext())
       {
       // clone blocks
@@ -1895,7 +1895,7 @@ void TR_LoopReplicator::modifyLoops()
 // clone the original loop header and fixup edges
 void TR_LoopReplicator::fixUpLoopEntry(LoopInfo *lInfo, TR::Block *loopHeader)
    {
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
    _cfg->setStructure(_rootStructure);
    TR_RegionStructure *region = lInfo->_region;
    // collect the backedges to the loop header
@@ -2334,7 +2334,7 @@ int32_t TR_LoopReplicator::getScaledFreq(TR_ScratchList<TR::Block> &blocks, TR::
 // overloaded heuristics; this is a dumb version for testing at count=0
 bool TR_LoopReplicator::heuristics(LoopInfo *lInfo, bool dumb)
    {
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
    TR_RegionStructure *region = lInfo->_region;
 
    if (trace())

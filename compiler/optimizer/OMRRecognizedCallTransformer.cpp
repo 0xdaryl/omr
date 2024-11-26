@@ -42,7 +42,7 @@ void OMR::RecognizedCallTransformer::preProcess() {}
 int32_t OMR::RecognizedCallTransformer::perform()
    {
    if (trace())
-      comp()->dumpMethodTrees(comp()->getLogger(), "Trees before recognized call transformer", comp()->getMethodSymbol());
+      comp()->dumpMethodTrees(comp()->log(), "Trees before recognized call transformer", comp()->getMethodSymbol());
 
    preProcess();
 
@@ -65,7 +65,7 @@ int32_t OMR::RecognizedCallTransformer::perform()
       }
 
    if (trace())
-      comp()->dumpMethodTrees(comp()->getLogger(), "Trees after recognized call transformer", comp()->getMethodSymbol());
+      comp()->dumpMethodTrees(comp()->log(), "Trees after recognized call transformer", comp()->getMethodSymbol());
 
    return 0;
    }

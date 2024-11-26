@@ -107,7 +107,7 @@ TR_LiveOnNotAllPaths::TR_LiveOnNotAllPaths(TR::Compilation * c, TR_Liveness * li
    TR_ASSERT((liveVarInfo == liveOnAllPaths->getLiveVariableInfo()), "Possibly inconsistent live variable information");
 
    bool trace = comp()->getOption(TR_TraceLiveness);
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
 
    TR::CFG *cfg = comp()->getFlowGraph();
    _numNodes = cfg->getNextNodeNumber();
@@ -226,7 +226,7 @@ ListElement<TR_BlockListEntry> *TR_OrderedBlockList::addInTraversalOrder(TR::Blo
 
       // otherwise, see if we should put it here
       int32_t ptrTraversalIndex = (forward) ? ptrBlock->getForwardTraversalIndex() : ptrBlock->getBackwardTraversalIndex();
-      //comp()->getLogger()->printf("addInTraversalOrder: comparing block_%d (%d) to list block_%d (%d)\n", block->getNumber(), blockTraversalIndex, ptrBlock->getNumber(), ptrTraversalIndex);
+      //comp()->log()->printf("addInTraversalOrder: comparing block_%d (%d) to list block_%d (%d)\n", block->getNumber(), blockTraversalIndex, ptrBlock->getNumber(), ptrTraversalIndex);
       if (blockTraversalIndex < ptrTraversalIndex)
          // block is earlier in traversal, so insert it here
          break;
@@ -347,7 +347,7 @@ TR_EdgeInformation *TR_SinkStores::findEdgeInformation(TR::CFGEdge *edge, List<T
 
 void TR_SinkStores::recordPlacementForDefAlongEdge(TR_EdgeStorePlacement *edgePlacement)
    {
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
    TR_EdgeInformation *edgeInfo=edgePlacement->_edges.getListHead()->getData();
    TR::CFGEdge *succEdge=edgeInfo->_edge;
    int32_t toBlockNumber=succEdge->getTo()->getNumber();
@@ -419,7 +419,7 @@ void TR_SinkStores::recordPlacementForDefAlongEdge(TR_EdgeStorePlacement *edgePl
 
 void TR_SinkStores::recordPlacementForDefInBlock(TR_BlockStorePlacement *blockPlacement)
    {
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
    TR::Block *block=blockPlacement->_block;
    int32_t blockNumber=block->getNumber();
 
@@ -521,7 +521,7 @@ int32_t TR_GeneralSinkStores::perform()
 
 int32_t TR_SinkStores::performStoreSinking()
    {
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
 
    if (trace())
       {
@@ -694,7 +694,7 @@ int32_t TR_SinkStores::performStoreSinking()
 
 void TR_SinkStores::lookForSinkableStores()
    {
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
    int32_t numLocals = _liveVarInfo->numLocals();
    TR::CFG *cfg = comp()->getFlowGraph();
 
@@ -1378,7 +1378,7 @@ bool TR_SinkStores::performThisTransformation()
 
 void TR_SinkStores::coalesceSimilarEdgePlacements()
    {
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
    if (trace())
       log->prints("Trying to coalesce edge placements:\n");
 
@@ -1512,7 +1512,7 @@ void TR_SinkStores::placeStoresInBlock(List<TR_StoreInformation> & stores, TR::B
          }
 
       if (0 && trace())
-         comp()->getLogger()->printf("        PLACE new store [" POINTER_PRINTF_FORMAT "] (original store [" POINTER_PRINTF_FORMAT "]) at beginning of block_%d\n", newStore->getNode(), store->getNode(), placementBlock->getNumber());
+         comp()->log()->printf("        PLACE new store [" POINTER_PRINTF_FORMAT "] (original store [" POINTER_PRINTF_FORMAT "]) at beginning of block_%d\n", newStore->getNode(), store->getNode(), placementBlock->getNumber());
       TR::TreeTop::insertTreeTops(comp(), treeBeforeNextPlacement, newStore, newStore);
       treeBeforeNextPlacement = newStore;
       _numPlacements++;
@@ -1527,7 +1527,7 @@ void TR_SinkStores::placeStoresInBlock(List<TR_StoreInformation> & stores, TR::B
 //  if it's not, then split the first edge and then redirect all the edges to the new split block
 void TR_SinkStores::placeStoresAlongEdges(List<TR_StoreInformation> & stores, List<TR_EdgeInformation> & edges)
    {
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
    TR::CFG *cfg=comp()->getFlowGraph();
 
    // don't want to update structure
@@ -1675,7 +1675,7 @@ void TR_SinkStores::placeStoresAlongEdges(List<TR_StoreInformation> & stores, Li
 
 void TR_SinkStores::doSinking()
    {
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
    TR::TreeTop *notYetRemovedStore=NULL;
    TR::TreeTop *skipStore=NULL;
 
@@ -1835,7 +1835,7 @@ TR_SinkStores::findUnsafeLoads(OMR::UnsafeSubexpressionRemover &usr, TR_BitVecto
             usr.recordDeadUse(node);
             if (trace())
                {
-               comp()->getLogger()->printf("Found unsafe load of local %d in node [" POINTER_PRINTF_FORMAT "] n%dn\n", symIdx, node, node->getGlobalIndex());
+               comp()->log()->printf("Found unsafe load of local %d in node [" POINTER_PRINTF_FORMAT "] n%dn\n", symIdx, node, node->getGlobalIndex());
                }
             }
          }
@@ -1860,7 +1860,7 @@ TR_SinkStores::getSinkableSymbol(TR::Node *node)
    }
 bool TR_SinkStores::treeIsSinkableStore(TR::Node *node, bool sinkIndirectLoads, uint32_t &indirectLoadCount, int32_t &depth, bool &isLoadStatic, vcount_t visitCount)
    {
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
 
    if (depth > 8)
       {
@@ -2078,7 +2078,7 @@ bool TR_SinkStores::isSymUsedInEdgePlacement(TR::CFGNode *block, TR::CFGNode *su
                {
                if (trace())
                   {
-                  TR::Logger *log = comp()->getLogger();
+                  TR::Logger *log = comp()->log();
                   log->prints("              symbolsKilled in current store\t");
                   _killedSymbolsToMove->print(log, comp());
                   log->println();
@@ -2164,7 +2164,7 @@ bool TR_SinkStores::shouldSinkStoreAlongEdge(int symIdx, TR::CFGNode *block, TR:
    if (isLoadStatic && blockContainsCall(succBlock->asBlock(), comp()))
       {
       if (trace())
-         comp()->getLogger()->printf("            Can't push sym %d to successor block_%d (static load)\n", symIdx, succBlock->getNumber());
+         comp()->log()->printf("            Can't push sym %d to successor block_%d (static load)\n", symIdx, succBlock->getNumber());
       return false;
       }
 
@@ -2195,7 +2195,7 @@ bool TR_SinkStores::checkLiveMergingPaths(TR_BlockListEntry *blockEntry, int32_t
    TR::Block *block = blockEntry->_block;
 
    if (trace())
-      comp()->getLogger()->printf("            Counting LONAP predecessors to compare to propagation count %d\n", blockEntry->_count);
+      comp()->log()->printf("            Counting LONAP predecessors to compare to propagation count %d\n", blockEntry->_count);
 
    // first, if block is a merge point, we need to make sure that the def propagated here along all paths
    int32_t numPredsLONAP=0;
@@ -2208,7 +2208,7 @@ bool TR_SinkStores::checkLiveMergingPaths(TR_BlockListEntry *blockEntry, int32_t
       if (_liveOnNotAllPaths->_outSetInfo[predBlockNumber]->get(symIdx))
          {
          if (trace())
-            comp()->getLogger()->printf("              found LONAP predecessor %d\n", predBlockNumber);
+            comp()->log()->printf("              found LONAP predecessor %d\n", predBlockNumber);
          numPredsLONAP++;
          }
       }
@@ -2252,7 +2252,7 @@ TR_SinkStores::isCorrectCommonedLoad(TR::Node *commonedLoad, TR::Node *searchNod
    if (commonedLoad == searchNode)
       {
       if (trace())
-         comp()->getLogger()->printf("           found commonedLoad = " POINTER_PRINTF_FORMAT "\n", commonedLoad);
+         comp()->log()->printf("           found commonedLoad = " POINTER_PRINTF_FORMAT "\n", commonedLoad);
       return true;
       }
    for (int32_t i = searchNode->getNumChildren()-1; i >= 0; i--)
@@ -2298,7 +2298,7 @@ TR_SinkStores::genStoreToTempSyms(TR::TreeTop *storeLocation,
 // FIXME: does isCorrectCommonedLoad need to be called for all symbols or just TR_MethodMetaData symbols
          {
          if (trace())
-            comp()->getLogger()->printf("(Transformation #%d start - create temp store)\n", _numTransformations);
+            comp()->log()->printf("(Transformation #%d start - create temp store)\n", _numTransformations);
          if (performTransformation(comp(),
                "%s Create new temp store node for commoned loads sym %d and place above store [" POINTER_PRINTF_FORMAT "]\n",OPT_DETAILS, symIdx, storeLocation->getNode())
              && performThisTransformation())
@@ -2333,13 +2333,13 @@ TR_SinkStores::genStoreToTempSyms(TR::TreeTop *storeLocation,
                   {
                   store->_movable = false;
                   if (trace())
-                     comp()->getLogger()->printf("\tmarking store candidate [" POINTER_PRINTF_FORMAT "] as unmovable because dependent temp store transformation #%d was skipped\n", store->_useOrKillInfo->_tt->getNode(), _numTransformations);
+                     comp()->log()->printf("\tmarking store candidate [" POINTER_PRINTF_FORMAT "] as unmovable because dependent temp store transformation #%d was skipped\n", store->_useOrKillInfo->_tt->getNode(), _numTransformations);
                   }
                storeElement = storeElement->getNextElement();
                }
             }
          if (trace())
-            comp()->getLogger()->printf("(Transformation #%d was %s)\n", _numTransformations,performThisTransformation() ? "performed" : "skipped");
+            comp()->log()->printf("(Transformation #%d was %s)\n", _numTransformations,performThisTransformation() ? "performed" : "skipped");
          _numTransformations++;
          }
       }
@@ -2369,7 +2369,7 @@ TR_SinkStores::replaceLoadsWithTempSym(TR::Node *newNode, TR::Node *origNode, TR
          if (symRef0)
             {
             if (trace())
-               comp()->getLogger()->printf("         replacing symRef on duplicate node " POINTER_PRINTF_FORMAT " (of original node " POINTER_PRINTF_FORMAT ") with temp symRef " POINTER_PRINTF_FORMAT "\n", newNode, origNode, symRef0);
+               comp()->log()->printf("         replacing symRef on duplicate node " POINTER_PRINTF_FORMAT " (of original node " POINTER_PRINTF_FORMAT ") with temp symRef " POINTER_PRINTF_FORMAT "\n", newNode, origNode, symRef0);
             newNode->setSymbolReference(symRef0);
             }
          }
@@ -2405,7 +2405,7 @@ bool TR_SinkStores::storeCanMoveThroughBlock(TR_BitVector *blockKilledSet, TR_Bi
 
 bool TR_GeneralSinkStores::sinkStorePlacement(TR_MovableStore *movableStore)
    {
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
    TR::Block *sourceBlock = movableStore->_useOrKillInfo->_block;
    TR::TreeTop *tt = movableStore->_useOrKillInfo->_tt;
    int32_t symIdx = movableStore->_symIdx;

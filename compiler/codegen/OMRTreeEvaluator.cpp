@@ -741,7 +741,7 @@ void OMR::TreeEvaluator::evaluateNodesWithFutureUses(TR::Node *node, TR::CodeGen
          //
          if (comp->getOption(TR_TraceCG))
             {
-            TR::Logger *log = comp->getLogger();
+            TR::Logger *log = comp->log();
             log->printf("avoiding escaping commoned subtree %p [RealLoad/Store: %p], but processing its children: node is ", node, actualLoadOrStoreChild);
             if (actualLoadOrStoreChild->getOpCode().isStore())
                log->prints("store\n");
@@ -761,7 +761,7 @@ void OMR::TreeEvaluator::evaluateNodesWithFutureUses(TR::Node *node, TR::CodeGen
       else
          {
          if (comp->getOption(TR_TraceCG))
-            comp->getLogger()->printf("O^O pre-evaluating escaping commoned subtree %p\n", node);
+            comp->log()->printf("O^O pre-evaluating escaping commoned subtree %p\n", node);
 
          (void)cg->evaluate(node);
 

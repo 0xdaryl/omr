@@ -547,7 +547,7 @@ int32_t OMR::ARM::Linkage::buildARMLinkageArgs(TR::Node                         
       {
       if (comp->getOption(TR_TraceCG))
          {
-         comp->getLogger()->printf("Special arg %s in %s\n",
+         comp->log()->printf("Special arg %s in %s\n",
             comp->getDebug()->getName(callNode->getChild(from)),
             comp->getDebug()->getName(self()->machine()->getRealRegister(specialArgReg)));
          }

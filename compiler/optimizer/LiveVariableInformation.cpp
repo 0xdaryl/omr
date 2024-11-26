@@ -84,7 +84,7 @@ TR_LiveVariableInformation::TR_LiveVariableInformation(TR::Compilation   *c,
 
 void TR_LiveVariableInformation::collectLiveVariableInformation()
    {
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
 
    if (traceLiveVarInfo())
       log->prints("Collecting live variable information\n");
@@ -163,7 +163,7 @@ void TR_LiveVariableInformation::initializeGenAndKillSetInfo(TR_BitVector **regu
                                                              TR_BitVector **exceptionGenSetInfo,
                                                              TR_BitVector **exceptionKillSetInfo)
    {
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
 
    if (_haveCachedGenAndKillSets)
       {
@@ -410,7 +410,7 @@ void TR_LiveVariableInformation::visitTreeForLocals(TR::Node *node, TR_BitVector
                                                     bool movingForwardThroughTrees, bool visitEntireTree, vcount_t visitCount,
                                                     TR_BitVector *commonedLoads, bool belowCommonedNode)
    {
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
 
    if (movingForwardThroughTrees)
       {
@@ -668,7 +668,7 @@ TR_OSRLiveVariableInformation::findUseOfLocal(TR::Node *node, int32_t blockNum,
    TR_LiveVariableInformation::findUseOfLocal(node, blockNum, genSetInfo, killSetInfo, commonedLoads, movingForwardThroughTrees, visitCount);
    if (comp()->isPotentialOSRPoint(node))
       {
-      TR::Logger *log = comp()->getLogger();
+      TR::Logger *log = comp()->log();
       TR_BitVector *liveSymbols = getLiveSymbolsInInterpreter(node->getByteCodeInfo());
       if (killSetInfo[blockNum])
          *liveSymbols -= *killSetInfo[blockNum];
@@ -705,7 +705,7 @@ TR_OSRLiveVariableInformation::buildLiveSymbolsBitVector(TR_OSRMethodData *osrMe
    if (osrMethodData == NULL || osrMethodData->getSymRefs() == NULL)
       return;
 
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
    TR_BitVector *deadSymRefs = osrMethodData->getLiveRangeInfo(byteCodeIndex);
    TR_BitVector *liveSymRefs = new (comp()->trStackMemory()) TR_BitVector(0, trMemory(), stackAlloc);
 
