@@ -427,7 +427,7 @@ void TR_RegionStructure::ExitExtraction::extractUnconditionalExits(
    if (_workStack.size() == 0)
       return;
 
-   TR::Logger *log = _comp->getLogger();
+   TR::Logger *log = _comp->log();
 
    if (_trace)
       _comp->dumpMethodTrees(log, "Trees before unconditional exit extraction");
@@ -475,7 +475,7 @@ void TR_RegionStructure::ExitExtraction::extractUnconditionalExits(
 
 void TR_RegionStructure::ExitExtraction::enqueue(TR_Structure * const s)
    {
-   TR::Logger *log = _comp->getLogger();
+   TR::Logger *log = _comp->log();
    if (_trace)
       log->printf("enqueueing %d:%p\n", s->getNumber(), s);
 
@@ -489,7 +489,7 @@ void TR_RegionStructure::ExitExtraction::enqueue(TR_Structure * const s)
 void TR_RegionStructure::ExitExtraction::collectWork(
    const TR::list<TR::Block*, TR::Region&> &blocks)
    {
-   TR::Logger *log = _comp->getLogger();
+   TR::Logger *log = _comp->log();
    StructureSet relevant(std::less<TR_Structure*>(), _memRegion);
 
    for (auto b = blocks.begin(); b != blocks.end(); ++b)
@@ -545,7 +545,7 @@ void TR_RegionStructure::ExitExtraction::collectWorkFromRegion(
 void TR_RegionStructure::ExitExtraction::extractStructure(
    TR_Structure * const initialStructure)
    {
-   TR::Logger *log = _comp->getLogger();
+   TR::Logger *log = _comp->log();
    TR_RegionStructure *region = initialStructure->getParent();
    if (region == NULL)
       return; // ignore initialStructure because it has been detached
@@ -687,7 +687,7 @@ TR_BitVector &TR_RegionStructure::ExitExtraction::regionContents(
 
    if (_trace)
       {
-      _comp->getLogger()->printf("contents of region %d:%p:", region->getNumber(), region);
+      _comp->log()->printf("contents of region %d:%p:", region->getNumber(), region);
       traceBitVector(contents);
       }
 
@@ -724,7 +724,7 @@ void TR_RegionStructure::ExitExtraction::removeContentsFromRegion(
 
    if (_trace)
       {
-      _comp->getLogger()->printf("adjusted contents of region %d:%p:",
+      _comp->log()->printf("adjusted contents of region %d:%p:",
          region->getNumber(),
          region);
 
@@ -734,7 +734,7 @@ void TR_RegionStructure::ExitExtraction::removeContentsFromRegion(
 
 void TR_RegionStructure::ExitExtraction::traceBitVector(TR_BitVector &bv)
    {
-   TR::Logger *log = _comp->getLogger();
+   TR::Logger *log = _comp->log();
    TR_BitVectorIterator bvi(bv);
    while (bvi.hasMoreElements())
       log->printf(" %d", bvi.getNextElement());
@@ -747,7 +747,7 @@ void TR_RegionStructure::ExitExtraction::moveNodeIntoParent(
    TR_RegionStructure * const region,
    TR_RegionStructure * const parent)
    {
-   TR::Logger *log = _comp->getLogger();
+   TR::Logger *log = _comp->log();
 
    if (node == region->getEntry())
       {
@@ -900,7 +900,7 @@ void TR_RegionStructure::ExitExtraction::moveOutgoingEdgeToParent(
       edge,
       node);
 
-   TR::Logger *log = _comp->getLogger();
+   TR::Logger *log = _comp->log();
 
    auto * const exitTgt = toStructureSubGraphNode(edge->getTo());
    const int32_t tgtNum = exitTgt->getNumber();
@@ -2105,7 +2105,7 @@ void TR_RegionStructure::collapseIntoParent()
       {
       diagnostic("==> Structure before collapsing %d into parent %d\n",
                   getNumber(), getParent()->getNumber());
-      comp()->getDebug()->print(comp()->getLogger(), getParent(), 6);
+      comp()->getDebug()->print(comp()->log(), getParent(), 6);
       }
 
    TR_StructureSubGraphNode *node;
@@ -2839,7 +2839,7 @@ void TR_Structure::mergeBlocks(TR::Block *merged, TR::Block *mergedInto)
 
    TR_ASSERT(s->getNumber() == merged->getNumber(),"Structure: bad structure when merging blocks");
    if (debug("dumpStructure") && comp()->getLoggingEnabled())
-      comp()->getDebug()->print(comp()->getLogger(), comp()->getFlowGraph()->getStructure(), 6);
+      comp()->getDebug()->print(comp()->log(), comp()->getFlowGraph()->getStructure(), 6);
    }
 
 

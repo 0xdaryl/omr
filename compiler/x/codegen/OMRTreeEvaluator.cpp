@@ -293,7 +293,7 @@ TR::Instruction *OMR::X86::TreeEvaluator::insertLoadConstant(TR::Node           
            cg->profiledPointersRequireRelocation()))
          {
          if (comp->getOption(TR_TraceCG))
-            comp->getLogger()->printf("Adding instr %p to MethodPICSites for node %p\n", movInstruction, node);
+            comp->log()->printf("Adding instr %p to MethodPICSites for node %p\n", movInstruction, node);
          comp->getStaticMethodPICSites()->push_front(movInstruction);
          }
 
@@ -369,7 +369,7 @@ TR::Instruction *OMR::X86::TreeEvaluator::insertLoadConstant(TR::Node           
              cg->profiledPointersRequireRelocation()))
             {
             if (comp->getOption(TR_TraceCG))
-               comp->getLogger()->printf("Adding instr %p to MethodPICSites for node %p\n", movInstruction, node);
+               comp->log()->printf("Adding instr %p to MethodPICSites for node %p\n", movInstruction, node);
             comp->getStaticMethodPICSites()->push_front(movInstruction);
             }
 
@@ -506,7 +506,7 @@ void OMR::X86::TreeEvaluator::padUnresolvedDataReferences(
       {
       TR::Instruction *pi = generatePaddingInstruction(padBytes, node, cg);
       if (comp->getOption(TR_TraceCG))
-         comp->getLogger()->printf("adding %d pad bytes following unresolved data instruction %p\n", padBytes, pi->getPrev());
+         comp->log()->printf("adding %d pad bytes following unresolved data instruction %p\n", padBytes, pi->getPrev());
       }
    }
 
@@ -1849,7 +1849,7 @@ void OMR::X86::TreeEvaluator::arrayCopy64BitPrimitiveInlineSmallSizeWithoutREPMO
    TR::Compilation *comp = cg->comp();
    if (comp->getOption(TR_TraceCG))
       {
-      comp->getLogger()->printf(
+      comp->log()->printf(
          "%s: node n%dn srcReg %s dstReg %s sizeReg %s repMovsThresholdBytes %d\n", __FUNCTION__,
          node->getGlobalIndex(), comp->getDebug()->getName(srcReg), comp->getDebug()->getName(dstReg),
          comp->getDebug()->getName(sizeReg), repMovsThresholdBytes);
@@ -1966,7 +1966,7 @@ void OMR::X86::TreeEvaluator::arrayCopy32BitPrimitiveInlineSmallSizeWithoutREPMO
    TR::Compilation *comp = cg->comp();
    if (comp->getOption(TR_TraceCG))
       {
-      comp->getLogger()->printf("%s: node n%dn srcReg %s dstReg %s sizeReg %s repMovsThresholdBytes %d\n", __FUNCTION__,
+      comp->log()->printf("%s: node n%dn srcReg %s dstReg %s sizeReg %s repMovsThresholdBytes %d\n", __FUNCTION__,
          node->getGlobalIndex(), comp->getDebug()->getName(srcReg), comp->getDebug()->getName(dstReg),
          comp->getDebug()->getName(sizeReg), repMovsThresholdBytes);
       }
@@ -2170,7 +2170,7 @@ static void arrayCopy16BitPrimitiveInlineSmallSizeWithoutREPMOVSImplRoot16(TR::N
    TR::Compilation *comp = cg->comp();
    if (comp->getOption(TR_TraceCG))
       {
-      comp->getLogger()->printf("%s: node n%dn srcReg %s dstReg %s sizeReg %s repMovsThresholdBytes %d\n", __FUNCTION__,
+      comp->log()->printf("%s: node n%dn srcReg %s dstReg %s sizeReg %s repMovsThresholdBytes %d\n", __FUNCTION__,
          node->getGlobalIndex(), comp->getDebug()->getName(srcReg), comp->getDebug()->getName(dstReg), comp->getDebug()->getName(sizeReg), repMovsThresholdBytes);
       }
 
@@ -2311,7 +2311,7 @@ static void arrayCopy8BitPrimitiveInlineSmallSizeWithoutREPMOVSImplRoot8(TR::Nod
    TR::Compilation *comp = cg->comp();
    if (comp->getOption(TR_TraceCG))
       {
-      comp->getLogger()->printf("%s: node n%dn srcReg %s dstReg %s sizeReg %s repMovsThresholdBytes %d\n", __FUNCTION__,
+      comp->log()->printf("%s: node n%dn srcReg %s dstReg %s sizeReg %s repMovsThresholdBytes %d\n", __FUNCTION__,
          node->getGlobalIndex(), comp->getDebug()->getName(srcReg), comp->getDebug()->getName(dstReg),
          comp->getDebug()->getName(sizeReg), repMovsThresholdBytes);
       }
@@ -2557,7 +2557,7 @@ static void generateRepMovsInstructionBasedOnElementSize(uint8_t elementSize,
 
    if (comp->getOption(TR_TraceCG))
       {
-      comp->getLogger()->printf("%s: node n%dn elementSize %u basedOnCPU %d repmovs %d processor %d %s\n", __FUNCTION__, node->getGlobalIndex(), elementSize, basedOnCPU,
+      comp->log()->printf("%s: node n%dn elementSize %u basedOnCPU %d repmovs %d processor %d %s\n", __FUNCTION__, node->getGlobalIndex(), elementSize, basedOnCPU,
          repmovs, comp->target().cpu.getProcessorDescription().processor, comp->target().cpu.getProcessorName());
       }
 
@@ -3019,7 +3019,7 @@ static void arrayCopyPrimitiveInlineSmallSizeConstantCopySize(TR::Node* node,
 
    if (comp->getOption(TR_TraceCG))
       {
-      comp->getLogger()->printf("%s: node n%dn srcReg %s dstReg %s sizeReg %s copySize %d\n", __FUNCTION__, node->getGlobalIndex(),
+      comp->log()->printf("%s: node n%dn srcReg %s dstReg %s sizeReg %s copySize %d\n", __FUNCTION__, node->getGlobalIndex(),
          comp->getDebug()->getName(srcReg), comp->getDebug()->getName(dstReg), comp->getDebug()->getName(sizeReg), copySize);
       }
 

@@ -184,7 +184,7 @@ OMR::CodeGenerator::evaluate(TR::Node * node)
 
       if (comp->getOption(TR_TraceRegisterPressureDetails) && comp->getLoggingEnabled())
          {
-         TR::Logger *log = comp->getLogger();
+         TR::Logger *log = comp->log();
          log->printf("  evaluated %s", self()->getDebug()->getName(node));
          self()->getDebug()->dumpLiveRegisters(log);
          log->println();
@@ -213,7 +213,7 @@ OMR::CodeGenerator::evaluate(TR::Node * node)
             //
             if (comp->getOption(TR_TraceCG))
                {
-               comp->getLogger()->printf(" _stackOfArtificiallyInflatedNodes.pop(): node %p part of commoned case, might have avoided a bug!\n", artificiallyInflatedNode);
+               comp->log()->printf(" _stackOfArtificiallyInflatedNodes.pop(): node %p part of commoned case, might have avoided a bug!\n", artificiallyInflatedNode);
                }
             }
 
@@ -232,7 +232,7 @@ OMR::CodeGenerator::evaluate(TR::Node * node)
 
          if (comp->getOption(TR_TraceCG))
             {
-            comp->getLogger()->printf(" _stackOfArtificiallyInflatedNodes.pop() %p, decReferenceCount(...) called. reg=%s\n", artificiallyInflatedNode,
+            comp->log()->printf(" _stackOfArtificiallyInflatedNodes.pop() %p, decReferenceCount(...) called. reg=%s\n", artificiallyInflatedNode,
                                       artificiallyInflatedNode->getRegister()?artificiallyInflatedNode->getRegister()->getRegisterName(comp):"null");
             }
          }
@@ -399,7 +399,7 @@ OMR::CodeGenerator::decReferenceCount(TR::Node * node)
          {
          storageReference->decOwningRegisterCount();
          if (self()->traceBCDCodeGen())
-            self()->comp()->getLogger()->printf("\tdecrement owningRegisterCount %d->%d on ref #%d (%s) for reg %s as %s (%p) refCount == 1 (going to 0)\n",
+            self()->comp()->log()->printf("\tdecrement owningRegisterCount %d->%d on ref #%d (%s) for reg %s as %s (%p) refCount == 1 (going to 0)\n",
                storageReference->getOwningRegisterCount()+1,
                storageReference->getOwningRegisterCount(),
                storageReference->getReferenceNumber(),

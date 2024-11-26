@@ -88,7 +88,7 @@ TR_GlobalAnticipatability::TR_GlobalAnticipatability(TR::Compilation *comp, TR::
      _localTransparency(_localAnalysisInfo, trace),
      _localAnticipatability(_localAnalysisInfo, &_localTransparency, trace)
    {
-   TR::Logger *log = comp->getLogger();
+   TR::Logger *log = comp->log();
    if (trace)
       log->prints("Starting GlobalAnticipatability\n");
 
@@ -197,7 +197,7 @@ static bool nodeCanSurvive(TR::Node *nextNode, TR::Node *lastNodeFirstChild, TR:
          }
 
       if (trace)
-         comp->getLogger()->printf("seen similar access %d\n", seenSimilarAccess);
+         comp->log()->printf("seen similar access %d\n", seenSimilarAccess);
 
       if (seenSimilarAccess)
          {
@@ -224,7 +224,7 @@ static bool nodeCanSurvive(TR::Node *nextNode, TR::Node *lastNodeFirstChild, TR:
             }
 
          if (trace)
-            comp->getLogger()->printf("cl %p other cl %p\n", cl, otherClassObject);
+            comp->log()->printf("cl %p other cl %p\n", cl, otherClassObject);
 
          if (cl && otherClassObject && (comp->fe()->isInstanceOf(cl, otherClassObject, true) == TR_yes))
             return true;
@@ -304,7 +304,7 @@ void TR_GlobalAnticipatability::killBasedOnSuccTransparency(TR::Block *block)
 //
 void TR_GlobalAnticipatability::analyzeTreeTopsInBlockStructure(TR_BlockStructure *blockStructure)
    {
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
    TR::Block *block = blockStructure->getBlock();
    TR::TreeTop *currentTree = block->getExit();
    TR::TreeTop *entryTree = block->getEntry();

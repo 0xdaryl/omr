@@ -276,7 +276,7 @@ void TR::S390zLinuxSystemLinkage::createPrologue(TR::Instruction* cursor)
 
    if (comp()->getOption(TR_TraceCG))
       {
-      comp()->getLogger()->printf("Initial stackFrameSize = %d\n Offset to first parameter = %d\n Argument size = %d\n Local size = %d\n", stackFrameSize, self()->getOffsetToFirstParm(), argSize, localSize);
+      comp()->log()->printf("Initial stackFrameSize = %d\n Offset to first parameter = %d\n Argument size = %d\n Local size = %d\n", stackFrameSize, self()->getOffsetToFirstParm(), argSize, localSize);
       }
 
    // Now that we know the stack frame size, map the stack backwards
@@ -700,11 +700,11 @@ TR::S390zLinuxSystemLinkage::fillGPRsInEpilogue(TR::Node* node, TR::Instruction*
    for( i = lastReg = firstReg = TR::RealRegister::FirstGPR; i <= TR::RealRegister::LastGPR; ++i )
       {
       if (comp()->getOption(TR_TraceCG))
-         comp()->getLogger()->printf("Considering Register %d:\n",i- TR::RealRegister::FirstGPR);
+         comp()->log()->printf("Considering Register %d:\n",i- TR::RealRegister::FirstGPR);
       if(getPreserved(REGNUM(i)))
          {
          if (comp()->getOption(TR_TraceCG))
-            comp()->getLogger()->prints("\tIt is Preserved\n");
+            comp()->log()->prints("\tIt is Preserved\n");
 
          if (findStartReg)
             firstReg = static_cast<TR::RealRegister::RegNum>(i);
@@ -712,7 +712,7 @@ TR::S390zLinuxSystemLinkage::fillGPRsInEpilogue(TR::Node* node, TR::Instruction*
          if ((getRealRegister(REGNUM(i)))->getHasBeenAssignedInMethod())
             {
             if (comp()->getOption(TR_TraceCG))
-               comp()->getLogger()->prints("\tand Assigned. ");
+               comp()->log()->prints("\tand Assigned. ");
             findStartReg = false;
             }
 
@@ -729,7 +729,7 @@ TR::S390zLinuxSystemLinkage::fillGPRsInEpilogue(TR::Node* node, TR::Instruction*
 
             offset =  getRegisterSaveOffset(REGNUM(firstReg));
 
-            //comp()->getLogger()->printf("\tstackFrameSize = %d offset = %d\n",stackFrameSize,offset);
+            //comp()->log()->printf("\tstackFrameSize = %d offset = %d\n",stackFrameSize,offset);
 
             TR::MemoryReference *retAddrMemRef = generateS390MemoryReference(spReg, offset + stackFrameSize, cg());
 
@@ -743,7 +743,7 @@ TR::S390zLinuxSystemLinkage::fillGPRsInEpilogue(TR::Node* node, TR::Instruction*
             }
 
          if (comp()->getOption(TR_TraceCG))
-            comp()->getLogger()->println();
+            comp()->log()->println();
          }
       }
 
@@ -795,22 +795,22 @@ TR::S390zLinuxSystemLinkage::spillGPRsInPrologue(TR::Node* node, TR::Instruction
    for( i = lastReg = firstReg = TR::RealRegister::FirstGPR; i <= TR::RealRegister::LastGPR; ++i )
       {
       if (comp()->getOption(TR_TraceCG))
-         comp()->getLogger()->printf("Considering Register %d:\n",i- TR::RealRegister::FirstGPR);
+         comp()->log()->printf("Considering Register %d:\n",i- TR::RealRegister::FirstGPR);
       if(getPreserved(REGNUM(i)))
          {
          if (comp()->getOption(TR_TraceCG))
-            comp()->getLogger()->prints("\tIt is Preserved\n");
+            comp()->log()->prints("\tIt is Preserved\n");
 
          if (findStartReg)
             {
-            //comp()->getLogger()->printf("\tSetting firstReg to %d\n",(i- TR::RealRegister::FirstGPR));
+            //comp()->log()->printf("\tSetting firstReg to %d\n",(i- TR::RealRegister::FirstGPR));
             firstReg = static_cast<TR::RealRegister::RegNum>(i);
             }
 
          if ((getRealRegister(REGNUM(i)))->getHasBeenAssignedInMethod())
             {
             if (comp()->getOption(TR_TraceCG))
-               comp()->getLogger()->prints("\t It is Assigned. Putting in to GPRSaveMask\n");
+               comp()->log()->prints("\t It is Assigned. Putting in to GPRSaveMask\n");
             GPRSaveMask |= 1 << (i - TR::RealRegister::FirstGPR);
             findStartReg = false;
             }
@@ -827,10 +827,10 @@ TR::S390zLinuxSystemLinkage::spillGPRsInPrologue(TR::Node* node, TR::Instruction
                lastReg = static_cast<TR::RealRegister::RegNum>(i-1);
 
             if (comp()->getOption(TR_TraceCG))
-               comp()->getLogger()->printf("\tGenerating preserve stores from %d  to %d \n",(lastReg - TR::RealRegister::FirstGPR),firstReg - TR::RealRegister::FirstGPR);
+               comp()->log()->printf("\tGenerating preserve stores from %d  to %d \n",(lastReg - TR::RealRegister::FirstGPR),firstReg - TR::RealRegister::FirstGPR);
 
             offset =  getRegisterSaveOffset(REGNUM(firstReg));
-            //comp()->getLogger()->printf("\tstackFrameSize = %d offset = %d\n",getStackFrameSize(),offset);
+            //comp()->log()->printf("\tstackFrameSize = %d offset = %d\n",getStackFrameSize(),offset);
 
             TR::MemoryReference *retAddrMemRef = generateS390MemoryReference(spReg, offset, cg());
 
@@ -843,7 +843,7 @@ TR::S390zLinuxSystemLinkage::spillGPRsInPrologue(TR::Node* node, TR::Instruction
             findStartReg = true;
             }
          if (comp()->getOption(TR_TraceCG))
-            comp()->getLogger()->println();
+            comp()->log()->println();
          }
       }
 

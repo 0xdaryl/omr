@@ -1316,7 +1316,7 @@ static inline TR::Register *ibooleanTypeEvaluator(TR::Node *node,
 
    if (comp->getOption(TR_TraceCG))
       {
-      comp->getLogger()->printf("In ibooleanTypeEvaluator for n%dn (%p)\n", node->getGlobalIndex(), node);
+      comp->log()->printf("In ibooleanTypeEvaluator for n%dn (%p)\n", node->getGlobalIndex(), node);
       }
 
    uint32_t base, rotate;

@@ -826,7 +826,7 @@ OMR::Z::RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstr
                location)
             {
             if (comp->getOption(TR_TraceCG))
-               comp->getLogger()->printf("\nOOL: Releasing backing storage (%p)\n", location);
+               comp->log()->printf("\nOOL: Releasing backing storage (%p)\n", location);
             if (rk == TR_GPR)
                dataSize = TR::Compiler->om.sizeofReferenceAddress();
             else if (rk == TR_VRF)
@@ -1473,8 +1473,8 @@ OMR::Z::RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstr
 
             if (comp->getOption(TR_TraceCG))
                {
-               comp->getLogger()->printf("\nOOL HPR Spill: %s", cg->getDebug()->getName(realReg));
-               comp->getLogger()->printf(":%s\n", cg->getDebug()->getName(virtReg));
+               comp->log()->printf("\nOOL HPR Spill: %s", cg->getDebug()->getName(realReg));
+               comp->log()->printf(":%s\n", cg->getDebug()->getName(virtReg));
                }
             virtReg->setAssignedRegister(NULL);
             }

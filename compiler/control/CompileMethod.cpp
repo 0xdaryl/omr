@@ -237,7 +237,7 @@ printCompFailureInfo(TR::JitConfig *jitConfig, TR::Compilation * comp, const cha
    if (comp)
       {
       if (comp->getLoggingEnabled())
-         comp->getLogger()->printf("\n=== EXCEPTION THROWN (%s) ===\n", reason);
+         comp->log()->printf("\n=== EXCEPTION THROWN (%s) ===\n", reason);
 
       if (debug("traceCompilationException"))
          {
@@ -252,7 +252,7 @@ printCompFailureInfo(TR::JitConfig *jitConfig, TR::Compilation * comp, const cha
          }
 
       if (comp->getOption(TR_TraceAll))
-         comp->getLogger()->prints("<result success=\"false\">exception thrown by the compiler</result>\n");
+         comp->log()->prints("<result success=\"false\">exception thrown by the compiler</result>\n");
       }
    }
 
@@ -355,9 +355,9 @@ compileMethodFromDetails(
          {
          const char *signature = compilee.signature(&trMemory);
 
-         compiler.getLogger()->printf("<compile hotness=\"%s\" method=\"%s\">\n",
-                               compiler.getHotnessName(compiler.getMethodHotness()),
-                               signature);
+         compiler.log()->printf("<compile hotness=\"%s\" method=\"%s\">\n",
+                                compiler.getHotnessName(compiler.getMethodHotness()),
+                                signature);
          }
 
       compiler.getJittedMethodSymbol()->setLinkage(TR_System);
@@ -423,10 +423,10 @@ compileMethodFromDetails(
             }
 
          if (compiler.getOption(TR_TraceAll))
-            compiler.getLogger()->printf("<result success=\"true\" startPC=\"%#p\" time=\"%lld.%lldms\"/>\n",
-                                  startPC,
-                                  translationTime/1000,
-                                  translationTime%1000);
+            compiler.log()->printf("<result success=\"true\" startPC=\"%#p\" time=\"%lld.%lldms\"/>\n",
+                                   startPC,
+                                   translationTime/1000,
+                                   translationTime%1000);
          }
       else /* of rc == COMPILATION_SUCCEEDED */
          {

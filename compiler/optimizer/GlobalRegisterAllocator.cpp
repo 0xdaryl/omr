@@ -402,7 +402,7 @@ TR_GlobalRegisterAllocator::perform()
 
 
       if (trace())
-         comp()->dumpMethodTrees(comp()->getLogger(), "Trees before tactical global register allocator", comp()->getMethodSymbol());
+         comp()->dumpMethodTrees(comp()->log(), "Trees before tactical global register allocator", comp()->getMethodSymbol());
 
       _candidatesNeedingSignExtension = NULL;
       _candidatesSignExtendedInThisLoop = NULL;
@@ -555,7 +555,7 @@ TR_GlobalRegisterAllocator::perform()
             // and a value is modified in one of locals, another local must be indentified as 'valueModified'.
             //
             if (trace)
-               comp()->getLogger()->prints("\nPropagating value modified information\n");
+               comp()->log()->prints("\nPropagating value modified information\n");
             List<TR::TreeTop>        storesFromRegisters(trMemory());
             TR::TreeTop *tt = NULL, *nextTreeTop = NULL;
             for (tt = comp()->getStartTree(); tt; tt = tt->getNextTreeTop())
@@ -593,14 +593,14 @@ TR_GlobalRegisterAllocator::perform()
                // If a value is not modified in a local which receives a register, the stores from the register is redundant.
                //
                if (trace)
-                  comp()->getLogger()->prints("\nRemoving redundant stores\n");
+                  comp()->log()->prints("\nRemoving redundant stores\n");
                ListIterator<TR::TreeTop>        itr(&storesFromRegisters);
                for (tt = itr.getFirst(); tt; tt = itr.getNext())
                   {
                   if (!_valueModifiedSymRefs->isSet(tt->getNode()->getFirstChild()->getRegLoadStoreSymbolReference()->getReferenceNumber()) &&
                      !nonSplittingCopyStored.isSet(tt->getNode()->getFirstChild()->getRegLoadStoreSymbolReference()->getReferenceNumber()))
                      {
-                     if (trace) comp()->getLogger()->printf("Remove a redundant store %p\n", tt->getNode());
+                     if (trace) comp()->log()->printf("Remove a redundant store %p\n", tt->getNode());
                      TR::TransformUtil::removeTree(comp(), tt);
                      }
                   }
@@ -632,7 +632,7 @@ TR_GlobalRegisterAllocator::isSplittingCopy(TR::Node *node)
    if ((node->getOpCode().isStoreDirect() || node->getOpCode().isStoreReg()) &&
        (node->getFirstChild()->getOpCode().isLoadVarDirect() || node->getFirstChild()->getOpCode().isLoadReg()))
       {
-      if (trace) comp()->getLogger()->printf("Finding a copy at node %p\n", node);
+      if (trace) comp()->log()->printf("Finding a copy at node %p\n", node);
       TR::SymbolReference *storeSymRef = node->getSymbolReferenceOfAnyType();
       TR::SymbolReference *loadSymRef  = node->getFirstChild()->getSymbolReferenceOfAnyType();
       if (storeSymRef && loadSymRef && storeSymRef != loadSymRef)
@@ -645,7 +645,7 @@ TR_GlobalRegisterAllocator::isSplittingCopy(TR::Node *node)
              (origStoreSymRef && !origLoadSymRef && origStoreSymRef == loadSymRef) ||
              (!origStoreSymRef && origLoadSymRef && storeSymRef == origLoadSymRef))
             {
-            //if (trace) comp()->getLogger()->printf("Found a copy %p\n", node);
+            //if (trace) comp()->log()->printf("Found a copy %p\n", node);
             return true;
             }
          }
@@ -716,7 +716,7 @@ TR_GlobalRegisterAllocator::restoreOriginalSymbol(TR::Node *node, vcount_t visit
 
          if (rc && !rc->extendedLiveRange() && changeSymRef)
             {
-            if (trace) comp()->getLogger()->printf("Restore an original symbol #%d from #%d at %p\n", changeSymRef->getReferenceNumber(), symRefNum, node);
+            if (trace) comp()->log()->printf("Restore an original symbol #%d from #%d at %p\n", changeSymRef->getReferenceNumber(), symRefNum, node);
             if(node->getOpCode().isLoadReg() || node->getOpCode().isStoreReg())
                node->setRegLoadStoreSymbolReference(changeSymRef);
             else
@@ -726,7 +726,7 @@ TR_GlobalRegisterAllocator::restoreOriginalSymbol(TR::Node *node, vcount_t visit
             _valueModifiedSymRefs->set(symRefNum);
          }
       else if (trace)
-         comp()->getLogger()->printf("Node %p has no symbol\n", node);
+         comp()->log()->printf("Node %p has no symbol\n", node);
       }
    }
 
@@ -1554,7 +1554,7 @@ TR_GlobalRegisterAllocator::transformBlockExit(
  */
 bool TR_GlobalRegisterAllocator::markCandidateForReloadInSuccessors(int32_t i, TR::GlobalRegister *extReg, TR::GlobalRegister *reg, TR::Block *block, bool traceIt)
    {
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
    bool result = false;    // Success or no?
    TR::Block *nextBlock = NULL;
    TR::RegisterCandidate *rc = extReg->getCurrentRegisterCandidate();
@@ -1668,7 +1668,7 @@ TR_GlobalRegisterAllocator::addStoresForCatchBlockLoads(TR::TreeTop *appendPoint
          {
          _osrCatchSucc = succ->asBlock();
          if (trace())
-            comp()->getLogger()->printf("           addStoresForCatchBlockLoads([%p], block_%d) found OSR catch block_%d\n", appendPoint->getNode(), throwingBlock->getNumber(), _osrCatchSucc->getNumber());
+            comp()->log()->printf("           addStoresForCatchBlockLoads([%p], block_%d) found OSR catch block_%d\n", appendPoint->getNode(), throwingBlock->getNumber(), _osrCatchSucc->getNumber());
          }
       }
 
@@ -1930,7 +1930,7 @@ TR_GlobalRegisterAllocator::prepareForBlockExit(
                {
                if (trace())
                   {
-                  TR::Logger *log = comp()->getLogger();
+                  TR::Logger *log = comp()->log();
                   log->printf("block_%d successorBlock %d exitNode %p\n", block->getNumber(), successorBlock->getNumber(), exitNode);
 
                   if (extgr->getCurrentRegisterCandidate())
@@ -2054,7 +2054,7 @@ TR_GlobalRegisterAllocator::registerIsLiveAcrossEdge(
    TR::TreeTop * exitTreeTop, TR::Node * exitNode, TR::Block * block,
    TR::GlobalRegister * extgr, TR::Block * & successorBlock, int32_t i)
    {
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
    TR_Array<TR::GlobalRegister> & registers = block->getGlobalRegisters(comp());
    TR::GlobalRegister * gr = &registers[i];
 
@@ -2415,7 +2415,7 @@ TR_GlobalRegisterAllocator::createNewSuccessorBlock(
                if (numRegistersLiveOnNewSuccessor + (needs2Regs? 2 : 1) > comp()->cg()->getMaximumNumberOfGPRsAllowedAcrossEdge(block))
                   {
                   if (trace())
-                     comp()->getLogger()->printf("numRegistersLiveOnNewSuccessor %d on nextNewBlock %d > comp()->cg()->getMaximumNumberOfGPRsAllowedAcrossEdge(block_%d) %d\n",numRegistersLiveOnNewSuccessor, nextNewBlock->getNumber(), block->getNumber(),comp()->cg()->getMaximumNumberOfGPRsAllowedAcrossEdge(block));
+                     comp()->log()->printf("numRegistersLiveOnNewSuccessor %d on nextNewBlock %d > comp()->cg()->getMaximumNumberOfGPRsAllowedAcrossEdge(block_%d) %d\n",numRegistersLiveOnNewSuccessor, nextNewBlock->getNumber(), block->getNumber(),comp()->cg()->getMaximumNumberOfGPRsAllowedAcrossEdge(block));
                   newBlockCanBeReused = false;
                   }
                }
@@ -2997,7 +2997,7 @@ void TR_GlobalRegisterAllocator::offerAllAutosAndRegisterParmAsCandidates(TR::Bl
             if (candidates->aliasesPreventAllocation(comp(),symRef))
                {
                if (comp()->getOptions()->trace(OMR::tacticalGlobalRegisterAllocator))
-                  comp()->getLogger()->printf("Leaving candidate #%d because it has use_def_aliases\n",symRefNumber);
+                  comp()->log()->printf("Leaving candidate #%d because it has use_def_aliases\n",symRefNumber);
                continue;
                }
 
@@ -3905,7 +3905,7 @@ void TR_LiveRangeSplitter::splitLiveRanges()
       }
 
    if (trace())
-      comp()->dumpMethodTrees(comp()->getLogger(), "Trees before live range splitter ", comp()->getMethodSymbol());
+      comp()->dumpMethodTrees(comp()->log(), "Trees before live range splitter ", comp()->getMethodSymbol());
 
    //_origSymRefs = (TR::SymbolReference **)trMemory()->allocateStackMemory(comp()->getSymRefCount()*sizeof(TR::SymbolReference *));
    //memset(_origSymRefs, 0, comp()->getSymRefCount()*sizeof(TR::SymbolReference *));
@@ -3946,7 +3946,7 @@ static bool canSplit(TR::SymbolReference *symRef, TR::Compilation *comp)
 void
 TR_LiveRangeSplitter::splitLiveRanges(TR_StructureSubGraphNode *structureNode)
    {
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
    TR::SymbolReference **oldOrigSymRefs = _origSymRefs;
    int32_t oldSymRefCount = _origSymRefCount;
 
@@ -4300,7 +4300,7 @@ TR_LiveRangeSplitter::replaceAutosUsedIn(
                                                    node->getFirstChild(),
                                                    correspondingSymRef);
                if (trace())
-                  comp()->getLogger()->printf(" --- created a store to auto #%d adjacent to existing store to auto #%d at %s node %p --- \n", correspondingSymRef->getReferenceNumber(), symRef->getReferenceNumber(), node->getOpCode().getName(), node);
+                  comp()->log()->printf(" --- created a store to auto #%d adjacent to existing store to auto #%d at %s node %p --- \n", correspondingSymRef->getReferenceNumber(), symRef->getReferenceNumber(), node->getOpCode().getName(), node);
                storeNode->setVisitCount(visitCount);
                TR::TreeTop *storeTree = TR::TreeTop::create(comp(), storeNode, 0, 0);
                TR::TreeTop *prevTree = currentTree->getPrevTreeTop();
@@ -4413,7 +4413,7 @@ TR_LiveRangeSplitter::fixExitsAfterSplit(TR::SymbolReference *symRef, TR_SymRefC
                   if (!blocksInInnerLoop->get(nextBlock->getNumber()))
                      {
                      if (trace())
-                        comp()->getLogger()->printf("Adding original candidate #%d in block_%d in outer loop %d (%p)\n", rc->getSymbolReference()->getReferenceNumber(), nextBlock->getNumber(), parentOfLoop->getNumber(), parentOfLoop);
+                        comp()->log()->printf("Adding original candidate #%d in block_%d in outer loop %d (%p)\n", rc->getSymbolReference()->getReferenceNumber(), nextBlock->getNumber(), parentOfLoop->getNumber(), parentOfLoop);
                      rc->addBlock(nextBlock, 0);
                      }
                   }

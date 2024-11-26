@@ -676,7 +676,7 @@ public:
    void cleanUpReg()
       {
       if (_trace)
-         _cg->comp()->getLogger()->prints("MemCpyAtomicMacroOp: cleanUpReg\n");
+         _cg->comp()->log()->prints("MemCpyAtomicMacroOp: cleanUpReg\n");
       _cg->stopUsingRegister(_workReg);
       _cg->stopUsingRegister(_alignedReg);
 

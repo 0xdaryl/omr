@@ -32,7 +32,7 @@
 #include "ras/Logger.hpp"
 
 #define TraceEnabled    (TR::comp()->getOption(TR_TraceILGen))
-#define TraceIL(m, ...) {if (TraceEnabled) {TR::comp()->getLogger()->printf(m, ##__VA_ARGS__);}}
+#define TraceIL(m, ...) {if (TraceEnabled) {TR::comp()->log()->printf(m, ##__VA_ARGS__);}}
 
 OMR::VirtualMachineOperandArray::VirtualMachineOperandArray(TR::MethodBuilder *mb, int32_t numOfElements, TR::IlType *elementType, TR::VirtualMachineRegister *arrayBaseRegister)
    : TR::VirtualMachineState(),

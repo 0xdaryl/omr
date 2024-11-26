@@ -69,7 +69,7 @@ OMR::CFGSimplifier::CFGSimplifier(TR::OptimizationManager *manager)
 int32_t OMR::CFGSimplifier::perform()
    {
    if (trace())
-      comp()->getLogger()->prints("Starting CFG Simplification\n");
+      comp()->log()->prints("Starting CFG Simplification\n");
 
    bool anySuccess = false;
 
@@ -99,8 +99,8 @@ int32_t OMR::CFGSimplifier::perform()
 
    if (trace())
       {
-      comp()->getLogger()->prints("\nEnding CFG Simplification\n");
-      comp()->dumpMethodTrees(comp()->getLogger(), "\nTrees after CFG Simplification\n");
+      comp()->log()->prints("\nEnding CFG Simplification\n");
+      comp()->dumpMethodTrees(comp()->log(), "\nTrees after CFG Simplification\n");
       }
 
    return 1; // actual cost
@@ -138,7 +138,7 @@ bool OMR::CFGSimplifier::simplify()
 bool OMR::CFGSimplifier::simplifyIfStructure()
    {
    if (trace())
-      comp()->getLogger()->printf("Attempting if simpliciaton on block_%d\n", _block->getNumber());
+      comp()->log()->printf("Attempting if simpliciaton on block_%d\n", _block->getNumber());
    // There must be exactly two successors, and they must be real blocks
    //
    if (_next1 == NULL || _next2 == NULL)
@@ -223,7 +223,7 @@ bool OMR::CFGSimplifier::simplifyInstanceOfTestToCheckcast(bool needToDuplicateT
    if (_block->isCatchBlock())
       return false;
 
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
 
    if (trace())
       log->printf("Start simplifyInstanceOfTestToCheckcast block_%d\n", _block->getNumber());
@@ -406,7 +406,7 @@ bool OMR::CFGSimplifier::simplifyBoundCheckWithThrowException(bool needToDuplica
    if (disableSimplifyBoundCheckWithThrowException != NULL)
       return false;
 
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
    if (trace())
       log->prints("Start simplifyBoundCheckWithThrowException\n");
    TR::TreeTop * treeTop = getLastRealTreetop(_block);
@@ -679,7 +679,7 @@ bool OMR::CFGSimplifier::simplifyCondStoreSequence(bool needToDuplicateTree)
    if (!(comp()->cg()->getSupportsSelect()))
       return false;
 
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
    if (trace())
       log->printf("Start simplifyCondStoreSequence block_%d\n", _block->getNumber());
 
@@ -793,7 +793,7 @@ bool OMR::CFGSimplifier::simplifySimpleStore(bool needToDuplicateTree)
    if (!(comp()->cg()->getSupportsSelect()))
       return false;
 
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
    if (trace())
       log->printf("Start simplifySimpleStore block_%d\n", _block->getNumber());
 
@@ -976,7 +976,7 @@ bool OMR::CFGSimplifier::simplifyNullToException(bool needToDuplicateTree)
    if (comp()->getOSRMode() == TR::involuntaryOSR)
       return false;
 
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
    if (trace())
       log->prints("Start simplifyNullToException\n");
 
@@ -1117,7 +1117,7 @@ bool OMR::CFGSimplifier::simplifyBooleanStore(bool needToDuplicateTree)
    if (!(comp()->cg()->getSupportsSelect()))
       return false;
 
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
    if (trace())
       log->prints("Start simplifyBooleanStore\n");
 
@@ -1646,7 +1646,7 @@ bool OMR::CFGSimplifier::simplifyCondCodeBooleanStore(TR::Block *joinBlock, TR::
       // TODO: Handle cases where there's a test for order; sometimes normal, sometimes swap, sometimes can guarantee that only one path will be taken
       {
       if (trace())
-         comp()->getLogger()->prints("CFGSimplifier condCode pattern matches but uses test for ordering, not equality\n");
+         comp()->log()->prints("CFGSimplifier condCode pattern matches but uses test for ordering, not equality\n");
       return false;
       }
 

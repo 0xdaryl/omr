@@ -122,7 +122,7 @@ TR_UseDefInfo::TR_UseDefInfo(TR::Compilation *comp, TR::CFG *cfg, TR::Optimizer 
 
 void TR_UseDefInfo::prepareUseDefInfo(bool requiresGlobals, bool prefersGlobals, bool cannotOmitTrivialDefs, bool conversionRegsOnly)
    {
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
    LexicalTimer tlex("useDefInfo", comp()->phaseTimer());
 
    TR_UseDefInfo::AuxiliaryData aux(
@@ -138,7 +138,7 @@ void TR_UseDefInfo::prepareUseDefInfo(bool requiresGlobals, bool prefersGlobals,
    if (trace())
       {
       log->prints("started initialization of use/def info\n");
-      comp()->dumpMethodTrees(comp()->getLogger(), "Pre Use Def Trees");
+      comp()->dumpMethodTrees(comp()->log(), "Pre Use Def Trees");
       }
 
    bool canBuild = false;
@@ -384,7 +384,7 @@ bool TR_UseDefInfo::performAnalysis(AuxiliaryData &aux)
       //use-def info hasn't been successfully generated so performing reaching definition analysis is not possible
       return false;
    if (trace())
-      comp()->getLogger()->prints("started reaching definition analysis for use/def\n\n");
+      comp()->log()->prints("started reaching definition analysis for use/def\n\n");
    if (_numNonTrivialSymbols > 0)
       {
       bool succeeded = true;
@@ -403,7 +403,7 @@ bool TR_UseDefInfo::performAnalysis(AuxiliaryData &aux)
       processReachingDefinition(NULL, aux);
       }
    if (trace())
-      comp()->getLogger()->prints("completed reaching definition analysis for use/def\n\n");
+      comp()->log()->prints("completed reaching definition analysis for use/def\n\n");
    return true;
    }
 
@@ -420,7 +420,7 @@ bool TR_UseDefInfo::_runReachingDefinitions(TR_ReachingDefinitions& reachingDefi
       {
       invalidateUseDefInfo();
       if (trace())
-         comp()->getLogger()->prints("Method too complex to perform reaching defs, use/def info not built\n");
+         comp()->log()->prints("Method too complex to perform reaching defs, use/def info not built\n");
       }
    else
       {
@@ -527,7 +527,7 @@ void TR_UseDefInfo::findTrivialSymbolsToExclude(TR::Node *node, TR::TreeTop *tre
             {
             aux._onceReadSymbolsIndices[symRefNum][node->getGlobalIndex()] = true;
             if (trace())
-               comp()->getLogger()->printf("SETTING node %p symRefNum %d\n", node, symRefNum);
+               comp()->log()->printf("SETTING node %p symRefNum %d\n", node, symRefNum);
             }
 
          if (aux._neverWrittenSymbols.get(symRefNum))
@@ -535,7 +535,7 @@ void TR_UseDefInfo::findTrivialSymbolsToExclude(TR::Node *node, TR::TreeTop *tre
             aux._neverWrittenSymbols.reset(symRefNum);
 
             if (trace())
-               comp()->getLogger()->printf("Resetting write bit %d at node %p\n", symRefNum, node);
+               comp()->log()->printf("Resetting write bit %d at node %p\n", symRefNum, node);
 
             if (!aux._onceWrittenSymbolsIndices[symRefNum].IsNull())
                {
@@ -544,7 +544,7 @@ void TR_UseDefInfo::findTrivialSymbolsToExclude(TR::Node *node, TR::TreeTop *tre
                else
                   aux._onceWrittenSymbolsIndices[symRefNum][node->getGlobalIndex()] = true;
                if (trace())
-                  comp()->getLogger()->printf("Sym ref %d written once at node %p\n", symRefNum, treeTop->getNode());
+                  comp()->log()->printf("Sym ref %d written once at node %p\n", symRefNum, treeTop->getNode());
                }
             }
          else if (!aux._onceWrittenSymbolsIndices[symRefNum].IsNull())
@@ -566,7 +566,7 @@ void TR_UseDefInfo::findTrivialSymbolsToExclude(TR::Node *node, TR::TreeTop *tre
             aux._loadsBySymRefNum[symRefNum] = node;
 
             if (trace())
-               comp()->getLogger()->printf("Resetting read bit %d at node %p\n", symRefNum, node);
+               comp()->log()->printf("Resetting read bit %d at node %p\n", symRefNum, node);
             }
          else if (!aux._onceReadSymbolsIndices[symRefNum].IsNull())
             {
@@ -576,7 +576,7 @@ void TR_UseDefInfo::findTrivialSymbolsToExclude(TR::Node *node, TR::TreeTop *tre
                {
                aux._onceReadSymbolsIndices[symRefNum].ClearToNull();
                if (trace())
-                  comp()->getLogger()->printf("KILLING bit %d at node %p\n", symRefNum, node);
+                  comp()->log()->printf("KILLING bit %d at node %p\n", symRefNum, node);
                }
             }
          }
@@ -759,7 +759,7 @@ void TR_UseDefInfo::findMemorySymbols(TR::Node *node)
          _valueNumbersToMemorySymbolsMap[valueNumber]->push_front(MemorySymbol(size, offset, _numMemorySymbols++));
 
       if (trace())
-         comp()->getLogger()->printf("Node %p has memory symbol index %d (%d:%d:%d)\n", node, _valueNumbersToMemorySymbolsMap[valueNumber]->front()._localIndex, valueNumber, size, offset);
+         comp()->log()->printf("Node %p has memory symbol index %d (%d:%d:%d)\n", node, _valueNumbersToMemorySymbolsMap[valueNumber]->front()._localIndex, valueNumber, size, offset);
       }
    }
 
@@ -810,7 +810,7 @@ int32_t TR_UseDefInfo::getMemorySymbolIndex(TR::Node * node)
 bool TR_UseDefInfo::indexSymbolsAndNodes(AuxiliaryData &aux)
    {
    LexicalTimer tlex("indexSymbolsAndNodes", comp()->phaseTimer());
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
    if (trace())
       {
       log->printf("Trying to index nodes with _indexFields = %d, _indexStatics = %d\n", _indexFields, _indexStatics);
@@ -1614,9 +1614,9 @@ void TR_UseDefInfo::insertData(TR::Block *block, TR::Node *node,TR::Node *parent
    if (trace())
       {
       if (!definesMultipleSymbols )
-         comp()->getLogger()->printf("Node : %p   opCode = %s useDefIndex = %d localIndex = %d definesMultipleSymbols=%d isTrivialUseDefNode=%d adjustArray=%d \n", node, opCode.getName(), node->getUseDefIndex(), node->getLocalIndex(), definesMultipleSymbols, isTrivialUseDefNode(node, aux), adjustArray);
+         comp()->log()->printf("Node : %p   opCode = %s useDefIndex = %d localIndex = %d definesMultipleSymbols=%d isTrivialUseDefNode=%d adjustArray=%d \n", node, opCode.getName(), node->getUseDefIndex(), node->getLocalIndex(), definesMultipleSymbols, isTrivialUseDefNode(node, aux), adjustArray);
       else
-         comp()->getLogger()->printf("Node : %p   opCode = %s useDefIndex = %d localIndex = %d-%d definesMultipleSymbols=%d isTrivialUseDefNode=%d adjustArray=%d \n", node, opCode.getName(), node->getUseDefIndex(), node->getLocalIndex(), node->getLocalIndex()+num_aliases-1, definesMultipleSymbols, isTrivialUseDefNode(node, aux), adjustArray);
+         comp()->log()->printf("Node : %p   opCode = %s useDefIndex = %d localIndex = %d-%d definesMultipleSymbols=%d isTrivialUseDefNode=%d adjustArray=%d \n", node, opCode.getName(), node->getUseDefIndex(), node->getLocalIndex(), node->getLocalIndex()+num_aliases-1, definesMultipleSymbols, isTrivialUseDefNode(node, aux), adjustArray);
       }
 
    nodeIndex = node->getLocalIndex();
@@ -1670,7 +1670,7 @@ void TR_UseDefInfo::insertData(TR::Block *block, TR::Node *node,TR::Node *parent
             continue;
 
          if (0 && trace())
-            comp()->getLogger()->printf("defines symRef #%d (symbol %d)\n", aliasedSymRef->getReferenceNumber(), j);
+            comp()->log()->printf("defines symRef #%d (symbol %d)\n", aliasedSymRef->getReferenceNumber(), j);
 
          int k;
          if (opCode.isLoadVarDirect())
@@ -1704,7 +1704,7 @@ void TR_UseDefInfo::insertData(TR::Block *block, TR::Node *node,TR::Node *parent
             }
 
          if (trace())
-            comp()->getLogger()->printf("    symbol (u/d index=%d) is defined by node with localIndex %d \n",j, k);
+            comp()->log()->printf("    symbol (u/d index=%d) is defined by node with localIndex %d \n",j, k);
          }
 
       if (restrictRegLoadVar)
@@ -1775,7 +1775,7 @@ void TR_UseDefInfo::processReachingDefinition(void* vblockInfo, AuxiliaryData &a
 
 void TR_UseDefInfo::buildUseDefs(void *vblockInfo, AuxiliaryData &aux)
    {
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
    TR::Method *method = comp()->getMethodSymbol()->getMethod();
    TR::Block *block;
    TR::TreeTop *treeTop;
@@ -1931,7 +1931,7 @@ void TR_UseDefInfo::buildUseDefs(void *vblockInfo, AuxiliaryData &aux)
 
 void TR_UseDefInfo::dereferenceDefs(int32_t useIndex, TR_UseDefInfo::BitVector &nodesLookedAt, TR_UseDefInfo::BitVector &loadDefs)
    {
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
    if (trace())
       {
       log->printf("Dereferencing defs for use index %d : ",useIndex+getFirstUseIndex());
@@ -1996,7 +1996,7 @@ void TR_UseDefInfo::dereferenceDefs(int32_t useIndex, TR_UseDefInfo::BitVector &
 //
 int32_t TR_UseDefInfo::setSingleDefiningLoad(int32_t useIndex, TR_UseDefInfo::BitVector &nodesLookedAt, TR_UseDefInfo::BitVector &loadDefs)
    {
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
    TR_UseDefInfo::BitVector &useDefInfo = _useDefInfo[useIndex];
    nodesLookedAt[useIndex] = true;
 
@@ -2093,9 +2093,9 @@ int32_t TR_UseDefInfo::setSingleDefiningLoad(int32_t useIndex, TR_UseDefInfo::Bi
 
  if (trace())
  {
- comp()->getLogger()->printf("   De-referencing use index %d : ",defIndex);
- useDefInfo->print(comp()->getLogger(), comp());
- comp()->getLogger()->println();
+ comp()->log()->printf("   De-referencing use index %d : ",defIndex);
+ useDefInfo->print(comp()->log(), comp());
+ comp()->log()->println();
  }
 
  if (nodesLookedAt.get(useIndex))
@@ -2103,7 +2103,7 @@ int32_t TR_UseDefInfo::setSingleDefiningLoad(int32_t useIndex, TR_UseDefInfo::Bi
  nodesLookedAt.set(useIndex);
 
  if (trace())
- comp()->getLogger()->printf("      Resetting def index %d\n", defIndex);
+ comp()->log()->printf("      Resetting def index %d\n", defIndex);
  useDefInfo->reset(defIndex);
 
  TR_BitVector *myDefs = _useDefInfo[useIndex];
@@ -2114,7 +2114,7 @@ int32_t TR_UseDefInfo::setSingleDefiningLoad(int32_t useIndex, TR_UseDefInfo::Bi
  if (myDef < getFirstUseIndex())
  {
  if (trace())
- comp()->getLogger()->printf("      Setting def index %d\n", myDef);
+ comp()->log()->printf("      Setting def index %d\n", myDef);
  useDefInfo->set(myDef);
  }
  else
@@ -2155,14 +2155,14 @@ void TR_UseDefInfo::dereferenceDef(TR_UseDefInfo::BitVector &useDefInfo, int32_t
 
       if (trace())
          {
-         comp()->getLogger()->printf("   De-referencing use index %d : ",defIndex);
+         comp()->log()->printf("   De-referencing use index %d : ",defIndex);
          (*comp()) << useDefInfo;
-         comp()->getLogger()->println();
+         comp()->log()->println();
          }
 
          {
          if (trace())
-            comp()->getLogger()->printf("      Resetting def index %d\n", defIndex);
+            comp()->log()->printf("      Resetting def index %d\n", defIndex);
          useDefInfo[defIndex] = false;
 
          if (_hasLoadsAsDefs && _useDerefDefInfo[useIndex])
@@ -2180,13 +2180,13 @@ void TR_UseDefInfo::dereferenceDef(TR_UseDefInfo::BitVector &useDefInfo, int32_t
                 getNode(myDef)->getSymbolReference()->getSymbol()->isMethod())
                {
                if (trace())
-                  comp()->getLogger()->printf("      Setting def index %d\n", myDef);
+                  comp()->log()->printf("      Setting def index %d\n", myDef);
                useDefInfo[myDef] = true;
                }
             else if (!nodesLookedAt.ValueAt(myDef - getFirstUseIndex()))
                {
                if (trace())
-                  comp()->getLogger()->printf("      Adding def index %d\n", myDef);
+                  comp()->log()->printf("      Adding def index %d\n", myDef);
                defIndices.push_front(_atoms[myDef]);
                nodesLookedAt[myDef - getFirstUseIndex()] = true;
                }
@@ -2197,7 +2197,7 @@ void TR_UseDefInfo::dereferenceDef(TR_UseDefInfo::BitVector &useDefInfo, int32_t
 
 void TR_UseDefInfo::buildUseDefs(TR::Node *node, void *vanalysisInfo, TR_BitVector &nodesToBeDereferenced, TR::Node *parent, AuxiliaryData &aux)
    {
-   TR::Logger *log = comp()->getLogger();
+   TR::Logger *log = comp()->log();
    vcount_t visitCount = comp()->getVisitCount();
    if (node->getVisitCount() == visitCount)
       return;

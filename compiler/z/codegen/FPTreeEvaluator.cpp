@@ -617,7 +617,7 @@ floadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * srcMR
    if (tempMR == NULL)
       {
       tempMR = TR::MemoryReference::create(cg, node);
-      //cg->comp()->getLogger()->printf("Generated memory reference %p for node %p with offset %d",tempMR,node,tempMR->getOffset());
+      //cg->comp()->log()->printf("Generated memory reference %p for node %p with offset %d",tempMR,node,tempMR->getOffset());
       }
    generateRXEInstruction(cg, TR::InstOpCode::LDE, node, tempReg, tempMR);
    tempMR->stopUsingMemRefRegister(cg);
@@ -695,7 +695,7 @@ OMR::Z::TreeEvaluator::faddEvaluator(TR::Node * node, TR::CodeGenerator * cg)
         generateFusedMultiplyAddIfPossible(cg, node, TR::InstOpCode::MAEBR))
       {
       if (comp->getOption(TR_TraceCG))
-         comp->getLogger()->prints("Successfully changed fadd to fused multiply and add operation\n");
+         comp->log()->prints("Successfully changed fadd to fused multiply and add operation\n");
       }
    else
       {
@@ -716,7 +716,7 @@ OMR::Z::TreeEvaluator::daddEvaluator(TR::Node * node, TR::CodeGenerator * cg)
        generateFusedMultiplyAddIfPossible(cg, node, TR::InstOpCode::MADBR))
       {
       if (comp->getOption(TR_TraceCG))
-         comp->getLogger()->prints("Successfully changed dadd to fused multiply and add operation\n");
+         comp->log()->prints("Successfully changed dadd to fused multiply and add operation\n");
       }
    else
       {
@@ -765,13 +765,13 @@ OMR::Z::TreeEvaluator::fsubEvaluator(TR::Node * node, TR::CodeGenerator * cg)
        generateFusedMultiplyAddIfPossible(cg, node, TR::InstOpCode::MSEBR))
       {
       if (comp->getOption(TR_TraceCG))
-         comp->getLogger()->prints("Successfully changed fsub to fused multiply and sub operation\n");
+         comp->log()->prints("Successfully changed fsub to fused multiply and sub operation\n");
       }
    else if (canUseNodeForFusedMultiply(node->getSecondChild()) &&
             generateFusedMultiplyAddIfPossible(cg, node, TR::InstOpCode::MAEBR, TR::InstOpCode::LCEBR))
       {
       if (comp->getOption(TR_TraceCG))
-         comp->getLogger()->prints("Successfully changed fsub to fused multiply, negate, and add operation\n");
+         comp->log()->prints("Successfully changed fsub to fused multiply, negate, and add operation\n");
       }
    else
       {
@@ -791,13 +791,13 @@ OMR::Z::TreeEvaluator::dsubEvaluator(TR::Node * node, TR::CodeGenerator * cg)
        generateFusedMultiplyAddIfPossible(cg, node, TR::InstOpCode::MSDBR))
       {
       if (comp->getOption(TR_TraceCG))
-         comp->getLogger()->prints("Successfully changed dsub to fused multiply and subtract operation\n");
+         comp->log()->prints("Successfully changed dsub to fused multiply and subtract operation\n");
       }
    else if (canUseNodeForFusedMultiply(node->getSecondChild()) &&
             generateFusedMultiplyAddIfPossible(cg, node, TR::InstOpCode::MADBR, TR::InstOpCode::LCDBR))
       {
       if (comp->getOption(TR_TraceCG))
-         comp->getLogger()->prints("Successfully changed dsub to fused multiply, negate, and add operation\n");
+         comp->log()->prints("Successfully changed dsub to fused multiply, negate, and add operation\n");
       }
    else
       {

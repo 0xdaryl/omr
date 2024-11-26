@@ -55,7 +55,7 @@ void TR::IDT::print()
       TR_VerboseLog::writeLine(TR_Vlog_BI, "%s", line.text());
       }
    if (traceBIIDTGen)
-      comp()->getLogger()->printf("%s\n", line.text());
+      comp()->log()->printf("%s\n", line.text());
 
    if (candidates <= 0)
       return;
@@ -93,7 +93,7 @@ void TR::IDT::print()
             TR_VerboseLog::writeLine(TR_Vlog_BI, "%s", line.text());
 
          if (traceBIIDTGen)
-            comp()->getLogger()->printf("%s\n", line.text());
+            comp()->log()->printf("%s\n", line.text());
          }
 
       // process children

@@ -605,7 +605,7 @@ OMR::Z::Instruction::setupThrowsImplicitNullPointerException(TR::Node *n, TR::Me
                self()->getNode()->getSymbolReference() ==  comp->getSymRefTab()->findVftSymbolRef()) ||
              (n->hasChild(nullCheckReference) && mr->usesRegister(nullCheckReference->getRegister())))
             {
-            comp->getLogger()->printf("Instruction %p throws an implicit NPE, node: %p NPE node: %p\n", self(), n, nullCheckReference);
+            comp->log()->printf("Instruction %p throws an implicit NPE, node: %p NPE node: %p\n", self(), n, nullCheckReference);
             self()->cg()->setImplicitExceptionPoint(self());
             }
          }
