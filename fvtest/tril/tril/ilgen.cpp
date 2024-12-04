@@ -27,6 +27,7 @@
 #include "il/Block.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
+#include "ras/Logger.hpp"
 
 #include <string>
 
@@ -45,7 +46,7 @@ std::map<std::string, TR::ILOpCodes> Tril::OpCodeTable::_opcodeNameMap;
  */
 TR::Node* Tril::TRLangBuilder::toTRNode(const ASTNode* const tree, IlGenState* state) {
     TR::Node* node = _converter->convert(tree, state);
-    if (node == NULL) 
+    if (node == NULL)
         return NULL;
     node->setFlags(parseFlags(tree));
 
@@ -217,6 +218,6 @@ bool Tril::TRLangBuilder::injectIL() {
        generateToBlock(_currentBlockNumber + 1);
        block = block->next;
     }
-    
+
     return true;
 }
