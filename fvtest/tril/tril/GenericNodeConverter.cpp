@@ -21,6 +21,7 @@
 
 #include "GenericNodeConverter.hpp"
 #include "ilgen.hpp"
+#include "ras/Logger.hpp"
 
 namespace Tril {
 

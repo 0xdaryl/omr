@@ -21,6 +21,7 @@
 
 #include "CallConverter.hpp"
 #include "ilgen.hpp"
+#include "ras/Logger.hpp"
 
 namespace Tril {
 
@@ -66,7 +67,7 @@ TR::Node* CallConverter::impl(const ASTNode* tree, IlGenState* state) {
                                                                                             returnIlType,
                                                                                             targetAddress,
                                                                                             0);
-            
+
             TR::SymbolReference *methodSymRef = state->symRefTab()->findOrCreateStaticMethodSymbol(JITTED_METHOD_INDEX, -1, method);
 
             /* Default linkage is always system, unless overridden */
@@ -80,7 +81,7 @@ TR::Node* CallConverter::impl(const ASTNode* tree, IlGenState* state) {
                 if (linkageConvention == TR_None) {
                     TraceIL("  failed to find customized linkage %s, aborting parsing\n", linkageString);
                     std::string linkageString_str(linkageString);
-                    throw CallGenError("Failed to find customized linkage " + linkageString_str + ", aborting parsing");              
+                    throw CallGenError("Failed to find customized linkage " + linkageString_str + ", aborting parsing");
                 }
                 TraceIL("  customizing linakge of call to %s (linkageConvention=%d)\n", linkageString, linkageConvention);
             }
