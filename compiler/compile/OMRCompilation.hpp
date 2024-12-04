@@ -228,9 +228,7 @@ enum ProfilingMode
 
 #if defined(NO_OPT_DETAILS)
 
-   #define traceMsg(comp, msg, ...)              ((void)0)
    #define dumpOptDetails(comp, msg, ...)        ((void)0)
-   #define traceMsgVarArgs(comp, msg, arg)       ((void)0)
    #define performTransformation(comp, msg, ...) ((comp)->getOptimizer()? (comp)->getOptimizer()->incOptMessageIndex() > 0: true)
    #define performNodeTransformation0(comp,a)                (true)
    #define performNodeTransformation1(comp,a,b)              (true)
@@ -242,16 +240,7 @@ enum ProfilingMode
    #define DumpOptDetailsDefined 1
    #define TRACE_OPT_DETAILS(comp) (comp)->getOptions()->getAnyOption(TR_TraceOptDetails|TR_CountOptTransformations)
 
-   #define traceMsgVarArgs(comp, msg, arg) \
-      ((comp)->getDebug() ? \
-            (comp)->getDebug()->vtrace(msg, arg) : \
-            (void)0)
-
    #if defined(_MSC_VER)
-      #define traceMsg(comp, msg, ...) \
-      ((comp)->getDebug() ? \
-            (comp)->getDebug()->trace(msg, __VA_ARGS__) : \
-            (void)0)
          #define dumpOptDetails(comp, msg, ...) \
       (TRACE_OPT_DETAILS(comp) ? \
             (comp)->getDebug()->performTransformationImpl(false, msg, __VA_ARGS__) : \
@@ -261,10 +250,6 @@ enum ProfilingMode
             (comp)->getDebug()->performTransformationImpl(true, msg, __VA_ARGS__) : \
             ((comp)->getOptimizer() ? (comp)->getOptimizer()->incOptMessageIndex() > 0 : true))
    #else // XLC or GCC
-         #define traceMsg(comp, msg, ...) \
-      ((comp)->getDebug() ? \
-            (comp)->getDebug()->trace(msg, ##__VA_ARGS__) : \
-            (void)0)
          #define dumpOptDetails(comp, msg, ...) \
       (TRACE_OPT_DETAILS(comp) ? \
             (comp)->getDebug()->performTransformationImpl(false, msg, ##__VA_ARGS__) : \
