@@ -33,7 +33,7 @@ committers must meet to maintain their active committer status.
 Committers should be aware of the
 [Eclipse Foundation Generative Artificial Intelligence Usage Guidelines](https://www.eclipse.org/projects/guidelines/genai/)
 as well as the
-[Eclipse OMR Generative Artificial Intelligence Usage Guidelines](GenAIUsageGuidelines.md).
+[Eclipse OMR Generative Artificial Intelligence Usage Guidelines](CONTRIBUTING.md#Generative-Artificial-Intelligence-Usage-Guidelines).
 
 ## Reviewing and Merging Pull Requests
 
