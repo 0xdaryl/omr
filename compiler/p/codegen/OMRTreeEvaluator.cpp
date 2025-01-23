@@ -6991,8 +6991,7 @@ TR::Register *OMR::Power::TreeEvaluator::PrefetchEvaluator(TR::Node *node, TR::C
 #endif
    else
       {
-      if (comp->getOption(TR_TraceCG))
-         comp->log()->printf("Prefetching for type %d not implemented/supported on PPC.\n", type);
+      trprintf(comp->getOption(TR_TraceCG), comp->log(), "Prefetching for type %d not implemented/supported on PPC.\n", type);
       cg->recursivelyDecReferenceCount(firstChild);
       cg->recursivelyDecReferenceCount(secondChild);
       return NULL;

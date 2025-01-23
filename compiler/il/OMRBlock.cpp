@@ -554,8 +554,7 @@ OMR::Block::redirectFlowToNewDestination(TR::Compilation *comp, TR::CFGEdge *ori
             bool doTrace = comp->getOptions()->getAnyOption(TR_TraceAll);
             TR::Logger *log = comp->log();
 
-            if (doTrace)
-               log->prints("Jump with multiple targets, with non fall through path to empty block\n");
+            trprints(doTrace, log, "Jump with multiple targets, with non fall through path to empty block\n");
             TR::TreeTop *origToEntry = origTo->getEntry();
             TR::TreeTop *newToEntry = newTo->getEntry();
             if (doTrace)
@@ -570,8 +569,7 @@ OMR::Block::redirectFlowToNewDestination(TR::Compilation *comp, TR::CFGEdge *ori
                {
                TR::Node *child = lastNode->getChild(i);
 
-               if (doTrace)
-                  log->printf("considering node %p with branch destination %p \n",child,child->getBranchDestination() ? child->getBranchDestination()->getNode() : 0 );
+               trprintf(doTrace, log, "considering node %p with branch destination %p \n", child, child->getBranchDestination() ? child->getBranchDestination()->getNode() : 0 );
                if (child->getBranchDestination() == origToEntry)
                   {
                   child->setBranchDestination(newToEntry);
@@ -2052,7 +2050,6 @@ TR::Block *
 OMR::Block::splitEdge(TR::Block *from, TR::Block *to, TR::Compilation *c, TR::TreeTop **lastTreeTop, bool findOptimalInsertionPoint)
    {
 
-   //c->log()->printf("Splitting edge (%d,%d)\n", from->getNumber(), to->getNumber());
    TR_ASSERT(!to->isOSRCatchBlock(), "Splitting edge to OSRCatchBlock (block_%d -> block_%d) is not supported\n", from->getNumber(), to->getNumber());
    TR::Node *exitNode = from->getExit()->getNode();
    TR::CFG *cfg = c->getFlowGraph();

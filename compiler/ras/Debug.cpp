@@ -837,7 +837,6 @@ TR_Debug::print(TR::Logger *log, TR::SymbolReference *symRef)
    TR_PrettyPrinterString output(this);
    print(symRef, output);
    log->prints(output.getStr());
-   // DMDM log->flush();
    }
 
 const char *

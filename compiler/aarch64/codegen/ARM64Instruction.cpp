@@ -29,6 +29,8 @@
 void TR::ARM64LabelInstruction::assignRegistersForOutOfLineCodeSection(TR_RegisterKinds kindToBeAssigned)
    {
    TR::Compilation *comp = cg()->comp();
+   TR::Logger *log = comp->log();
+   bool trace = comp->getOption(TR_TraceRA);
 
    bool isLabel = getOpCodeValue() == TR::InstOpCode::label;
    bool isBranch = (getOpCodeValue() == TR::InstOpCode::b) || (getKind() == IsConditionalBranch) || (getKind() == IsCompareBranch) || (getKind() == IsTestBitBranch) || (getKind() == IsVirtualGuardNOP);
@@ -38,8 +40,7 @@ void TR::ARM64LabelInstruction::assignRegistersForOutOfLineCodeSection(TR_Regist
    if (isLabel && getLabelSymbol()->isEndOfColdInstructionStream())
       {
       TR::Machine *machine = cg()->machine();
-      if (comp->getOption(TR_TraceRA))
-         comp->log()->prints("\nOOL: taking register state snap shot\n");
+      trprints(trace, log, "\nOOL: taking register state snap shot\n");
       cg()->setIsOutOfLineHotPath(true);
       machine->takeRegisterStateSnapShot();
       }
@@ -69,14 +70,13 @@ void TR::ARM64LabelInstruction::assignRegistersForOutOfLineCodeSection(TR_Regist
          TR_ASSERT(cg()->getAppendInstruction() == this, "OOL section must have only one branch to the merge point");
          // Start RA for OOL cold path, restore register state from snap shot
          TR::Machine *machine = cg()->machine();
-         if (comp->getOption(TR_TraceRA))
-            comp->log()->prints("\nOOL: Restoring Register state from snap shot\n");
+         trprints(trace, log, "\nOOL: Restoring Register state from snap shot\n");
          cg()->setIsOutOfLineHotPath(false);
          machine->restoreRegisterStateFromSnapShot();
          }
       // Reusing the OOL Section merge label for other branches might be unsafe.
-      else if(comp->getOption(TR_TraceRA))
-         comp->log()->prints("\nOOL: Reusing the OOL Section merge label for other branches might be unsafe.\n");
+      else
+         trprints(trace, log, "\nOOL: Reusing the OOL Section merge label for other branches might be unsafe.\n");
       }
    }
 

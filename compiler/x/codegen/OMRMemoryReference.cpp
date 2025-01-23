@@ -518,6 +518,8 @@ OMR::X86::MemoryReference::populateMemoryReference(
    {
    TR::Node *nodeToBeAdjusted = NULL;
    TR::Compilation *comp = cg->comp();
+   TR::Logger *log = comp->log();
+   bool trace = comp->getOption(TR_TraceCG);
 
    if (comp->useCompressedPointers())
        {
@@ -620,8 +622,7 @@ OMR::X86::MemoryReference::populateMemoryReference(
          {
          self()->setInUpcastingMode();
 
-         if (comp->getOption(TR_TraceCG))
-            comp->log()->printf("Entering UpcastingNoOverflow mode at node %x\n", subTree);
+         trprintf(trace, log, "Entering UpcastingNoOverflow mode at node %x\n", subTree);
          rcount_t refCount = subTree->getFirstChild()->getReferenceCount();
          self()->populateMemoryReference(subTree->getFirstChild(), cg, subTree);
          self()->checkAndDecReferenceCount(subTree->getFirstChild(), refCount, cg);
@@ -770,9 +771,8 @@ OMR::X86::MemoryReference::populateMemoryReference(
 
    if (comp->getOption(TR_TraceRegisterPressureDetails) && comp->getLoggingEnabled())
       {
-      TR::Logger *log = comp->log();
       log->printf("   populated memref on %s", cg->getDebug()->getName(subTree));
-      cg->getDebug()->dumpLiveRegisters(comp->log());
+      cg->getDebug()->dumpLiveRegisters(log);
       log->println();
       }
 
@@ -782,6 +782,9 @@ TR::Register*
 OMR::X86::MemoryReference::evaluate(TR::Node * node, TR::CodeGenerator * cg, TR::Node *parent)
    {
    TR::Compilation *comp = cg->comp();
+   TR::Logger *log = comp->log();
+   bool trace = comp->getOption(TR_TraceCG);
+
    TR::Register *reg = cg->evaluate(node);
 
    if (self()->inUpcastingMode())
@@ -807,8 +810,7 @@ OMR::X86::MemoryReference::evaluate(TR::Node * node, TR::CodeGenerator * cg, TR:
          else if (node->getSize() == 2)
             instr = generateRegRegInstruction(TR::InstOpCode::MOVSXReg8Reg2, node, reg, reg, cg);
 
-         if (comp->getOption(TR_TraceCG))
-            comp->log()->printf("Add a sign extension instruction to 64-bit in Upcasting Mode %x\n", instr);
+         trprintf(trace, log, "Add a sign extension instruction to 64-bit in Upcasting Mode %x\n", instr);
          }
 
       else
@@ -818,8 +820,7 @@ OMR::X86::MemoryReference::evaluate(TR::Node * node, TR::CodeGenerator * cg, TR:
          if (node->getSize() == 2)
             instr = generateRegRegInstruction(TR::InstOpCode::MOVSXReg4Reg2, node, reg, reg, cg);
 
-         if (comp->getOption(TR_TraceCG))
-            comp->log()->printf("Add a sign extension instruction to 32-bit in Upcasting Mode %x\n", instr);
+         trprintf(trace, log, "Add a sign extension instruction to 32-bit in Upcasting Mode %x\n", instr);
          }
 
       }

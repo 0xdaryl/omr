@@ -251,8 +251,7 @@ printCompFailureInfo(TR::JitConfig *jitConfig, TR::Compilation * comp, const cha
          TR_VerboseLog::writeLineLocked(TR_Vlog_COMPFAIL,"%s failed compilation", comp->signature());
          }
 
-      if (comp->getOption(TR_TraceAll))
-         comp->log()->prints("<result success=\"false\">exception thrown by the compiler</result>\n");
+      trprints(comp->getOption(TR_TraceAll), comp->log(), "<result success=\"false\">exception thrown by the compiler</result>\n");
       }
    }
 
@@ -351,13 +350,13 @@ compileMethodFromDetails(
                                                           signature);
          }
 
-      if (compiler.getOption(TR_TraceAll))
+      TR::Logger *log = compiler.log();
+      bool trace = compiler.getOption(TR_TraceAll);
+
+      if (trace)
          {
          const char *signature = compilee.signature(&trMemory);
-
-         compiler.log()->printf("<compile hotness=\"%s\" method=\"%s\">\n",
-                                compiler.getHotnessName(compiler.getMethodHotness()),
-                                signature);
+         log->printf("<compile hotness=\"%s\" method=\"%s\">\n", compiler.getHotnessName(compiler.getMethodHotness()), signature);
          }
 
       compiler.getJittedMethodSymbol()->setLinkage(TR_System);
@@ -422,11 +421,7 @@ compileMethodFromDetails(
                }
             }
 
-         if (compiler.getOption(TR_TraceAll))
-            compiler.log()->printf("<result success=\"true\" startPC=\"%#p\" time=\"%lld.%lldms\"/>\n",
-                                   startPC,
-                                   translationTime/1000,
-                                   translationTime%1000);
+         trprintf(trace, log, "<result success=\"true\" startPC=\"%#p\" time=\"%lld.%lldms\"/>\n", startPC, translationTime/1000, translationTime%1000);
          }
       else /* of rc == COMPILATION_SUCCEEDED */
          {

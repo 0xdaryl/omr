@@ -243,8 +243,7 @@ TR_OutOfLineCodeSection::assignRegisters(TR_RegisterKinds kindsToBeAssigned)
       if ((*li)->getBackingStorage())
          {
          (*li)->getBackingStorage()->setMaxSpillDepth(1);
-         if (comp->getOption(TR_TraceCG))
-            comp->log()->printf("Adding virtReg:%s from _firstTimeLiveOOLRegisterList to _spilledRegisterList \n", _cg->getDebug()->getName((*li)));
+         trprintf(comp->getOption(TR_TraceCG), comp->log(), "Adding virtReg:%s from _firstTimeLiveOOLRegisterList to _spilledRegisterList \n", _cg->getDebug()->getName((*li)));
          spilledRegisterList->push_front((*li));
          }
       }

@@ -56,6 +56,8 @@ TR::Register *
 OMR::CodeGenerator::evaluate(TR::Node * node)
    {
    TR::Compilation *comp = self()->comp();
+   TR::Logger *log = comp->log();
+   bool trace = comp->getOption(TR_TraceCG);
    TR::Register *reg;
 
    TR::ILOpCodes opcode = node->getOpCodeValue();
@@ -184,7 +186,6 @@ OMR::CodeGenerator::evaluate(TR::Node * node)
 
       if (comp->getOption(TR_TraceRegisterPressureDetails) && comp->getLoggingEnabled())
          {
-         TR::Logger *log = comp->log();
          log->printf("  evaluated %s", self()->getDebug()->getName(node));
          self()->getDebug()->dumpLiveRegisters(log);
          log->println();
@@ -211,10 +212,7 @@ OMR::CodeGenerator::evaluate(TR::Node * node)
             //     - register shuffling _could_ be seen in this case.
             //     - but a bug might have been avoided: partial and complete evaluation of a commoned node occurred.
             //
-            if (comp->getOption(TR_TraceCG))
-               {
-               comp->log()->printf(" _stackOfArtificiallyInflatedNodes.pop(): node %p part of commoned case, might have avoided a bug!\n", artificiallyInflatedNode);
-               }
+            trprintf(trace, log, " _stackOfArtificiallyInflatedNodes.pop(): node %p part of commoned case, might have avoided a bug!\n", artificiallyInflatedNode);
             }
 
          self()->decReferenceCount(artificiallyInflatedNode);
@@ -230,11 +228,8 @@ OMR::CodeGenerator::evaluate(TR::Node * node)
 #endif
 #endif
 
-         if (comp->getOption(TR_TraceCG))
-            {
-            comp->log()->printf(" _stackOfArtificiallyInflatedNodes.pop() %p, decReferenceCount(...) called. reg=%s\n", artificiallyInflatedNode,
-                                      artificiallyInflatedNode->getRegister()?artificiallyInflatedNode->getRegister()->getRegisterName(comp):"null");
-            }
+         trprintf(trace, log, " _stackOfArtificiallyInflatedNodes.pop() %p, decReferenceCount(...) called. reg=%s\n", artificiallyInflatedNode,
+               artificiallyInflatedNode->getRegister()?artificiallyInflatedNode->getRegister()->getRegisterName(comp):"null");
          }
 
 #if defined(TR_TARGET_S390)
@@ -398,8 +393,7 @@ OMR::CodeGenerator::decReferenceCount(TR::Node * node)
       if (node->getReferenceCount() == 1)
          {
          storageReference->decOwningRegisterCount();
-         if (self()->traceBCDCodeGen())
-            self()->comp()->log()->printf("\tdecrement owningRegisterCount %d->%d on ref #%d (%s) for reg %s as %s (%p) refCount == 1 (going to 0)\n",
+         trprintf(self()->traceBCDCodeGen(), self()->comp()->log(), "\tdecrement owningRegisterCount %d->%d on ref #%d (%s) for reg %s as %s (%p) refCount == 1 (going to 0)\n",
                storageReference->getOwningRegisterCount()+1,
                storageReference->getOwningRegisterCount(),
                storageReference->getReferenceNumber(),

@@ -975,6 +975,9 @@ OMR::SymbolReferenceTable::findOrCreateMonitorEntrySymbolRef(TR::ResolvedMethodS
 TR::SymbolReference *
 OMR::SymbolReferenceTable::methodSymRefFromName(TR::ResolvedMethodSymbol * owningMethodSymbol, const char *className, const char *methodName, const char *methodSignature, TR::MethodSymbol::Kinds kind, int32_t cpIndex)
    {
+   TR::Logger *log = comp()->log();
+   bool trace = comp()->getOption(TR_TraceMethodIndex);
+
    // Check _methodsBySignature to see if we've already created a symref for this one
    //
    TR::StackMemoryRegion stackMemoryRegion(*trMemory());
@@ -989,8 +992,7 @@ OMR::SymbolReferenceTable::methodSymRefFromName(TR::ResolvedMethodSymbol * ownin
    if (_methodsBySignature.Locate(key, hashIndex) && !ignoreMBSCache)
       {
       TR::SymbolReference *result = _methodsBySignature[hashIndex];
-      if (comp()->getOption(TR_TraceMethodIndex))
-         comp()->log()->printf("-- MBS cache hit (1): M%p\n", result->getSymbol()->getResolvedMethodSymbol()->getResolvedMethod());
+      trprintf(trace, log, "-- MBS cache hit (1): M%p\n", result->getSymbol()->getResolvedMethodSymbol()->getResolvedMethod());
       return result;
       }
    else
@@ -998,8 +1000,7 @@ OMR::SymbolReferenceTable::methodSymRefFromName(TR::ResolvedMethodSymbol * ownin
       // fullSignature will be kept as a key by _methodsBySignature, so it needs heapAlloc
       //
       key = OwningMethodAndString(owningMethodSymbol->getResolvedMethodIndex(), self()->strdup(fullSignature));
-      if (comp()->getOption(TR_TraceMethodIndex))
-         comp()->log()->printf("-- MBS cache miss (1) owning method #%d, signature %s\n", owningMethodSymbol->getResolvedMethodIndex().value(), fullSignature);
+      trprintf(trace, log, "-- MBS cache miss (1) owning method #%d, signature %s\n", owningMethodSymbol->getResolvedMethodIndex().value(), fullSignature);
       }
 
    //

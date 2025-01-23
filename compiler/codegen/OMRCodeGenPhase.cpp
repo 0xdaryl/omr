@@ -156,7 +156,8 @@ OMR::CodeGenPhase::getNumPhases()
 void
 OMR::CodeGenPhase::performProcessRelocationsPhase(TR::CodeGenerator * cg, TR::CodeGenPhase * phase)
    {
-   TR::Compilation * comp = cg->comp();
+   TR::Compilation *comp = cg->comp();
+   TR::Logger *log = comp->log();
 
    if (comp->getPersistentInfo()->isRuntimeInstrumentationEnabled())
       {
@@ -186,7 +187,6 @@ OMR::CodeGenPhase::performProcessRelocationsPhase(TR::CodeGenerator * cg, TR::Co
 
    if (cg->getAheadOfTimeCompile() && (comp->getOption(TR_TraceRelocatableDataCG) || comp->getOption(TR_TraceRelocatableDataDetailsCG)))
       {
-      TR::Logger *log = comp->log();
       log->prints("\n<relocatableDataCG>\n");
       if (comp->getOption(TR_TraceRelocatableDataDetailsCG)) // verbose output
          {
@@ -226,7 +226,6 @@ OMR::CodeGenPhase::performProcessRelocationsPhase(TR::CodeGenerator * cg, TR::Co
 
    if (comp->getOption(TR_TraceCG))
       {
-      TR::Logger *log = comp->log();
       const char * title = "Post Relocation Instructions";
       comp->getDebug()->dumpMethodInstrs(log, title, false, true);
 
@@ -509,7 +508,7 @@ OMR::CodeGenPhase::performUncommonCallConstNodesPhase(TR::CodeGenerator * cg, TR
    {
    TR::Compilation* comp = cg->comp();
 
-   if(comp->getOption(TR_DisableCallConstUncommoning))
+   if (comp->getOption(TR_DisableCallConstUncommoning))
       {
       comp->log()->prints("Skipping Uncommon Call Constant Node phase\n");
       return;

@@ -180,6 +180,8 @@ OMR::Z::Linkage::removeOSCOnSavedArgument(TR::Instruction* instr, TR::Register* 
    const int32_t maxWindowSize=10;
 
    TR::Compilation *comp = self()->comp();
+   TR::Logger *log = comp->log();
+   bool trace = comp->getOption(TR_TraceCG);
 
    // Start looking at the top of instruction stream body
    //
@@ -189,8 +191,7 @@ OMR::Z::Linkage::removeOSCOnSavedArgument(TR::Instruction* instr, TR::Register* 
    if (!disable)
       return;
 
-   if (comp->getOption(TR_TraceCG))
-      comp->log()->printf("%p SP OFFSET %d, SREG %p\n",instr, stackOffset, sReg);
+   trprintf(trace, log, "%p SP OFFSET %d, SREG %p\n",instr, stackOffset, sReg);
 
    while ( (current != NULL) &&
             !current->isLabel()    &&
@@ -198,8 +199,7 @@ OMR::Z::Linkage::removeOSCOnSavedArgument(TR::Instruction* instr, TR::Register* 
             !current->isBranchOp() &&
             windowSize < maxWindowSize && !done )
       {
-      if (comp->getOption(TR_TraceCG))
-         comp->log()->printf("%p inspecting\n", current);
+      trprintf(trace, log, "%p inspecting\n", current);
 
       if (current->isLoad())
          {
@@ -218,8 +218,7 @@ OMR::Z::Linkage::removeOSCOnSavedArgument(TR::Instruction* instr, TR::Register* 
 
          TR::Instruction         *newInst = NULL;
 
-         if (comp->getOption(TR_TraceCG))
-            comp->log()->printf("%p is load, mrOffset %i\n",current, disp);
+         trprintf(trace, log, "%p is load, mrOffset %i\n",current, disp);
 
          // Find a memRef that matches the store
          //
@@ -232,80 +231,59 @@ OMR::Z::Linkage::removeOSCOnSavedArgument(TR::Instruction* instr, TR::Register* 
             if (opCode == TR::InstOpCode::L)
                {
                newInst = generateRRInstruction(self()->cg(), TR::InstOpCode::LR, current->getNode(), tReg, sReg, prev);
-               if (comp->getOption(TR_TraceCG))
-                  {
-                  comp->log()->printf("\nProlog peeking changing TR::InstOpCode::L %s,%d(SP) to TR::InstOpCode::LR %s,%s : [%p] => [%p]\n",
-                        tReg->getRegisterName(comp), stackOffset,
-                        tReg->getRegisterName(comp), sReg->getRegisterName(comp), current, newInst);
-                  }
+               trprintf(trace, log, "\nProlog peeking changing TR::InstOpCode::L %s,%d(SP) to TR::InstOpCode::LR %s,%s : [%p] => [%p]\n",
+                     tReg->getRegisterName(comp), stackOffset,
+                     tReg->getRegisterName(comp), sReg->getRegisterName(comp), current, newInst);
 
                mustReplace = false;   // If sReg = treg, just delete the redundent load
                }
             else if (opCode == TR::InstOpCode::LG)
                {
                newInst = generateRRInstruction(self()->cg(), TR::InstOpCode::LGR, current->getNode(), tReg, sReg, prev);
-               if (comp->getOption(TR_TraceCG))
-                  {
-                  comp->log()->printf("\nProlog peeking changing TR::InstOpCode::LG %s,%d(SP) to TR::InstOpCode::LGR %s,%s : [%p] => [%p]\n",
-                        tReg->getRegisterName(comp), stackOffset,
-                        tReg->getRegisterName(comp), sReg->getRegisterName(comp), current, newInst);
-                  }
+               trprintf(trace, log, "\nProlog peeking changing TR::InstOpCode::LG %s,%d(SP) to TR::InstOpCode::LGR %s,%s : [%p] => [%p]\n",
+                     tReg->getRegisterName(comp), stackOffset,
+                     tReg->getRegisterName(comp), sReg->getRegisterName(comp), current, newInst);
 
                mustReplace = false;   // If sReg = treg, just delete the redundent load
                }
             else if (opCode == TR::InstOpCode::LE)
                {
                newInst = generateRRInstruction(self()->cg(), TR::InstOpCode::LER, current->getNode(), tReg, sReg, prev);
-               if (comp->getOption(TR_TraceCG))
-                  {
-                  comp->log()->printf("\nProlog peeking changing TR::InstOpCode::LE %s,%d(SP) to TR::InstOpCode::LER %s,%s : [%p] => [%p]\n",
-                        tReg->getRegisterName(comp), stackOffset,
-                        tReg->getRegisterName(comp), sReg->getRegisterName(comp), current, newInst);
-                  }
+               trprintf(trace, log, "\nProlog peeking changing TR::InstOpCode::LE %s,%d(SP) to TR::InstOpCode::LER %s,%s : [%p] => [%p]\n",
+                     tReg->getRegisterName(comp), stackOffset,
+                     tReg->getRegisterName(comp), sReg->getRegisterName(comp), current, newInst);
 
                mustReplace = false;   // If sReg = treg, just delete the redundent load
                }
             else if (opCode == TR::InstOpCode::LD)
                {
                newInst = generateRRInstruction(self()->cg(), TR::InstOpCode::LDR, current->getNode(), tReg, sReg, prev);
-               if (comp->getOption(TR_TraceCG))
-                  {
-                  comp->log()->printf("\nProlog peeking changing TR::InstOpCode::LD %s,%d(SP) to TR::InstOpCode::LDR %s,%s : [%p] => [%p]\n",
-                        tReg->getRegisterName(comp), stackOffset,
-                        tReg->getRegisterName(comp), sReg->getRegisterName(comp), current, newInst);
-                  }
+               trprintf(trace, log, "\nProlog peeking changing TR::InstOpCode::LD %s,%d(SP) to TR::InstOpCode::LDR %s,%s : [%p] => [%p]\n",
+                     tReg->getRegisterName(comp), stackOffset,
+                     tReg->getRegisterName(comp), sReg->getRegisterName(comp), current, newInst);
 
                mustReplace = false;   // If sReg = treg, just delete the redundent load
                }
             else if (opCode == TR::InstOpCode::LT)
                {
                newInst = generateRRInstruction(self()->cg(), TR::InstOpCode::LTR, current->getNode(), tReg, sReg, prev);
-               if (comp->getOption(TR_TraceCG))
-                  {
-                  comp->log()->printf("\nProlog peeking changing TR::InstOpCode::LT %s,%d(SP) to TR::InstOpCode::LTR %s,%s : [%p] => [%p]\n",
-                        tReg->getRegisterName(comp), stackOffset,
-                        tReg->getRegisterName(comp), sReg->getRegisterName(comp), current, newInst);
-                  }
+               trprintf(trace, log, "\nProlog peeking changing TR::InstOpCode::LT %s,%d(SP) to TR::InstOpCode::LTR %s,%s : [%p] => [%p]\n",
+                     tReg->getRegisterName(comp), stackOffset,
+                     tReg->getRegisterName(comp), sReg->getRegisterName(comp), current, newInst);
                }
             else if (opCode == TR::InstOpCode::LTG)
                {
                newInst = generateRRInstruction(self()->cg(), TR::InstOpCode::LTGR, current->getNode(), tReg, sReg, prev);
-               if (comp->getOption(TR_TraceCG))
-                  {
-                  comp->log()->printf("\nProlog peeking changing TR::InstOpCode::LTG %s,%d(SP) to TR::InstOpCode::LTGR %s,%s : [%p] => [%p]\n",
-                        tReg->getRegisterName(comp), stackOffset,
-                        tReg->getRegisterName(comp), sReg->getRegisterName(comp), current, newInst);
-                  }
+               trprintf(trace, log, "\nProlog peeking changing TR::InstOpCode::LTG %s,%d(SP) to TR::InstOpCode::LTGR %s,%s : [%p] => [%p]\n",
+                     tReg->getRegisterName(comp), stackOffset,
+                     tReg->getRegisterName(comp), sReg->getRegisterName(comp), current, newInst);
                }
             else if (opCode == TR::InstOpCode::LGF)
                {
                newInst = generateRRInstruction(self()->cg(), TR::InstOpCode::LGFR, current->getNode(), tReg, sReg, prev);
-               if (comp->getOption(TR_TraceCG))
-                  {
-                  comp->log()->printf("\nProlog peeking changing TR::InstOpCode::LGF %s,%d(SP) to TR::InstOpCode::LGFR %s,%s : [%p] => [%p]\n",
-                        tReg->getRegisterName(comp), stackOffset,
-                        tReg->getRegisterName(comp), sReg->getRegisterName(comp), current, newInst);
-                  }
+               trprintf(trace, log, "\nProlog peeking changing TR::InstOpCode::LGF %s,%d(SP) to TR::InstOpCode::LGFR %s,%s : [%p] => [%p]\n",
+                     tReg->getRegisterName(comp), stackOffset,
+                     tReg->getRegisterName(comp), sReg->getRegisterName(comp), current, newInst);
                }
 
             // Replace if we have a new instruction
@@ -316,12 +294,11 @@ OMR::Z::Linkage::removeOSCOnSavedArgument(TR::Instruction* instr, TR::Register* 
                self()->cg()->replaceInst(current, newInst);
                current = newInst;
 
-               if(!mustReplace && tReg == sReg)
-                 {
+               if (!mustReplace && tReg == sReg)
+                  {
                   newInst->remove();
-                 if (comp->getOption(TR_TraceCG))
-                    comp->log()->prints("deleting instruction as sreg = treg\n");
-                 }
+                  trprints(trace, log, "deleting instruction as sreg = treg\n");
+                  }
 
                done = true;
                }
@@ -356,6 +333,10 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
    TR::RealRegister * stackPtr = self()->getNormalStackPointerRealRegister();
    const bool enableVectorLinkage = self()->cg()->getSupportsVectorRegisters();
 
+   TR::Compilation *comp = self()->comp();
+   TR::Logger *log = comp->log();
+   bool trace = comp->getOption(TR_TraceCG);
+
    // for XPLink or FASTLINK, there are cases where the "normal" stack pointer is
    // not appropriate for where to save arguments in registers.
    bool useAlternateStackPointer = false;
@@ -369,13 +350,13 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
       stackPtr = self()->getStackPointerRealRegister();
       }
 
-   TR::ResolvedMethodSymbol * bodySymbol = self()->comp()->getJittedMethodSymbol();
+   TR::ResolvedMethodSymbol * bodySymbol = comp->getJittedMethodSymbol();
 
    ListIterator<TR::ParameterSymbol> paramIterator((parameterList!=NULL) ? parameterList : &(bodySymbol->getParameterList()));
 
    TR::ParameterSymbol * paramCursor;
 
-   TR::Node * firstNode = self()->comp()->getStartTree()->getNode();
+   TR::Node * firstNode = comp->getStartTree()->getNode();
 
    TR_BitVector globalAllocatedRegisters;
    TR_BitVector freeScratchable;
@@ -394,7 +375,7 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
    // to pass any register arguments back onto the stack, even if they are
    // read-only.
    // For FSD, we need to store all parameters back onto the stack.
-   unconditionalSave |= (InPreProlog && self()->comp()->cg()->mustGenerateSwitchToInterpreterPrePrologue());
+   unconditionalSave |= (InPreProlog && comp->cg()->mustGenerateSwitchToInterpreterPrePrologue());
 
    unconditionalSave |= (self()->isForceSaveIncomingParameters() != 0);
 
@@ -497,10 +478,8 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
           (lri > 0 && ai < 0 && (self()->getPreserved(REGNUM(lri + 3)) || dtype.isVector())))
           paramCursor->setParmHasToBeOnStack();
 
-      if (self()->comp()->getOption(TR_TraceCG))
-         {
-         self()->comp()->log()->printf("save argument: %s, lri: %d, ai: %d, offset: %d, isReferenced: %d, hasToBeOnStack: %d\n", param_name, lri, ai, offset, paramCursor->isReferencedParameter(),self()->hasToBeOnStack(paramCursor));
-         }
+      trprintf(trace, log, "save argument: %s, lri: %d, ai: %d, offset: %d, isReferenced: %d, hasToBeOnStack: %d\n",
+            param_name, lri, ai, offset, paramCursor->isReferencedParameter(), self()->hasToBeOnStack(paramCursor));
 
       TR::InstOpCode::Mnemonic storeOpCode, loadOpCode;
       uint32_t opcodeMask = 0;
@@ -612,10 +591,8 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
                }
             }
 
-         if (self()->comp()->getOption(TR_TraceCG))
-         {
-         self()->comp()->log()->printf("save argument: %s, regNum: %d, \n", param_name, regNum);
-         }
+         trprintf(trace, log, "save argument: %s, regNum: %d, \n", param_name, regNum);
+
          // XPLINK(STOREARGS)
          if ( !paramCursor->isReferencedParameter() && !paramCursor->isParmHasToBeOnStack() &&
              (!unconditionalSave || (unconditionalSave && dtype != TR::Address)) )
@@ -2093,8 +2070,7 @@ OMR::Z::Linkage::replaceCallWithJumpInstruction(TR::Instruction *callInstruction
 
    replacementInst = new (self()->trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::BRCL, node, (uint32_t)0xf, callSymbol, callSymRef, self()->cg());
 
-   if(self()->comp()->getOption(TR_TraceCG))
-      self()->comp()->log()->printf("Replacing instruction %p to a jump %p !\n",callInstruction, replacementInst);
+   trprintf(self()->comp()->getOption(TR_TraceCG), self()->comp()->log(), "Replacing instruction %p to a jump %p !\n", callInstruction, replacementInst);
 
    self()->cg()->replaceInst(callInstruction,replacementInst);
    }
@@ -2360,8 +2336,7 @@ OMR::Z::Linkage::buildNativeDispatch(TR::Node * callNode,
       bool isPassReceiver,
       bool isJNIGCPoint)
    {
-   if (self()->comp()->getOption(TR_TraceCG))
-      self()->comp()->log()->prints("\nbuildNativeDispatch\n");
+   trprints(self()->comp()->getOption(TR_TraceCG), self()->comp()->log(), "\nbuildNativeDispatch\n");
 
    bool hasGlRegDeps;
    int64_t killMask = -1;

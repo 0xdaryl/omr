@@ -165,9 +165,7 @@ TR::X86SystemLinkage::copyParametersToHomeLocation(TR::Instruction *cursor)
          //
          if (ai == NOT_ASSIGNED || hasToBeOnStack(paramCursor))
             {
-            if (comp()->getOption(TR_TraceCG))
-               comp()->log()->printf(
-                  "copyToHomeLocation param %p, linkage reg index %d, allocated index %d, parameter offset %d, hasToBeOnStack %d, parm->isParmHasToBeOnStack() %d.\n",
+            trprintf(comp()->getOption(TR_TraceCG), comp()->log(), "copyToHomeLocation param %p, linkage reg index %d, allocated index %d, parameter offset %d, hasToBeOnStack %d, parm->isParmHasToBeOnStack() %d.\n",
                   paramCursor, lri, ai, offset, hasToBeOnStack(paramCursor), paramCursor->isParmHasToBeOnStack());
             if (debug("traceCopyParametersToHomeLocation"))
                diagnostic("copyParametersToHomeLocation: Storing %d\n", sourceIndex);
@@ -426,6 +424,9 @@ TR::X86SystemLinkage::createPrologue(TR::Instruction *cursor)
    TR_DebugFrameSegmentInfo *debugFrameSlotInfo=NULL;
 #endif
 
+   TR::Logger *log = comp()->log();
+   bool trace = comp()->getOption(TR_TraceCG);
+
    TR::RealRegister *espReal = machine()->getRealRegister(TR::RealRegister::esp);
 
    TR::ResolvedMethodSymbol *bodySymbol = comp()->getJittedMethodSymbol();
@@ -541,23 +542,15 @@ TR::X86SystemLinkage::createPrologue(TR::Instruction *cursor)
 
    cursor = savePreservedRegisters(cursor);
 
-   if (comp()->getOption(TR_TraceCG))
-      {
-      comp()->log()->printf("create prologue using system linkage, after savePreservedRegisters, cursor is %p.\n", cursor);
-      }
+   trprintf(trace, log, "create prologue using system linkage, after savePreservedRegisters, cursor is %p.\n", cursor);
 
    cursor = copyParametersToHomeLocation(cursor);
 
-   if (comp()->getOption(TR_TraceCG))
-      {
-      comp()->log()->printf("create prologue using system linkage, after copyParametersToHomeLocation, cursor is %p.\n", cursor);
-      }
+   trprintf(trace, log, "create prologue using system linkage, after copyParametersToHomeLocation, cursor is %p.\n", cursor);
 
 #if defined(DEBUG)
-   if (comp()->getOption(TR_TraceCG))
-      {
-      comp()->log()->printf("\nFrame size: locals=%d frame=%d\n", localSize, frameSize);
-      }
+   trprintf(trace, log, "\nFrame size: locals=%d frame=%d\n", localSize, frameSize);
+
    ListIterator<TR::ParameterSymbol>  paramIterator(&(bodySymbol->getParameterList()));
    TR::ParameterSymbol               *paramCursor;
    for (
@@ -613,7 +606,7 @@ TR::X86SystemLinkage::createPrologue(TR::Instruction *cursor)
       outgoingArgSize, "Outgoing args",
       debugFrameSlotInfo
       );
-   if (comp()->getOption(TR_TraceCG))
+   if (trace)
       {
       diagnostic("\nFrame layout:\n");
       diagnostic("        +rsp  +vfp     end  size        what\n");
@@ -656,10 +649,7 @@ TR::X86SystemLinkage::restorePreservedRegisters(TR::Instruction *cursor)
          TR::RealRegister::RegNum idx = _properties.getPreservedRegister((uint32_t)pindex);
          TR::RealRegister *reg = machine()->getRealRegister(idx);
 
-         if (comp()->getOption(TR_TraceCG))
-            {
-            comp()->log()->printf("reg %d, getHasBeenAssignedInMethod %d\n", idx, reg->getHasBeenAssignedInMethod());
-            }
+         trprintf(comp()->getOption(TR_TraceCG), comp()->log(), "reg %d, getHasBeenAssignedInMethod %d\n", idx, reg->getHasBeenAssignedInMethod());
 
          if (reg->getHasBeenAssignedInMethod())
             {
@@ -682,6 +672,9 @@ TR::X86SystemLinkage::restorePreservedRegisters(TR::Instruction *cursor)
 void
 TR::X86SystemLinkage::createEpilogue(TR::Instruction *cursor)
    {
+   TR::Logger *log = comp()->log();
+   bool trace = comp()->getOption(TR_TraceCG);
+
    TR::RealRegister    *espReal      = machine()->getRealRegister(TR::RealRegister::esp);
    TR::ResolvedMethodSymbol *bodySymbol = comp()->getJittedMethodSymbol();
 
@@ -702,10 +695,7 @@ TR::X86SystemLinkage::createEpilogue(TR::Instruction *cursor)
    //
    cursor = restorePreservedRegisters(cursor);
 
-   if (comp()->getOption(TR_TraceCG))
-      {
-      comp()->log()->printf("create epilogue using system linkage, after restorePreservedRegisters, cursor is %x.\n", cursor);
-      }
+   trprintf(trace, log, "create epilogue using system linkage, after restorePreservedRegisters, cursor is %x.\n", cursor);
 
    // Deallocate the stack frame
    //
@@ -732,19 +722,13 @@ TR::X86SystemLinkage::createEpilogue(TR::Instruction *cursor)
       cursor = new (trHeapMemory()) TR::X86RegImmInstruction(cursor, op, espReal, allocSize, cg());
       }
 
-   if (comp()->getOption(TR_TraceCG))
-      {
-      comp()->log()->printf("create epilogue using system linkage, after delocating stack frame, cursor is %x.\n", cursor);
-      }
+   trprintf(trace, log, "create epilogue using system linkage, after delocating stack frame, cursor is %x.\n", cursor);
 
    if (cursor->getNext()->getOpCodeValue() == TR::InstOpCode::RETImm2)
       {
       toIA32ImmInstruction(cursor->getNext())->setSourceImmediate(bodySymbol->getNumParameterSlots() << getProperties().getParmSlotShift());
 
-      if (comp()->getOption(TR_TraceCG))
-         {
-         comp()->log()->printf("create epilogue using system linkage, ret_IMM set to %d.\n", bodySymbol->getNumParameterSlots() << getProperties().getParmSlotShift());
-         }
+      trprintf(trace, log, "create epilogue using system linkage, ret_IMM set to %d.\n", bodySymbol->getNumParameterSlots() << getProperties().getParmSlotShift());
       }
    }
 
@@ -798,8 +782,7 @@ TR::X86SystemLinkage::mapIncomingParms(TR::ResolvedMethodSymbol *method)
       if (layoutResult.abstract & TR::parmLayoutResult::ON_STACK)
          {
          parmCursor->setParameterOffset(layoutResult.offset + bump);
-         if (comp()->getOption(TR_TraceCG))
-            comp()->log()->printf("mapIncomingParms setParameterOffset %d for param symbol %p\n", parmCursor->getParameterOffset(), parmCursor);
+         trprintf(comp()->getOption(TR_TraceCG), comp()->log(), "mapIncomingParms setParameterOffset %d for param symbol %p\n", parmCursor->getParameterOffset(), parmCursor);
          }
       }
    }
