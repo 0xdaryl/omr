@@ -244,8 +244,7 @@ bool OMR::ValuePropagation::propagateConstraint(TR::Node *node, int32_t valueNum
    if (_propagationDepth > _maxPropagationDepth)
       {
       _reachedMaxRelationDepth = true;
-      if (trace())
-         comp()->log()->printf("===>Reached Max Relational Propagation Depth: %d\n", _propagationDepth);
+      trprintf(trace(), comp()->log(), "===>Reached Max Relational Propagation Depth: %d\n", _propagationDepth);
       ///TR_ASSERT(0, "Reached max relation depth %p\n", _propagationDepth);
       }
 
@@ -410,8 +409,7 @@ TR::VPConstraint *OMR::ValuePropagation::addConstraintToList(TR::Node *node, int
       if (!rel && numRelatives > maxRelDepth)
          {
          _reachedMaxRelationDepth = true;
-         if (trace())
-            log->printf("===>Reached Max Relational Propagation Depth: %d\n", numRelatives);
+         trprintf(trace(), log, "===>Reached Max Relational Propagation Depth: %d\n", numRelatives);
          }
 
       // If the relationship does not exist, create it.
@@ -627,8 +625,7 @@ TR::VPConstraint *OMR::ValuePropagation::addGlobalConstraint(TR::Node *node, int
    if (!rel && numRelatives > maxRelDepth)
       {
       _reachedMaxRelationDepth = true;
-      if (trace())
-         log->printf("===>Reached Max Relational Propagation Depth: %d\n", numRelatives);
+      trprintf(trace(), log, "===>Reached Max Relational Propagation Depth: %d\n", numRelatives);
       }
 
    if (!rel || rel->relative > relative)
@@ -760,8 +757,7 @@ void OMR::ValuePropagation::mergeRelationships(TR_LinkHead<Relationship> &fromLi
       bool inBothLists)
    {
    TR::Logger *log = comp()->log();
-   if (trace())
-      log->printf("Merging relationships for value number: %i\n", valueNumber);
+   trprintf(trace(), log, "Merging relationships for value number: %i\n", valueNumber);
 
    // Merge (i.e. logical OR) the "from" list into the "to" list.
    // Both lists are ordered by relation number.
@@ -803,7 +799,7 @@ void OMR::ValuePropagation::mergeRelationships(TR_LinkHead<Relationship> &fromLi
          if (preserveStoreRelationships &&
                mergingStore &&
                (from->relative == AbsoluteConstraint) &&
-	      (!inBothLists /* || !isToEmpty */)) // commented out the !isToEmpty because it is not guaranteed to be safe to take an absolute constraint that only exists on one side
+               (!inBothLists /* || !isToEmpty */)) // commented out the !isToEmpty because it is not guaranteed to be safe to take an absolute constraint that only exists on one side
             {
             rel = createRelationship(from->relative, from->constraint);
             rel->setNext(to);
@@ -825,7 +821,7 @@ void OMR::ValuePropagation::mergeRelationships(TR_LinkHead<Relationship> &fromLi
          if (!preserveStoreRelationships ||
                !mergingStore ||
                (to->relative != AbsoluteConstraint) ||
-	     (inBothLists /* && isFromEmpty */)) // but do not remove the storeRel
+               (inBothLists /* && isFromEmpty */)) // but do not remove the storeRel
             {
             toList.removeAfter(prev, to);
             freeRelationship(to);
@@ -1318,8 +1314,7 @@ void OMR::ValuePropagation::createExceptionEdgeConstraints(uint32_t exceptions, 
       if (!target->canCatchExceptions(exceptions))
          continue;
 
-      if (trace())
-         comp()->log()->printf("   %s [%p] can throw exception to block_%d\n", reason->getOpCode().getName(), reason, target->getNumber());
+      trprintf(trace(), comp()->log(), "   %s [%p] can throw exception to block_%d\n", reason->getOpCode().getName(), reason, target->getNumber());
 
       EdgeConstraints *constraints = getEdgeConstraints(*edge);
 
@@ -1848,8 +1843,7 @@ void OMR::ValuePropagation::checkTypeRelationship(TR::VPConstraint *lhs, TR::VPC
                                                 int32_t &value, bool isInstanceOf, bool isCheckCast)
    {
    TR::Logger *log = comp()->log();
-   if (trace())
-      log->prints("   checking for relationship between types...\n");
+   trprints(trace(), log, "   checking for relationship between types...\n");
 
    int32_t result = value;
    TR_OpaqueClassBlock *jlKlass = NULL;
@@ -1881,14 +1875,12 @@ void OMR::ValuePropagation::checkTypeRelationship(TR::VPConstraint *lhs, TR::VPC
 
       if (jlKlass && noPresenceResult)
          {
-         if (trace())
-            log->prints("presences are incompatible\n");
+         trprints(trace(), log, "presences are incompatible\n");
          result = 0;
          }
       else if (jlKlass && noTypeResult)
          {
-         if (trace())
-            log->prints("types are incompatible\n");
+         trprints(trace(), log, "types are incompatible\n");
          result = 0;
 
          // if the object is a classobject, then the cast maybe one of the
@@ -1898,8 +1890,7 @@ void OMR::ValuePropagation::checkTypeRelationship(TR::VPConstraint *lhs, TR::VPC
             if ((objectConstraint->isClassObject() == TR_yes) &&
                   (castIsClassObject == TR_maybe))
                {
-               if (trace())
-                  log->prints("object is a classobject but cast maybe Class\n");
+               trprints(trace(), log, "object is a classobject but cast maybe Class\n");
                result = value;
                }
             }
@@ -1911,8 +1902,7 @@ void OMR::ValuePropagation::checkTypeRelationship(TR::VPConstraint *lhs, TR::VPC
              (isInstanceOf || objectClass->isNonNullObject()) &&
              (objectClass->isClassObject() == TR_yes))
             {
-            if (trace())
-               log->prints("object is a classobject but cast is not a Class\n");
+            trprints(trace(), log, "object is a classobject but cast is not a Class\n");
             result = 0;
             }
          /*
@@ -1928,8 +1918,7 @@ void OMR::ValuePropagation::checkTypeRelationship(TR::VPConstraint *lhs, TR::VPC
                   (objectClass->isClassObject() == TR_no))
             {
             result = 0;
-            if (trace())
-               log->prints("object is not a classobject but cast is java/lang/Class\n");
+            trprints(trace(), log, "object is not a classobject but cast is java/lang/Class\n");
             }
          // probably cannot get here
          //
@@ -1939,8 +1928,7 @@ void OMR::ValuePropagation::checkTypeRelationship(TR::VPConstraint *lhs, TR::VPC
                   (objectClass->isClassObject() == TR_yes))
              {
              result = 1;
-             if (trace())
-                log->prints("object is a non-null classobject and cast is java/lang/Class\n");
+             trprints(trace(), log, "object is a non-null classobject and cast is java/lang/Class\n");
              }
          }
       }
@@ -1973,6 +1961,8 @@ void OMR::ValuePropagation::invalidateParmConstraintsIfNeeded(TR::Node *node, TR
    if (!_parmValues)
       return;
 
+   TR::Logger *log = comp()->log();
+
    // invalidate parm values in localVP if there is a store
    // to a parm and the value being stored does not match the
    // type of the parm. since localVP has no notion of value numbers,
@@ -1986,14 +1976,12 @@ void OMR::ValuePropagation::invalidateParmConstraintsIfNeeded(TR::Node *node, TR
       TR::VPConstraint *parmConstraint = _parmValues[parmNum];
       if (parmConstraint)
          {
-         if (trace())
-            comp()->log()->printf("Checking compatibility of store node %p parm %d with value\n", node, parmNum);
+         trprintf(trace(), log, "Checking compatibility of store node %p parm %d with value\n", node, parmNum);
          int32_t result = 1;
          checkTypeRelationship(parmConstraint, constraint, result, false, false);
          if (!result) // there is some incompatibility
             {
-            if (trace())
-               comp()->log()->printf("   Store node %p to parm %d is not compatible with rhs, invalidating _parms entry %p\n", node, parmNum, _parmValues[parmNum]);
+            trprintf(trace(), log, "   Store node %p to parm %d is not compatible with rhs, invalidating _parms entry %p\n", node, parmNum, _parmValues[parmNum]);
             _parmTypeValid[parmNum] = false; // invalidate the info in the parms array
             }
          }
@@ -2008,8 +1996,7 @@ TR::VPConstraint *OMR::ValuePropagation::mergeDefConstraints(TR::Node *node, int
 
    if (_defMergedNodes->get(node->getGlobalIndex()))
       {
-      if (trace())
-         log->printf("Node n%dn has already been processed by mergeDefConstraints - returning NULL\n", node->getGlobalIndex());
+      trprintf(trace(), log, "Node n%dn has already been processed by mergeDefConstraints - returning NULL\n", node->getGlobalIndex());
       return NULL;
       }
 
@@ -2060,16 +2047,13 @@ TR::VPConstraint *OMR::ValuePropagation::mergeDefConstraints(TR::Node *node, int
    //
    if (!forceMerge && defNode)
       {
-      if (trace())
-         log->printf("   %s [%p] has singleDefiningLoad [%p] ", node->getOpCode().getName(), node, defNode);
+      trprintf(trace(), log, "   %s [%p] has singleDefiningLoad [%p] ", node->getOpCode().getName(), node, defNode);
       if (defNode->getVisitCount() >= _visitCount)
          {
-         if (trace())
-            log->prints("  whose constraints already computed\n");
+         trprints(trace(), log, "  whose constraints already computed\n");
          return NULL;
          }
-      if (trace())
-         log->prints("  going to merge\n");
+      trprints(trace(), log, "  going to merge\n");
       }
 
    TR_UseDefInfo::BitVector defs(comp()->allocator());
@@ -2099,8 +2083,7 @@ TR::VPConstraint *OMR::ValuePropagation::mergeDefConstraints(TR::Node *node, int
       defConstraint = NULL;
       if (defIndex < _useDefInfo->getFirstRealDefIndex())
          {
-         if (trace())
-            log->printf("   %s [%p] looking at method entry def point: ", node->getOpCode().getName(), node);
+         trprintf(trace(), log, "   %s [%p] looking at method entry def point: ", node->getOpCode().getName(), node);
          // Remember that method entry is a def point for this value number
          //
          createStoreConstraints(node);
@@ -2136,8 +2119,7 @@ TR::VPConstraint *OMR::ValuePropagation::mergeDefConstraints(TR::Node *node, int
              && _curDefinedOnAllPaths
              && !_curDefinedOnAllPaths->get(node->getSymbolReference()->getReferenceNumber()))
             {
-            if (trace())
-               log->printf("symRef %d is not stored on all paths - treating as unknown\n", defNode->getSymbolReference()->getReferenceNumber());
+            trprintf(trace(), log, "symRef %d is not stored on all paths - treating as unknown\n", defNode->getSymbolReference()->getReferenceNumber());
             unseenDefsFound = true;
             }
 
@@ -2147,8 +2129,7 @@ TR::VPConstraint *OMR::ValuePropagation::mergeDefConstraints(TR::Node *node, int
          // same value number as this node's base; other stores will make this
          // value unconstrained.
          //
-         if (trace())
-            log->printf("   %s [%p] looking at def value %d, %s [%p]: ", node->getOpCode().getName(), node, getValueNumber(defNode), defNode->getOpCode().getName(), defNode);
+         trprintf(trace(), log, "   %s [%p] looking at def value %d, %s [%p]: ", node->getOpCode().getName(), node, getValueNumber(defNode), defNode->getOpCode().getName(), defNode);
 
          if (defNode->getOpCode().isStore())
             {
@@ -2191,8 +2172,7 @@ TR::VPConstraint *OMR::ValuePropagation::mergeDefConstraints(TR::Node *node, int
                         {
                         // This def is unreachable on this path
                         //
-                        if (trace())
-                           log->prints("def is unreachable (constraint), ignored\n");
+                        trprints(trace(), log, "def is unreachable (constraint), ignored\n");
                         continue;
                         }
                      isGlobal = false;
@@ -2221,8 +2201,7 @@ TR::VPConstraint *OMR::ValuePropagation::mergeDefConstraints(TR::Node *node, int
                      }
                   else
                      {
-                     if (trace())
-                        log->prints("def is unreachable (defInUnreachableBlock), ignored\n");
+                     trprints(trace(), log, "def is unreachable (defInUnreachableBlock), ignored\n");
                      continue;
                      }
 #if 0
@@ -2236,8 +2215,7 @@ TR::VPConstraint *OMR::ValuePropagation::mergeDefConstraints(TR::Node *node, int
                      {
                      if (defIsUnreachable)
                         {
-                        if (trace())
-                           log->prints("def is unreachable (defInUnreachableBlock), ignored\n");
+                        trprints(trace(), log, "def is unreachable (defInUnreachableBlock), ignored\n");
                         continue;
                         }
                      else
@@ -2254,13 +2232,11 @@ TR::VPConstraint *OMR::ValuePropagation::mergeDefConstraints(TR::Node *node, int
 
       if (defIsUnseen)
          {
-         if (trace())
-            log->prints("def has not been seen yet\n");
+         trprints(trace(), log, "def has not been seen yet\n");
          }
       else if (!defConstraint)
          {
-         if (trace())
-            log->prints("no constraint\n");
+         trprints(trace(), log, "no constraint\n");
          constraint = NULL;
          unconstrained = true;
          }
@@ -2327,8 +2303,7 @@ TR::VPConstraint *OMR::ValuePropagation::mergeDefConstraints(TR::Node *node, int
 
          if (mergeConstraint)
             {
-            if (trace())
-               log->printf(" merging constraint at def %p\n", defNode);
+            trprintf(trace(), log, " merging constraint at def %p\n", defNode);
             if (constraint)
                {
                constraint = constraint->merge(defConstraint, this);
@@ -2338,8 +2313,8 @@ TR::VPConstraint *OMR::ValuePropagation::mergeDefConstraints(TR::Node *node, int
             else if (!unconstrained)
                constraint = defConstraint;
             }
-         else if (trace())
-            log->printf(" NOT merging constraint at def %p\n", defNode);
+         else
+            trprintf(trace(), log, " NOT merging constraint at def %p\n", defNode);
          }
       }
 
@@ -2360,8 +2335,7 @@ TR::VPConstraint *OMR::ValuePropagation::mergeDefConstraints(TR::Node *node, int
          TR::VPConstraint *c;
          for (c = cIt.getFirst(); c; c = cIt.getNext())
             {
-            if (trace())
-               log->printf(" doing late merging constraint at def %p\n", defNode);
+            trprintf(trace(), log, " doing late merging constraint at def %p\n", defNode);
             constraint = constraint->merge(c, this);
             if (!constraint)
                {
@@ -2472,8 +2446,7 @@ TR::VPConstraint *OMR::ValuePropagation::mergeDefConstraints(TR::Node *node, int
 
    if (relative != AbsoluteConstraint)
       {
-      if (trace())
-         log->prints("we are processing a relative constraint and merging with backedge constraints is not supported\n");
+      trprints(trace(), log, "we are processing a relative constraint and merging with backedge constraints is not supported\n");
       return NULL;
       }
 
@@ -2500,31 +2473,28 @@ TR::VPConstraint *OMR::ValuePropagation::mergeDefConstraints(TR::Node *node, int
           && !unseenDefsFound
           && !_curDefinedOnAllPaths->get(defNode->getSymbolReference()->getReferenceNumber()))
          {
-         if (trace())
-            log->printf("symref %d is not defined on all paths - consulting backedge constraints\n", node->getSymbolReference()->getReferenceNumber());
+         trprintf(trace(), log, "symref %d is not defined on all paths - consulting backedge constraints\n", node->getSymbolReference()->getReferenceNumber());
 
          // this def is unseen
          unseenDefsFound = true;
          LoopInfo *loopInfo;
          for (loopInfo = _loopInfo; loopInfo && loopInfo != container; loopInfo = loopInfo->_parent)
             {
-            if (trace())
-               log->printf("   %s [%p] looking at back edges in loop %d for def %s [%p]: ", node->getOpCode().getName(), node, loopInfo->_loop->getNumber(), defNode->getOpCode().getName(), defNode);
+            trprintf(trace(), log, "   %s [%p] looking at back edges in loop %d for def %s [%p]: ",
+                  node->getOpCode().getName(), node, loopInfo->_loop->getNumber(), defNode->getOpCode().getName(), defNode);
 
             // See if the unseen def was seen on a path to this back edge.
             //
             if (!loopInfo ||
                 !loopInfo->_backEdgeConstraints)
                {
-               if (trace())
-                  log->prints("not seen on this back edge, ignored\n");
+               trprints(trace(), log, "not seen on this back edge, ignored\n");
                continue;
                }
 
             if (!hasBeenStored(defValueNumber, sym, loopInfo->_backEdgeConstraints->valueConstraints))
                {
-               if (trace())
-                  log->prints("no backedge constraint, ignored\n");
+               trprints(trace(), log, "no backedge constraint, ignored\n");
                continue;
                }
 
@@ -2556,21 +2526,18 @@ TR::VPConstraint *OMR::ValuePropagation::mergeDefConstraints(TR::Node *node, int
                 defConstraint->asEqual() &&
                 defConstraint->asEqual()->increment() == 0)
                {
-               if (trace())
-                  log->prints("trivially equal, ignored\n");
+               trprints(trace(), log, "trivially equal, ignored\n");
                continue;
                }
 
             if (!defConstraint)
                {
-               if (trace())
-                  log->prints("no constraint\n");
+               trprints(trace(), log, "no constraint\n");
                return NULL;
                }
             if (defConstraint->asUnreachablePath())
                {
-               if (trace())
-                  log->prints("def is unreachable, ignored\n");
+               trprints(trace(), log, "def is unreachable, ignored\n");
                continue;
                }
 
@@ -2630,8 +2597,7 @@ TR::VPConstraint *OMR::ValuePropagation::mergeDefConstraints(TR::Node *node, int
 
             if (mergeConstraint)
                {
-               if (trace())
-                  log->printf(" mmerging constraint at def %p\n", defNode);
+               trprintf(trace(), log, " mmerging constraint at def %p\n", defNode);
                if (constraint)
                   {
                   //
@@ -2855,8 +2821,8 @@ TR::VPConstraint *OMR::ValuePropagation::mergeDefConstraints(TR::Node *node, int
                else
                   constraint = defConstraint;
                }
-            else if (trace())
-               log->printf(" NOT mmerging constraint at def %p\n", defNode);
+            else
+               trprintf(trace(), log, " NOT mmerging constraint at def %p\n", defNode);
             }
          }
 
@@ -2887,8 +2853,7 @@ TR::VPConstraint *OMR::ValuePropagation::mergeDefConstraints(TR::Node *node, int
          TR::VPConstraint *c;
          for (c = cIt.getFirst(); c; c = cIt.getNext())
             {
-            if (trace())
-               log->printf(" late mmerging constraint at def %p\n", defNode);
+            trprintf(trace(), log, " late mmerging constraint at def %p\n", defNode);
             constraint = constraint->merge(c, this);
             if (!constraint)
                {
@@ -3155,8 +3120,7 @@ void OMR::ValuePropagation::checkForInductionVariableIncrement(TR::Node *node)
    TR::Node      *entryDef            = NULL;
    int32_t       entryVN             = -1;
 
-   if (trace())
-      log->printf("   %s [%p] may be induction variable [%p]\n", node->getOpCode().getName(), node, sym);
+   trprintf(trace(), log, "   %s [%p] may be induction variable [%p]\n", node->getOpCode().getName(), node, sym);
 
    if (!useIndex || !_useDefInfo->isUseIndex(useIndex))
       isInductionVariable = false;
@@ -3180,8 +3144,7 @@ void OMR::ValuePropagation::checkForInductionVariableIncrement(TR::Node *node)
                // Method entry is a def point.
                //
                isInductionVariable = false;
-               if (trace())
-                  log->printf("      ivInfo is invalid for sym [%p] as method entry is def point\n", sym);
+               trprintf(trace(), log, "      ivInfo is invalid for sym [%p] as method entry is def point\n", sym);
                break;
                }
 
@@ -3217,8 +3180,7 @@ void OMR::ValuePropagation::checkForInductionVariableIncrement(TR::Node *node)
                // Method entry is a def point.
                //
                isInductionVariable = false;
-               if (trace())
-                  log->printf("      ivInfo is invalid for sym [%p] as method entry is def point\n", sym);
+               trprintf(trace(), log, "      ivInfo is invalid for sym [%p] as method entry is def point\n", sym);
                break;
                }
 
@@ -3240,8 +3202,7 @@ void OMR::ValuePropagation::checkForInductionVariableIncrement(TR::Node *node)
                {
                maybeInductionVariable = false;
                isInductionVariable = false;
-               if (trace())
-                  log->printf("      ivInfo is invalid for sym [%p], def [%d] node %p does not have the same value number as another increment\n", sym, defVN, defNode);
+               trprintf(trace(), log, "      ivInfo is invalid for sym [%p], def [%d] node %p does not have the same value number as another increment\n", sym, defVN, defNode);
                break;
                }
 
@@ -3256,8 +3217,7 @@ void OMR::ValuePropagation::checkForInductionVariableIncrement(TR::Node *node)
                   {
                   maybeInductionVariable = false;
                   isInductionVariable = false;
-                  if (trace())
-                     log->printf("      ivInfo is invalid for sym [%p], def [%d] already seen in loop\n", sym, defVN);
+                  trprintf(trace(), log, "      ivInfo is invalid for sym [%p], def [%d] already seen in loop\n", sym, defVN);
                   break;
                   }
                else
@@ -3276,8 +3236,7 @@ void OMR::ValuePropagation::checkForInductionVariableIncrement(TR::Node *node)
                {
                maybeInductionVariable = false;
                isInductionVariable = false;
-               if (trace())
-                  log->printf("      ivInfo is invalid for sym [%p], def [%d] node %p is likely in some inner loop\n", sym, defVN, defNode);
+               trprintf(trace(), log, "      ivInfo is invalid for sym [%p], def [%d] node %p is likely in some inner loop\n", sym, defVN, defNode);
                break;
                }
             }
@@ -3328,12 +3287,10 @@ void OMR::ValuePropagation::checkForInductionVariableIncrement(TR::Node *node)
             invalidEntryInfo = false;
             iv->_onlyIncrValid = true;
             iv->_entryDef = NULL;
-            if (trace())
-               log->printf("      Guessed increment of the iv for sym [%p]\n", sym);
+            trprintf(trace(), log, "      Guessed increment of the iv for sym [%p]\n", sym);
             }
          else
-            if (trace())
-               log->printf("      Could not guess the increment for sym [%p], not marked as induction variable\n", sym);
+            trprintf(trace(), log, "      Could not guess the increment for sym [%p], not marked as induction variable\n", sym);
          }
 
       iv->_invalidEntryInfo = invalidEntryInfo;
@@ -4108,10 +4065,7 @@ bool TR::GlobalValuePropagation::buildInputConstraints(TR::CFGNode *node)
    // In this case don't bother processing the node, and propagate the
    // unreachability to its output edges
    //
-   if (trace())
-      {
-      comp()->log()->printf("\n\nIgnoring unreachable CFG node %d\n", node->getNumber());
-      }
+   trprintf(trace(), comp()->log(), "\n\nIgnoring unreachable CFG node %d\n", node->getNumber());
 
    setUnreachablePath();
    TR_SuccessorIterator si(node);
@@ -4395,8 +4349,7 @@ void TR::GlobalValuePropagation::processNaturalLoop(TR_StructureSubGraphNode *no
    ListIterator<TR::CFGEdge> it(&region->getExitEdges());
    for (TR::CFGEdge *edge = it.getFirst(); edge; edge = it.getNext())
       {
-      if (trace())
-         log->printf("   defined on all paths for exit %d->%d:", edge->getFrom()->getNumber(), edge->getTo()->getNumber());
+      trprintf(trace(), log, "   defined on all paths for exit %d->%d:", edge->getFrom()->getNumber(), edge->getTo()->getNumber());
 
       if ((*_definedOnAllPaths)[edge])
          {
@@ -4409,8 +4362,7 @@ void TR::GlobalValuePropagation::processNaturalLoop(TR_StructureSubGraphNode *no
          }
       else
          {
-         if (trace())
-            log->prints(" NULL\n");
+         trprints(trace(), log, " NULL\n");
          (*_definedOnAllPaths)[edge] = inboundDefinedOnAllPaths;
          }
 
@@ -4684,10 +4636,7 @@ void TR::GlobalValuePropagation::processRegionNode(TR_StructureSubGraphNode *nod
    //
    if (!nodeIsReachable)
       {
-      if (trace())
-         {
-         comp()->log()->printf("\n\nIgnoring unreachable node %d\n", node->getNumber());
-         }
+      trprintf(trace(), comp()->log(), "\n\nIgnoring unreachable node %d\n", node->getNumber());
 
       // The current constraint list is already primed with an "UnreachablePath"
       // constraint.
@@ -4784,10 +4733,7 @@ void TR::GlobalValuePropagation::processBlock(TR_StructureSubGraphNode *node, bo
          return;
       }
 
-   if (trace())
-      {
-      log->printf("GVP: Processing block_%i\n", _curBlock->getNumber());
-      }
+   trprintf(trace(), log, "GVP: Processing block_%i\n", _curBlock->getNumber());
 
    // inside of a loop we track the defined on all paths bitvector so we know when a merge of def constraints
    // may need to consider the backedge - here we compute the block's inbound seen on all paths set by intersecting
@@ -4892,12 +4838,10 @@ void TR::GlobalValuePropagation::processBlock(TR_StructureSubGraphNode *node, bo
 
       // Find the fall-through edge
       //
-      if (trace())
-         log->printf("Calling findOutEdge using _curBlock %d and nextBlock %d\n",_curBlock->getNumber(),nextBlock->getNumber());
+      trprintf(trace(), log, "Calling findOutEdge using _curBlock %d and nextBlock %d\n", _curBlock->getNumber(), nextBlock->getNumber());
 
       edge = findOutEdge(_curBlock->getSuccessors(), nextBlock);
-      if (trace())
-         log->printf("Processing %s [%p]\n   Fall-through to next block\n", endTree->getNode()->getOpCode().getName(), endTree->getNode());
+      trprintf(trace(), log, "Processing %s [%p]\n   Fall-through to next block\n", endTree->getNode()->getOpCode().getName(), endTree->getNode());
 
       OMR::ValuePropagation::EdgeConstraints *ec = createEdgeConstraints(edge, false);
       if (trace())
@@ -5221,14 +5165,12 @@ bool OMR::ValuePropagation::removeConstraints(int32_t valueNumber, ValueConstrai
 #if defined(DEBUG) || defined(PROD_WITH_ASSUMES)
    if (_isGlobalPropagation)
       removeConstraints(valueNumber);
-   if (trace())
-      log->prints("   Setting fall-through as unreachable\n");
+   trprints(trace(), log, "   Setting fall-through as unreachable\n");
    // mark current X as unreachable
    // X = block
    if (findStores)
       {
-      if (trace())
-         log->printf("   block following block_%d is unreachable\n", _curBlock->getNumber());
+      trprintf(trace(), log, "   block following block_%d is unreachable\n", _curBlock->getNumber());
       setUnreachablePath();
       }
    // there are no edgeConstraints for localVP
@@ -5250,8 +5192,7 @@ bool OMR::ValuePropagation::removeConstraints(int32_t valueNumber, ValueConstrai
 bool OMR::ValuePropagation::removeConstraints(int32_t valueNumber, ValueConstraints *valueConstraints)
    {
    TR::Logger *log = comp()->log();
-   if (trace())
-      log->printf("   Intersection of constraints failed for valueNumber [%d], removing constraints\n", valueNumber);
+   trprintf(trace(), log, "   Intersection of constraints failed for valueNumber [%d], removing constraints\n", valueNumber);
 
    // remove globalConstraints on this valueNumber
    //
@@ -5344,8 +5285,7 @@ bool OMR::ValuePropagation::removeStoreConstraints(ValueConstraints *valueConstr
 bool OMR::ValuePropagation::removeConstraints(int32_t valueNumber)
    {
    TR::Logger *log = comp()->log();
-   if (trace())
-      log->printf("   Intersection failed for value number [%d], removing global constraints\n", valueNumber);
+   trprintf(trace(), log, "   Intersection failed for value number [%d], removing global constraints\n", valueNumber);
 
    GlobalConstraint *gc = findGlobalConstraint(valueNumber);
    if (!gc)
@@ -5408,6 +5348,7 @@ TR::TreeTop* TR::ArraycopyTransformation::createArrayNode(TR::TreeTop* tree, TR:
 
 TR::TreeTop* TR::ArraycopyTransformation::createArrayNode(TR::TreeTop* tree, TR::TreeTop* newTree, TR::SymbolReference* srcRef, TR::SymbolReference* dstRef, TR::Node* len, TR::SymbolReference* srcObjRef, TR::SymbolReference* dstObjRef, bool isForward)
    {
+   TR::Logger *log = comp()->log();
    TR::Node* root = tree->getNode()->getFirstChild();
    TR::Node* src = NULL;
    TR::Node* dst = NULL;
@@ -5441,8 +5382,7 @@ TR::TreeTop* TR::ArraycopyTransformation::createArrayNode(TR::TreeTop* tree, TR:
       node = TR::Node::createArraycopy(src, dst, len);
       node->setNumChildren(3);
       ///node->setReferenceArrayCopy(false);
-      if (trace())
-         comp()->log()->printf("Created 3-child arraycopy %s from root node %s, ", comp()->getDebug()->getName(node), comp()->getDebug()->getName(root));
+      trprintf(trace(), log, "Created 3-child arraycopy %s from root node %s, ", comp()->getDebug()->getName(node), comp()->getDebug()->getName(root));
       }
    else
       {
@@ -5479,8 +5419,7 @@ TR::TreeTop* TR::ArraycopyTransformation::createArrayNode(TR::TreeTop* tree, TR:
          node->setHalfWordElementArrayCopy(root->isHalfWordElementArrayCopy());
       else if (root->isWordElementArrayCopy())
          node->setWordElementArrayCopy(root->isWordElementArrayCopy());
-      if (trace())
-         comp()->log()->printf("Created 5-child arraycopy %s from root node %s, ", comp()->getDebug()->getName(node), comp()->getDebug()->getName(root));
+      trprintf(trace(), log, "Created 5-child arraycopy %s from root node %s, ", comp()->getDebug()->getName(node), comp()->getDebug()->getName(root));
       }
 
    node->setArrayCopyElementType(root->getArrayCopyElementType());
@@ -5490,8 +5429,7 @@ TR::TreeTop* TR::ArraycopyTransformation::createArrayNode(TR::TreeTop* tree, TR:
    node->setForwardArrayCopy(isForward);
    node->setBackwardArrayCopy(!isForward);
 
-   if (trace())
-      comp()->log()->printf("type = %s, isForward = %d\n", TR::DataType::getName(node->getArrayCopyElementType()), isForward);
+   trprintf(trace(), log, "type = %s, isForward = %d\n", TR::DataType::getName(node->getArrayCopyElementType()), isForward);
 
    // duplicate the tree just to copy either the ResolveCHK or the tree-top
    TR::Node* treeNode = tree->getNode()->duplicateTree();
@@ -6041,8 +5979,7 @@ void OMR::ValuePropagation::versionBlocks()
          else
             {
             TR::Block *newGotoBlock = TR::Block::createEmptyBlock(lastNode, comp(), succ->getFrequency(), succ);
-            if (trace())
-               comp()->log()->printf("Creating new goto block : %d\n", newGotoBlock->getNumber());
+            trprintf(trace(), comp()->log(), "Creating new goto block : %d\n", newGotoBlock->getNumber());
 
             _cfg->addNode(newGotoBlock);
             TR::TreeTop *gotoBlockEntryTree = newGotoBlock->getEntry();
@@ -6566,16 +6503,14 @@ void OMR::ValuePropagation::buildBoundCheckComparisonNodes(BlockVersionInfo *blo
                {
                nextComparisonNode = TR::Node::createif(TR::ificmplt, minIndex, TR::Node::create(arrayLength->_arrayLen , TR::iconst, 0, 0));
 
-               if (trace())
-                  comp()->log()->printf("First Test - Creating %p (%s)\n", nextComparisonNode, nextComparisonNode->getOpCode().getName());
+               trprintf(trace(), comp()->log(), "First Test - Creating %p (%s)\n", nextComparisonNode, nextComparisonNode->getOpCode().getName());
 
                temp.add(nextComparisonNode);
                }
 
             nextComparisonNode = TR::Node::createif(TR::ifiucmpge, maxIndex, arrayLength->_arrayLen->duplicateTree());
 
-            if (trace())
-               comp()->log()->printf("Second test - Creating %p (%s)\n", nextComparisonNode, nextComparisonNode->getOpCode().getName());
+            trprintf(trace(), comp()->log(), "Second test - Creating %p (%s)\n", nextComparisonNode, nextComparisonNode->getOpCode().getName());
 
             temp.add(nextComparisonNode);
 
@@ -6723,9 +6658,7 @@ void OMR::ValuePropagation::removeBndChecksFromFastVersion(BlockVersionInfo *blo
                bndchk->setChild(0, bndchk->getSecondChild());
                bndchk->setChild(1, NULL);
                bndchk->setNumChildren(1);
-               if (trace())
-                  comp()->log()->printf("Block versioner: Remove bndchk %p \n", bndchk );
-
+               trprintf(trace(), comp()->log(), "Block versioner: Remove bndchk %p \n", bndchk);
 
                setChecksRemoved();
                }
@@ -7259,6 +7192,7 @@ bool OMR::ValuePropagation::canClassBeTrustedAsFixedClass(TR::SymbolReference *s
 
 void OMR::ValuePropagation::doDelayedTransformations()
    {
+   TR::Logger *log = comp()->log();
    ListIterator<TR_TreeTopNodePair> treesIt1(&_scalarizedArrayCopies);
    TR_TreeTopNodePair *scalarizedArrayCopy;
    for (scalarizedArrayCopy = treesIt1.getFirst();
@@ -7380,7 +7314,6 @@ void OMR::ValuePropagation::doDelayedTransformations()
          if (trace())
             {
             TR::CFG *cfg = comp()->getFlowGraph();
-            TR::Logger *log = comp()->log();
             comp()->dumpMethodTrees(log, "Trees before transformNullRestrictedArrayCopy");
             comp()->getDebug()->print(log, cfg);
             }
@@ -7390,7 +7323,6 @@ void OMR::ValuePropagation::doDelayedTransformations()
          if (trace())
             {
             TR::CFG *cfg = comp()->getFlowGraph();
-            TR::Logger *log = comp()->log();
             comp()->dumpMethodTrees(log, "Trees after transformNullRestrictedArrayCopy");
             comp()->getDebug()->print(log, cfg);
             }
@@ -7436,8 +7368,7 @@ void OMR::ValuePropagation::doDelayedTransformations()
          removedEdgeSources.push_back(toBlock(edge->getFrom()));
          if (std::find(edge->getTo()->getPredecessors().begin(), edge->getTo()->getPredecessors().end(), edge) != edge->getTo()->getPredecessors().end())
             {
-            if (trace())
-               comp()->log()->printf("Removing unreachable edge from %d to %d\n", edge->getFrom()->getNumber(), edge->getTo()->getNumber());
+            trprintf(trace(), log, "Removing unreachable edge from %d to %d\n", edge->getFrom()->getNumber(), edge->getTo()->getNumber());
             if (cfg->removeEdge(edge))
                {
                invalidateUseDefInfo();
@@ -7582,14 +7513,12 @@ void OMR::ValuePropagation::doDelayedTransformations()
                         int32_t guardType = -1; // unknown
                         if (guardNode->getOpCodeValue() == TR::ifacmpne)
                            {
-                           if (trace())
-                              comp()->log()->printf("Got guard [%p] as ifacmpne\n", guardNode);
+                           trprintf(trace(), log, "Got guard [%p] as ifacmpne\n", guardNode);
                            guardType = 1; // change if to goto
                            }
                         else if (guardNode->getOpCodeValue() == TR::ifacmpeq)
                            {
-                           if (trace())
-                              comp()->log()->printf("Got guard [%p] as ifacmpeq\n", guardNode);
+                           trprintf(trace(), log, "Got guard [%p] as ifacmpeq\n", guardNode);
                            guardType = 0; // remove branch
                            }
 
@@ -7622,8 +7551,7 @@ void OMR::ValuePropagation::doDelayedTransformations()
                            else
                               callUnreachable = false;
 
-                           if (trace())
-                              comp()->log()->printf("typeCompatibleStatus [%p] %s\n", guardNode, comp()->getDebug()->getName(typeCompatibleStatus));
+                           trprintf(trace(), log, "typeCompatibleStatus [%p] %s\n", guardNode, comp()->getDebug()->getName(typeCompatibleStatus));
                            }
                         else
                            {
@@ -7695,7 +7623,7 @@ void OMR::ValuePropagation::doDelayedTransformations()
                {
                if (comp()->getMethodHotness() <= warm && comp()->getOption(TR_DisableInliningDuringVPAtWarm))
                   {
-                  if (trace()) comp()->log()->printf("\tDo not inline call at [%p]\n", callNode);
+                  trprintf(trace(), log, "\tDo not inline call at [%p]\n", callNode);
                   }
                else
                   {
@@ -8002,10 +7930,10 @@ void OMR::ValuePropagation::doDelayedTransformations()
 
       TR::TreeTop *lastTree = splitBlock2->getLastRealTreeTop();
       if (lastTree->getNode()->getOpCodeValue() == TR::Goto)
-	 {
-	 TR::TreeTop *treeBeforeLast = lastTree->getPrevTreeTop();
+         {
+         TR::TreeTop *treeBeforeLast = lastTree->getPrevTreeTop();
          treeBeforeLast->join(lastTree->getNextTreeTop());
-	 }
+         }
 
       TR::TreeTop *guardTree = TR::TreeTop::create(comp(), guard, NULL, NULL);
       block->append(guardTree);

@@ -112,6 +112,7 @@ int32_t TR_VirtualGuardTailSplitter::perform()
 
 void TR_VirtualGuardTailSplitter::initializeDataStructures()
    {
+   TR::Logger *log = comp()->log();
    vcount_t visitCount = comp()->incVisitCount();
 
    List     <VGInfo>   allGuards(trMemory());
@@ -190,8 +191,7 @@ void TR_VirtualGuardTailSplitter::initializeDataStructures()
       }
 
 
-   if (trace())
-      comp()->log()->prints("Disjoint set forest:\n");
+   trprints(trace(), log, "Disjoint set forest:\n");
 
    // Put the information into the virtual guard table
    //
@@ -202,8 +202,7 @@ void TR_VirtualGuardTailSplitter::initializeDataStructures()
    for (VGInfo *info = it.getFirst(); info; info = it.getNext())
       {
       putGuard(i++, info);
-      if (trace())
-         comp()->log()->printf("%d -> %d\n", info->getNumber(), info->getParent()->getNumber());
+      trprintf(trace(), log, "%d -> %d\n", info->getNumber(), info->getParent()->getNumber());
       }
    }
 
@@ -776,10 +775,8 @@ void TR_VirtualGuardTailSplitter::remergeGuard(TR_BlockCloner &cloner, VGInfo *i
    fclose(file);
 #endif
 
-   if (trace())
-      comp()->log()->printf("Split Guard Block %d->(%d,%d), %d->(%d,%d)\n",
-                  block ->getNumber(), blockA->getNumber(), blockB->getNumber(),
-                  cloneG->getNumber(), cloneA->getNumber(), cloneB->getNumber());
+   trprintf(trace(), comp()->log(), "Split Guard Block %d->(%d,%d), %d->(%d,%d)\n",
+         block->getNumber(), blockA->getNumber(), blockB->getNumber(), cloneG->getNumber(), cloneA->getNumber(), cloneB->getNumber());
    }
 
 

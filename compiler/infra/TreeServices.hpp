@@ -177,7 +177,7 @@ class TR_Pattern
    TR_Pattern *_next; // Every pattern is assumed to be part of a conjunction because that's so common
    virtual const char *getName()=0;
    virtual bool thisMatches(TR::Node *node, TR_Unification &uni, TR::Compilation *comp)=0;
-   virtual void tracePattern(TR::Node *node);
+   virtual void tracePattern(TR::Node *node, TR::Compilation *comp);
 
    public:
    TR_ALLOC(TR_MemoryBase::TR_Pattern)
@@ -207,7 +207,7 @@ class TR_OpCodePattern: public TR_Pattern
    virtual const char *getName(){ return "OpCode"; }
    TR::ILOpCodes _opCode;
    virtual bool thisMatches(TR::Node *node, TR_Unification &uni, TR::Compilation *comp){ return node->getOpCodeValue() == _opCode; }
-   virtual void tracePattern(TR::Node *node);
+   virtual void tracePattern(TR::Node *node, TR::Compilation *comp);
 
    public:
    TR_OpCodePattern(TR::ILOpCodes opCode, TR_Pattern *next=NULL):TR_Pattern(next),_opCode(opCode){}

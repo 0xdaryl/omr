@@ -607,8 +607,7 @@ OMR::X86::TreeEvaluator::setupProfiledGuardRelocation(TR::X86RegImmInstruction *
       cmpInstruction->setNode(node->getSecondChild());
       }
 
-   if (comp->getOption(TR_TraceCG))
-      comp->printf("setupProfiledGuardRelocation: site %p type %d node %p\n", site, site->getType(), node);
+   trprintf(comp->getOption(TR_TraceCG), comp->log(), "setupProfiledGuardRelocation: site %p type %d node %p\n", site, site->getType(), node);
 #endif
    }
 
@@ -1350,10 +1349,7 @@ TR::Register *OMR::X86::TreeEvaluator::iselectEvaluator(TR::Node *node, TR::Code
    );
    if (falseReg->containsCollectedReference())
       {
-      if (comp->getOption(TR_TraceCG))
-         comp->log()->printf(
-            "Setting containsCollectedReference on result of select node in register %s\n",
-            cg->getDebug()->getName(trueReg));
+      trprintf(comp->getOption(TR_TraceCG), comp->log(), "Setting containsCollectedReference on result of select node in register %s\n", cg->getDebug()->getName(trueReg));
       trueReg->setContainsCollectedReference();
       }
 
@@ -1431,8 +1427,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerIfCmpeqEvaluator(TR::Node *node, T
          cg->decReferenceCount(firstChild);
          cg->decReferenceCount(secondChild);
 
-         if (cg->comp()->getOption(TR_TraceCG))
-            cg->comp()->log()->printf("inserting long lookaside versioning overflow check @ node %p\n", node);
+         trprintf(cg->comp()->getOption(TR_TraceCG), cg->comp()->log(), "inserting long lookaside versioning overflow check @ node %p\n", node);
 
          return NULL;
          }
@@ -1506,8 +1501,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerIfCmpneEvaluator(TR::Node *node, T
             cg->decReferenceCount(firstChild);
             cg->decReferenceCount(secondChild);
 
-            if (comp->getOption(TR_TraceCG))
-               comp->log()->printf("inserting long lookaside versioning overflow check @ node %p\n", node);
+            trprintf(comp->getOption(TR_TraceCG), comp->log(), "inserting long lookaside versioning overflow check @ node %p\n", node);
 
             return NULL;
             }

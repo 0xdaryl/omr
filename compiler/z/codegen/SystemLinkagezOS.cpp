@@ -235,10 +235,8 @@ void TR::S390zOSSystemLinkage::createPrologue(TR::Instruction* cursor)
 
    TR_ASSERT_FATAL((stackFrameSize & 31) == 0, "Misaligned stack frame size (%d) detected", stackFrameSize);
 
-   if (comp()->getOption(TR_TraceCG))
-      {
-      comp()->log()->printf("Initial stackFrameSize = %d\n Offset to first parameter = %d\n Argument size = %d\n Local size = %d\n", stackFrameSize, self()->getOffsetToFirstParm(), argSize, localSize);
-      }
+   trprintf(comp()->getOption(TR_TraceCG), comp()->log(), "Initial stackFrameSize = %d\n Offset to first parameter = %d\n Argument size = %d\n Local size = %d\n",
+         stackFrameSize, self()->getOffsetToFirstParm(), argSize, localSize);
 
    // Now that we know the stack frame size, map the stack backwards
    mapStack(bodySymbol, stackFrameSize + XPLINK_STACK_FRAME_BIAS);
@@ -1041,10 +1039,7 @@ TR::S390zOSSystemLinkage::spillGPRsInPrologue(TR::Node* node, TR::Instruction* c
 
    setGPRSaveMask(GPRSaveMask);
 
-   if (comp()->getOption(TR_TraceCG))
-      {
-      comp()->log()->printf("GPRSaveMask: Register context %x\n", GPRSaveMask&0xffff);
-      }
+   trprintf(comp()->getOption(TR_TraceCG), comp()->log(), "GPRSaveMask: Register context %x\n", GPRSaveMask&0xffff);
 
    firstPossibleSaved = GPREGINDEX(TR::RealRegister::GPR4); // GPR4 is first reg in save area
    lastSaved = TR::Linkage::getLastMaskedBit(GPRSaveMask);

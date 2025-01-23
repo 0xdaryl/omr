@@ -587,7 +587,7 @@ private:
       uint32_t remove(TR_IndexedBinaryHeapElement* t)
          {
          TR_ASSERT(false, "Don't call remove for a specific object on a binaryHeap!\n");
-	 return 0;
+         return 0;
          }
 
       uint32_t add(TR_IndexedBinaryHeapElement* t)
@@ -612,10 +612,9 @@ private:
 
          for (i = _nextIndex; i > 0 && _array[i/2]->objectGT(t->getObject()); i /=2 )
             {
-            //comp->log()->printf("\tMoving %d to %d\n", i, i/2);
             _array[i] = _array[i/2];
             }
-         //comp->log()->printf("Storing new item at location %d, _nextIndex is %d\n", i, _nextIndex);
+
          _array[i] = t;
 
          return _nextIndex++;

@@ -73,10 +73,6 @@ int32_t TR_IndexExprManipulator::perform()
    static char *doit= feGetEnv("TR_NOMODINDEXEXPR");
    if (doit != NULL) return 0;
 
-   if (false)printf("called for %s\n",comp()->signature());
-   //TR::TreeTop *treeTop;
-   //TR::Block   *block;
-
    _visitCount = comp()->incVisitCount();
 
 
@@ -100,6 +96,7 @@ int32_t TR_IndexExprManipulator::perform()
 void
 TR_IndexExprManipulator::rewriteIndexExpression(TR_Structure *loopStructure)
    {
+   TR::Logger *log = comp()->log();
    TR_RegionStructure * regionStructure = loopStructure->asRegion();
    if (regionStructure)
       {
@@ -119,7 +116,7 @@ TR_IndexExprManipulator::rewriteIndexExpression(TR_Structure *loopStructure)
    TR_ScratchList<TR::Block> blocksInRegion(trMemory());
    regionStructure->getBlocks(&blocksInRegion);
 
-   if (_debug) comp()->log()->printf("XX looking at region %d\n",regionStructure->getNumber());
+   trprintf(_debug, log, "XX looking at region %d\n", regionStructure->getNumber());
    ListIterator<TR::Block> blocksIt(&blocksInRegion);
    TR::Block *nextBlock;
    TR::TreeTop /**first,*/*last,*curTree;
@@ -130,7 +127,7 @@ TR_IndexExprManipulator::rewriteIndexExpression(TR_Structure *loopStructure)
 
      _visitCount = comp()->incOrResetVisitCount();
 
-   if (_debug) comp()->log()->printf("Loop: %d primeIV:%p\n",regionStructure->getNumber(),primeIV);
+   trprintf(_debug, log, "Loop: %d primeIV:%p\n", regionStructure->getNumber(), primeIV);
    for (nextBlock = blocksIt.getCurrent(); nextBlock; nextBlock=blocksIt.getNext())
       {
       curTree= nextBlock->getFirstRealTreeTop();
@@ -153,6 +150,8 @@ TR_IndexExprManipulator::rewriteIndexExpression(TR_PrimaryInductionVariable *pri
    {
    if (node->getVisitCount() == _visitCount) return;
 
+   TR::Logger *log = comp()->log();
+
    node->setVisitCount(_visitCount);
 
    parentIsAiadd = parentIsAiadd || node->getOpCode().isArrayRef();
@@ -162,12 +161,12 @@ TR_IndexExprManipulator::rewriteIndexExpression(TR_PrimaryInductionVariable *pri
       TR::Node * childNode=node->getChild(i);
       rewriteIndexExpression(primeIV,node,childNode,parentIsAiadd);
 
-      if (_debug) comp()->log()->printf("traced %p %s\n",childNode,parentIsAiadd?"(arrayRef)":"");
+      trprintf(_debug, log, "traced %p %s\n", childNode, parentIsAiadd ? "(arrayRef)" : "");
       if (parentIsAiadd)
          {
          if (childNode->getOpCode().hasSymbolReference() && childNode->getSymbol() == primeIV->getSymRef()->getSymbol())
             {
-            if (_debug) comp()->log()->printf("Found reference [%p] to primeiv %p\n",childNode,childNode->getSymbol());
+            trprintf(_debug, log, "Found reference [%p] to primeiv %p\n", childNode, childNode->getSymbol());
             if (childNode->cannotOverflow() && // no wrapping of index can happen, hence safe to move around
                parentNode->getReferenceCount() < 2 && // safe to swap nodes
                node->getReferenceCount() < 2 &&
@@ -184,8 +183,6 @@ TR_IndexExprManipulator::rewriteIndexExpression(TR_PrimaryInductionVariable *pri
                if (performTransformation(comp(), "%sSwapping nodes [%p] and [%p] to create larger loop invariant sub-expression\n",OPT_DETAILS,
                                          childNode,parentNode->getChild(swapChildIdx)))
                   {
-                  if (false)  printf("%sSwapping nodes [%p] and [%p] to create larger loop invariant sub-expression\n",OPT_DETAILS,
-                                   childNode,parentNode->getChild(swapChildIdx));
                   node->setChild(i,parentNode->getChild(swapChildIdx));
                   parentNode->setChild(swapChildIdx,childNode);
                   _somethingChanged=true;

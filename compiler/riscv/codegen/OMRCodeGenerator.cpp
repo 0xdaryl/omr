@@ -294,6 +294,10 @@ TR::Instruction *OMR::RV::CodeGenerator::generateSwitchToInterpreterPrePrologue(
 // different from evaluate in that it returns a clobberable register
 TR::Register *OMR::RV::CodeGenerator::gprClobberEvaluate(TR::Node *node)
    {
+   TR::Compilation *comp = self()->comp();
+   TR::Logger *log = comp->log();
+   bool trace = comp->getOption(TR_TraceCG);
+
    if (node->getReferenceCount() > 1)
       {
       TR::Register *sourceReg = self()->evaluate(node);
@@ -302,20 +306,14 @@ TR::Register *OMR::RV::CodeGenerator::gprClobberEvaluate(TR::Node *node)
 
       if (sourceReg->containsCollectedReference())
          {
-         if (self()->comp()->getOption(TR_TraceCG))
-            self()->comp()->log()->printf(
-               "Setting containsCollectedReference on register %s\n",
-               self()->getDebug()->getName(targetReg));
+         trprintf(trace, log, "Setting containsCollectedReference on register %s\n", self()->getDebug()->getName(targetReg));
          targetReg->setContainsCollectedReference();
          }
       if (sourceReg->containsInternalPointer())
          {
          TR::AutomaticSymbol *pinningArrayPointer = sourceReg->getPinningArrayPointer();
-         if (self()->comp()->getOption(TR_TraceCG))
-            self()->comp()->log()->printf(
-               "Setting containsInternalPointer on register %s and setting pinningArrayPointer to " POINTER_PRINTF_FORMAT "\n",
-               self()->getDebug()->getName(targetReg),
-               pinningArrayPointer);
+         trprintf(trace, log, "Setting containsInternalPointer on register %s and setting pinningArrayPointer to " POINTER_PRINTF_FORMAT "\n",
+               self()->getDebug()->getName(targetReg), pinningArrayPointer);
          targetReg->setContainsInternalPointer();
          targetReg->setPinningArrayPointer(pinningArrayPointer);
          }

@@ -76,8 +76,9 @@ TR::LocalDeadStoreElimination::isFirstReferenceToNode(TR::Node *parent, int32_t 
 
 int32_t TR::LocalDeadStoreElimination::perform()
    {
-   if (trace())
-      comp()->log()->prints("Starting LocalDeadStoreElimination\n");
+   TR::Logger *log = comp()->log();
+
+   trprints(trace(), log, "Starting LocalDeadStoreElimination\n");
 
    TR::TreeTop *tt, *exitTreeTop;
    for (tt = comp()->getStartTree(); tt; tt = exitTreeTop->getNextTreeTop())
@@ -91,8 +92,7 @@ int32_t TR::LocalDeadStoreElimination::perform()
    if (_treesChanged)
       requestDeadTreesCleanup();
 
-   if (trace())
-      comp()->log()->prints("\nEnding LocalDeadStoreElimination\n");
+   trprints(trace(), log, "\nEnding LocalDeadStoreElimination\n");
 
    return 1;
    }
@@ -217,8 +217,7 @@ void TR::LocalDeadStoreElimination::transformBlock(TR::TreeTop * entryTree, TR::
       if (comp()->getVisitCount() == MAX_VCOUNT - 2) // Inc visit count will assert at MAX_VCOUNT - 1, so this gives us
                                                      // the one extra incVisitCount that might occur if we remove a store tree.
          {
-         if (trace())
-            comp()->log()->prints("Bailing out of local deadstore to avoid visit count overflow\n");
+         trprints(trace(), comp()->log(), "Bailing out of local deadstore to avoid visit count overflow\n");
          break;
          }
 
@@ -696,8 +695,7 @@ bool TR::LocalDeadStoreElimination::seenIdenticalStore(TR::Node *node)
       //
       if (storeNode == node)
          {
-         if (trace())
-            comp()->log()->printf("seenIdentical nodes %p and %p\n", node, storeNode);
+         trprintf(trace(), comp()->log(), "seenIdentical nodes %p and %p\n", node, storeNode);
          return false;
          }
       if (areLhsOfStoresSyntacticallyEquivalent(storeNode, node))
@@ -1029,6 +1027,7 @@ void TR::LocalDeadStoreElimination::findLocallyAllocatedObjectUses(LDSBitVector 
 
 bool TR::LocalDeadStoreElimination::examineNewUsesForKill(TR::Node *node, TR::Node *storeNode, List<TR::Node> *currentNews, List<TR::Node> *removedNews, TR::Node *parent, int32_t childNum, vcount_t visitCount)
    {
+   TR::Logger *log = comp()->log();
    TR::Node *newNode = NULL;
    TR::Node *origNode = node;
    if (node->getOpCode().isArrayRef())
@@ -1046,14 +1045,12 @@ bool TR::LocalDeadStoreElimination::examineNewUsesForKill(TR::Node *node, TR::No
         parent->getOpCode().isArrayLength())) ||
         parent->getOpCode().isCall())))
        {
-       if (trace())
-          comp()->log()->printf("going to remove new %p at node %p\n", newNode, node);
+       trprintf(trace(), log, "going to remove new %p at node %p\n", newNode, node);
        if ((childNum == 0) && (storeNode == parent))
           return true;
        else
           {
-          if (trace())
-             comp()->log()->printf("removing new %p at node %p\n", newNode, node);
+          trprintf(trace(), log, "removing new %p at node %p\n", newNode, node);
           currentNews->remove(newNode);
           if (!removedNews->find(newNode))
              removedNews->add(newNode);

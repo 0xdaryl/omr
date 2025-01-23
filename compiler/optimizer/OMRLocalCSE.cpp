@@ -100,8 +100,7 @@ bool OMR::LocalCSE::shouldCopyPropagateNode(TR::Node *parent, TR::Node *node, in
 
    if (_numCopyPropagations >= MAX_COPY_PROP)
       {
-      if (trace())
-         comp()->log()->printf("z^z : _numCopyPropagations %d >= max %d\n",_numCopyPropagations,MAX_COPY_PROP);
+      trprintf(trace(), comp()->log(), "z^z : _numCopyPropagations %d >= max %d\n", _numCopyPropagations, MAX_COPY_PROP);
       return false;
       }
 
@@ -127,8 +126,7 @@ TR::Node *OMR::LocalCSE::getNode(TR::Node *node)
    if (_simulatedNodesAsArray[node->getGlobalIndex()])
       {
       TR::Node *toReturn = _simulatedNodesAsArray[node->getGlobalIndex()];
-      if (trace())
-         comp()->log()->printf("Updating comparison node n%dn to n%dn due to volatile simulation\n", node->getGlobalIndex(), toReturn->getGlobalIndex());
+      trprintf(trace(), comp()->log(), "Updating comparison node n%dn to n%dn due to volatile simulation\n", node->getGlobalIndex(), toReturn->getGlobalIndex());
       return toReturn;
       }
    return node;
@@ -146,8 +144,7 @@ int32_t OMR::LocalCSE::perform()
    {
    TR::Logger *log = comp()->log();
 
-   if (trace())
-      log->prints("Starting LocalCommonSubexpressionElimination\n");
+   trprints(trace(), log, "Starting LocalCommonSubexpressionElimination\n");
 
    TR::Region &stackRegion = comp()->trMemory()->currentStackRegion();
    _storeMap = new (stackRegion) StoreMap((StoreMapComparator()), StoreMapAllocator(stackRegion));
@@ -159,12 +156,10 @@ int32_t OMR::LocalCSE::perform()
       _volatileState =  VOLATILE_AND_NON_VOLATILE;
       if (doExtraPassForVolatiles())
          {
-         if (trace())
-            log->prints("LocalCSE entering 2 pass mode for volatile elimination - pass 1 for volatiles ONLY\n");
+         trprints(trace(), log, "LocalCSE entering 2 pass mode for volatile elimination - pass 1 for volatiles ONLY\n");
          _volatileState = VOLATILE_ONLY;
          transformBlock(tt, exitTreeTop);
-         if (trace())
-            log->prints("LocalCSE volatile only pass 1 complete - pass 2 for non-volatiles ONLY\n");
+         trprints(trace(), log, "LocalCSE volatile only pass 1 complete - pass 2 for non-volatiles ONLY\n");
          _volatileState = NON_VOLATILE_ONLY;
          transformBlock(tt, exitTreeTop);
          }
@@ -172,8 +167,7 @@ int32_t OMR::LocalCSE::perform()
          transformBlock(tt, exitTreeTop);
       }
 
-   if (trace())
-      log->prints("\nEnding LocalCommonSubexpressionElimination\n");
+   trprints(trace(), log, "\nEnding LocalCommonSubexpressionElimination\n");
 
    _storeMap = NULL;
    return 1; // actual cost
@@ -182,17 +176,17 @@ int32_t OMR::LocalCSE::perform()
 
 int32_t OMR::LocalCSE::performOnBlock(TR::Block *block)
    {
+   TR::Logger *log = comp()->log();
+
    if (block->getEntry())
       {
       _volatileState = VOLATILE_AND_NON_VOLATILE;
       if (doExtraPassForVolatiles())
          {
-         if (trace())
-            comp()->log()->prints("LocalCSE entering 2 pass mode for volatile elimination - pass 1 for volatiles ONLY\n");
+         trprints(trace(), log, "LocalCSE entering 2 pass mode for volatile elimination - pass 1 for volatiles ONLY\n");
          _volatileState = VOLATILE_ONLY;
          transformBlock(block->getEntry(), block->getEntry()->getExtendedBlockExitTreeTop());
-         if (trace())
-            comp()->log()->prints("LocalCSE volatile only pass 1 complete - pass 2 for non-volatiles ONLY\n");
+         trprints(trace(), log, "LocalCSE volatile only pass 1 complete - pass 2 for non-volatiles ONLY\n");
          _volatileState = NON_VOLATILE_ONLY;
          transformBlock(block->getEntry(), block->getEntry()->getExtendedBlockExitTreeTop());
          }
@@ -412,13 +406,11 @@ void OMR::LocalCSE::examineNode(TR::Node *node, TR_BitVector &seenAvailableLoade
    bool nodeCanBeAvailable = true;
    vcount_t visitCount = comp()->getVisitCount();
 
-   if (trace())
-     log->printf("Examining node %p\n",node);
+   trprintf(trace(), log, "Examining node %p\n", node);
 
    if (!isFirstReferenceToNode(parent, childNum, node, visitCount))
       {
-      if (trace())
-         log->prints("\tNot first Reference to Node\n");
+      trprints(trace(), log, "\tNot first Reference to Node\n");
 
       doCommoningAgainIfPreviouslyCommoned(node, parent, childNum);
       return;
@@ -529,8 +521,7 @@ void OMR::LocalCSE::examineNode(TR::Node *node, TR_BitVector &seenAvailableLoade
       {
       // This node is a potential kill point
       //
-      if (trace())
-         log->printf("\tnode %p isStore = %d or hasAliases = %d\n",node,node->getOpCode().isStore(),hasAliases);
+      trprintf(trace(), log, "\tnode %p isStore = %d or hasAliases = %d\n", node, node->getOpCode().isStore(), hasAliases);
 
       int32_t symRefNum = node->getSymbolReference()->getReferenceNumber();
       bool previouslyAvailable = false;
@@ -890,8 +881,7 @@ void OMR::LocalCSE::doCommoningIfAvailable(TR::Node *node, TR::Node *parent, int
          }
       else
          {
-         if (trace())
-            comp()->log()->printf("Simulating commoning of node n%dn with n%dn - current mode %n\n", node->getGlobalIndex(), availableExpression->getGlobalIndex(), _volatileState);
+         trprintf(trace(), comp()->log(), "Simulating commoning of node n%dn with n%dn - current mode %n\n", node->getGlobalIndex(), availableExpression->getGlobalIndex(), _volatileState);
          _simulatedNodesAsArray[node->getGlobalIndex()] = availableExpression;
          }
       }
@@ -1320,15 +1310,13 @@ TR::Node* OMR::LocalCSE::getAvailableExpression(TR::Node *parent, TR::Node *node
       bool remove = false;
       if (areSyntacticallyEquivalent(other, node, &remove))
          {
-         if (trace())
-            log->printf("node %p is syntactically equivalent to other %p\n",node,other);
+         trprintf(trace(), log, "node %p is syntactically equivalent to other %p\n", node, other);
          return other;
          }
 
       if (remove)
          {
-         if (trace())
-            log->printf("remove is true, removing entry %p\n", other);
+         trprintf(trace(), log, "remove is true, removing entry %p\n", other);
          auto nextIt = it;
          ++nextIt;
          hashTable->erase(it);
@@ -1541,6 +1529,8 @@ void OMR::LocalCSE::killAvailableExpressionsAtGCSafePoints(TR::Node *node, TR::N
    if (parent != NULL)
       return;
 
+   TR::Logger *log = comp()->log();
+
    if ((node->getOpCodeValue() == TR::MethodEnterHook) ||
        (node->getOpCodeValue() == TR::MethodExitHook))
       {
@@ -1551,8 +1541,7 @@ void OMR::LocalCSE::killAvailableExpressionsAtGCSafePoints(TR::Node *node, TR::N
       // for GC it would not have any live local index assigned (initialized to -1)
       // causing a crash when using the live local index to index into a bit vector.
       //
-      if (trace())
-         comp()->log()->printf("Node %p is detected as a method enter/exit point\n", node);
+      trprintf(trace(), log, "Node %p is detected as a method enter/exit point\n", node);
 
       _storeMap->clear();
 
@@ -1571,8 +1560,7 @@ void OMR::LocalCSE::killAvailableExpressionsAtGCSafePoints(TR::Node *node, TR::N
 
    if (node->canGCandReturn())
       {
-      if (trace())
-         comp()->log()->printf("Node %p is detected as a GC safe point\n", node);
+      trprintf(trace(), log, "Node %p is detected as a GC safe point\n", node);
 
       for (auto itr = _storeMap->begin(), end = _storeMap->end(); itr != end; )
          {
@@ -1808,8 +1796,7 @@ void OMR::LocalCSE::collectAllReplacedNodes(TR::Node *node, TR::Node *replacingN
       _replacedNodesAsArray[_nextReplacedNode] = node;
       _replacedNodesByAsArray[_nextReplacedNode++] = replacingNode;
 
-      if (trace())
-         comp()->log()->printf("Replaced node : %p Replacing node : %p\n", node, replacingNode);
+      trprintf(trace(), comp()->log(), "Replaced node : %p Replacing node : %p\n", node, replacingNode);
 
       node->setLocalIndex(REPLACE_MARKER);
       }

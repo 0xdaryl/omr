@@ -545,12 +545,9 @@ int32_t OMR::ARM::Linkage::buildARMLinkageArgs(TR::Node                         
 
    if (specialArgReg != TR::RealRegister::NoReg)
       {
-      if (comp->getOption(TR_TraceCG))
-         {
-         comp->log()->printf("Special arg %s in %s\n",
+      trprintf(comp->getOption(TR_TraceCG), comp->log(), "Special arg %s in %s\n",
             comp->getDebug()->getName(callNode->getChild(from)),
             comp->getDebug()->getName(self()->machine()->getRealRegister(specialArgReg)));
-         }
       // Skip the special arg in the first loop
       from += step;
       }

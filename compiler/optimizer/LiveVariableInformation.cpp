@@ -86,16 +86,14 @@ void TR_LiveVariableInformation::collectLiveVariableInformation()
    {
    TR::Logger *log = comp()->log();
 
-   if (traceLiveVarInfo())
-      log->prints("Collecting live variable information\n");
+   trprints(traceLiveVarInfo(), log, "Collecting live variable information\n");
    if (_includeParms)
       {
       TR::ParameterSymbol *p;
       ListIterator<TR::ParameterSymbol> parms(&comp()->getMethodSymbol()->getParameterList());
       for (p = parms.getFirst(); p != NULL; p = parms.getNext())
          {
-         if (traceLiveVarInfo())
-            log->printf("#%2d : is a parm symbol at %p\n", _numLocals, p);
+         trprintf(traceLiveVarInfo(), log, "#%2d : is a parm symbol at %p\n", _numLocals, p);
 
          if (p->getType().isInt64() && _splitLongs)
             {
@@ -111,8 +109,7 @@ void TR_LiveVariableInformation::collectLiveVariableInformation()
    ListIterator<TR::AutomaticSymbol> locals(&comp()->getMethodSymbol()->getAutomaticList());
    for (p = locals.getFirst(); p != NULL; p = locals.getNext())
       {
-      if (traceLiveVarInfo())
-         log->printf("Local #%2d is symbol at %p\n",_numLocals,p);
+      trprintf(traceLiveVarInfo(), log, "Local #%2d is symbol at %p\n", _numLocals, p);
 
       if (p->getType().isInt64() && _splitLongs)
          {
@@ -123,8 +120,7 @@ void TR_LiveVariableInformation::collectLiveVariableInformation()
          p->setLiveLocalIndex(_numLocals++, comp()->fe());
       }
 
-   if (traceLiveVarInfo())
-      log->printf("Finished collecting live variable information: %d locals found\n", _numLocals);
+   trprintf(traceLiveVarInfo(), log, "Finished collecting live variable information: %d locals found\n", _numLocals);
 
    _localObjects = NULL;
    _cachedRegularGenSetInfo = NULL;
@@ -232,8 +228,7 @@ void TR_LiveVariableInformation::initializeGenAndKillSetInfo(TR_BitVector **regu
             ignoreBlock = true;
             continue;
             }
-         if (traceLiveVarInfo())
-            log->printf("\nNow generating liveness information for block_%d\n", blockNum);
+         trprintf(traceLiveVarInfo(), log, "\nNow generating liveness information for block_%d\n", blockNum);
          }
 
 
@@ -269,8 +264,7 @@ void TR_LiveVariableInformation::initializeGenAndKillSetInfo(TR_BitVector **regu
 
             if (localIndex != INVALID_LIVENESS_INDEX)
                {
-               if (traceLiveVarInfo())
-                  log->printf("\n Killing symbol with local index %d in block_%d\n", localIndex, blockNum);
+               trprintf(traceLiveVarInfo(), log, "\n Killing symbol with local index %d in block_%d\n", localIndex, blockNum);
 
                if (regularKillSetInfo[blockNum] == NULL)
                   regularKillSetInfo[blockNum] = new (trStackMemory()) TR_BitVector(_numLocals,trMemory(), stackAlloc);
@@ -319,8 +313,7 @@ void TR_LiveVariableInformation::initializeGenAndKillSetInfo(TR_BitVector **regu
             {
             int32_t blockNum = b->getNumber();
 
-            if (traceLiveVarInfo())
-               log->printf("            Adding local objects to gen set for block_%d\n", blockNum);
+            trprintf(traceLiveVarInfo(), log, "            Adding local objects to gen set for block_%d\n", blockNum);
 
             if (regularGenSetInfo[blockNum] == NULL)
                regularGenSetInfo[blockNum] = new (trStackMemory()) TR_BitVector(_numLocals,trMemory(), stackAlloc);
@@ -474,8 +467,7 @@ void TR_LiveVariableInformation::visitTreeForLocals(TR::Node *node, TR_BitVector
             node->decFutureUseCount();
          if (node->getFutureUseCount() > 0)
             {
-            if (traceLiveVarInfo())
-               log->prints("            not first reference\n");
+            trprints(traceLiveVarInfo(), log, "            not first reference\n");
 
             if (_liveCommonedLoads != NULL && local != NULL)
                {
@@ -578,26 +570,22 @@ void TR_LiveVariableInformation::visitTreeForLocals(TR::Node *node, TR_BitVector
    // if we reference a local symbol, then record it
    if (local)
       {
-      if (traceLiveVarInfo() && local)
-         log->printf("            Node [%p] local [%p] idx %d\n", node, local, localIndex);
+      trprintf(traceLiveVarInfo(), log, "            Node [%p] local [%p] idx %d\n", node, local, localIndex);
 
       if (belowCommonedNode)
          {
          if (commonedLoads != NULL && local)
             {
-            if (traceLiveVarInfo())
-               log->prints("              Marking as commoned load\n");
+            trprints(traceLiveVarInfo(), log, "              Marking as commoned load\n");
             commonedLoads->set(localIndex);
             }
          else
             {
-            if (traceLiveVarInfo())
-               log->prints("              Commoned load, but not asked to remember it\n");
+            trprints(traceLiveVarInfo(), log, "              Commoned load, but not asked to remember it\n");
             }
          if (_liveCommonedLoads != NULL)
             {
-            if (traceLiveVarInfo())
-               log->printf("              Marking %d as live commoned load\n", localIndex);
+            trprintf(traceLiveVarInfo(), log, "              Marking %d as live commoned load\n", localIndex);
             _liveCommonedLoads->set(localIndex);
 
             if (!movingForwardThroughTrees && _seenCommonedNodeForLoadOfLocal != NULL)
@@ -622,8 +610,7 @@ void TR_LiveVariableInformation::visitTreeForLocals(TR::Node *node, TR_BitVector
          //
          TR_ASSERT(node->getOpCodeValue() == TR::loadaddr, "assertion failure");
          _localObjects->set(localIndex);
-         if (traceLiveVarInfo())
-            log->prints("            Marking local object\n");
+         trprints(traceLiveVarInfo(), log, "            Marking local object\n");
          }
       else if (!belowCommonedNode && blockGenSetInfo)
 
@@ -637,8 +624,8 @@ void TR_LiveVariableInformation::visitTreeForLocals(TR::Node *node, TR_BitVector
              )
              //!blockKillSetInfo->get(localIndex))
             {
-            if (traceLiveVarInfo() && local)
-               log->printf("            Gening symbol with local index %d\n", localIndex);
+            if (local)
+               trprintf(traceLiveVarInfo(), log, "            Gening symbol with local index %d\n", localIndex);
 
             if (*blockGenSetInfo == NULL)
                *blockGenSetInfo = new (trStackMemory()) TR_BitVector(_numLocals,trMemory(), stackAlloc);
@@ -743,8 +730,8 @@ TR_OSRLiveVariableInformation::buildLiveSymbolsBitVector(TR_OSRMethodData *osrMe
             liveLocalIndex = local->getLiveLocalIndex();
          if (local && liveLocalIndex != INVALID_LIVENESS_INDEX)
             {
-            if (comp()->getOption(TR_TraceOSR))
-               log->printf("set liveLocalIndex %d for definingSymbol %p definingSymRefNumber %d\n",local->getLiveLocalIndex(), symbol, definingSymRefNumber);
+            trprintf(comp()->getOption(TR_TraceOSR), log, "set liveLocalIndex %d for definingSymbol %p definingSymRefNumber %d\n",
+                  local->getLiveLocalIndex(), symbol, definingSymRefNumber);
             liveLocals->set(liveLocalIndex);
             }
          }

@@ -136,6 +136,7 @@ bool TR_FieldPrivatizer::isFieldAliasAccessed(TR::SymbolReference * symRef)
 
 int32_t TR_FieldPrivatizer::detectCanonicalizedPredictableLoops(TR_Structure *loopStructure, TR_BitVector **optSetInfo, int32_t bitVectorSize)
    {
+   TR::Logger *log = comp()->log();
    TR_RegionStructure *regionStructure = loopStructure->asRegion();
 
    if (regionStructure)
@@ -152,8 +153,6 @@ int32_t TR_FieldPrivatizer::detectCanonicalizedPredictableLoops(TR_Structure *lo
        !regionStructure->getParent() ||
        !regionStructure->isNaturalLoop())
       return 0;
-
- //  comp()->log()->printf("Considering Loop %d\n", regionStructure->getNumber());
 
    TR_ScratchList<TR::Block> blocksInRegion(trMemory());
    regionStructure->getBlocks(&blocksInRegion);
@@ -289,8 +288,7 @@ int32_t TR_FieldPrivatizer::detectCanonicalizedPredictableLoops(TR_Structure *lo
        _needToStoreBack = new (trStackMemory()) TR_BitVector(symRefCount, trMemory(), stackAlloc, growable);
        _criticalEdgeBlock = 0;
 
-       if (trace())
-          comp()->log()->printf("\nChecking loop %d for predictability\n", loopStructure->getNumber());
+       trprintf(trace(), log, "\nChecking loop %d for predictability\n", loopStructure->getNumber());
 
        _isAddition = false;
        int32_t isPredictableLoop = checkLoopForPredictability(loopStructure, loopInvariantBlock->getBlock(), 0);
@@ -344,7 +342,6 @@ int32_t TR_FieldPrivatizer::detectCanonicalizedPredictableLoops(TR_Structure *lo
 
              if (trace())
                 {
-                TR::Logger *log = comp()->log();
                 log->printf("\nDetected a predictable loop %d\n", loopStructure->getNumber());
 
                 log->prints("Fields that cannot be privatized:\n");
@@ -1037,6 +1034,7 @@ void TR_FieldPrivatizer::placeInitializersInLoopInvariantBlock(TR::Block *block)
 
 void TR_FieldPrivatizer::placeStoresBackInExits(List<TR::Block> *exitBlocks, List<TR::Block> *blocksInLoop)
    {
+   TR::Logger *log = comp()->log();
    TR::CFG        *cfg              = comp()->getFlowGraph();
    TR_BitVector  *seenExitBlocks   = new (trStackMemory()) TR_BitVector(cfg->getNextNodeNumber(), trMemory(), stackAlloc,growable);
    TR_BitVector  *blocksInsideLoop = new (trStackMemory()) TR_BitVector(cfg->getNextNodeNumber(), trMemory(), stackAlloc);
@@ -1136,9 +1134,7 @@ void TR_FieldPrivatizer::placeStoresBackInExits(List<TR::Block> *exitBlocks, Lis
                 nnext->setFrequency(current->getFrequency());
                 TR::CFGEdge *newEdge = comp()->getFlowGraph()->addEdge(nnext, next);
                 newEdge->setFrequency(current->getFrequency());
-                if (trace())
-                   comp()->log()->printf("placeStoresBackInExits: added block %d freq %d\n",
-                         nnext->getNumber(), nnext->getFrequency());
+                trprintf(trace(), log, "placeStoresBackInExits: added block %d freq %d\n", nnext->getNumber(), nnext->getFrequency());
                 }
              TR::CFGEdge *newEdge = comp()->getFlowGraph()->addEdge(exitBlock, nnext);
              newEdge->setFrequency(current->getFrequency());
@@ -1147,13 +1143,13 @@ void TR_FieldPrivatizer::placeStoresBackInExits(List<TR::Block> *exitBlocks, Lis
                 TR::Block *from = newEdge->getFrom()->asBlock();
                 TR::Block *to = newEdge->getTo()->asBlock();
 
-                comp()->log()->printf("new edge %d(%d) -> %d(%d) freq %d\n",
+                log->printf("new edge %d(%d) -> %d(%d) freq %d\n",
                       from->getNumber(), from->getFrequency(),
                       to->getNumber(), to->getFrequency(),
                       current->getFrequency());
                 from = current->getFrom()->asBlock();
                 to = current->getTo()->asBlock();
-                comp()->log()->printf("instead of orig edge %d(%d) -> %d(%d) freq %d\n",
+                log->printf("instead of orig edge %d(%d) -> %d(%d) freq %d\n",
                       from->getNumber(), from->getFrequency(),
                       to->getNumber(), to->getFrequency(),
                       current->getFrequency());

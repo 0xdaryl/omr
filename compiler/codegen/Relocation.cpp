@@ -264,14 +264,15 @@ void TR::ExternalRelocation::trace(TR::Compilation* comp)
 
    if (data)
       {
-      comp->log()->printf("%-35s %-32s %5d      %04x       %04x %8p\n",
-       getName(this->getTargetKind()),
-       data->file,
-       data->line,
-       methodOffset,
-       programOffset,
-       data->node);
-      comp->log()->printf("TargetAddress1:" POINTER_PRINTF_FORMAT ",  TargetAddress2:" POINTER_PRINTF_FORMAT "\n", this->getTargetAddress(), this->getTargetAddress2());
+      TR::Logger *log = comp->log();
+      log->printf("%-35s %-32s %5d      %04x       %04x %8p\n",
+         getName(this->getTargetKind()),
+         data->file,
+         data->line,
+         methodOffset,
+         programOffset,
+         data->node);
+      log->printf("TargetAddress1:" POINTER_PRINTF_FORMAT ",  TargetAddress2:" POINTER_PRINTF_FORMAT "\n", this->getTargetAddress(), this->getTargetAddress2());
       }
    }
 

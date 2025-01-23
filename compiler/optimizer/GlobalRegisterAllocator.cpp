@@ -296,6 +296,8 @@ TR_GlobalRegisterAllocator::perform()
    {
    LexicalTimer t("TR_GlobalRegisterAllocator::perform", comp()->phaseTimer());
 
+   TR::Logger *log = comp()->log();
+
    if (comp()->hasLargeNumberOfLoops())
       {
       return 0;
@@ -402,7 +404,7 @@ TR_GlobalRegisterAllocator::perform()
 
 
       if (trace())
-         comp()->dumpMethodTrees(comp()->log(), "Trees before tactical global register allocator", comp()->getMethodSymbol());
+         comp()->dumpMethodTrees(log, "Trees before tactical global register allocator", comp()->getMethodSymbol());
 
       _candidatesNeedingSignExtension = NULL;
       _candidatesSignExtendedInThisLoop = NULL;
@@ -554,8 +556,7 @@ TR_GlobalRegisterAllocator::perform()
             // If source and destination locals of a copy receive registers, in other words, a register-register copy exists,
             // and a value is modified in one of locals, another local must be indentified as 'valueModified'.
             //
-            if (trace)
-               comp()->log()->prints("\nPropagating value modified information\n");
+            trprints(trace, log, "\nPropagating value modified information\n");
             List<TR::TreeTop>        storesFromRegisters(trMemory());
             TR::TreeTop *tt = NULL, *nextTreeTop = NULL;
             for (tt = comp()->getStartTree(); tt; tt = tt->getNextTreeTop())
@@ -592,15 +593,14 @@ TR_GlobalRegisterAllocator::perform()
                // Remove a store generated at the end of the live range when a value is not modified in the live range.
                // If a value is not modified in a local which receives a register, the stores from the register is redundant.
                //
-               if (trace)
-                  comp()->log()->prints("\nRemoving redundant stores\n");
+               trprints(trace, log, "\nRemoving redundant stores\n");
                ListIterator<TR::TreeTop>        itr(&storesFromRegisters);
                for (tt = itr.getFirst(); tt; tt = itr.getNext())
                   {
                   if (!_valueModifiedSymRefs->isSet(tt->getNode()->getFirstChild()->getRegLoadStoreSymbolReference()->getReferenceNumber()) &&
                      !nonSplittingCopyStored.isSet(tt->getNode()->getFirstChild()->getRegLoadStoreSymbolReference()->getReferenceNumber()))
                      {
-                     if (trace) comp()->log()->printf("Remove a redundant store %p\n", tt->getNode());
+                     trprintf(trace, log, "Remove a redundant store %p\n", tt->getNode());
                      TR::TransformUtil::removeTree(comp(), tt);
                      }
                   }
@@ -632,7 +632,7 @@ TR_GlobalRegisterAllocator::isSplittingCopy(TR::Node *node)
    if ((node->getOpCode().isStoreDirect() || node->getOpCode().isStoreReg()) &&
        (node->getFirstChild()->getOpCode().isLoadVarDirect() || node->getFirstChild()->getOpCode().isLoadReg()))
       {
-      if (trace) comp()->log()->printf("Finding a copy at node %p\n", node);
+      trprintf(trace, comp()->log(), "Finding a copy at node %p\n", node);
       TR::SymbolReference *storeSymRef = node->getSymbolReferenceOfAnyType();
       TR::SymbolReference *loadSymRef  = node->getFirstChild()->getSymbolReferenceOfAnyType();
       if (storeSymRef && loadSymRef && storeSymRef != loadSymRef)
@@ -645,7 +645,6 @@ TR_GlobalRegisterAllocator::isSplittingCopy(TR::Node *node)
              (origStoreSymRef && !origLoadSymRef && origStoreSymRef == loadSymRef) ||
              (!origStoreSymRef && origLoadSymRef && storeSymRef == origLoadSymRef))
             {
-            //if (trace) comp()->log()->printf("Found a copy %p\n", node);
             return true;
             }
          }
@@ -657,6 +656,8 @@ TR_GlobalRegisterAllocator::isSplittingCopy(TR::Node *node)
 void
 TR_GlobalRegisterAllocator::restoreOriginalSymbol(TR::Node *node, vcount_t visitCount)
    {
+   TR::Logger *log = comp()->log();
+
    if (node->getVisitCount() == visitCount)
       return;
 
@@ -716,7 +717,7 @@ TR_GlobalRegisterAllocator::restoreOriginalSymbol(TR::Node *node, vcount_t visit
 
          if (rc && !rc->extendedLiveRange() && changeSymRef)
             {
-            if (trace) comp()->log()->printf("Restore an original symbol #%d from #%d at %p\n", changeSymRef->getReferenceNumber(), symRefNum, node);
+            trprintf(trace, log, "Restore an original symbol #%d from #%d at %p\n", changeSymRef->getReferenceNumber(), symRefNum, node);
             if(node->getOpCode().isLoadReg() || node->getOpCode().isStoreReg())
                node->setRegLoadStoreSymbolReference(changeSymRef);
             else
@@ -725,8 +726,8 @@ TR_GlobalRegisterAllocator::restoreOriginalSymbol(TR::Node *node, vcount_t visit
          else
             _valueModifiedSymRefs->set(symRefNum);
          }
-      else if (trace)
-         comp()->log()->printf("Node %p has no symbol\n", node);
+      else
+         trprintf(trace, log, "Node %p has no symbol\n", node);
       }
    }
 
@@ -1560,7 +1561,8 @@ bool TR_GlobalRegisterAllocator::markCandidateForReloadInSuccessors(int32_t i, T
    TR::RegisterCandidate *rc = extReg->getCurrentRegisterCandidate();
    TR::RegisterCandidate *nextRc = NULL;
 
-   if (traceIt) log->printf("TR_GlobalRegisterAllocator::markCandidateForReloadInSuccessors block=%d GlobalReg=(%d,symRef=#%d)\n",block->getNumber(),i,rc->getSymbolReference()->getReferenceNumber());
+   trprintf(traceIt, log, "TR_GlobalRegisterAllocator::markCandidateForReloadInSuccessors block=%d GlobalReg=(%d,symRef=#%d)\n",
+         block->getNumber(), i, rc->getSymbolReference()->getReferenceNumber());
    // Already visited this block?
    if (reg->isUnavailable())
       return(reg->isUnavailableResolved());
@@ -1571,31 +1573,31 @@ bool TR_GlobalRegisterAllocator::markCandidateForReloadInSuccessors(int32_t i, T
    if (reg->getRegisterCandidateOnExit() != rc && !block->getNextBlock()->isExtensionOfPreviousBlock())
       return true;
 
-   if (traceIt) log->prints("TR_GlobalRegisterAllocator::markCandidateForReloadInSuccessors checking extensions\n");
+   trprints(traceIt, log, "TR_GlobalRegisterAllocator::markCandidateForReloadInSuccessors checking extensions\n");
    // First visit all extensions of this block before doing any loops
    nextBlock = block->getNextBlock();
    if (nextBlock && nextBlock->isExtensionOfPreviousBlock())
       {
-      if (traceIt) log->printf("TR_GlobalRegisterAllocator::markCandidateForReloadInSuccessors nextBlock=%d\n",nextBlock->getNumber());
+      trprintf(traceIt, log, "TR_GlobalRegisterAllocator::markCandidateForReloadInSuccessors nextBlock=%d\n", nextBlock->getNumber());
       TR_Array<TR::GlobalRegister> & nextRegisters = nextBlock->getGlobalRegisters(comp());
       TR::GlobalRegister &nextGr = nextRegisters[i];
       nextRc = nextGr.getRegisterCandidateOnEntry();
       if (nextRc && nextRc != rc) // Not live anymore so leave. Should be caught on previous test on live on exit
          {
-         if (traceIt) log->prints("  not live on entry. Ok here.\n");
+         trprints(traceIt, log, "  not live on entry. Ok here.\n");
          reg->setUnavailableResolved();
          return true;
          }
 
       // Continue the search if we still restricted from reloading it
       nextGr.setReloadRegisterCandidateOnEntry(rc);
-      if (traceIt) log->printf("  block_%d marked to reload candidate #%d\n", nextBlock->getNumber(),rc->getSymbolReference()->getReferenceNumber());
+      trprintf(traceIt, log, "  block_%d marked to reload candidate #%d\n", nextBlock->getNumber(), rc->getSymbolReference()->getReferenceNumber());
       reg->setUnavailableResolved();
       return true; // Yes I managed to set reload on Entry for this successor path
       }
    else
       {
-      if (traceIt) log->prints("TR_GlobalRegisterAllocator::markCandidateForReloadInSuccessors next block is not extension\n");
+      trprints(traceIt, log, "TR_GlobalRegisterAllocator::markCandidateForReloadInSuccessors next block is not extension\n");
       // Multiple successors must visit all and set them as needing a reload on entry
       for (auto succ = block->getSuccessors().begin(); succ != block->getSuccessors().end(); ++succ)
          {
@@ -1610,7 +1612,7 @@ bool TR_GlobalRegisterAllocator::markCandidateForReloadInSuccessors(int32_t i, T
 
          // Continue the search if we still restricted from reloading it
          nextGr.setReloadRegisterCandidateOnEntry(rc);
-         if (traceIt) log->printf("  block_%d marked to reload candidate #%d\n", nextBlock->getNumber(),rc->getSymbolReference()->getReferenceNumber());
+         trprintf(traceIt, log, "  block_%d marked to reload candidate #%d\n", nextBlock->getNumber(), rc->getSymbolReference()->getReferenceNumber());
          reg->setUnavailableResolved();
          result = true; // Yes I managed to set reload on Entry for this successor path
          }
@@ -1667,8 +1669,8 @@ TR_GlobalRegisterAllocator::addStoresForCatchBlockLoads(TR::TreeTop *appendPoint
       if (succ->asBlock()->isOSRCatchBlock())
          {
          _osrCatchSucc = succ->asBlock();
-         if (trace())
-            comp()->log()->printf("           addStoresForCatchBlockLoads([%p], block_%d) found OSR catch block_%d\n", appendPoint->getNode(), throwingBlock->getNumber(), _osrCatchSucc->getNumber());
+         trprintf(trace(), comp()->log(), "           addStoresForCatchBlockLoads([%p], block_%d) found OSR catch block_%d\n",
+               appendPoint->getNode(), throwingBlock->getNumber(), _osrCatchSucc->getNumber());
          }
       }
 
@@ -2094,11 +2096,8 @@ TR_GlobalRegisterAllocator::registerIsLiveAcrossEdge(
          }
       if (liveOnAllPredExits && allPredFreq >= successorBlock->getFrequency())
          {
-         if (trace())
-            log->printf("Extended live range of #%d into successor since candidate is available in register on all predecessor's exits: block=%d succ=%d allPredFreq=%d succFreq=%d\n",
-                            rc->getSymbolReference()->getReferenceNumber(),
-                            block->getNumber(), successorBlock->getNumber(),
-                            allPredFreq, successorBlock->getFrequency());
+         trprintf(trace(), log, "Extended live range of #%d into successor since candidate is available in register on all predecessor's exits: block=%d succ=%d allPredFreq=%d succFreq=%d\n",
+               rc->getSymbolReference()->getReferenceNumber(), block->getNumber(), successorBlock->getNumber(), allPredFreq, successorBlock->getFrequency());
 
          TR_ASSERT(!successorRegister->getRegisterCandidateOnEntry(), "Should not have candidate on entry");
          successorRegister->setRegisterCandidateOnEntry(rc);
@@ -2249,8 +2248,7 @@ TR_GlobalRegisterAllocator::registerIsLiveAcrossEdge(
            (successorRegister->getRegisterCandidateOnExit() != rc)))
          {
          TR::Block * newBlock = createNewSuccessorBlock(block, successorBlock, exitTreeTop, exitNode, rc);
-         if (trace())
-            log->printf("Creating new successor block_%d\n", newBlock->getNumber());
+         trprintf(trace(), log, "Creating new successor block_%d\n", newBlock->getNumber());
          if (!newBlock->getEntry()->getPrevTreeTop())
             {
             ttBeforeSuccessor->join(newBlock->getEntry());
@@ -2260,8 +2258,7 @@ TR_GlobalRegisterAllocator::registerIsLiveAcrossEdge(
          }
 
 
-      if (trace())
-         log->printf("Setting candidate %d (real reg %d) on entry to succ block_%d\n", rc->getSymbolReference()->getReferenceNumber(), i, successorBlock->getNumber());
+      trprintf(trace(), log, "Setting candidate %d (real reg %d) on entry to succ block_%d\n", rc->getSymbolReference()->getReferenceNumber(), i, successorBlock->getNumber());
       successorBlock->getGlobalRegisters(comp())[i].setRegisterCandidateOnEntry(rc);
       rc->setExtendedLiveRange(true);
       /////dumpOptDetails(comp(), "i = %d successorRC %x\n", i, successorBlock->getGlobalRegisters(comp())[i].getRegisterCandidateOnEntry());
@@ -2273,8 +2270,7 @@ TR_GlobalRegisterAllocator::registerIsLiveAcrossEdge(
             int32_t lowRegNum = rc->getLowGlobalRegisterNumber();
             successorBlock->getGlobalRegisters(comp())[lowRegNum].setRegisterCandidateOnEntry(rc);
             rc->setExtendedLiveRange(true);
-            if (trace())
-               log->printf("Setting candidate %d (real reg %d) on entry to succ block_%d\n", rc->getSymbolReference()->getReferenceNumber(), lowRegNum, successorBlock->getNumber());
+            trprintf(trace(), log, "Setting candidate %d (real reg %d) on entry to succ block_%d\n", rc->getSymbolReference()->getReferenceNumber(), lowRegNum, successorBlock->getNumber());
             /////dumpOptDetails(comp(), "lowRegNum = %d successorRC %x\n", lowRegNum, successorBlock->getGlobalRegisters(comp())[lowRegNum].getRegisterCandidateOnEntry());
             }
          else
@@ -2282,8 +2278,7 @@ TR_GlobalRegisterAllocator::registerIsLiveAcrossEdge(
             successorBlock->getGlobalRegisters(comp())[highRegNum].setRegisterCandidateOnEntry(rc);
             rc->setExtendedLiveRange(true);
             //////dumpOptDetails(comp(), "highRegNum = %d successorRC %x\n", highRegNum, successorBlock->getGlobalRegisters(comp())[highRegNum].getRegisterCandidateOnEntry());
-            if (trace())
-               log->printf("Setting candidate %d (real reg %d) on entry to succ block_%d\n", rc->getSymbolReference()->getReferenceNumber(), highRegNum, successorBlock->getNumber());
+            trprintf(trace(), log, "Setting candidate %d (real reg %d) on entry to succ block_%d\n", rc->getSymbolReference()->getReferenceNumber(), highRegNum, successorBlock->getNumber());
             }
          }
 
@@ -2298,8 +2293,7 @@ TR_GlobalRegisterAllocator::registerIsLiveAcrossEdge(
 
       TR::Block * newBlock = createNewSuccessorBlock(block, successorBlock, exitTreeTop, exitNode, rc);
 
-      if (trace())
-         log->printf("Creating new block_%d\n", newBlock->getNumber());
+      trprintf(trace(), log, "Creating new block_%d\n", newBlock->getNumber());
 
       if (!newBlock->getEntry()->getPrevTreeTop())
          {
@@ -2316,8 +2310,7 @@ TR_GlobalRegisterAllocator::registerIsLiveAcrossEdge(
       newBlock->getGlobalRegisters(comp())[i].setRegisterCandidateOnEntry(rc);
       rc->setExtendedLiveRange(true);
 
-      if (trace())
-         log->printf("Setting candidate %d (real reg %d) on entry to new block_%d\n", rc->getSymbolReference()->getReferenceNumber(), i, newBlock->getNumber());
+      trprintf(trace(), log, "Setting candidate %d (real reg %d) on entry to new block_%d\n", rc->getSymbolReference()->getReferenceNumber(), i, newBlock->getNumber());
 
       if (needs2Regs)
          {
@@ -2327,15 +2320,13 @@ TR_GlobalRegisterAllocator::registerIsLiveAcrossEdge(
             int32_t lowRegNum = rc->getLowGlobalRegisterNumber();
             newBlock->getGlobalRegisters(comp())[lowRegNum].setRegisterCandidateOnEntry(rc);
             rc->setExtendedLiveRange(true);
-            if (trace())
-               log->printf("Setting candidate %d (real reg %d) on entry to new block_%d\n", rc->getSymbolReference()->getReferenceNumber(), lowRegNum, newBlock->getNumber());
+            trprintf(trace(), log, "Setting candidate %d (real reg %d) on entry to new block_%d\n", rc->getSymbolReference()->getReferenceNumber(), lowRegNum, newBlock->getNumber());
             }
          else
             {
             newBlock->getGlobalRegisters(comp())[highRegNum].setRegisterCandidateOnEntry(rc);
             rc->setExtendedLiveRange(true);
-            if (trace())
-               log->printf("Setting candidate %d (real reg %d) on entry to new block_%d\n", rc->getSymbolReference()->getReferenceNumber(), highRegNum, newBlock->getNumber());
+            trprintf(trace(), log, "Setting candidate %d (real reg %d) on entry to new block_%d\n", rc->getSymbolReference()->getReferenceNumber(), highRegNum, newBlock->getNumber());
             }
          }
 
@@ -2388,7 +2379,6 @@ TR_GlobalRegisterAllocator::createNewSuccessorBlock(
             TR_Array<TR::GlobalRegister> & predRegistersEBB = _candidates->getStartOfExtendedBBForBB()[predBlock->getNumber()]->getGlobalRegisters(comp());
             TR_Array<TR::GlobalRegister> & predRegisters = predBlock->getGlobalRegisters(comp());
 
-            //printf("Considering next block_%d for reuse\n", nextNewBlock->getNumber());
             if ((nextNewBlock->getSuccessors().size() == 1) &&
                 nextNewBlock->getSuccessors().front()->getTo() == successorBlock)
                {
@@ -2414,8 +2404,8 @@ TR_GlobalRegisterAllocator::createNewSuccessorBlock(
                bool needs2Regs = rc->rcNeeds2Regs(comp());
                if (numRegistersLiveOnNewSuccessor + (needs2Regs? 2 : 1) > comp()->cg()->getMaximumNumberOfGPRsAllowedAcrossEdge(block))
                   {
-                  if (trace())
-                     comp()->log()->printf("numRegistersLiveOnNewSuccessor %d on nextNewBlock %d > comp()->cg()->getMaximumNumberOfGPRsAllowedAcrossEdge(block_%d) %d\n",numRegistersLiveOnNewSuccessor, nextNewBlock->getNumber(), block->getNumber(),comp()->cg()->getMaximumNumberOfGPRsAllowedAcrossEdge(block));
+                  trprintf(trace(), comp()->log(), "numRegistersLiveOnNewSuccessor %d on nextNewBlock %d > comp()->cg()->getMaximumNumberOfGPRsAllowedAcrossEdge(block_%d) %d\n",
+                        numRegistersLiveOnNewSuccessor, nextNewBlock->getNumber(), block->getNumber(), comp()->cg()->getMaximumNumberOfGPRsAllowedAcrossEdge(block));
                   newBlockCanBeReused = false;
                   }
                }
@@ -2907,7 +2897,7 @@ TR_GlobalRegisterAllocator::findIfThenRegisterCandidates()
                         {
                         if (branchBlock->getStructureOf())
                            optimizer()->getStaticFrequency(branchBlock, &weight);
-                        //printf("Adding symRef %d in block_%d\n", symRef->getReferenceNumber(), branchBlock->getNumber());
+
                         rc->addBlock(branchBlock, weight);
                         }
                      }
@@ -2996,8 +2986,7 @@ void TR_GlobalRegisterAllocator::offerAllAutosAndRegisterParmAsCandidates(TR::Bl
             {
             if (candidates->aliasesPreventAllocation(comp(),symRef))
                {
-               if (comp()->getOptions()->trace(OMR::tacticalGlobalRegisterAllocator))
-                  comp()->log()->printf("Leaving candidate #%d because it has use_def_aliases\n",symRefNumber);
+               trprintf(trace(), comp()->log(), "Leaving candidate #%d because it has use_def_aliases\n", symRefNumber);
                continue;
                }
 
@@ -3284,7 +3273,6 @@ TR_GlobalRegisterAllocator::findLoopsAndCorrespondingAutos(TR_StructureSubGraphN
 
                   if (!doNotRemoveThisCandidate)
                      {
-                    //printf("Removing candidate in %s\n", _compilation->getCurrentMethod()->signature());
                      blocksIt.reset();
                      for (nextBlock = blocksIt.getCurrent(); nextBlock; nextBlock=blocksIt.getNext())
                         rc->removeBlock(nextBlock);
@@ -3394,7 +3382,7 @@ TR_GlobalRegisterAllocator::markAutosUsedIn(
          _candidatesNeedingSignExtension->set(node->getSymbolReference()->getReferenceNumber());
 
          TR_BlockStructure *blockStructure = block->getStructureOf();
-         //printf("Skip sign extension at node %p in %s\n", node, comp->getCurrentMethod()->signature());
+
          int32_t useIndex = node->getUseDefIndex();
          TR_UseDefInfo::BitVector defs(comp()->allocator());
          if (info->getUseDef(defs, useIndex))
@@ -3406,8 +3394,6 @@ TR_GlobalRegisterAllocator::markAutosUsedIn(
                if (defIndex < info->getFirstRealDefIndex()) // def is  unseen--can't mark this node as skippable
                   {
                   node->setSkipSignExtension(false);
-                  //printf("Parm def, so cannot skip sign extension at node %p in %s\n",
-                  //         node, comp->getCurrentMethod()->signature());
                   break;
                   }
                TR::Node *defNode = info->getNode(defIndex);
@@ -3428,7 +3414,6 @@ TR_GlobalRegisterAllocator::markAutosUsedIn(
                          defNode->getFirstChild()->isNonNegative() &&
                          seenLoad)
                         {
-                        //printf("Skip sign extension at def node %p in %s\n", defNode, comp->getCurrentMethod()->signature());
                         TR::TreeTop *defTree = info->getTreeTop(defIndex);
                         TR::Block *defBlock = defTree->getEnclosingBlock();
                         TR_BlockStructure *defBlockStructure = defBlock->getStructureOf();
@@ -3864,7 +3849,6 @@ void TR_LiveRangeSplitter::splitLiveRanges()
    TR_BitVector *liveVars = NULL;
    if (!cg()->getLiveLocals())
       {
-      //printf("Computing liveness in %s\n", comp()->getCurrentMethod()->signature());
       int32_t numLocals = 0;
       TR::AutomaticSymbol *p;
       ListIterator<TR::AutomaticSymbol> locals(&comp()->getMethodSymbol()->getAutomaticList());
@@ -4042,8 +4026,7 @@ TR_LiveRangeSplitter::splitLiveRanges(TR_StructureSubGraphNode *structureNode)
 
             TR::SymbolReference **prevOrigSymRefs = oldOrigSymRefs;
             int32_t prevSymRefCount = oldSymRefCount;
-            if (trace())
-               log->printf("Trying to split unused locals in loop %d with starting sym ref count %d\n", structureNode->getNumber(), symRefCount);
+            trprintf(trace(), log, "Trying to split unused locals in loop %d with starting sym ref count %d\n", structureNode->getNumber(), symRefCount);
 
             int32_t i = 0;
             while ((i < symRefCount) && (prevSymRefCount == 0))
@@ -4057,8 +4040,8 @@ TR_LiveRangeSplitter::splitLiveRanges(TR_StructureSubGraphNode *structureNode)
                if (!origSymRef)
                   origSymRef = symRef;
 
-               if (origSymRef && trace())
-                  log->printf("orig sym %p (#%d)\n", origSymRef->getSymbol(), origSymRef->getReferenceNumber());
+               if (origSymRef)
+                  trprintf(trace(), log, "orig sym %p (#%d)\n", origSymRef->getSymbol(), origSymRef->getReferenceNumber());
 
                bool candidateIsLiveOnExit = false;
                if (origSymRef &&
@@ -4113,8 +4096,6 @@ TR_LiveRangeSplitter::splitLiveRanges(TR_StructureSubGraphNode *structureNode)
                      {
                      _changedSomething = true;
 
-                     //printf("Splitting live vars in %s\n", comp()->signature()); fflush(stdout);
-
                      if (isFloat)
                         _numberOfFPRs = _numberOfFPRs + numRegsForCandidate;
                      else
@@ -4122,7 +4103,7 @@ TR_LiveRangeSplitter::splitLiveRanges(TR_StructureSubGraphNode *structureNode)
 
                      TR_SymRefCandidatePair *correspondingSymRefCandidate = splitAndFixPreHeader(symRef, correspondingSymRefs, loopInvariantBlock, loopInvariantBlock->getEntry()->getNode());
                      TR::SymbolReference *correspondingSymRef = correspondingSymRefCandidate->_symRef;
-                     //////printf("Splitting sym ref %d with new sym ref %d in method %s\n", symRef->getReferenceNumber(), correspondingSymRef->getReferenceNumber(), comp()->signature()); fflush(stdout);
+
                      fixExitsAfterSplit(symRef, correspondingSymRefCandidate, correspondingSymRefs, loopInvariantBlock, &blocksInLoop, loopInvariantBlock->getEntry()->getNode(), *registerCandidates, structureNode, replacedAutosInCurrentLoop, origSymRef);
                      }
                   }
@@ -4156,8 +4137,7 @@ TR_LiveRangeSplitter::splitLiveRanges(TR_StructureSubGraphNode *structureNode)
             }
          else
             {
-            if (trace())
-               log->printf(" loop %d (%p) is skipped because loop pre-header was not found \n", regionStructure->getNumber(), regionStructure);
+            trprintf(trace(), log, " loop %d (%p) is skipped because loop pre-header was not found \n", regionStructure->getNumber(), regionStructure);
             }
          }
 
@@ -4268,8 +4248,6 @@ TR_LiveRangeSplitter::replaceAutosUsedIn(
                {
                _changedSomething = true;
 
-               //printf("Splitting live vars in %s\n", comp()->signature()); fflush(stdout);
-
                if (isFloat)
                   _numberOfFPRs = _numberOfFPRs + numRegsForCandidate;
                else
@@ -4299,8 +4277,8 @@ TR_LiveRangeSplitter::replaceAutosUsedIn(
                TR::Node *storeNode = TR::Node::createWithSymRef(comp()->il.opCodeForDirectStore(correspondingSymRef->getSymbol()->getDataType()), 1, 1,
                                                    node->getFirstChild(),
                                                    correspondingSymRef);
-               if (trace())
-                  comp()->log()->printf(" --- created a store to auto #%d adjacent to existing store to auto #%d at %s node %p --- \n", correspondingSymRef->getReferenceNumber(), symRef->getReferenceNumber(), node->getOpCode().getName(), node);
+               trprintf(trace(), comp()->log(), " --- created a store to auto #%d adjacent to existing store to auto #%d at %s node %p --- \n",
+                     correspondingSymRef->getReferenceNumber(), symRef->getReferenceNumber(), node->getOpCode().getName(), node);
                storeNode->setVisitCount(visitCount);
                TR::TreeTop *storeTree = TR::TreeTop::create(comp(), storeNode, 0, 0);
                TR::TreeTop *prevTree = currentTree->getPrevTreeTop();
@@ -4412,8 +4390,8 @@ TR_LiveRangeSplitter::fixExitsAfterSplit(TR::SymbolReference *symRef, TR_SymRefC
                   {
                   if (!blocksInInnerLoop->get(nextBlock->getNumber()))
                      {
-                     if (trace())
-                        comp()->log()->printf("Adding original candidate #%d in block_%d in outer loop %d (%p)\n", rc->getSymbolReference()->getReferenceNumber(), nextBlock->getNumber(), parentOfLoop->getNumber(), parentOfLoop);
+                     trprintf(trace(), comp()->log(), "Adding original candidate #%d in block_%d in outer loop %d (%p)\n",
+                           rc->getSymbolReference()->getReferenceNumber(), nextBlock->getNumber(), parentOfLoop->getNumber(), parentOfLoop);
                      rc->addBlock(nextBlock, 0);
                      }
                   }

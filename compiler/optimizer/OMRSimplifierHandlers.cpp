@@ -13417,11 +13417,7 @@ TR::Node* removeArithmeticsUnderIntegralCompare(TR::Node* node,
          }
       else
          {
-         if (s->trace())
-            s->comp()->log()->printf(
-                     "\nEliminating add/sub under compare node n%dn failed due to opcode data type\n",
-                     node->getGlobalIndex());
-
+         trprintf(s->trace(), s->comp()->log(), "\nEliminating add/sub under compare node n%dn failed due to opcode data type\n", node->getGlobalIndex());
          return node;
          }
 
@@ -13443,11 +13439,7 @@ TR::Node* removeArithmeticsUnderIntegralCompare(TR::Node* node,
 
          if (!(canTransformAdd || canTransformSub))
             {
-            if (s->trace())
-               s->comp()->log()->printf(
-                        "\nEliminating add/sub under order compare node n%dn failed due to overflow\n",
-                        node->getGlobalIndex());
-
+            trprintf(s->trace(), s->comp()->log(), "\nEliminating add/sub under order compare node n%dn failed due to overflow\n", node->getGlobalIndex());
             return node;
             }
          }
@@ -16555,7 +16547,6 @@ TR::Node *checkcastSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier
                 firstChild->getSecondChild() == node->getSecondChild() &&
                 performTransformation(s->comp(), "%sRemoving checkcast node [" POINTER_PRINTF_FORMAT "]\n", s->optDetailString(), node))
                {
-               // printf("Removing checkcast in method %s\n", s->comp()->signature());
                node->getFirstChild()->decReferenceCount();
                node->getSecondChild()->decReferenceCount();
                currTree->getPrevTreeTop()->join(currTree->getNextTreeTop());
@@ -17027,6 +17018,7 @@ TR::Node *nullchkSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier *
 //
 TR::Node *divchkSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
+   TR::Logger *log = s->comp()->log();
    TR::Node * child = node->getFirstChild();
    TR::Node * origChild = child;
    TR::ILOpCode childOpCode = child->getOpCode();
@@ -17091,11 +17083,7 @@ TR::Node *divchkSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
          //
          if (s->_nodeToDivchk == NULL)
             {
-            if (s->trace())
-               {
-               s->comp()->log()->printf("Simplifying DIVCHK n%un %p child resulted in no node to DIVCHK - replacing DIVCHK with treetop\n",
-                        node->getGlobalIndex(), node);
-               }
+            trprintf(s->trace(), log, "Simplifying DIVCHK n%un %p child resulted in no node to DIVCHK - replacing DIVCHK with treetop\n", node->getGlobalIndex(), node);
 
             TR::Node::recreate(node, TR::treetop);
             node->setChild(0, child);
@@ -17103,11 +17091,8 @@ TR::Node *divchkSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
             }
          else
             {
-            if (s->trace())
-               {
-               s->comp()->log()->printf("Simplifying DIVCHK child has left us with a node to DIVCHK - replacing child with n%un [%p]\n",
-                        s->_nodeToDivchk->getGlobalIndex(),  s->_nodeToDivchk);
-               }
+            trprintf(s->trace(), log, "Simplifying DIVCHK child has left us with a node to DIVCHK - replacing child with n%un [%p]\n",
+                  s->_nodeToDivchk->getGlobalIndex(),  s->_nodeToDivchk);
 
             // Simplifying the child has left us with a node that still needs to
             // have a DIVCHK applied.  Replace the original child with the node
@@ -17123,10 +17108,7 @@ TR::Node *divchkSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
          // Child of DIVCHK must be a division or remainder operation.  If it's not,
          // eliminate the DIVCHK.
          //
-         if (s->trace())
-            {
-            s->comp()->log()->printf("DIVCHK n%un %p child is not a division or remainder operation - replacing DIVCHK with treetop\n", node->getGlobalIndex(), node);
-            }
+         trprintf(s->trace(), log, "DIVCHK n%un %p child is not a division or remainder operation - replacing DIVCHK with treetop\n", node->getGlobalIndex(), node);
 
          TR::Node::recreate(node, TR::treetop);
          return node;
@@ -17495,10 +17477,7 @@ TR::Node *bndchkwithspinechkSimplifier(TR::Node * node, TR::Block * block, TR::S
       newTree->join(prevTree->getNextTreeTop());
       prevTree->join(newTree);
 
-      if (s->trace())
-         {
-         s->comp()->log()->printf("removing spine check from node %p, anchoring element child to %p\n", node, treeTopNode);
-         }
+      trprintf(s->trace(), s->comp()->log(), "removing spine check from node %p, anchoring element child to %p\n", node, treeTopNode);
       }
 
    if (removeBoundCheck && removeSpineCheck)

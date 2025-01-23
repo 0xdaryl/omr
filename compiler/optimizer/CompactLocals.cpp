@@ -239,8 +239,7 @@ int32_t TR_CompactLocals::perform()
       tt = block->getExit();
       lastBlock = block;
 
-      if (trace())
-         log->printf("Now in block_%d\n", block->getNumber());
+      trprintf(trace(), log, "Now in block_%d\n", block->getNumber());
 
 
       bool extendedByNextBlock = false;
@@ -251,9 +250,7 @@ int32_t TR_CompactLocals::perform()
             extendedByNextBlock = block->isExtensionOfPreviousBlock() ? true : false;
             block = block->getPrevBlock();
 
-            if (trace())
-                log->printf("Now in block_%d\n", block->getNumber());
-
+            trprintf(trace(), log, "Now in block_%d\n", block->getNumber());
             }
          else if (tt->getNode()->getOpCodeValue() == TR::BBEnd)
             {
@@ -318,6 +315,8 @@ void TR_CompactLocals::processNodeInPreorder(TR::Node *node,
                                              TR::Block    *block,
                                              bool         directChildOfTreeTop)
    {
+   TR::Logger *log = comp()->log();
+
    // First time this node has been encountered.
    //
    if (node->getVisitCount() != visitCount)
@@ -326,10 +325,7 @@ void TR_CompactLocals::processNodeInPreorder(TR::Node *node,
       node->setLocalIndex(node->getReferenceCount());
       }
 
-   if (trace())
-      {
-      comp()->log()->printf("---> visiting tt node %p\n", node);
-      }
+   trprintf(trace(), log, "---> visiting tt node %p\n", node);
 
    if (node->getOpCode().isStoreDirect() /* && directChildOfTreeTop */)
       {
@@ -351,10 +347,7 @@ void TR_CompactLocals::processNodeInPreorder(TR::Node *node,
          if (local->getLocalIndex() == 0)
             {
             _liveVars->reset(localIndex);
-            if (trace())
-               {
-               comp()->log()->printf("--- local index %d KILLED\n", localIndex);
-               }
+            trprintf(trace(), log, "--- local index %d KILLED\n", localIndex);
             }
          }
       }
@@ -381,19 +374,13 @@ void TR_CompactLocals::processNodeInPreorder(TR::Node *node,
             createInterferenceBetweenLocals(localIndex);
             _liveVars->set(localIndex);
 
-            if (trace())
-               {
-               comp()->log()->printf("+++ local index %d LIVE\n", localIndex);
-               }
+            trprintf(trace(), log, "+++ local index %d LIVE\n", localIndex);
             }
          else if (node->getOpCodeValue() == TR::loadaddr)
             {
             createInterferenceBetweenLocals(localIndex);
 
-            if (trace())
-               {
-               comp()->log()->printf("+++ local index %d address taken\n", localIndex);
-               }
+            trprintf(trace(), log, "+++ local index %d address taken\n", localIndex);
             }
 
          local->setLocalIndex(local->getLocalIndex()-1);
@@ -587,7 +574,7 @@ TR_CompactLocals::doCompactLocals()
       {
       _localsIG->dumpIG("after colouring");
       comp()->log()->printf("\nOOOO: Original num locals=%d, max locals required=%d, %s\n",
-                  _localsIG->getNumNodes(), _localsIG->getNumberOfColoursUsedToColour(), comp()->signature());
+            _localsIG->getNumNodes(), _localsIG->getNumberOfColoursUsedToColour(), comp()->signature());
       }
 
    // TODO: Only do this if we reduced the number of locals in the method.

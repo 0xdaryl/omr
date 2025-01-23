@@ -120,13 +120,10 @@ TR_OSRCompilationData::addInstruction(int32_t instructionPC, TR_ByteCodeInfo bcI
    bool trace = comp->getOption(TR_TraceOSR);
    TR::Logger *log = comp->log();
 
-   if (trace)
-      log->printf("instructionPC %x callerIndex %d bcidx %d ", instructionPC,
-              bcInfo.getCallerIndex(), bcInfo.getByteCodeIndex());
+   trprintf(trace, log, "instructionPC %x callerIndex %d bcidx %d ", instructionPC, bcInfo.getCallerIndex(), bcInfo.getByteCodeIndex());
    if (instructionPC < 0)
       {
-      if (trace)
-         log->printf("  rejected: instructionPC %d < 0\n", instructionPC);
+      trprintf(trace, log, "  rejected: instructionPC %d < 0\n", instructionPC);
       return;
       }
    // Algorithm:
@@ -140,22 +137,19 @@ TR_OSRCompilationData::addInstruction(int32_t instructionPC, TR_ByteCodeInfo bcI
       {
       if (unsigned(bcInfo.getCallerIndex()+1) >= getOSRMethodDataArray().size())
          {
-         if (trace)
-            log->printf("  rejected: caller index %d +1 >= %d\n", bcInfo.getCallerIndex(), getOSRMethodDataArray().size());
+         trprintf(trace, log, "  rejected: caller index %d +1 >= %d\n", bcInfo.getCallerIndex(), getOSRMethodDataArray().size());
          break;
          }
       TR_OSRMethodData* osrMethodData = getOSRMethodDataArray()[bcInfo.getCallerIndex()+1];
       if (!osrMethodData || !osrMethodData->getOSRCodeBlock())
          {
-         if (trace)
-            log->prints("  rejected: no osrMethodData\n");
+         trprints(trace, log, "  rejected: no osrMethodData\n");
          break;
          }
       TR_ASSERT(getNumOfSymsThatShareSlot() >= 0, "number of symbols that share slots must be non-negative; actually %d", getNumOfSymsThatShareSlot());
       if (getNumOfSymsThatShareSlot() == 0)
          {
-         if (trace)
-            log->prints("  rejected: no slot-sharing symbols in CompilationData\n");
+         trprints(trace, log, "  rejected: no slot-sharing symbols in CompilationData\n");
          break;
          }
 
@@ -163,8 +157,7 @@ TR_OSRCompilationData::addInstruction(int32_t instructionPC, TR_ByteCodeInfo bcI
       if (bcInfo.getCallerIndex() == -1)
          break;
       bcInfo = comp->getInlinedCallSite(bcInfo.getCallerIndex())._byteCodeInfo;
-      if (trace)
-         log->printf("  callerIndex %d bcidx %d ", bcInfo.getCallerIndex(), bcInfo.getByteCodeIndex());
+      trprintf(trace, log, "  callerIndex %d bcidx %d ", bcInfo.getCallerIndex(), bcInfo.getByteCodeIndex());
       }
    }
 
@@ -196,8 +189,7 @@ TR_OSRCompilationData::findOrCreateOSRMethodData(int32_t inlinedSiteIndex, TR::R
 
    int32_t index = inlinedSiteIndex + 1;
    osrMethodData = new (comp->trHeapMemory()) TR_OSRMethodData(inlinedSiteIndex, methodSymbol, this);
-   if (comp->getOption(TR_TraceOSR))
-      comp->log()->printf("osrMethodData index %d created\n", index); // TODO: Print methodSymbol
+   trprintf(comp->getOption(TR_TraceOSR), comp->log(), "osrMethodData index %d created\n", index); // TODO: Print methodSymbol
    osrMethodDataArray[index] = osrMethodData;
    return osrMethodData;
    }
@@ -747,8 +739,8 @@ TR_OSRCompilationData::buildFinalMap (int32_t callerIndex,
                                       )
    {
    TR::Logger *log = comp->log();
-   if (comp->getOption(TR_TraceOSR))
-      log->printf("buildFinalMap callerIndex %d\n", callerIndex);
+   bool trace = comp->getOption(TR_TraceOSR);
+   trprintf(trace, log, "buildFinalMap callerIndex %d\n", callerIndex);
    TR_OSRMethodData *osrMethodData = getOSRMethodDataArray()[callerIndex+1];
    DefiningMap *codeBlockMap = definingMapAtOSRCodeBlocks[callerIndex+1];
    DefiningMap *prepareForOSRCallMap = definingMapAtPrepareForOSRCalls[callerIndex+1];
@@ -759,7 +751,7 @@ TR_OSRCompilationData::buildFinalMap (int32_t callerIndex,
       TR_BitVector *result = new (comp->trHeapMemory()) TR_BitVector(0, comp->trMemory(), heapAlloc);
       updateDefiningSymRefs(definingSymbols, workingCatchBlockMap, result);
       TR_ASSERT(finalMap->find(symRefNum) == finalMap->end(), "same symbol reference shouldn't be written twice under different prepareForOSRCall");
-      if (comp->getOption(TR_TraceOSR) && comp->getLoggingEnabled())
+      if (trace && comp->getLoggingEnabled())
          {
          log->printf("adding symRef #%d and its defining symbols to finalMap\n", symRefNum);
          result->print(log, comp);
@@ -790,8 +782,7 @@ void
 TR_OSRMethodData::buildDefiningMapForOSRCodeBlockAndPrepareForOSRCall(TR::Block *block, DefiningMap *osrCodeBlockMap, DefiningMap *prepareForOSRCallMap)
    {
    TR_ASSERT(block->getSuccessors().size() == 1, "OSRCodeBlock should have one successor but block_%d has %d", block->getNumber(), block->getSuccessors().size());
-   if (comp()->getOption(TR_TraceOSR))
-      comp()->log()->printf("buildDefiningMapForOSRCodeBlockAndPrepareForOSRCall block_%d\n", block->getNumber());
+   trprintf(comp()->getOption(TR_TraceOSR), comp()->log(), "buildDefiningMapForOSRCodeBlockAndPrepareForOSRCall block_%d\n", block->getNumber());
    buildDefiningMap(block, osrCodeBlockMap, prepareForOSRCallMap);
    if (block->getEntry()->getNode()->getByteCodeInfo().getCallerIndex() == -1)
       return;
@@ -817,8 +808,7 @@ void
 TR_OSRMethodData::buildDefiningMapForBlock(TR::Block *block, DefiningMap *blockMap)
    {
    TR_ASSERT(block->getSuccessors().size() == 1, "OSRCatchBlock should have one successor but block_%d has %d", block->getNumber(), block->getSuccessors().size());
-   if (comp()->getOption(TR_TraceOSR))
-      comp()->log()->printf("buildDefiningMapForBlock block_%d\n", block->getNumber());
+   trprintf(comp()->getOption(TR_TraceOSR), comp()->log(), "buildDefiningMapForBlock block_%d\n", block->getNumber());
    buildDefiningMap(block, blockMap);
    TR::Block *nextBlock = toBlock(block->getSuccessors().front()->getTo());
    if (!nextBlock->isOSRCodeBlock())
@@ -833,14 +823,14 @@ void
 TR_OSRMethodData::buildDefiningMap(TR::Block *block, DefiningMap *blockMap, DefiningMap *prepareForOSRCallMap)
    {
    TR::Logger *log = comp()->log();
+   bool trace = comp()->getOption(TR_TraceOSR);
 
    for (TR::TreeTop *tt = block->getEntry(); tt != block->getExit(); tt = tt->getNextRealTreeTop())
       {
       TR::SymbolReference * symRef = NULL;
       TR::Node *node = tt->getNode();
 
-      if (comp()->getOption(TR_TraceOSR))
-         log->printf("buildDefiningMap node n%dn\n", node->getGlobalIndex());
+      trprintf(trace, log, "buildDefiningMap node n%dn\n", node->getGlobalIndex());
 
       if (node->getOpCode().isStoreDirect())
          symRef = node->getSymbolReference();
@@ -855,7 +845,7 @@ TR_OSRMethodData::buildDefiningMap(TR::Block *block, DefiningMap *blockMap, Defi
             TR::NodeChecklist checklist(comp());
             collectSubTreeSymRefs(node->getFirstChild(), &subTreeSymRefs, checklist);
 
-            if (comp()->getOption(TR_TraceOSR) && comp()->getLoggingEnabled())
+            if (trace && comp()->getLoggingEnabled())
                {
                log->printf("buildDefiningMap: node n%dn: defining symbol #%d: ", node->getGlobalIndex(), symRef->getReferenceNumber());
                subTreeSymRefs.print(log, comp());
@@ -899,7 +889,7 @@ TR_OSRMethodData::buildDefiningMap(TR::Block *block, DefiningMap *blockMap, Defi
             TR_BitVector subTreeSymRefs(comp()->trMemory()->currentStackRegion());
             TR::NodeChecklist checklist(comp());
             collectSubTreeSymRefs(loadNode, &subTreeSymRefs, checklist);
-            if (comp()->getOption(TR_TraceOSR) && comp()->getLoggingEnabled())
+            if (trace && comp()->getLoggingEnabled())
                {
                log->printf("collect subTreeSymRefs of loadNode n%dn for original symRef #%d\n", loadNode->getGlobalIndex(), symRefNumber);
                subTreeSymRefs.print(log, comp());
@@ -1096,14 +1086,11 @@ TR_OSRMethodData::createOSRBlocks(TR::Node* n)
               comp()->signature(),
               getMethodSymbol()->signature(comp()->trMemory()));
       }
-   if (comp()->getOption(TR_TraceOSR))
-      {
-      comp()->log()->printf("Created OSR code block_%d(%p) and OSR catch block_%d(%p) for %s %s\n",
-              osrCodeBlock->getNumber(), osrCodeBlock,
-              osrCatchBlock->getNumber(), osrCatchBlock,
-              getInlinedSiteIndex() == -1 ? "topmost method" : "inlined method",
-              getMethodSymbol()->signature(comp()->trMemory()));
-      }
+   trprintf(comp()->getOption(TR_TraceOSR), comp()->log(), "Created OSR code block_%d(%p) and OSR catch block_%d(%p) for %s %s\n",
+         osrCodeBlock->getNumber(), osrCodeBlock,
+         osrCatchBlock->getNumber(), osrCatchBlock,
+         getInlinedSiteIndex() == -1 ? "topmost method" : "inlined method",
+         getMethodSymbol()->signature(comp()->trMemory()));
    }
 
 
@@ -1299,23 +1286,22 @@ TR_OSRMethodData::getSlotsInfo(int32_t byteCodeIndex)
 void
 TR_OSRMethodData::addInstruction(int32_t instructionPC, int32_t byteCodeIndex)
    {
+   TR::Logger *log = comp()->log();
    bool trace = comp()->getOption(TR_TraceOSR);
    //add the necessary mapping in "instruction -> shared slot info" map
    TR_ASSERT(getNumOfSymsThatShareSlot() >= 0, "number of symbols that share slots (%d) cannot be negative", getNumOfSymsThatShareSlot());
    if (getNumOfSymsThatShareSlot() == 0)
       {
-      if (trace)
-         comp()->log()->prints("  rejected: no slot-sharing symbols in OSRMethodData\n");
+      trprints(trace, log, "  rejected: no slot-sharing symbols in OSRMethodData\n");
       return;
       }
    CS2::HashIndex hashIndex;
    TR_ASSERT(comp()->getOption(TR_EnableOSR), "OSR must be enabled for TR_OSRMethodData::addInstruction");
-   //comp()->log()->printf("instructionPC %x bcidx %x ", instructionPC, instr->getNode()->getByteCodeInfo().getByteCodeIndex());
+
    //proceed only if there has been an OSR point at this location
    if (bcInfoHashTab.Locate(byteCodeIndex, hashIndex))
       {
-      if (trace)
-         comp()->log()->prints("  Adding info for each slot\n");
+      trprints(trace, log, "  Adding info for each slot\n");
       const TR_Array<TR_OSRSlotSharingInfo::TR_SlotInfo>& slotInfos =
          bcInfoHashTab.DataAt(hashIndex)->getSlotInfos();
       TR_OSRCompilationData::TR_ScratchBufferInfos info(comp()->trMemory());
@@ -1339,15 +1325,13 @@ TR_OSRMethodData::addInstruction(int32_t instructionPC, int32_t byteCodeIndex)
          int32_t osrBufferOffset = slotIndex2OSRBufferIndex(slotInfos[i].slot, slotInfos[i].symSize, slotInfos[i].takesTwoSlots);
          info.add(TR_OSRCompilationData::TR_ScratchBufferInfo(getInlinedSiteIndex(), osrBufferOffset,
                                                               scratchBufferOffset, slotInfos[i].symSize));
-         if (trace)
-            comp()->log()->printf("    %3d: %3d %3d %3d %3d\n", i, getInlinedSiteIndex(), osrBufferOffset, scratchBufferOffset, slotInfos[i].symSize);
+         trprintf(trace, log, "    %3d: %3d %3d %3d %3d\n", i, getInlinedSiteIndex(), osrBufferOffset, scratchBufferOffset, slotInfos[i].symSize);
          }
       osrCompilationData->addInstruction2SharedSlotMapEntry(instructionPC, info);
       }
    else
       {
-      if (trace)
-         comp()->log()->printf("  rejected: byteCodeIndex %d is not an OSR point\n", byteCodeIndex);
+      trprintf(trace, log, "  rejected: byteCodeIndex %d is not an OSR point\n", byteCodeIndex);
       }
    }
 
@@ -1482,8 +1466,7 @@ TR_OSRSlotSharingInfo::addSlotInfo(int32_t slot, int32_t symRefNum, int32_t symR
          int32_t endSlot2 = startSlot2 + (info.takesTwoSlots ? 2 : 1) - 1;
          if ((startSlot1 <= endSlot2) && (startSlot2 <= endSlot1))
             {
-            if (trace)
-               comp->log()->printf("addSlotInfo: symbols #%d and #%d overlap zeroing out slot %d\n", symRefNum, info.symRefNum, slot);
+            trprintf(trace, comp->log(), "addSlotInfo: symbols #%d and #%d overlap zeroing out slot %d\n", symRefNum, info.symRefNum, slot);
             // don't add any more symbols to the list
             found = true;
             //mark the symbol

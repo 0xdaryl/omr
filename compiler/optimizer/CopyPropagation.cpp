@@ -431,16 +431,14 @@ int32_t TR_CopyPropagation::perform()
    {
    TR::Logger *log = comp()->log();
 
-   if (trace())
-      log->prints("Starting CopyPropagation\n");
+   trprints(trace(), log, "Starting CopyPropagation\n");
 
    TR_UseDefInfo *useDefInfo = optimizer()->getUseDefInfo();
    _canMaintainUseDefs = true;
    if (useDefInfo == NULL)
       {
          {
-         if (trace())
-            log->prints("Can't do CopyPropagation, no use/def information\n");
+         trprints(trace(), log, "Can't do CopyPropagation, no use/def information\n");
          return 0;
          }
       }
@@ -550,8 +548,7 @@ int32_t TR_CopyPropagation::perform()
                   if ((!thisSymRefIsPreferred &&
                        (prevSymRefIsPreferred || (equivalentDefLookup != equivalentDefs.end()))))
                      {
-                     if (trace())
-                        log->printf("000setting i %d to j %d\n", i, j);
+                     trprintf(trace(), log, "000setting i %d to j %d\n", i, j);
                      if (equivalentDefLookup == equivalentDefs.end())
                         {
                         if (i != j)
@@ -568,8 +565,7 @@ int32_t TR_CopyPropagation::perform()
                      }
                   else if (equivalentDefs.find(j) == equivalentDefs.end())
                      {
-                     if (trace())
-                         log->printf("111setting j %d to i %d\n", j, i);
+                     trprintf(trace(), log, "111setting j %d to i %d\n", j, i);
                      if (i != j)
                         equivalentDefs[j] = i;
                      }
@@ -586,8 +582,7 @@ int32_t TR_CopyPropagation::perform()
                if ((!thisSymRefIsPreferred &&
                    (prevSymRefIsPreferred || (equivalentDefLookup != equivalentDefs.end()))))
                   {
-                  if (trace())
-                     log->printf("000setting i %d to j %d\n", i, j);
+                  trprintf(trace(), log, "000setting i %d to j %d\n", i, j);
 
                   if (equivalentDefLookup == equivalentDefs.end())
                      {
@@ -605,8 +600,7 @@ int32_t TR_CopyPropagation::perform()
                   }
                else if (equivalentDefs.find(j) == equivalentDefs.end())
                   {
-                  if (trace())
-                     log->printf("111setting j %d to i %d\n", j, i);
+                  trprintf(trace(), log, "111setting j %d to i %d\n", j, i);
                   if (i != j)
                      equivalentDefs[j] = i;
                   }
@@ -669,7 +663,7 @@ int32_t TR_CopyPropagation::perform()
          TR::SymbolReference *copySymbolReference = defNode->getSymbolReference();
          if (performTransformation(comp(), "%s   Copy1 Propagation replacing Copy symRef #%d %p %p\n",OPT_DETAILS, copySymbolReference->getReferenceNumber(), defNode,  equivalentDefNode))
             {
-	      comp()->setOsrStateIsReliable(false); // could check if the propagation was done to a child of the OSR helper call here
+            comp()->setOsrStateIsReliable(false); // could check if the propagation was done to a child of the OSR helper call here
 
             _storeTree = NULL;
             _useTree = NULL;
@@ -937,8 +931,7 @@ int32_t TR_CopyPropagation::perform()
                   }
                }
 
-               if (trace())
-                  log->println();
+               trprintln(trace(), log);
             }
          }
       }
@@ -1003,10 +996,7 @@ int32_t TR_CopyPropagation::perform()
 
    } // scope of the stack memory region
 
-   if (trace())
-      {
-      log->prints("\nEnding CopyPropagation\n");
-      }
+   trprints(trace(), log, "\nEnding CopyPropagation\n");
 
    if (donePropagation)
       {
@@ -1146,6 +1136,7 @@ TR::treetop
 void TR_CopyPropagation::replaceCopySymbolReferenceByOriginalIn(TR::SymbolReference *copySymbolReference, TR::Node *origNode, TR::Node *node, TR::Node *defNode, TR::Node * baseAddrNode, bool baseAddrAvail)
    {
    TR::Logger *log = comp()->log();
+   bool traceAll = trace() || comp()->cg()->traceBCDCodeGen();
    vcount_t curVisit = comp()->getVisitCount();
 
 #ifdef J9_PROJECT_SPECIFIC
@@ -1155,7 +1146,7 @@ void TR_CopyPropagation::replaceCopySymbolReferenceByOriginalIn(TR::SymbolRefere
       {
       if (cg()->traceBCDCodeGen() && _useTree->getNode()->chkOpsIsInMemoryCopyProp() && !_useTree->getNode()->isInMemoryCopyProp())
          log->printf("\tset IsInMemoryCopyProp on %s (%p), useNode %s (%p)\n",
-                 _useTree->getNode()->getOpCode().getName(),_useTree->getNode(),node->getOpCode().getName(),node);
+               _useTree->getNode()->getOpCode().getName(), _useTree->getNode(), node->getOpCode().getName(), node);
       _useTree->getNode()->setIsInMemoryCopyProp(true);
       }
 #endif
@@ -1218,14 +1209,13 @@ void TR_CopyPropagation::replaceCopySymbolReferenceByOriginalIn(TR::SymbolRefere
 #ifdef J9_PROJECT_SPECIFIC
             else if (node->getType().isBCD())
                {
-               if (trace() || comp()->cg()->traceBCDCodeGen())
-                  log->printf("node %s (%p) #%d->#%d, origNode %s (%p) #%d, defNode %s (%p) #%d,copySymRef #%d\n",
-                           node->getOpCode().getName(), node, symRef->getReferenceNumber(),
-                           origNode->getOpCode().hasSymbolReference() ? origNode->getSymbolReference()->getReferenceNumber() : -1,
-                           origNode->getOpCode().getName(),origNode,
-                           origNode->getOpCode().hasSymbolReference() ? origNode->getSymbolReference()->getReferenceNumber() : -1,
-                           defNode->getOpCode().getName(),defNode,defNode->getSymbolReference()->getReferenceNumber(),
-                           copySymbolReference->getReferenceNumber());
+               trprintf(traceAll, log, "node %s (%p) #%d->#%d, origNode %s (%p) #%d, defNode %s (%p) #%d,copySymRef #%d\n",
+                     node->getOpCode().getName(), node, symRef->getReferenceNumber(),
+                     origNode->getOpCode().hasSymbolReference() ? origNode->getSymbolReference()->getReferenceNumber() : -1,
+                     origNode->getOpCode().getName(),origNode,
+                     origNode->getOpCode().hasSymbolReference() ? origNode->getSymbolReference()->getReferenceNumber() : -1,
+                     defNode->getOpCode().getName(),defNode,defNode->getSymbolReference()->getReferenceNumber(),
+                     copySymbolReference->getReferenceNumber());
 
                // BCD tracing might be misleading after this
                if (!origNode->getOpCode().isStore())
@@ -1264,10 +1254,9 @@ void TR_CopyPropagation::replaceCopySymbolReferenceByOriginalIn(TR::SymbolRefere
                          nodeSize == origNode->getSize() && // 16 == 16
                          nodeSize == origSymSize)  // 16 == 16
                         {
-                        if (trace() || comp()->cg()->traceBCDCodeGen())
-                           log->printf("reduce newPrecision %d->%d for odd to even truncation (origNode %s (%p) prec=%d, node %s (%p) prec=%d\n",
-                                   newPrecision,nodePrecision,origNode->getOpCode().getName(),origNode,origNode->getDecimalPrecision(),
-                                   node->getOpCode().getName(),node,nodePrecision);
+                        trprintf(traceAll, log, "reduce newPrecision %d->%d for odd to even truncation (origNode %s (%p) prec=%d, node %s (%p) prec=%d\n",
+                              newPrecision, nodePrecision, origNode->getOpCode().getName(), origNode, origNode->getDecimalPrecision(),
+                              node->getOpCode().getName(), node, nodePrecision);
                         newPrecision = nodePrecision; // 31->30 -- no correction needed for same byte odd to even truncation if the origNode was only storing out the even $ of digits
                         }
                      }
@@ -1279,10 +1268,8 @@ void TR_CopyPropagation::replaceCopySymbolReferenceByOriginalIn(TR::SymbolRefere
                bool needsClean = defNode && defNode->mustClean();
                bool needsPrecisionCorrection = currentPrecision != newPrecision;
 
-               if (trace() || comp()->cg()->traceBCDCodeGen())
-                  log->printf("needsClean = %s, needsPrecisionCorrection = %s (cur %d, new %d)\n",
-                          needsClean?"yes":"no",needsPrecisionCorrection?"yes":"no",currentPrecision,newPrecision);
-
+               trprintf(traceAll, log, "needsClean = %s, needsPrecisionCorrection = %s (cur %d, new %d)\n",
+                     needsClean?"yes":"no", needsPrecisionCorrection?"yes":"no", currentPrecision, newPrecision);
 
                // pdstore symA-- defNode
                //    pdload symB -- origNode

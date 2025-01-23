@@ -81,9 +81,7 @@ TR_Dominators::TR_Dominators(TR::Compilation *c, bool post) :
       TR::Block *dominated = info._block;
       TR::Block *dominator = getInfo(info._idom)._block;
       _dominators[dominated->getNumber()] = dominator;
-      if (trace())
-         log->printf("   %sDominator of block_%d is block_%d\n", _postDominators ? "post-" : "",
-                                      dominated->getNumber(), dominator->getNumber());
+      trprintf(trace(), log, "   %sDominator of block_%d is block_%d\n", _postDominators ? "post-" : "", dominated->getNumber(), dominator->getNumber());
       }
 
    // The exit block may not be reachable from the entry node. In this case just
@@ -109,8 +107,7 @@ TR_Dominators::TR_Dominators(TR::Compilation *c, bool post) :
       if (_postDominators)
          {
          _isValid = false;
-         if (trace())
-            log->prints("Some blocks are not reachable from exit. Post-dominator info is invalid.\n");
+         trprints(trace(), log, "Some blocks are not reachable from exit. Post-dominator info is invalid.\n");
          return;
          }
       else
@@ -124,8 +121,7 @@ TR_Dominators::TR_Dominators(TR::Compilation *c, bool post) :
          }
    #endif
 
-   if (trace())
-      log->printf("End of %sdominator calculation\n", _postDominators ? "post-" : "");
+   trprintf(trace(), log, "End of %sdominator calculation\n", _postDominators ? "post-" : "");
 
    // Release no-longer-used data
    _info.clear();
@@ -281,22 +277,14 @@ void TR_Dominators::initialize(TR::Block *start, BBInfo *nullParent) {
          ++next;
          if (next != current.list.end())
             {
-            if (trace())
-               {
-               log->printf(
-                  "Insert block_%d at level %d\n",
-                  toBlock( _postDominators ? (*next)->getFrom() : (*next)->getTo() )->getNumber(),
-                  stack.size()
-                  );
-               }
+            trprintf(trace(), log, "Insert block_%d at level %d\n", toBlock( _postDominators ? (*next)->getFrom() : (*next)->getTo() )->getNumber(), stack.size());
 
             stack.push_back(StackInfo(current.list, next, current.parent));
             }
          continue;
          }
 
-      if (trace())
-         log->printf("At level %d block_%d becomes block_%d\n", stack.size(), block->getNumber(), _topDfNum);
+      trprintf(trace(), log, "At level %d block_%d becomes block_%d\n", stack.size(), block->getNumber(), _topDfNum);
 
       block->setVisitCount(_visitCount);
       _dfNumbers[block->getNumber()] = _topDfNum++;
@@ -318,14 +306,7 @@ void TR_Dominators::initialize(TR::Block *start, BBInfo *nullParent) {
       ++next;
       if (next != current.list.end())
          {
-         if (trace())
-            {
-            log->printf(
-               "Insert block_%d at level %d\n",
-               toBlock(_postDominators ? (*next)->getFrom() : (*next)->getTo())->getNumber(),
-               stack.size()
-               );
-            }
+         trprintf(trace(), log, "Insert block_%d at level %d\n", toBlock(_postDominators ? (*next)->getFrom() : (*next)->getTo())->getNumber(), stack.size());
 
          stack.push_back(StackInfo(current.list, next, current.parent));
          }
@@ -336,14 +317,8 @@ void TR_Dominators::initialize(TR::Block *start, BBInfo *nullParent) {
       StackInfo::iterator_type firstExceptionSuccessor = exceptionSuccessors.begin();
       if (firstExceptionSuccessor != exceptionSuccessors.end())
          {
-         if (trace())
-            {
-            log->printf(
-               "Insert block_%d at level %d\n",
-               toBlock( _postDominators ? (*firstExceptionSuccessor)->getFrom() : (*firstExceptionSuccessor)->getTo())->getNumber(),
-               stack.size()
-               );
-            }
+         trprintf(trace(), log, "Insert block_%d at level %d\n",
+               toBlock( _postDominators ? (*firstExceptionSuccessor)->getFrom() : (*firstExceptionSuccessor)->getTo())->getNumber(), stack.size());
 
          stack.push_back(StackInfo(exceptionSuccessors, firstExceptionSuccessor, _topDfNum));
          }
@@ -352,14 +327,7 @@ void TR_Dominators::initialize(TR::Block *start, BBInfo *nullParent) {
       StackInfo::iterator_type firstSuccessor = successors.begin();
       if (firstSuccessor != successors.end())
          {
-         if (trace())
-            {
-            log->printf(
-               "Insert block_%d at level %d\n",
-               toBlock( _postDominators ? (*firstSuccessor)->getFrom() : (*firstSuccessor)->getTo() )->getNumber(),
-               stack.size()
-               );
-            }
+         trprintf(trace(), log, "Insert block_%d at level %d\n", toBlock( _postDominators ? (*firstSuccessor)->getFrom() : (*firstSuccessor)->getTo() )->getNumber(), stack.size());
 
          stack.push_back(StackInfo(successors, firstSuccessor, _topDfNum));
          }
