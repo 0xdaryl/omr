@@ -212,15 +212,15 @@ template<class Container>void TR_BackwardDFSetAnalysis<Container *>::initializeG
           (this->_analysisQueue.getListHead()->getData()->getStructure() != regionStructure))
       {
       if (!this->_analysisInterrupted)
-	 {
+         {
          numIterations++;
          if ((numIterations % 20) == 0)
-	    {
-	    numIterations = 0;
+            {
+            numIterations = 0;
             if (this->comp()->compilationShouldBeInterrupted(BBVA_INITIALIZE_CONTEXT))
                this->_analysisInterrupted = true;
-	    }
-	 }
+            }
+         }
 
       if (this->_analysisInterrupted)
          {
@@ -238,8 +238,7 @@ template<class Container>void TR_BackwardDFSetAnalysis<Container *>::initializeG
          continue;
          }
 
-      if (traceBBVA())
-         log->printf("Begin analyzing node %p numbered %d\n", node, node->getNumber());
+      trprintf(traceBBVA(), log, "Begin analyzing node %p numbered %d\n", node, node->getNumber());
 
       bool alreadyVisitedNode = false;
       if (this->_nodesInCycle->get(nodeStructure->getNumber()))
@@ -844,8 +843,7 @@ template<class Container>void TR_BackwardDFSetAnalysis<Container *>::initializeG
       this->_nodesInCycle->empty();
       changed = false;
 
-      if (traceBBVA())
-         this->comp()->log()->printf("\nREGION : %p NUMBER : %d ITERATION NUMBER : %d\n", region, region->getNumber(), numIterations);
+      trprintf(traceBBVA(), this->comp()->log(), "\nREGION : %p NUMBER : %d ITERATION NUMBER : %d\n", region, region->getNumber(), numIterations);
 
       numIterations++;
 
@@ -874,6 +872,7 @@ template<class Container>void TR_BackwardDFSetAnalysis<Container *>::initializeG
 
 template<class Container>bool TR_BackwardDFSetAnalysis<Container *>::analyzeRegionStructure(TR_RegionStructure *regionStructure, bool checkForChange)
    {
+   TR::Logger *log = this->comp()->log();
    typename TR_BasicDFSetAnalysis<Container *>::ExtraAnalysisInfo *analysisInfo = NULL;
    if (regionStructure == this->_cfg->getStructure())
       analysisInfo = this->getAnalysisInfo(regionStructure);
@@ -900,10 +899,8 @@ template<class Container>bool TR_BackwardDFSetAnalysis<Container *>::analyzeRegi
 
       if (sameAsPreviousIteration)
          {
-         if (traceBBVA())
-            {
-            this->comp()->log()->printf("\nSkipping re-analysis of Region : %p numbered %d\n", regionStructure, regionStructure->getNumber());
-            }
+         trprintf(traceBBVA(), log, "\nSkipping re-analysis of Region : %p numbered %d\n", regionStructure, regionStructure->getNumber());
+
          return false;
          }
       }
@@ -955,8 +952,7 @@ template<class Container>bool TR_BackwardDFSetAnalysis<Container *>::analyzeRegi
       this->_nodesInCycle->empty();
       changed = false;
 
-      if (traceBBVA())
-         this->comp()->log()->printf("\nREGION : %p NUMBER : %d ITERATION NUMBER : %d\n", regionStructure, regionStructure->getNumber(), numIterations);
+      trprintf(traceBBVA(), log, "\nREGION : %p NUMBER : %d ITERATION NUMBER : %d\n", regionStructure, regionStructure->getNumber(), numIterations);
 
       numIterations++;
 
@@ -1048,9 +1044,7 @@ template<class Container>bool TR_BackwardDFSetAnalysis<Container *>::analyzeNode
          continue;
          }
 
-      if (traceBBVA())
-         log->printf("Begin analyzing node %p numbered %d\n", node, node->getNumber());
-
+      trprintf(traceBBVA(), log, "Begin analyzing node %p numbered %d\n", node, node->getNumber());
 
       bool alreadyVisitedNode = false;
       if (this->_nodesInCycle->get(nodeStructure->getNumber()))
@@ -1409,10 +1403,8 @@ template<class Container>bool TR_BackwardDFSetAnalysis<Container *>::analyzeBloc
 
       if (sameOutSets)
          {
-         if (traceBBVA())
-            {
-            log->printf("\nSkipping re-analysis of Block : %p numbered %d\n", blockStructure, blockStructure->getNumber());
-            }
+         trprintf(traceBBVA(), log, "\nSkipping re-analysis of Block : %p numbered %d\n", blockStructure, blockStructure->getNumber());
+
          return false;
          }
       }

@@ -195,13 +195,12 @@ void
 OMR::Optimization::anchorAllChildren(TR::Node * node, TR::TreeTop *anchorTree)
    {
    TR_ASSERT(anchorTree != NULL, "Can't anchor children to a NULL TR::TreeTop\n");
-   if (self()->trace())
-      self()->comp()->log()->printf("%sanchoring children of node [" POINTER_PRINTF_FORMAT "]\n", self()->optDetailString(), node);
+   TR::Logger *log = comp()->log();
+   trprintf(self()->trace(), log, "%sanchoring children of node [" POINTER_PRINTF_FORMAT "]\n", self()->optDetailString(), node);
    for (int i = 0; i <node->getNumChildren(); i++)
       {
       TR::TreeTop *tt = TR::TreeTop::create(self()->comp(), TR::Node::create(TR::treetop, 1, node->getChild(i)));
-      if (self()->trace())
-         self()->comp()->log()->printf("TreeTop [" POINTER_PRINTF_FORMAT "] is created to anchor child [" POINTER_PRINTF_FORMAT "]\n", tt, node->getChild(i));
+      trprintf(self()->trace(), log, "TreeTop [" POINTER_PRINTF_FORMAT "] is created to anchor child [" POINTER_PRINTF_FORMAT "]\n", tt, node->getChild(i));
       anchorTree->insertBefore(tt);
       }
    }
@@ -223,8 +222,7 @@ OMR::Optimization::anchorChildren(TR::Node *node, TR::TreeTop* anchorTree, uint3
    if (!hasCommonedAncestor)
       {
       hasCommonedAncestor = (node->getReferenceCount() > 1);
-      if (self()->trace())
-         self()->comp()->log()->printf("set hasCommonedAncestor = %s as %s %p has refCount %d %s 1\n",
+      trprintf(self()->trace(), self()->comp()->log(), "set hasCommonedAncestor = %s as %s %p has refCount %d %s 1\n",
             hasCommonedAncestor ? "true" : "false",
             node->getOpCode().getName(),node,node->getReferenceCount(),
             hasCommonedAncestor ? ">" : "<=");

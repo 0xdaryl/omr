@@ -119,8 +119,7 @@ OMR::GlobalRegister::optimalPlacementForStore(TR::Block * currentBlock, TR::Comp
    {
    TR::Logger *log = comp->log();
    bool traceGRA = comp->getOptions()->trace(OMR::tacticalGlobalRegisterAllocator);
-   if (traceGRA)
-      log->printf("           optimalPlacementForStore([%p], block_%d)\n", getValue(), currentBlock->getNumber());
+   trprintf(traceGRA, log, "           optimalPlacementForStore([%p], block_%d)\n", getValue(), currentBlock->getNumber());
 
    TR::TreeTop * lastRefTreeTop = getLastRefTreeTop();
 
@@ -150,16 +149,14 @@ OMR::GlobalRegister::optimalPlacementForStore(TR::Block * currentBlock, TR::Comp
 
    if (lastRefBlock == currentBlock)
       {
-      if (traceGRA)
-         log->printf("           - lastRefBlock == currentBlock: returning [%p]\n", lastRefTreeTop->getNode());
+      trprintf(traceGRA, log, "           - lastRefBlock == currentBlock: returning [%p]\n", lastRefTreeTop->getNode());
       return lastRefTreeTop;
       }
 
    int32_t lastRefFreq = 1, currentFreq = 1;
    if (!lastRefBlock->getStructureOf() || !currentBlock->getStructureOf())
       {
-      if (traceGRA)
-         log->printf("           - Structure info missing: returning [%p]\n", lastRefTreeTop->getNode());
+      trprintf(traceGRA, log, "           - Structure info missing: returning [%p]\n", lastRefTreeTop->getNode());
       return lastRefTreeTop;
       }
 
@@ -170,8 +167,7 @@ OMR::GlobalRegister::optimalPlacementForStore(TR::Block * currentBlock, TR::Comp
 
    if (lastRefFreq <= currentFreq)  // used to be ==
       {
-      if (traceGRA)
-         log->printf("           - Frequency is low enough: returning [%p]\n", lastRefTreeTop->getNode());
+      trprintf(traceGRA, log, "           - Frequency is low enough: returning [%p]\n", lastRefTreeTop->getNode());
       return lastRefTreeTop;
       }
 
@@ -184,8 +180,7 @@ OMR::GlobalRegister::optimalPlacementForStore(TR::Block * currentBlock, TR::Comp
          if (freq > currentFreq)
             continue;
          }
-      if (traceGRA)
-         log->printf("           - Found a suitable block: returning [%p]\n", b->getEntry()->getNode());
+      trprintf(traceGRA, log, "           - Found a suitable block: returning [%p]\n", b->getEntry()->getNode());
       return b->getEntry();
       }
 

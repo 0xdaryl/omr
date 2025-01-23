@@ -2059,6 +2059,9 @@ TR_RegisterAssignerState::createDependenciesFromRegisterState(TR_OutlinedInstruc
    // Calculate the required number of dependencies.
    //
    TR::Compilation *comp = _machine->cg()->comp();
+   TR::Logger *log = comp->log();
+   bool trace = comp->getOption(TR_TraceNonLinearRegisterAssigner);
+
    int32_t numDeps = 0;
    int32_t i;
    int32_t endReg = TR::RealRegister::LastXMMR;
@@ -2070,13 +2073,8 @@ TR_RegisterAssignerState::createDependenciesFromRegisterState(TR_OutlinedInstruc
 
    numDeps += static_cast<int32_t>(_spilledRegistersList->size());
 
-   if (comp->getOption(TR_TraceNonLinearRegisterAssigner))
-      {
-      comp->log()->printf("createDependenciesFromRegisterState : %d live registers: %d assigned, %d spilled\n",
-         numDeps,
-         numDeps-_spilledRegistersList->size(),
-         _spilledRegistersList->size());
-      }
+   trprintf(trace, log, "createDependenciesFromRegisterState : %d live registers: %d assigned, %d spilled\n",
+         numDeps, numDeps-_spilledRegistersList->size(), _spilledRegistersList->size());
 
    if (numDeps == 0)
       return NULL;
@@ -2110,11 +2108,8 @@ TR_RegisterAssignerState::createDependenciesFromRegisterState(TR_OutlinedInstruc
                      {
                      virtReg->decTotalUseCount((*iter)->useCount);
 
-                     if (comp->getOption(TR_TraceNonLinearRegisterAssigner))
-                        {
-                        comp->log()->printf("Adjusting up register use counts of reg %p (fuc=%d:tuc=%d:mergeFuc=%d) by %d\n",
+                     trprintf(trace, log, "Adjusting up register use counts of reg %p (fuc=%d:tuc=%d:mergeFuc=%d) by %d\n",
                            (*iter)->virtReg, (*iter)->virtReg->getFutureUseCount(), (*iter)->virtReg->getTotalUseCount(), (*iter)->mergeFuc, (*iter)->useCount);
-                        }
                      }
                   }
                }
@@ -2131,12 +2126,8 @@ TR_RegisterAssignerState::createDependenciesFromRegisterState(TR_OutlinedInstruc
          //
          virtReg->incFutureUseCount();
 
-         if (comp->getOption(TR_TraceNonLinearRegisterAssigner))
-            {
-            comp->log()->printf("   create ASSIGNED dependency: virtual %p -> %s\n",
-               virtReg,
-               _machine->getDebug()->getName(realReg));
-            }
+         trprintf(trace, log, "   create ASSIGNED dependency: virtual %p -> %s\n", virtReg, _machine->getDebug()->getName(realReg));
+
          bool found = (std::find(_spilledRegistersList->begin(), _spilledRegistersList->end(), virtReg) != _spilledRegistersList->end());
          TR_ASSERT(!_spilledRegistersList || !found,
                "a register should not be in both an assigned state and in the spilled list\n");
@@ -2155,12 +2146,7 @@ TR_RegisterAssignerState::createDependenciesFromRegisterState(TR_OutlinedInstruc
       //
       (*iter)->incFutureUseCount();
 
-      if (comp->getOption(TR_TraceNonLinearRegisterAssigner))
-         {
-         comp->log()->printf("   create SPILLED dependency: virtual %p -> backing storage %p\n",
-            *iter,
-            (*iter)->getBackingStorage());
-         }
+      trprintf(trace, log, "   create SPILLED dependency: virtual %p -> backing storage %p\n", *iter, (*iter)->getBackingStorage());
       }
 
    return deps;
@@ -2230,10 +2216,11 @@ bool TR_RegisterAssignerState::isLive(TR::Register *virtReg)
 void TR_RegisterAssignerState::dump()
    {
    TR::Compilation *comp = _machine->cg()->comp();
+   TR::Logger *log = comp->log();
 
    if (comp->getOption(TR_TraceNonLinearRegisterAssigner))
       {
-      comp->log()->prints("\nREGISTER ASSIGNER STATE\n=======================\n\nAssigned Live Registers:\n");
+      log->prints("\nREGISTER ASSIGNER STATE\n=======================\n\nAssigned Live Registers:\n");
 
       int32_t i;
       int32_t endReg = TR::RealRegister::LastXMMR;
@@ -2241,17 +2228,17 @@ void TR_RegisterAssignerState::dump()
          {
          if (_registerFile[i]->getState() == TR::RealRegister::Assigned)
             {
-            comp->log()->printf("         %s -> %s\n",
+            log->printf("         %s -> %s\n",
                comp->getDebug()->getName(_registerFile[i]->getAssignedRegister()),
                comp->getDebug()->getName(_registerFile[i]));
             }
          }
 
-      comp->log()->prints("\nSpilled Registers:\n");
+      log->prints("\nSpilled Registers:\n");
       for(auto iter = _spilledRegistersList->begin(); iter != _spilledRegistersList->end(); ++iter)
-         comp->log()->printf("         %s\n", comp->getDebug()->getName(*iter));
+         log->printf("         %s\n", comp->getDebug()->getName(*iter));
 
-      comp->log()->prints("\n=======================\n");
+      log->prints("\n=======================\n");
       }
    }
 
@@ -2259,12 +2246,15 @@ void OMR::X86::Machine::adjustRegisterUseCountsUp(TR::list<OMR::RegisterUsage*> 
    {
    if (!rul)
       return;
+
    TR::Compilation *comp = self()->cg()->comp();
+   TR::Logger *log = comp->log();
+
    for(auto iter = rul->begin(); iter != rul->end(); ++iter)
       {
       if (comp->getOption(TR_TraceNonLinearRegisterAssigner))
          {
-         comp->log()->printf("Adjusting UP register use counts of reg %p (fuc=%d:tuc=%d:adjustFuture=%d) by %d -> ",
+         log->printf("Adjusting UP register use counts of reg %p (fuc=%d:tuc=%d:adjustFuture=%d) by %d -> ",
             (*iter)->virtReg, (*iter)->virtReg->getFutureUseCount(), (*iter)->virtReg->getTotalUseCount(), adjustFuture, (*iter)->useCount);
          }
 
@@ -2273,10 +2263,7 @@ void OMR::X86::Machine::adjustRegisterUseCountsUp(TR::list<OMR::RegisterUsage*> 
       if (adjustFuture)
          (*iter)->virtReg->incFutureUseCount((*iter)->useCount);
 
-      if (comp->getOption(TR_TraceNonLinearRegisterAssigner))
-         {
-         comp->log()->printf("(fuc=%d:tuc=%d)\n", (*iter)->virtReg->getFutureUseCount(), (*iter)->virtReg->getTotalUseCount());
-         }
+      trprintf(comp->getOption(TR_TraceNonLinearRegisterAssigner), comp->log(), "(fuc=%d:tuc=%d)\n", (*iter)->virtReg->getFutureUseCount(), (*iter)->virtReg->getTotalUseCount());
       }
    }
 
@@ -2284,25 +2271,22 @@ void OMR::X86::Machine::adjustRegisterUseCountsDown(TR::list<OMR::RegisterUsage*
    {
    if (!rul)
       return;
-   TR::Compilation *comp = self()->cg()->comp();
 
-   for(auto iter = rul->begin(); iter != rul->end(); ++iter)
+   TR::Compilation *comp = self()->cg()->comp();
+   TR::Logger *log = comp->log();
+   bool trace = comp->getOption(TR_TraceNonLinearRegisterAssigner);
+
+   for (auto iter = rul->begin(); iter != rul->end(); ++iter)
       {
-      if (comp->getOption(TR_TraceNonLinearRegisterAssigner))
-         {
-         comp->log()->printf("Adjusting DOWN register use counts of reg %p (fuc=%d:tuc=%d:adjustFuture=%d) by %d -> ",
+      trprintf(trace, log, "Adjusting DOWN register use counts of reg %p (fuc=%d:tuc=%d:adjustFuture=%d) by %d -> ",
             (*iter)->virtReg, (*iter)->virtReg->getFutureUseCount(), (*iter)->virtReg->getTotalUseCount(), adjustFuture, (*iter)->useCount);
-         }
 
       (*iter)->virtReg->decTotalUseCount((*iter)->useCount);
 
       if (adjustFuture)
-    	  (*iter)->virtReg->decFutureUseCount((*iter)->useCount);
+         (*iter)->virtReg->decFutureUseCount((*iter)->useCount);
 
-      if (comp->getOption(TR_TraceNonLinearRegisterAssigner))
-         {
-         comp->log()->printf("(fuc=%d:tuc=%d)\n", (*iter)->virtReg->getFutureUseCount(), (*iter)->virtReg->getTotalUseCount());
-         }
+      trprintf(trace, log, "(fuc=%d:tuc=%d)\n", (*iter)->virtReg->getFutureUseCount(), (*iter)->virtReg->getTotalUseCount());
       }
    }
 
@@ -2347,10 +2331,7 @@ void OMR::X86::Machine::disassociateUnspilledBackingStorage()
             self()->cg()->freeSpill(location, size, virtReg->isSpilledToSecondHalf()? 4:0);
             virtReg->setBackingStorage(NULL);
 
-            if (comp->getOption(TR_TraceNonLinearRegisterAssigner))
-               {
-               comp->log()->printf("disassociating backing storage %p from assigned virtual %p\n", location, virtReg);
-               }
+            trprintf(comp->getOption(TR_TraceNonLinearRegisterAssigner), comp->log(), "disassociating backing storage %p from assigned virtual %p\n", location, virtReg);
             }
          }
       }
@@ -2372,11 +2353,6 @@ void OMR::X86::Machine::purgeDeadRegistersFromRegisterFile()
             _registerFile[i]->setAssignedRegister(NULL);
             _registerFile[i]->setState(TR::RealRegister::Free);
             }
-/*
-            comp->log()->printf("         %s -> %s\n",
-               comp->getDebug()->getName(_registerFile[i]->getAssignedRegister()),
-               comp->getDebug()->getName(_registerFile[i]));
-*/
          }
       }
 

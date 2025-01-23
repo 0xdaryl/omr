@@ -90,8 +90,7 @@ OMR::AliasBuilder::updateSubSets(TR::SymbolReference *ref)
 TR_BitVector *
 OMR::AliasBuilder::methodAliases(TR::SymbolReference *symRef)
    {
-   if (comp()->getOption(TR_TraceAliases))
-      comp()->log()->printf("For method sym %d default aliases\n", symRef->getReferenceNumber());
+   trprintf(comp()->getOption(TR_TraceAliases), comp()->log(), "For method sym %d default aliases\n", symRef->getReferenceNumber());
 
    return &defaultMethodDefAliases();
    }

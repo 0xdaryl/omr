@@ -78,8 +78,7 @@ TR_Delayedness::TR_Delayedness(TR::Compilation *comp, TR::Optimizer *optimizer, 
 
    _earliestness = new (comp->allocator()) TR_Earliestness(comp, optimizer, rootStructure, trace);
 
-   if (trace)
-      log->prints("Starting Delayedness\n");
+   trprints(trace, log, "Starting Delayedness\n");
 
    _supportedNodesAsArray = _earliestness->_supportedNodesAsArray;
    _temp = NULL;
@@ -127,13 +126,6 @@ bool TR_Delayedness::postInitializationProcessing()
 //
 void TR_Delayedness::analyzeTreeTopsInBlockStructure(TR_BlockStructure *blockStructure)
    {
-   if (trace())
-       {
-       /////comp()->log()->printf("\ncurrentInSetInfo when entering Block : %d\n", blockStructure->getNumber());
-       /////_currentInSetInfo->print(_compilation);
-       /////comp()->log()->printf("\nOut Set of Block : %d\n", blockStructure->getNumber());
-       /////_blockAnalysisInfo[blockStructure->getNumber()]->print(_compilation->log());
-       }
 
    // Block info is local to this analysis, so allocate from there
    if (_temp == NULL)
@@ -149,14 +141,6 @@ void TR_Delayedness::analyzeTreeTopsInBlockStructure(TR_BlockStructure *blockStr
    *_temp -= *(_earliestness->_globalAnticipatability->_localAnticipatability.getDownwardExposedAnalysisInfo(blockStructure->getBlock()->getNumber()));
    *(_blockAnalysisInfo[blockStructure->getNumber()]) &= *_temp;
    copyFromInto(_blockAnalysisInfo[blockStructure->getNumber()], _regularInfo);
-
-   if (trace())
-       {
-       /////comp()->log()->printf("\nIn Set of Block : %d\n", blockStructure->getNumber());
-       /////_inSetInfo[blockStructure->getNumber()]->print(_compilation->log());
-       /////comp()->log()->printf("\nOut Set of Block : %d\n", blockStructure->getNumber());
-       /////_blockAnalysisInfo[blockStructure->getNumber()]->print(_compilation->log());
-       }
 
    TR::Block *block = blockStructure->getBlock();
    TR::TreeTop *currentTree = block->getEntry();

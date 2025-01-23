@@ -36,6 +36,7 @@ TR::IDT::IDT(TR::Region& region, TR_CallTarget* callTarget, TR::ResolvedMethodSy
 
 void TR::IDT::print()
    {
+   TR::Logger *log = comp()->log();
    bool verboseInlining = comp()->getOptions()->getVerboseOption(TR_VerboseInlining);
    bool traceBIIDTGen = comp()->getOption(TR_TraceBIIDTGen);
 
@@ -54,8 +55,7 @@ void TR::IDT::print()
       {
       TR_VerboseLog::writeLine(TR_Vlog_BI, "%s", line.text());
       }
-   if (traceBIIDTGen)
-      comp()->log()->printf("%s\n", line.text());
+   trprintf(traceBIIDTGen, log, "%s\n", line.text());
 
    if (candidates <= 0)
       return;
@@ -92,8 +92,7 @@ void TR::IDT::print()
          if (verboseInlining)
             TR_VerboseLog::writeLine(TR_Vlog_BI, "%s", line.text());
 
-         if (traceBIIDTGen)
-            comp()->log()->printf("%s\n", line.text());
+         trprintf(traceBIIDTGen, log, "%s\n", line.text());
          }
 
       // process children

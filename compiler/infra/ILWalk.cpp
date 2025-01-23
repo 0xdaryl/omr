@@ -145,7 +145,7 @@ void TR::NodeIterator::logCurrentLocation()
          }
       else
          {
-         // Usualy this one doesn't print, because when the iterator finishes
+         // Usually this one doesn't print, because when the iterator finishes
          // naturally, logCurrentLocation is not even called.
          //
          log->printf("NODE  %s finished\n", _name );
@@ -522,10 +522,11 @@ void TR::ReversePostorderSnapshotBlockIterator::logCurrentLocation()
    {
    if (isLoggingEnabled())
       {
+      TR::Logger *log = comp()->log();
       if (currentBlock())
-         comp()->log()->printf("BLOCK  %s @ block_%d\n", _name, currentBlock()->getNumber());
+         log->printf("BLOCK  %s @ block_%d\n", _name, currentBlock()->getNumber());
       else
-         comp()->log()->printf("BLOCK  %s finished\n", _name);
+         log->printf("BLOCK  %s finished\n", _name);
       }
    }
 
@@ -622,10 +623,11 @@ void TR::AllBlockIterator::logCurrentLocation()
    {
    if (isLoggingEnabled())
       {
+      TR::Logger *log = comp()->log();
       if (currentBlock())
-         comp()->log()->printf("BLOCK  %s @ block_%d\n", _name, currentBlock()->getNumber());
+         log->printf("BLOCK  %s @ block_%d\n", _name, currentBlock()->getNumber());
       else
-         comp()->log()->printf("BLOCK  %s finished\n", _name);
+         log->printf("BLOCK  %s finished\n", _name);
       }
    }
 
@@ -678,13 +680,14 @@ void TR::TreeTopOrderExtendedBlockIterator::logCurrentLocation()
    {
    if (isLoggingEnabled())
       {
+      TR::Logger *log = comp()->log();
       if (getFirst() != NULL)
          {
-         comp()->log()->printf("BLOCK %s @ block_%d\n", _name, getFirst()->getNumber());
+         log->printf("BLOCK %s @ block_%d\n", _name, getFirst()->getNumber());
          }
       else
          {
-         comp()->log()->printf("BLOCK %s finished\n", _name);
+         log->printf("BLOCK %s finished\n", _name);
          }
       }
    }

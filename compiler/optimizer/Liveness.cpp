@@ -60,9 +60,9 @@ void TR_Liveness::analyzeNode(TR::Node *, vcount_t, TR_BlockStructure *, TR_BitV
    {
    }
 
-TR_Liveness::TR_Liveness(TR::Compilation           *comp,
-                         TR::Optimizer           *optimizer,
-			                TR_Structure               *rootStructure,
+TR_Liveness::TR_Liveness(TR::Compilation            *comp,
+                         TR::Optimizer              *optimizer,
+                         TR_Structure               *rootStructure,
                          bool                        ignoreOSRUses,
                          TR_LiveVariableInformation *liveVariableInfo,
                          bool                        splitLongs,
@@ -85,8 +85,7 @@ void TR_Liveness::perform(TR_Structure *rootStructure)
    {
    TR::Logger *log = comp()->log();
 
-   if (traceLiveness())
-      log->prints("Starting Liveness analysis\n");
+   trprints(traceLiveness(), log, "Starting Liveness analysis\n");
 
    if (_liveVariableInfo->numLocals() == 0)
       return; // Nothing to do if there are no locals
@@ -132,22 +131,22 @@ bool TR_Liveness::postInitializationProcessing()
          if (_regularGenSetInfo[i])
             {
             log->prints(" gen set ");
-            _regularGenSetInfo[i]->print(comp()->log(), comp());
+            _regularGenSetInfo[i]->print(log, comp());
             }
          if (_regularKillSetInfo[i])
             {
             log->prints(" kill set ");
-            _regularKillSetInfo[i]->print(comp()->log(), comp());
+            _regularKillSetInfo[i]->print(log, comp());
             }
          if (_exceptionGenSetInfo[i])
             {
             log->prints(" exception gen set ");
-            _exceptionGenSetInfo[i]->print(comp()->log(), comp());
+            _exceptionGenSetInfo[i]->print(log, comp());
             }
          if (_exceptionKillSetInfo[i])
             {
             log->prints(" exception kill set ");
-            _exceptionKillSetInfo[i]->print(comp()->log(), comp());
+            _exceptionKillSetInfo[i]->print(log, comp());
             }
          }
       }

@@ -50,8 +50,7 @@ TR_LocalTransparency::TR_LocalTransparency(TR_LocalAnalysisInfo &info, bool t)
    : TR_LocalAnalysis(info, t)
    {
    TR::Logger *log = comp()->log();
-   if (trace())
-      log->prints("Starting LocalTransparency\n");
+   trprints(trace(), log, "Starting LocalTransparency\n");
 
    static const char *e = feGetEnv("TR_loadaddrAsLoad");
    _loadaddrAsLoad = e ? (atoi(e) != 0) : true;
@@ -200,7 +199,7 @@ TR_LocalTransparency::TR_LocalTransparency(TR_LocalAnalysisInfo &info, bool t)
             {
             _isStoreTree = true;
             if (currentNode->getFirstChild()->getLocalIndex() == MAX_SCOUNT)
-	       storeTreeParticipatesInAnalysis = false;
+               storeTreeParticipatesInAnalysis = false;
             storeNode = currentNode->getFirstChild();
             }
          }
@@ -230,7 +229,7 @@ TR_LocalTransparency::TR_LocalTransparency(TR_LocalAnalysisInfo &info, bool t)
          {
          _isStoreTree = true;
          if (currentNode->getLocalIndex() == MAX_SCOUNT)
-	    storeTreeParticipatesInAnalysis = false;
+            storeTreeParticipatesInAnalysis = false;
          storeNode = currentNode;
          }
       else if (firstOpCodeInTree.isCheck())
@@ -281,8 +280,7 @@ TR_LocalTransparency::TR_LocalTransparency(TR_LocalAnalysisInfo &info, bool t)
                if (allSymbolReferencesInStore->get(newDefinedSymbolReference))
                   {
                   _transparencyInfo[newDefinedSymbolReference]->reset(storeNode->getLocalIndex());
-                  if (trace())
-                     log->printf("75757Expression %d killed (n%dn) by symRef #%d  %d\n", storeNode->getLocalIndex(), storeNode->getGlobalIndex(), newDefinedSymbolReference, true);
+                  trprintf(trace(), log, "75757Expression %d killed (n%dn) by symRef #%d  %d\n", storeNode->getLocalIndex(), storeNode->getGlobalIndex(), newDefinedSymbolReference, true);
                   }
                }
 
@@ -296,8 +294,7 @@ TR_LocalTransparency::TR_LocalTransparency(TR_LocalAnalysisInfo &info, bool t)
 
                   if (allSymbolReferencesInNullCheckReference->get(newDefinedSymbolReference))
                      {
-                      if (trace())
-                         log->printf("76767Expression %d killed (n%dn) by symRef #%d  %d\n", currentNode->getLocalIndex(), currentNode->getGlobalIndex(), newDefinedSymbolReference, true);
+                      trprintf(trace(), log, "76767Expression %d killed (n%dn) by symRef #%d  %d\n", currentNode->getLocalIndex(), currentNode->getGlobalIndex(), newDefinedSymbolReference, true);
 
                       _transparencyInfo[newDefinedSymbolReference]->reset(currentNode->getLocalIndex());
                      }
@@ -323,8 +320,7 @@ TR_LocalTransparency::TR_LocalTransparency(TR_LocalAnalysisInfo &info, bool t)
 
             if (symbolReferencesInCheck->get(newDefinedSymbolReference))
                {
-               if (trace())
-                  log->printf("777Expression %d killed (n%dn) by symRef #%d  %d\n", currentNode->getLocalIndex(), currentNode->getGlobalIndex(), newDefinedSymbolReference, true);
+               trprintf(trace(), log, "777Expression %d killed (n%dn) by symRef #%d  %d\n", currentNode->getLocalIndex(), currentNode->getGlobalIndex(), newDefinedSymbolReference, true);
 
                _transparencyInfo[newDefinedSymbolReference]->reset(currentNode->getLocalIndex());
                }
@@ -353,8 +349,7 @@ TR_LocalTransparency::TR_LocalTransparency(TR_LocalAnalysisInfo &info, bool t)
       binfo->_analysisInfo->setAll(getNumNodes());
       *(_info[nextBlock->getNumber()]._analysisInfo) &= *_supportedNodes;
 
-      if (trace())
-         log->printf("\nBeginning to solve for block number : %d\n",nextBlock->getNumber());
+      trprintf(trace(), log, "\nBeginning to solve for block number : %d\n", nextBlock->getNumber());
 
 
       // We need to kill all expressions dependent on a symbol (other than the load/store) being stored into;
@@ -369,8 +364,7 @@ TR_LocalTransparency::TR_LocalTransparency(TR_LocalAnalysisInfo &info, bool t)
       for (iter.SetToFirstOne(); iter.Valid(); iter.SetToNextOne())
          {
          int32_t nextDefinedSymbolReference = iter;
-         if (trace())
-            log->printf("\nUsing transparency info for symRef #%d\n",nextDefinedSymbolReference);
+         trprintf(trace(), log, "\nUsing transparency info for symRef #%d\n", nextDefinedSymbolReference);
 
          if (_hasTransparencyInfoFor->get(nextDefinedSymbolReference))
             {
@@ -440,8 +434,7 @@ TR_LocalTransparency::TR_LocalTransparency(TR_LocalAnalysisInfo &info, bool t)
 
                      if (symRefCanSurvive && !childKilled)
                         {
-                        if (trace())
-                           log->printf("Store node %d survives\n", storeNode);
+                        trprintf(trace(), log, "Store node %d survives\n", storeNode);
 
                         if (survivingStoreNodes->isEmpty())
                            survivingStoreNodes->set(storeNode);
@@ -473,8 +466,7 @@ TR_LocalTransparency::TR_LocalTransparency(TR_LocalAnalysisInfo &info, bool t)
 
    } // scope of the stack memory region
 
-   if (trace())
-      log->prints("\nEnding LocalTransparency\n");
+   trprints(trace(), log, "\nEnding LocalTransparency\n");
    }
 
 
@@ -721,8 +713,8 @@ void TR_LocalTransparency::updateInfoForSupportedNodes(TR::Node *node, Container
                        seenStoredSymRefs->get(child->getSymbolReference()->getReferenceNumber())))
                      {
                      _transparencyInfo[i]->reset(node->getLocalIndex());
-                      if (trace())
-                         log->printf("Expression %d (n%dn) killed by symRef #%d because child %d (n%dn) is already killed by the symRef\n", node->getLocalIndex(), node->getGlobalIndex(), i, child->getLocalIndex(), child->getGlobalIndex());
+                     trprintf(trace(), log, "Expression %d (n%dn) killed by symRef #%d because child %d (n%dn) is already killed by the symRef\n",
+                           node->getLocalIndex(), node->getGlobalIndex(), i, child->getLocalIndex(), child->getGlobalIndex());
                      }
                   }
                }
@@ -750,13 +742,12 @@ void TR_LocalTransparency::updateInfoForSupportedNodes(TR::Node *node, Container
                         {
                         int32_t nextAlias = aliasesCursor;
                         _transparencyInfo[nextAlias]->reset(node->getLocalIndex());
-                        if (trace())
-                           log->printf("9999Expression %d (n%dn) killed by symRef #%d  %d\n", node->getLocalIndex(), node->getGlobalIndex(), nextAlias, seenDefinedSymbolReferences->get(nextAlias));
+                        trprintf(trace(), log, "9999Expression %d (n%dn) killed by symRef #%d  %d\n",
+                              node->getLocalIndex(), node->getGlobalIndex(), nextAlias, seenDefinedSymbolReferences->get(nextAlias));
 
                         }
 
-                     if (trace())
-                        log->printf("Expression %d (n%dn) killed by symRef #%d (loaded in child)\n", node->getLocalIndex(), node->getGlobalIndex(), childSymRefNum);
+                     trprintf(trace(), log, "Expression %d (n%dn) killed by symRef #%d (loaded in child)\n", node->getLocalIndex(), node->getGlobalIndex(), childSymRefNum);
                      }
                   }
                }
@@ -774,8 +765,7 @@ void TR_LocalTransparency::updateInfoForSupportedNodes(TR::Node *node, Container
                else
                   {
                   _supportedNodes->reset(node->getLocalIndex());
-                  if (trace())
-                     log->printf("Expression %d (n%dn) killed (non supported opcode)\n", node->getLocalIndex(), node->getGlobalIndex());
+                  trprintf(trace(), log, "Expression %d (n%dn) killed (non supported opcode)\n", node->getLocalIndex(), node->getGlobalIndex());
                   }
                }
             }
@@ -843,8 +833,9 @@ void TR_LocalTransparency::updateInfoForSupportedNodes(TR::Node *node, Container
          if (seenDefinedSymbolReferences->get(symRef->getReferenceNumber()) ||
              seenStoredSymRefs->get(symRef->getReferenceNumber()))
             {
-            if (trace())
-               log->printf("Expression %d (n%dn) killed by symRef #%d  %d\n", node->getLocalIndex(), node->getGlobalIndex(), symRef->getReferenceNumber(), seenDefinedSymbolReferences->get(symRef->getReferenceNumber()));
+            trprintf(trace(), log, "Expression %d (n%dn) killed by symRef #%d  %d\n",
+                  node->getLocalIndex(), node->getGlobalIndex(), symRef->getReferenceNumber(),
+                  seenDefinedSymbolReferences->get(symRef->getReferenceNumber()));
             _transparencyInfo[symRef->getReferenceNumber()]->reset(node->getLocalIndex());
 
             TR::SparseBitVector aliases(comp()->allocator());
@@ -855,9 +846,8 @@ void TR_LocalTransparency::updateInfoForSupportedNodes(TR::Node *node, Container
                {
                int32_t nextAlias = aliasesCursor;
                _transparencyInfo[nextAlias]->reset(node->getLocalIndex());
-               if (trace())
-                  log->printf("888Expression %d (n%dn) killed by symRef #%d  %d\n", node->getLocalIndex(), node->getGlobalIndex(), nextAlias, seenDefinedSymbolReferences->get(nextAlias));
-
+               trprintf(trace(), log, "888Expression %d (n%dn) killed by symRef #%d  %d\n",
+                     node->getLocalIndex(), node->getGlobalIndex(), nextAlias, seenDefinedSymbolReferences->get(nextAlias));
                }
             }
          }
@@ -884,18 +874,15 @@ void TR_LocalTransparency::adjustInfoForAddressAdd(TR::Node *node, TR::Node *chi
       else
          {
          int32_t i;
-         for (i=0;i<comp()->getMaxAliasIndex();i++)
+         for (i=0; i<comp()->getMaxAliasIndex(); i++)
             {
             if (!_transparencyInfo[i]->get(child->getLocalIndex()))
                {
                _transparencyInfo[i]->reset(node->getLocalIndex());
-               if (trace())
-                  {
-                  if (comp()->target().is64Bit())
-                     log->printf("Expression %d killed by symRef #%d because grandchild (child of aladd) %d is already killed by the symRef\n", node->getLocalIndex(), i, child->getLocalIndex());
-                  else
-                     log->printf("Expression %d killed by symRef #%d because grandchild (child of aiadd) %d is already killed by the symRef\n", node->getLocalIndex(), i, child->getLocalIndex());
-                  }
+               trprintf(trace(), log, "Expression %d killed by symRef #%d because grandchild (child of a%cadd) %d is already killed by the symRef\n",
+                     node->getLocalIndex(), i,
+                     (comp()->target().is64Bit() ? 'l' : 'i'),
+                     child->getLocalIndex());
                }
             }
          }
@@ -922,20 +909,18 @@ void TR_LocalTransparency::adjustInfoForAddressAdd(TR::Node *node, TR::Node *chi
                   {
                   int32_t nextAlias = aliasesCursor;
                   _transparencyInfo[nextAlias]->reset(node->getLocalIndex());
-                  if (trace())
-                     log->printf("999Expression %d (n%dn) killed by symRef #%d  %d\n", node->getLocalIndex(), node->getGlobalIndex(), nextAlias, seenDefinedSymbolReferences->get(nextAlias));
+                  trprintf(trace(), log, "999Expression %d (n%dn) killed by symRef #%d  %d\n",
+                        node->getLocalIndex(), node->getGlobalIndex(), nextAlias, seenDefinedSymbolReferences->get(nextAlias));
 
                   }
-               if (trace())
-                  log->printf("Expression %d killed by symRef #%d (loaded in grandchild)\n", node->getLocalIndex(), childSymRef->getReferenceNumber());
+               trprintf(trace(), log, "Expression %d killed by symRef #%d (loaded in grandchild)\n", node->getLocalIndex(), childSymRef->getReferenceNumber());
                }
             }
          }
       else
          {
          _supportedNodes->reset(node->getLocalIndex());
-         if (trace())
-            log->printf("Expression %d killed (non supported opcode)\n", node->getLocalIndex());
+         trprintf(trace(), log, "Expression %d killed (non supported opcode)\n", node->getLocalIndex());
          }
       }
    }

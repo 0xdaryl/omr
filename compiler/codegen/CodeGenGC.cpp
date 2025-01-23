@@ -177,6 +177,8 @@ OMR::CodeGenerator::buildGCMapForInstruction(TR::Instruction *instr)
    // Build a stack map with enough bits for parms, locals, and collectable temps
    //
    TR::Compilation *comp = self()->comp();
+   TR::Logger *log = comp->log();
+   bool trace = comp->getOption(TR_TraceCG);
    TR::GCStackAtlas * atlas = self()->getStackAtlas();
    uint32_t numberOfSlots = atlas->getNumberOfSlotsMapped();
 
@@ -220,9 +222,8 @@ OMR::CodeGenerator::buildGCMapForInstruction(TR::Instruction *instr)
       {
       ListIterator<TR::AutomaticSymbol> automaticIterator(&methodSymbol->getAutomaticList());
 
-      if (debug("traceLiveMonitors"))
+      if (trace)
          {
-         TR::Logger *log = comp->log();
          if (liveMonitors)
             log->printf("building monitor map for instr %p node %p\n", instr, instr->getNode());
          else
@@ -257,8 +258,7 @@ OMR::CodeGenerator::buildGCMapForInstruction(TR::Instruction *instr)
 
             if (liveMonitors && liveMonitors->get(localCursor->getLiveLocalIndex()))
                {
-               if (debug("traceLiveMonitors"))
-                  comp->log()->printf("setting map bit for local %p (%d) mapIndex %d\n", localCursor, localCursor->getLiveLocalIndex(), mapIndex);
+               trprintf(trace, log, "setting map bit for local %p (%d) mapIndex %d\n", localCursor, localCursor->getLiveLocalIndex(), mapIndex);
                map->setLiveMonitorBit(mapIndex);
                map->setBit(mapIndex); // make sure the slot is marked as live
                }
@@ -291,9 +291,8 @@ OMR::CodeGenerator::buildGCMapForInstruction(TR::Instruction *instr)
          //
          if ((self()->comp()->target().cpu.isPower() || self()->comp()->target().cpu.isZ() || self()->comp()->target().cpu.isARM64()) && (*location)->getMaxSpillDepth() == 0  && comp->cg()->isOutOfLineHotPath())
             {
-            if (self()->getDebug())
-               comp->log()->printf("\nSkipping GC map [%p] index %d (%s) for instruction [%p] in OOL hot path because it has already been reverse spilled.\n",
-                        map, s->getGCMapIndex(), self()->getDebug()->getName((*location)->getSymbolReference()), instr);
+            trprintf(trace, log, "\nSkipping GC map [%p] index %d (%s) for instruction [%p] in OOL hot path because it has already been reverse spilled.\n",
+                  map, s->getGCMapIndex(), self()->getDebug()->getName((*location)->getSymbolReference()), instr);
             continue;
             }
 

@@ -996,14 +996,16 @@ OMR::ARM::Machine::takeRegisterStateSnapShot()
    {
    int32_t i;
    TR::Compilation *comp = self()->cg()->comp();
+   TR::Logger *log = comp->log();
+   bool trace = comp->getOption(TR_TraceRA);
+
    for (i = TR::RealRegister::FirstGPR; i < TR::RealRegister::gr12; i++) // Skipping the special/reserved register.  Add FPR later
       {
       //_registerAssociationsSnapShot[i] = _registerAssociations[i];
       _registerStatesSnapShot[i] = _registerFile[i]->getState();
       _assignedRegisterSnapShot[i] = _registerFile[i]->getAssignedRegister();
       _registerFlagsSnapShot[i] = _registerFile[i]->getFlags();
-      if (comp->getOption(TR_TraceRA))
-         comp->log()->printf("OOL: Taking snap shot %d, %x, %x, %x\n", i, _registerStatesSnapShot[i], _assignedRegisterSnapShot[i], _registerFlagsSnapShot[i]);
+      trprintf(trace, log, "OOL: Taking snap shot %d, %x, %x, %x\n", i, _registerStatesSnapShot[i], _assignedRegisterSnapShot[i], _registerFlagsSnapShot[i]);
       }
 #if (defined(__VFP_FP__) && !defined(__SOFTFP__))
    //snapshot is used only for OOL. For now, single precision registers are used only for DirectToJNI.
@@ -1012,8 +1014,7 @@ OMR::ARM::Machine::takeRegisterStateSnapShot()
       _registerStatesSnapShot[i] = _registerFile[i]->getState();
       _assignedRegisterSnapShot[i] = _registerFile[i]->getAssignedRegister();
       _registerFlagsSnapShot[i] = _registerFile[i]->getFlags();
-      if (comp->getOption(TR_TraceRA))
-         comp->log()->printf("OOL: Taking snap shot %d, %x, %x, %x\n", i, _registerStatesSnapShot[i], _assignedRegisterSnapShot[i], _registerFlagsSnapShot[i]);
+      trprintf(trace, log, "OOL: Taking snap shot %d, %x, %x, %x\n", i, _registerStatesSnapShot[i], _assignedRegisterSnapShot[i], _registerFlagsSnapShot[i]);
       }
 #endif
    }
@@ -1023,6 +1024,9 @@ OMR::ARM::Machine::restoreRegisterStateFromSnapShot()
    {
    int32_t i;
    TR::Compilation *comp = self()->cg()->comp();
+   TR::Logger *log = comp->log();
+   bool trace = comp->getOption(TR_TraceRA);
+
    for (i = TR::RealRegister::FirstGPR; i < TR::RealRegister::gr12; i++) // Skipping SpilledReg
       {
       _registerFile[i]->setFlags(_registerFlagsSnapShot[i]);
@@ -1043,8 +1047,7 @@ OMR::ARM::Machine::restoreRegisterStateFromSnapShot()
          {
          _registerFile[i]->getAssignedRegister()->setAssignedRegister(_registerFile[i]);
          }
-      if (comp->getOption(TR_TraceRA))
-         comp->log()->printf("OOL: Restoring snap shot %d, %x, %x, %x\n", i, _registerFile[i]->getState(), _registerFile[i]->getAssignedRegister(), _registerFile[i]->getFlags());
+      trprintf(trace, log, "OOL: Restoring snap shot %d, %x, %x, %x\n", i, _registerFile[i]->getState(), _registerFile[i]->getAssignedRegister(), _registerFile[i]->getFlags());
       }
 #if (defined(__VFP_FP__) && !defined(__SOFTFP__))
    //snapshot is used only for OOL. For now, single precision registers are used only for DirectToJNI.
@@ -1066,8 +1069,7 @@ OMR::ARM::Machine::restoreRegisterStateFromSnapShot()
          {
          _registerFile[i]->getAssignedRegister()->setAssignedRegister(_registerFile[i]);
          }
-      if (comp->getOption(TR_TraceRA))
-         comp->log()->printf("OOL: Restoring snap shot %d, %x, %x, %x\n", i, _registerFile[i]->getState(), _registerFile[i]->getAssignedRegister(), _registerFile[i]->getFlags());
+      trprintf(trace, log, "OOL: Restoring snap shot %d, %x, %x, %x\n", i, _registerFile[i]->getState(), _registerFile[i]->getAssignedRegister(), _registerFile[i]->getFlags());
       }
 #endif
    }

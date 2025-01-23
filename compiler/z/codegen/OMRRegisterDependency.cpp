@@ -193,7 +193,7 @@ OMR::Z::RegisterDependencyConditions::RegisterDependencyConditions(TR::RegisterD
      if (iConds != NULL)
         {
         depGroup = iConds->getPreConditions();
-        //      depGroup->printDeps(stdout, iConds->getNumPreConditions());
+
         for(i=0;i<iConds->getAddCursorForPre();i++)
            {
           TR::RegisterDependency* dep = depGroup->getRegisterDependency(i);
@@ -206,7 +206,7 @@ OMR::Z::RegisterDependencyConditions::RegisterDependencyConditions(TR::RegisterD
            }
 
         depGroup = iConds->getPostConditions();
-        //        depGroup->printDeps(stdout, iConds->getNumPostConditions());
+
         for(i=0;i<iConds->getAddCursorForPost();i++)
            {
            TR::RegisterDependency* dep = depGroup->getRegisterDependency(i);
@@ -751,6 +751,8 @@ OMR::Z::RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstr
                                                 TR::CodeGenerator *cg)
    {
    TR::Compilation *comp = cg->comp();
+   TR::Logger *log = comp->log();
+   bool trace = comp->getOption(TR_TraceCG);
    TR::Machine *machine = cg->machine();
    TR::Register * virtReg;
    TR::RealRegister::RegNum dependentRegNum;
@@ -825,8 +827,7 @@ OMR::Z::RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstr
          if (toS390LabelInstruction(currentInstruction)->getLabelSymbol()->isStartOfColdInstructionStream() &&
                location)
             {
-            if (comp->getOption(TR_TraceCG))
-               comp->log()->printf("\nOOL: Releasing backing storage (%p)\n", location);
+            trprintf(trace, log, "\nOOL: Releasing backing storage (%p)\n", location);
             if (rk == TR_GPR)
                dataSize = TR::Compiler->om.sizeofReferenceAddress();
             else if (rk == TR_VRF)
@@ -1471,10 +1472,10 @@ OMR::Z::RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstr
             {
             virtReg = realReg->getAssignedRegister();
 
-            if (comp->getOption(TR_TraceCG))
+            if (trace)
                {
-               comp->log()->printf("\nOOL HPR Spill: %s", cg->getDebug()->getName(realReg));
-               comp->log()->printf(":%s\n", cg->getDebug()->getName(virtReg));
+               log->printf("\nOOL HPR Spill: %s", cg->getDebug()->getName(realReg));
+               log->printf(":%s\n", cg->getDebug()->getName(virtReg));
                }
             virtReg->setAssignedRegister(NULL);
             }

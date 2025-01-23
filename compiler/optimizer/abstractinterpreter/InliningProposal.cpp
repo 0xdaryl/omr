@@ -67,8 +67,7 @@ void TR::InliningProposal::print(TR::Compilation* comp)
 
    if (!_nodes)
       {
-      if (traceBIProposal)
-         log->prints("Inlining Proposal is NULL\n");
+      trprints(traceBIProposal, log, "Inlining Proposal is NULL\n");
       if (verboseInlining)
          TR_VerboseLog::writeLine(TR_Vlog_BI, "%s", "Inlining Proposal is NULL");
       return;
@@ -81,8 +80,7 @@ void TR::InliningProposal::print(TR::Compilation* comp)
    TR::StringBuf line(comp->trMemory()->currentStackRegion());
    line.appendf("#Proposal: %d methods inlined into %s, cost: %d", numMethodsToInline, _idt->getRoot()->getName(comp->trMemory()), getCost());
 
-   if (traceBIProposal)
-      log->printf("%s\n", line.text());
+   trprintf(traceBIProposal, log, "%s\n", line.text());
    if (verboseInlining)
       TR_VerboseLog::writeLine(TR_Vlog_BI, "%s", line.text());
 
@@ -111,8 +109,7 @@ void TR::InliningProposal::print(TR::Compilation* comp)
             currentNode->getBudget()
          );
 
-         if (traceBIProposal)
-            log->printf("%s\n", line.text());
+         trprintf(traceBIProposal, log, "%s\n", line.text());
          if (verboseInlining)
             TR_VerboseLog::writeLine(TR_Vlog_BI, "%s", line.text());
          }
@@ -124,8 +121,7 @@ void TR::InliningProposal::print(TR::Compilation* comp)
          idtNodeQueue.push_back(currentNode->getChild(i));
 
       }
-   if (traceBIProposal)
-      log->println();
+   trprintln(traceBIProposal, log);
    }
 
 

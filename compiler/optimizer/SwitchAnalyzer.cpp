@@ -167,8 +167,7 @@ void TR::SwitchAnalyzer::analyze(TR::Node *node, TR::Block *block)
          info->_freq = ((float)frequencies[i]) / block->getFrequency();
          }
 
-      if (trace())
-         log->printf("Switch info pointing at target tree top 0x%p has frequency scale of %f\n", target->getNode(), info->_freq);
+      trprintf(trace(), log, "Switch info pointing at target tree top 0x%p has frequency scale of %f\n", target->getNode(), info->_freq);
 
       if ((upperBound - 2) >= MIN_CASES_FOR_OPT && keepAsUnique(info, i))
          {
@@ -249,8 +248,7 @@ void TR::SwitchAnalyzer::analyze(TR::Node *node, TR::Block *block)
    //
    emit(chain, bound, earlyUniques);
 
-   if (trace())
-      log->prints("Done.\n");
+   trprints(trace(), log, "Done.\n");
    }
 
 void TR::SwitchAnalyzer::findDenseSets(TR_LinkHead<SwitchInfo> *chain)
@@ -581,17 +579,16 @@ TR::Block *TR::SwitchAnalyzer::peelOffTheHottestValue(TR_LinkHead<SwitchInfo> *c
    if (!chain)
       return NULL;
 
+   TR::Logger *log = comp()->log();
+
    if (trace())
       {
-      printInfo(comp()->log(), comp()->fe(), chain);
+      printInfo(log, comp()->fe(), chain);
       }
 
    float cutOffFrequency = 0.33f;
 
-   if (trace())
-      {
-      comp()->log()->prints("\nLooking to see if we have a value that's more than 33%% of all cases.\n");
-      }
+   trprints(trace(), log, "\nLooking to see if we have a value that's more than 33%% of all cases.\n");
 
    TR_LinkHead<SwitchInfo> *list = chain;
    SwitchInfo *first = chain->getFirst();
@@ -627,8 +624,8 @@ TR::Block *TR::SwitchAnalyzer::peelOffTheHottestValue(TR_LinkHead<SwitchInfo> *c
 
       if (trace())
          {
-         comp()->log()->printf("Found a dominant entry in a dense node for target 0x%p with frequency of %f.\n", topNode->_target->getNode(), maxFreq);
-         comp()->log()->prints("Peeling off a quick test for this entry.\n");
+         log->printf("Found a dominant entry in a dense node for target 0x%p with frequency of %f.\n", topNode->_target->getNode(), maxFreq);
+         log->prints("Peeling off a quick test for this entry.\n");
          }
 
       return newBlock;
@@ -650,20 +647,14 @@ TR::Block *TR::SwitchAnalyzer::checkIfDefaultIsDominant(SwitchInfo *start)
    int32_t numCases      = _switch->getNumChildren() - 2;
    float cutOffFrequency = .5f / ((float)numCases);
 
-   if (trace())
-      {
-      log->printf("Looking to see if the default case is dominant. Number of cases is %d, cut off frequency set to %f\n", numCases, cutOffFrequency);
-      }
+   trprintf(trace(), log, "Looking to see if the default case is dominant. Number of cases is %d, cut off frequency set to %f\n", numCases, cutOffFrequency);
 
    for (SwitchInfo *temp = start;temp; temp = temp->getNext())
       {
       if (temp->_freq >= cutOffFrequency)
          {
          hasChildWithDecentFrequency = true;
-         if (trace())
-            {
-            log->printf("Found child with frequency of %f. The default case isn't that dominant.\n", temp->_freq);
-            }
+         trprintf(trace(), log, "Found child with frequency of %f. The default case isn't that dominant.\n", temp->_freq);
          break;
          }
       }
@@ -673,10 +664,7 @@ TR::Block *TR::SwitchAnalyzer::checkIfDefaultIsDominant(SwitchInfo *start)
       int64_t  absMin = start->_min;
       int64_t  absMax = start->_max;
 
-      if (trace())
-         {
-         log->prints("The default case is dominant, we'll generate the range tests.\n");
-         }
+      trprints(trace(), log, "The default case is dominant, we'll generate the range tests.\n");
 
       for (SwitchInfo *temp = start->getNext();temp; temp = temp->getNext())
          {
@@ -686,10 +674,7 @@ TR::Block *TR::SwitchAnalyzer::checkIfDefaultIsDominant(SwitchInfo *start)
             absMax = temp->_max;
          }
 
-      if (trace())
-         {
-         log->printf("Range [%d, %d]\n", absMin, absMax);
-         }
+      trprintf(trace(), log, "Range [%d, %d]\n", absMin, absMax);
 
       bool _isInt64 = false;
       if (_switch->getChild(0)->getType().isInt64())  _isInt64 = true;
@@ -791,8 +776,7 @@ void TR::SwitchAnalyzer::emit(TR_LinkHead<SwitchInfo> *chain, TR_LinkHead<Switch
 
    if (_switch->getOpCodeValue() == TR::lookup && (!comp()->isOptServer() || numCases>LOOKUP_SWITCH_GEN_IN_IL_OVERRIDE))
       {
-      if (trace())
-         comp()->log()->printf("numMajors %d, majorsInBound %d, numCases %d\n", numMajors, majorsInBound, numCases);
+      trprintf(trace(), comp()->log(), "numMajors %d, majorsInBound %d, numCases %d\n", numMajors, majorsInBound, numCases);
 
       // if the number of cases is so small that it's always better to convert the switch to ifs, skip checks for backing out
       if (numCases > SWITCH_TO_IFS_THRESHOLD)
@@ -800,7 +784,7 @@ void TR::SwitchAnalyzer::emit(TR_LinkHead<SwitchInfo> *chain, TR_LinkHead<Switch
          // Do the tranformation only if we know that the search space is decreasing in size
          if (4 * numMajors > 3 * numCases) // if nummajors must be no more than 3/4th of numcases
             return;
-	     if (numCases < MIN_CASES_FOR_OPT) // if numcases is small
+         if (numCases < MIN_CASES_FOR_OPT) // if numcases is small
             return;
          // Do the transformation only if we know that the primary chain contains most
          // of the cases (majorsInBound == numCasesInBound, since bound does not have range
@@ -938,9 +922,10 @@ void TR::SwitchAnalyzer::emit(TR_LinkHead<SwitchInfo> *chain, TR_LinkHead<Switch
       if ((*edge)->getTo() != newBlock)
          _cfg->removeEdge(*(edge++));
       else
-    	 edge++;
+         edge++;
       }
    }
+
 TR::Block *TR::SwitchAnalyzer::binSearch(SwitchInfo *startNode, SwitchInfo *endNode, int32_t numMajors, CASECONST_TYPE rangeLeft, CASECONST_TYPE rangeRight)
    {
    TR_ASSERT(numMajors > 0, "majors must be > 0");
@@ -1337,8 +1322,7 @@ int32_t *TR::SwitchAnalyzer::setupFrequencies(TR::Node *node)
       int32_t frequency = targetBlock->getFrequency() / targetCount;
       frequencies[i] = frequency;
 
-      if (trace())
-         comp()->log()->printf("Switch analyser: Frequency at pos %d is %d\n", i, frequencies[i]);
+      trprintf(trace(), comp()->log(), "Switch analyser: Frequency at pos %d is %d\n", i, frequencies[i]);
       }
 
    // For each case value, lists the frequency of the selector being of that value

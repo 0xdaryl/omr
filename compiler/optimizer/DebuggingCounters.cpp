@@ -217,7 +217,6 @@ void TR_DebuggingCounters::report()
 
    if (dynamicSum == 0)
       {
-      //fprintf(output, "\nDEBUGGING COUNTERS REPORT: NO DYNAMIC COUNTS\n\n");
       return;
       }
 
@@ -235,23 +234,21 @@ void TR_DebuggingCounters::report()
 
          if (deviation != INT_MAX)
             fprintf(output, "Name: [%31s (%5d)] dynamic : (%5.2lf ) static : (%5.2lf ) [%" OMR_PRIu64 "]\n",
-	   	             counterInfo->counterName,
+                   counterInfo->counterName,
                    ((counterInfo->delta + 1)*counterInfo->bucketSize),
                    //(uint32_t) counterInfo->totalCount,
                    (double) (((double) (counterInfo->totalCount*100)/((double) dynamicSum))),
                    //counterInfo->compilationCount,
                    (double) ((double) (counterInfo->compilationCount*100)/((double) compilationSum)),
                    counterInfo->totalCount);
-//            fprintf(output, "DEBUG: totalCount = %x\n",counterInfo->totalCount);
          else
             fprintf(output, "Name: [%38s ] dynamic : (%5.2lf ) static : (%5.2lf )\n",
-	   	             counterInfo->counterName,
+                   counterInfo->counterName,
                    //(uint32_t) counterInfo->totalCount,
                    (double) (((double) (counterInfo->totalCount*100)/((double) dynamicSum))),
                    //counterInfo->compilationCount,
                    (double) ((double) (counterInfo->compilationCount*100)/((double) compilationSum)));
-//            fprintf(output, "DEBUG: totalCount = %x\n",counterInfo->totalCount);
-	       }
+         }
       }
 
    fprintf(output, "Compilation sum %d Dynamic sum %" OMR_PRIu64 " \n\n", (int32_t) compilationSum, dynamicSum);

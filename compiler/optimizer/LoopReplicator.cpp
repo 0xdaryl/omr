@@ -80,6 +80,8 @@ static void countReplicationFailure(const char *failureReason, int32_t regionNum
 int32_t TR_LoopReplicator::perform()
    {
    // mainline entry
+   //
+   TR::Logger *log = comp()->log();
 
    static char *disableLR = feGetEnv("TR_NoLoopReplicate");
    if (disableLR)
@@ -97,13 +99,11 @@ int32_t TR_LoopReplicator::perform()
    _haveProfilingInfo = true;
 
 
-
    static char *testLR = feGetEnv("TR_LRTest");
    if (!_haveProfilingInfo)
       {
       dumpOptDetails(comp(), "Need profiling information in order to replicate...\n");
-      if (trace())
-         comp()->log()->printf("method is %s \n", comp()->signature());
+      trprintf(trace(), log, "method is %s \n", comp()->signature());
       if (!testLR)
          return 0;
       }
@@ -135,8 +135,8 @@ int32_t TR_LoopReplicator::perform()
 
    if (trace())
       {
-      comp()->log()->prints("structure before replication :\n");
-      getDebug()->print(comp()->log(), _rootStructure, 6);
+      log->prints("structure before replication :\n");
+      getDebug()->print(log, _rootStructure, 6);
       }
 
    // collect info about potential
@@ -152,6 +152,7 @@ int32_t TR_LoopReplicator::perform()
 
 int32_t TR_LoopReplicator::perform(TR_Structure *str)
    {
+   TR::Logger *log = comp()->log();
    TR_RegionStructure *region;
 
    if (!(region = str->asRegion()))
@@ -193,8 +194,7 @@ int32_t TR_LoopReplicator::perform(TR_Structure *str)
    //  (1) first treetop - (while loops)
    //  (2) originator of back-edge - (do-while loops)
 
-   if (trace())
-      comp()->log()->printf("analyzing loop (%d)\n", region->getNumber());
+   trprintf(trace(), log, "analyzing loop (%d)\n", region->getNumber());
 
    // case 1
    TR_StructureSubGraphNode *entryNode = region->getEntry();
@@ -207,8 +207,7 @@ int32_t TR_LoopReplicator::perform(TR_Structure *str)
             {
             if (isWellFormedLoop(region, entry))
                {
-               if (trace())
-                  comp()->log()->prints("found while loop\n");
+               trprints(trace(), log, "found while loop\n");
                _loopType = whileDo;
                return replicateLoop(region, entryNode);
                }
@@ -242,8 +241,7 @@ int32_t TR_LoopReplicator::perform(TR_Structure *str)
 
    if (branchNode)
       {
-      if (trace())
-         comp()->log()->prints("found do-while loop\n");
+      trprints(trace(), log, "found do-while loop\n");
       _loopType = doWhile;
       return replicateLoop(region, branchNode);
       }
@@ -278,14 +276,12 @@ bool TR_LoopReplicator::isWellFormedLoop(TR_RegionStructure *region, TR_Structur
       {
       if (b->hasExceptionPredecessors()) // catch
          {
-         if (trace())
-            log->printf("block (%d) has exception predecessors - currently not supported\n", b->getNumber());
+         trprintf(trace(), log, "block (%d) has exception predecessors - currently not supported\n", b->getNumber());
          return false;
          }
       if (b->hasExceptionSuccessors()) // try
          {
-         if (trace())
-            log->printf("block (%d) has exception successors\n", b->getNumber());
+         trprintf(trace(), log, "block (%d) has exception successors\n", b->getNumber());
          }
       }
 
@@ -319,8 +315,7 @@ bool TR_LoopReplicator::isWellFormedLoop(TR_RegionStructure *region, TR_Structur
 
    if (_maxNestingDepth > MAX_REPLICATION_NESTING_DEPTH)
       {
-      if (traceAny())
-         log->printf("for loop (%d), max nest depth thresholds exceeded\n", region->getNumber());
+      trprintf(traceAny(), log, "for loop (%d), max nest depth thresholds exceeded\n", region->getNumber());
       return false;
       }
 
@@ -328,17 +323,14 @@ bool TR_LoopReplicator::isWellFormedLoop(TR_RegionStructure *region, TR_Structur
    //
    if ((numBlocks*MAX_REPLICATION_GROWTH_FACTOR) > MAX_REPLICATION_GROWTH_SIZE)
       {
-      if (traceAny())
-         log->printf("for loop (%d), loop too big, thresholds exceeded\n", region->getNumber());
+      trprintf(traceAny(), log, "for loop (%d), loop too big, thresholds exceeded\n", region->getNumber());
       return false;
       }
 
 #if 0
    if (_nodeCount > MAX_NODE_THRESHOLD_FOR_REPLICATION)
       {
-      if (trace())
-         log->printf("no replication, node count exceeds threshold for loop (%d)\n",
-                 region->getNumber());
+      trprintf(trace(), log, "no replication, node count exceeds threshold for loop (%d)\n", region->getNumber());
       return false;
       }
 #endif
@@ -357,8 +349,7 @@ int32_t TR_LoopReplicator::replicateLoop(TR_RegionStructure *region,
    if (!lastTT->getNode()->getOpCode().isBranch())
       {
       countReplicationFailure("NoBranchFoundInLoop", region->getNumber());
-      if (trace())
-         log->printf("no branch condition found in loop (%d)\n", region->getNumber());
+      trprintf(trace(), log, "no branch condition found in loop (%d)\n", region->getNumber());
       return false;
       }
 
@@ -377,9 +368,7 @@ int32_t TR_LoopReplicator::replicateLoop(TR_RegionStructure *region,
    static char *pEnv = feGetEnv("TR_NewLRTracer");
    if (pEnv)
       {
-      ///printf("computing weights for loop %d in method %s\n", region->getNumber(), comp()->signature());fflush(stdout);
       calculateBlockWeights(region);
-      ///printf("finished computing weights for loop %d in method %s\n", region->getNumber(), comp()->signature());fflush(stdout);
       if (trace())
          {
          log->prints("propagated frequencies: \n");
@@ -409,8 +398,7 @@ int32_t TR_LoopReplicator::replicateLoop(TR_RegionStructure *region,
       }
 
 
-   if (trace())
-      log->printf("gathered information for loop (%d)\n", lInfo->_regionNumber);
+   trprintf(trace(), log, "gathered information for loop (%d)\n", lInfo->_regionNumber);
    return true;
    }
 
@@ -483,21 +471,18 @@ bool TR_LoopReplicator::checkInnerLoopFrequencies(TR_RegionStructure *region, Lo
 
    if (comp()->getFlowGraph()->getMaxFrequency() <= 0)
       {
-      if (trace())
-         log->prints("no frequency info\n");
+      trprints(trace(), log, "no frequency info\n");
       return true; // maybe this should actually be false...
       }
 
-   if (trace())
-      log->prints("inspecting non-cold inner loops\n");
+   trprints(trace(), log, "inspecting non-cold inner loops\n");
 
    List<TR_RegionStructure> innerLoops(trMemory());
    collectNonColdInnerLoops(comp(), region, innerLoops);
 
    if (innerLoops.isEmpty())
       {
-      if (trace())
-         log->prints("failed to find non-cold inner loops; will attempt to replicate\n");
+      trprints(trace(), log, "failed to find non-cold inner loops; will attempt to replicate\n");
       return true;
       }
 
@@ -508,33 +493,28 @@ bool TR_LoopReplicator::checkInnerLoopFrequencies(TR_RegionStructure *region, Lo
    ListIterator<TR_RegionStructure> it(&innerLoops);
    for (TR_RegionStructure *loop = it.getFirst(); loop; loop = it.getNext())
       {
-      if (trace())
-         log->printf("\tlooking at inner loop %d\n", loop->getNumber());
+      trprintf(trace(), log, "\tlooking at inner loop %d\n", loop->getNumber());
 
       TR::Block * const innerLoopHeader = loop->getEntryBlock();
       int32_t entryBlockFrequency = innerLoopHeader->getFrequency();
       float outerLoopRelativeFrequency = entryBlockFrequency / (float)outerLoopFrequency;
       bool isInnerLoopHot = (outerLoopRelativeFrequency > 1.3f); // FIXME: const
-      if (trace())
-         log->printf("\t  outerloop relative frequency = %.3g\n", outerLoopRelativeFrequency);
+      trprintf(trace(), log, "\t  outerloop relative frequency = %.3g\n", outerLoopRelativeFrequency);
 
       if (!isInnerLoopHot && outerLoopFrequency == 6)
          {
          isInnerLoopHot = true;
-         if (trace())
-            log->prints("\t  considered hot because outer loop has frequency 6\n");
+         trprints(trace(), log, "\t  considered hot because outer loop has frequency 6\n");
          }
 
       if (isInnerLoopHot)
          {
-         if (trace())
-            log->prints("\t  this is a hot inner loop\n");
+         trprints(trace(), log, "\t  this is a hot inner loop\n");
          hotInnerLoopHeaders.add(innerLoopHeader);
          if (!searchList(innerLoopHeader, common, lInfo))
             {
             countReplicationFailure("HotInnerLoopNotOnTrace", loop->getNumber());
-            if (trace())
-               log->printf("not going to replicate loop because hot inner loop %d is not on the trace\n", loop->getNumber());
+            trprintf(trace(), log, "not going to replicate loop because hot inner loop %d is not on the trace\n", loop->getNumber());
             return false;
             }
          }
@@ -581,8 +561,7 @@ bool TR_LoopReplicator::shouldReplicateWithHotInnerLoops(
    // example. The heuristic can be extended to cover such cases later as
    // necessary.
    //
-   if (trace())
-      log->prints("Loop has hot inner loops. Looking for early cold side-entry.\n");
+   trprints(trace(), log, "Loop has hot inner loops. Looking for early cold side-entry.\n");
 
    TR::Block * const outerLoopHeader = region->getEntryBlock();
    TR::Block *tracePrefixCursor = outerLoopHeader;
@@ -602,8 +581,7 @@ bool TR_LoopReplicator::shouldReplicateWithHotInnerLoops(
             {
             // Stop due to branching paths within the trace.
             countReplicationFailure("HotInnerLoopHitBranchWithoutColdSideEntry", region->getNumber());
-            if (trace())
-               log->prints("Hit a branch without finding a cold side-entry. Will not replicate.\n");
+            trprints(trace(), log, "Hit a branch without finding a cold side-entry. Will not replicate.\n");
             return false;
             }
          tracePrefixNext = succ;
@@ -628,14 +606,12 @@ bool TR_LoopReplicator::shouldReplicateWithHotInnerLoops(
 
          countReplicationFailure("HotInnerLoopRanOutOfTrace", region->getNumber());
          // In production, just safely return false for this case.
-         if (trace())
-            log->prints("Ran out of trace without finding a cold side-entry. Will not replicate.\n");
+         trprints(trace(), log, "Ran out of trace without finding a cold side-entry. Will not replicate.\n");
          return false;
          }
 
       tracePrefixCursor = tracePrefixNext;
-      if (trace())
-         log->printf("Checking for cold side-entries targeting block_%d\n", tracePrefixCursor->getNumber());
+      trprintf(trace(), log, "Checking for cold side-entries targeting block_%d\n", tracePrefixCursor->getNumber());
 
       // If this block is the target of a side-entry from a cold block, good!
       // Note that edges into outerLoopHeader are not side-entries, but we're
@@ -648,8 +624,7 @@ bool TR_LoopReplicator::shouldReplicateWithHotInnerLoops(
          TR::Block * const pred = toBlock((*e)->getFrom());
          if (pred->isCold() && !searchList(pred, common, lInfo))
             {
-            if (trace())
-               log->printf("Found a cold side-entry into block_%d from block_%d. Will replicate.\n", tracePrefixCursor->getNumber(), pred->getNumber());
+            trprintf(trace(), log, "Found a cold side-entry into block_%d from block_%d. Will replicate.\n", tracePrefixCursor->getNumber(), pred->getNumber());
             return true;
             }
          }
@@ -658,8 +633,7 @@ bool TR_LoopReplicator::shouldReplicateWithHotInnerLoops(
       if (hotInnerLoopHeaders->find(tracePrefixCursor))
          {
          countReplicationFailure("HotInnerLoopNoColdSideEntry", region->getNumber());
-         if (trace())
-            log->prints("Hit a hot inner loop without finding a cold side-entry. Will not replicate.\n");
+         trprints(trace(), log, "Hit a hot inner loop without finding a cold side-entry. Will not replicate.\n");
          return false;
          }
       }
@@ -675,16 +649,14 @@ bool TR_LoopReplicator::heuristics(LoopInfo *lInfo)
    //
    TR_RegionStructure *region = lInfo->_region;
 
-   if (trace())
-      log->printf("analyzing region - %d (%p)\n", region->getNumber(), region);
+   trprintf(trace(), log, "analyzing region - %d (%p)\n", region->getNumber(), region);
 
    TR::Block *seed = region->getEntryBlock();
 
    BlockEntry *be = new (trStackMemory()) BlockEntry;
    be->_block = seed;
    (lInfo->_nodesCommon).append(be);
-   if (trace())
-      log->printf("   adding loop header %d as seed\n", seed->getNumber());
+   trprintf(trace(), log, "   adding loop header %d as seed\n", seed->getNumber());
    _blocksVisited->set(seed->getNumber());
 
    // select path of desirable successors
@@ -694,8 +666,7 @@ bool TR_LoopReplicator::heuristics(LoopInfo *lInfo)
    do
       {
       X = blockq.dequeue();
-      if (trace())
-         log->printf("current candidate block : %d\n", X->getNumber());
+      trprintf(trace(), log, "current candidate block : %d\n", X->getNumber());
       X = nextCandidate(X, region, true);
       if (!X || searchList(X, common, lInfo))
          continue;
@@ -740,8 +711,7 @@ bool TR_LoopReplicator::heuristics(LoopInfo *lInfo)
    for (bE = (lInfo->_nodesCommon).getFirst(); bE; bE = bE->getNext())
       _bStack->push(bE->_block);
 
-   if (trace())
-      log->prints("attempting to extend trace...\n");
+   trprints(trace(), log, "attempting to extend trace...\n");
 
    while(!_bStack->isEmpty())
       {
@@ -795,14 +765,12 @@ TR::Block * TR_LoopReplicator::nextCandidate(TR::Block *X, TR_RegionStructure *r
       // in which case edge will be null
       if (!edge)
          {
-         if (trace())
-            comp()->log()->printf("   candidate is %d\n", Y->getNumber());
+         trprintf(trace(), comp()->log(), "   candidate is %d\n", Y->getNumber());
          cand = Y;
          }
       else if (computeWeight(edge))
          {
-         if (trace())
-            comp()->log()->printf("   candidate (%d) satisfied weight computation\n", Y->getNumber());
+         trprintf(trace(), comp()->log(), "   candidate (%d) satisfied weight computation\n", Y->getNumber());
          cand = Y;
          }
       }
@@ -834,8 +802,7 @@ void TR_LoopReplicator::processBlock(TR::Block *X, TR_RegionStructure *region, L
 
       if (computeWeight(*e))
          {
-         if (trace())
-            comp()->log()->printf("   candidate (%d) satisfied weight computation, extending trace\n", dest->getNumber());
+         trprintf(trace(), comp()->log(), "   candidate (%d) satisfied weight computation, extending trace\n", dest->getNumber());
          // favorable block found, extend the trace
          BlockEntry *bE = new (trStackMemory()) BlockEntry;
          bE->_block = dest;
@@ -887,8 +854,7 @@ bool TR_LoopReplicator::computeWeight(TR::CFGEdge *edge)
    if (trace())
       {
       comp()->log()->printf("   weighing candidate : %d (Y)  predeccessor : %d (X)\n", Y->getNumber(), X->getNumber());
-      comp()->log()->printf("      w(Y): %d w(X): %d w(seed): %d w(Y)/w(X): %.4f w(Y)/w(seed): %.4f\n", Yfreq, Xfreq,
-                           seedFreq, w1, w2);
+      comp()->log()->printf("      w(Y): %d w(X): %d w(seed): %d w(Y)/w(X): %.4f w(Y)/w(seed): %.4f\n", Yfreq, Xfreq, seedFreq, w1, w2);
       }
    return (w1 >= BLOCK_THRESHOLD && w2 >= SEED_THRESHOLD) ? true : false;
    }
@@ -899,27 +865,22 @@ TR::Block * TR_LoopReplicator::bestSuccessor(TR_RegionStructure *region, TR::Blo
    TR::Logger *log = comp()->log();
    TR::Block *cand = NULL;
 
-   if (trace())
-       log->printf("   analyzing region %d (%p)\n", region->getNumber(), region);
+   trprintf(trace(), log, "   analyzing region %d (%p)\n", region->getNumber(), region);
    int16_t candFreq = -1;
    for (auto e = node->getSuccessors().begin(); e != node->getSuccessors().end(); ++e)
       {
       TR::Block *dest = toBlock((*e)->getTo());
-      if (trace())
-         log->printf("   analyzing successor block : %d\n", dest->getNumber());
+      trprintf(trace(), log, "   analyzing successor block : %d\n", dest->getNumber());
       TR_Structure *destStructure = dest->getStructureOf();
       TR_Structure *parentStructure = destStructure->getParent();
-      if (trace())
-         log->printf("      found parent %p  is block a direct descendent? (%s)\n", destStructure->getParent(),
-                           (region->contains(parentStructure, region->getParent()) ? "yes" : "no"));
+      trprintf(trace(), log, "      found parent %p  is block a direct descendent? (%s)\n",
+            destStructure->getParent(), (region->contains(parentStructure, region->getParent()) ? "yes" : "no"));
       //dumpOptDetails(comp(), "destStruct - %p\n", findNodeInHierarchy(region, destStructure->getNumber()));
       // check for exit edges & loop backedges
       bool notExitEdge = region->contains(destStructure, region->getParent());
       if (!notExitEdge || destStructure == region->getEntry()->getStructure())
          {
-         if (trace())
-            log->printf("      isRegionExit? (%s) successor structure %p\n", (!notExitEdge ? "yes" : "no"),
-                              destStructure);
+         trprintf(trace(), log, "      isRegionExit? (%s) successor structure %p\n", (!notExitEdge ? "yes" : "no"), destStructure);
          continue;
          }
 
@@ -942,8 +903,7 @@ TR::Block * TR_LoopReplicator::bestSuccessor(TR_RegionStructure *region, TR::Blo
       {
       // skip over loops already examined
       nextSuccessor(region, &cand, edge);
-      if (trace())
-         log->printf("   next candidate chosen : %d (Y)\n", cand->getNumber());
+      trprintf(trace(), log, "   next candidate chosen : %d (Y)\n", cand->getNumber());
       }
    return cand;
    }
@@ -960,8 +920,7 @@ void TR_LoopReplicator::nextSuccessor(TR_RegionStructure *region, TR::Block **ca
          (parentStructure && parentStructure->isNaturalLoop()))
       {
       ListIterator<TR::CFGEdge> eIt(&parentStructure->getExitEdges());
-      if (trace())
-         log->printf("   inner loop detected : %p , exit edges are :\n", parentStructure);
+      trprintf(trace(), log, "   inner loop detected : %p , exit edges are :\n", parentStructure);
       TR::CFGEdge *e = NULL;
       for (e = eIt.getFirst(); e; e = eIt.getNext())
          {
@@ -974,13 +933,10 @@ void TR_LoopReplicator::nextSuccessor(TR_RegionStructure *region, TR::Block **ca
 
          TR_Structure *dest = (_blocksInCFG[e->getTo()->getNumber()])->getStructureOf();
          TR_Structure *source = (_blocksInCFG[e->getFrom()->getNumber()])->getStructureOf();
-         if (trace())
-            log->printf("      %d (%p) -> %d (%p)\n", e->getFrom()->getNumber(), source,
-                              e->getTo()->getNumber(), dest);
+         trprintf(trace(), log, "      %d (%p) -> %d (%p)\n", e->getFrom()->getNumber(), source, e->getTo()->getNumber(), dest);
          if (region->contains(dest, region->getParent()))
             {
-            if (trace())
-               log->printf("   found edge to %p (%d)\n", dest, _blocksInCFG[e->getTo()->getNumber()]);
+            trprintf(trace(), log, "   found edge to %p (%d)\n", dest, _blocksInCFG[e->getTo()->getNumber()]);
             succEdge = e;
             break;
             }
@@ -996,8 +952,7 @@ void TR_LoopReplicator::nextSuccessor(TR_RegionStructure *region, TR::Block **ca
       //if (succEdge)
          {
          int32_t num = succEdge->getTo()->getNumber();
-         if (trace())
-            log->printf("      choosing candidate : %d (%p)\n", num, _blocksInCFG[num]);
+         trprintf(trace(), log, "      choosing candidate : %d (%p)\n", num, _blocksInCFG[num]);
          LoopInfo *lInfo = findLoopInfo(region->getNumber());
          TR_ASSERT(lInfo, "no loop info for loop?\n");
          // add all the blocks in the inner loop to the current trace
@@ -1034,8 +989,7 @@ bool TR_LoopReplicator::gatherBlocksToBeCloned(LoopInfo *lInfo)
 
    bool sideEntrance = false;
 
-   if (trace())
-      log->prints("checking for side-entrances :\n");
+   trprints(trace(), log, "checking for side-entrances :\n");
 
    BlockEntry *be;
    for (be = (lInfo->_nodesCommon).getFirst(); be; be = be->getNext())
@@ -1081,8 +1035,7 @@ bool TR_LoopReplicator::gatherBlocksToBeCloned(LoopInfo *lInfo)
             if (doClone)
                {
                sideEntrance = true;
-               if (trace())
-                  log->printf("   found %d -> %d\n", source->getNumber(), bNum);
+               trprintf(trace(), log, "   found %d -> %d\n", source->getNumber(), bNum);
                BlockEntry *bE = new (trStackMemory()) BlockEntry;
                bE->_block = b;
                (lInfo->_blocksCloned).append(bE);
@@ -1144,14 +1097,12 @@ bool TR_LoopReplicator::gatherBlocksToBeCloned(LoopInfo *lInfo)
 #endif
    if (sideEntrance)
       {
-      if (trace())
-         log->prints("found a rather cooler backedge\n");
+      trprints(trace(), log, "found a rather cooler backedge\n");
       return true;
       }
 
    countReplicationFailure("NoSideEntryFound", region->getNumber());
-   if (trace())
-      log->prints("   no side-entrance found\n");
+   trprints(trace(), log, "   no side-entrance found\n");
    return false;
    }
 
@@ -1168,8 +1119,7 @@ void TR_LoopReplicator::doTailDuplication(LoopInfo *lInfo)
    // hopefully, block re-ordering should re-order if necessary
    // FIXME: find the first block that does not fall into its next block
    TR::TreeTop *endTreeTop = findEndTreeTop(region);
-   if (trace())
-      log->printf("placing trees at position (%p) in method\n", endTreeTop);
+   trprintf(trace(), log, "placing trees at position (%p) in method\n", endTreeTop);
 
    // duplicate the blocks starting with the first side entrance
    // reset the blockMapper first
@@ -1268,9 +1218,7 @@ void TR_LoopReplicator::doTailDuplication(LoopInfo *lInfo)
          (*e)->setFrequency(edgeFreq);
       }
 
-   if (trace())
-      log->printf("cloned header; %d -> %d\n", loopHeader->getNumber(),
-                        _blockMapper[loopHeader->getNumber()]->getNumber());
+   trprintf(trace(), log, "cloned header; %d -> %d\n", loopHeader->getNumber(), _blockMapper[loopHeader->getNumber()]->getNumber());
 
    if (trace())
       {
@@ -1289,8 +1237,7 @@ void TR_LoopReplicator::doTailDuplication(LoopInfo *lInfo)
    for (be = (lInfo->_blocksCloned).getFirst(); be; be = be->getNext())
       {
       TR::Block *n = be->_block;
-      if (trace())
-         log->printf("processing block : %d\n", n->getNumber());
+      trprintf(trace(), log, "processing block : %d\n", n->getNumber());
       TR::Block *block = toBlock(n);
       TR::Block *clonedBlock = _blockMapper[n->getNumber()];
       TR::TreeTop *cbStartTree = clonedBlock->getEntry();
@@ -1299,13 +1246,11 @@ void TR_LoopReplicator::doTailDuplication(LoopInfo *lInfo)
       cbEndTree->setNextTreeTop(NULL);
       endTreeTop = cbEndTree;
       // gather edges that are from side-entrances
-      if (trace())
-         log->prints("   predecessors : {");
+      trprints(trace(), log, "   predecessors : {");
       for (auto e = block->getPredecessors().begin(); e != block->getPredecessors().end(); ++e)
          {
          TR::Block *source = toBlock((*e)->getFrom());
-         if (trace())
-            log->printf(" %d ", source->getNumber());
+         trprintf(trace(), log, " %d ", source->getNumber());
          if (!searchList(source, common, lInfo))
             {
             EdgeEntry *edEntry = new (trStackMemory()) EdgeEntry;
@@ -1313,8 +1258,7 @@ void TR_LoopReplicator::doTailDuplication(LoopInfo *lInfo)
             (lInfo->_removedEdges).add(edEntry);
             }
          }
-      if (trace())
-         log->prints("}\n");
+      trprints(trace(), log, "}\n");
       }
 
    if (trace())
@@ -1340,8 +1284,7 @@ void TR_LoopReplicator::addBlocksAndFixEdges(LoopInfo *lInfo)
 
    TR::Block *loopHeader = region->getEntryBlock();
 
-   if (trace())
-      log->printf("fixing cfg in loop (%d)\n", lInfo->_regionNumber);
+   trprintf(trace(), log, "fixing cfg in loop (%d)\n", lInfo->_regionNumber);
    // set structure to null to prevent repair
    _cfg->setStructure(NULL);
 
@@ -1361,32 +1304,27 @@ void TR_LoopReplicator::addBlocksAndFixEdges(LoopInfo *lInfo)
       {
       TR::Block *origBlock = toBlock(be->_block);
       TR::Block *newBlock = _blockMapper[origBlock->getNumber()];
-      if (trace())
-         log->printf("processing block (%d) -> clone (%d)\n", origBlock->getNumber(), newBlock->getNumber());
+      trprintf(trace(), log, "processing block (%d) -> clone (%d)\n", origBlock->getNumber(), newBlock->getNumber());
 
       _cfg->copyExceptionSuccessors(origBlock, newBlock);
 
       for (auto e = origBlock->getSuccessors().begin(); e != origBlock->getSuccessors().end(); ++e)
          {
          TR::Block *dest = toBlock((*e)->getTo());
-         if (trace())
-            log->printf("   edge %d -> %d\n", origBlock->getNumber(), dest->getNumber());
+         trprintf(trace(), log, "   edge %d -> %d\n", origBlock->getNumber(), dest->getNumber());
          // case 1
          // B->CLH
          if (dest == clonedHeader)
             {
             // do nothing
-            if (trace())
-               log->printf("      back-edge ; clonedHeader %d -> %d\n", origBlock->getNumber(),
-                                 clonedHeader->getNumber());
+            trprintf(trace(), log, "      back-edge ; clonedHeader %d -> %d\n", origBlock->getNumber(), clonedHeader->getNumber());
             continue;
             }
          // case 2
          // B->OLH
          if (dest == loopHeader)
             {
-            if (trace())
-               log->printf("      back-edge ; loopHeader %d -> %d\n", origBlock->getNumber(), loopHeader->getNumber());
+            trprintf(trace(), log, "      back-edge ; loopHeader %d -> %d\n", origBlock->getNumber(), loopHeader->getNumber());
             // fixed; now add a backedge C->OLH
             dest = _blockMapper[origBlock->getNumber()];
             TR::Node *branchNode = dest->getExit()->getPrevRealTreeTop()->getNode();
@@ -1398,8 +1336,7 @@ void TR_LoopReplicator::addBlocksAndFixEdges(LoopInfo *lInfo)
                   // OLH is the target; set the right target in C
                   branchNode->setBranchDestination(loopHeader->getEntry());
                   _cfg->addEdge(TR::CFGEdge::createEdge(dest,  loopHeader, trMemory()));
-                  if (trace())
-                     log->printf("      added back-edge %d -> %d\n", dest->getNumber(), loopHeader->getNumber());
+                  trprintf(trace(), log, "      added back-edge %d -> %d\n", dest->getNumber(), loopHeader->getNumber());
                   }
                else
                   {
@@ -1408,16 +1345,14 @@ void TR_LoopReplicator::addBlocksAndFixEdges(LoopInfo *lInfo)
                   _cfg->addNode(gotoBlock);
                   _cfg->addEdge(TR::CFGEdge::createEdge(dest,  gotoBlock, trMemory()));
                   _cfg->addEdge(TR::CFGEdge::createEdge(gotoBlock,  loopHeader, trMemory()));
-                  if (trace())
-                     log->printf("      added goto-block_%d\n", gotoBlock->getNumber());
+                  trprintf(trace(), log, "      added goto-block_%d\n", gotoBlock->getNumber());
                   }
                }
             else if ( (branchNode->getOpCode().isJumpWithMultipleTargets() && branchNode->getOpCode().hasBranchChildren()) && branchNode->getOpCode().hasBranchChildren())
                {
                // just add an edge from the switch block back to the loopHeader
                //
-               if (trace())
-                  log->printf("      added  back-edge for jumpwithmultipletarget %d -> %d\n", newBlock->getNumber(), dest->getNumber());
+               trprintf(trace(), log, "      added  back-edge for jumpwithmultipletarget %d -> %d\n", newBlock->getNumber(), dest->getNumber());
                _cfg->addEdge(TR::CFGEdge::createEdge(dest,  loopHeader, trMemory()));
                }
             else
@@ -1429,8 +1364,7 @@ void TR_LoopReplicator::addBlocksAndFixEdges(LoopInfo *lInfo)
                dest->getExit()->getPrevRealTreeTop()->join(gotoTT);
                gotoTT->join(dest->getExit());
                _cfg->addEdge(TR::CFGEdge::createEdge(dest,  loopHeader, trMemory()));
-               if (trace())
-                  log->printf("      added edge %d -> %d\n", dest->getNumber(), loopHeader->getNumber());
+               trprintf(trace(), log, "      added edge %d -> %d\n", dest->getNumber(), loopHeader->getNumber());
                }
             }
          // case 3
@@ -1452,9 +1386,7 @@ void TR_LoopReplicator::addBlocksAndFixEdges(LoopInfo *lInfo)
                      {
                      // add C1->C2 and set destination
                      branchNode->setBranchDestination(dest->getEntry());
-                     if (trace())
-                        log->printf("      added  edge %d -> %d\n", newBlock->getNumber(),
-                                           dest->getNumber());
+                     trprintf(trace(), log, "      added  edge %d -> %d\n", newBlock->getNumber(), dest->getNumber());
                      _cfg->addEdge(TR::CFGEdge::createEdge(newBlock,  dest, trMemory()));
                      }
                   }
@@ -1468,13 +1400,10 @@ void TR_LoopReplicator::addBlocksAndFixEdges(LoopInfo *lInfo)
                      if (target->getNumber() == saveDest->getNumber())
                         {
                         branchNode->getChild(i)->setBranchDestination(dest->getEntry());
-                        if (trace())
-                           log->printf("   fixed switch child %d -> %d\n", i, dest->getNumber());
+                        trprintf(trace(), log, "   fixed switch child %d -> %d\n", i, dest->getNumber());
                         }
                      }
-                  if (trace())
-                     log->printf("      added  edge %d -> %d\n", newBlock->getNumber(),
-                                       dest->getNumber());
+                  trprintf(trace(), log, "      added  edge %d -> %d\n", newBlock->getNumber(), dest->getNumber());
                   _cfg->addEdge(TR::CFGEdge::createEdge(newBlock,  dest, trMemory()));
                   }
                else if (branchNode->getOpCode().isJumpWithMultipleTargets() && branchNode->getOpCode().hasBranchChildren())
@@ -1485,13 +1414,10 @@ void TR_LoopReplicator::addBlocksAndFixEdges(LoopInfo *lInfo)
                      if (target->getNumber() == saveDest->getNumber())
                         {
                         branchNode->getChild(i)->setBranchDestination(dest->getEntry());
-                        if (trace())
-                           log->printf("   fixed jumpwithmultipletarget child %d -> %d\n", i, dest->getNumber());
+                        trprintf(trace(), log, "   fixed jumpwithmultipletarget child %d -> %d\n", i, dest->getNumber());
                         }
                      }
-                  if (trace())
-                     log->printf("      added  edge %d -> %d\n", newBlock->getNumber(),
-                                       dest->getNumber());
+                  trprintf(trace(), log, "      added  edge %d -> %d\n", newBlock->getNumber(), dest->getNumber());
                   _cfg->addEdge(TR::CFGEdge::createEdge(newBlock,  dest, trMemory()));
 
 
@@ -1500,9 +1426,7 @@ void TR_LoopReplicator::addBlocksAndFixEdges(LoopInfo *lInfo)
                   {
                   // B1 is a goto block; fix the target in C1 to C2
                   branchNode->setBranchDestination(dest->getEntry());
-                  if (trace())
-                     log->printf("      added  edge %d -> %d\n", newBlock->getNumber(),
-                                       dest->getNumber());
+                  trprintf(trace(), log, "      added  edge %d -> %d\n", newBlock->getNumber(), dest->getNumber());
                   _cfg->addEdge(TR::CFGEdge::createEdge(newBlock,  dest, trMemory()));
                   }
                }
@@ -1517,9 +1441,7 @@ void TR_LoopReplicator::addBlocksAndFixEdges(LoopInfo *lInfo)
                _cfg->addNode(gotoBlock);
                _cfg->addEdge(TR::CFGEdge::createEdge(newBlock,  gotoBlock, trMemory()));
                _cfg->addEdge(TR::CFGEdge::createEdge(gotoBlock,  dest, trMemory()));
-               if (trace())
-                  log->printf("      added goto-block_%d->%d->%d\n", newBlock->getNumber(),
-                                    gotoBlock->getNumber(), dest->getNumber());
+               trprintf(trace(), log, "      added goto-block_%d->%d->%d\n", newBlock->getNumber(), gotoBlock->getNumber(), dest->getNumber());
                }
             // case 3b C2 is the next block of C1 in the trees
             else
@@ -1533,13 +1455,10 @@ void TR_LoopReplicator::addBlocksAndFixEdges(LoopInfo *lInfo)
                      if (target->getNumber() == saveDest->getNumber())
                         {
                         branchNode->getChild(i)->setBranchDestination(dest->getEntry());
-                        if (trace())
-                           log->printf("   fixed switch child %d -> %d\n", i, dest->getNumber());
+                        trprintf(trace(), log, "   fixed switch child %d -> %d\n", i, dest->getNumber());
                         }
                      }
-                  if (trace())
-                     log->printf("      added  edge %d -> %d\n", newBlock->getNumber(),
-                                      dest->getNumber());
+                  trprintf(trace(), log, "      added  edge %d -> %d\n", newBlock->getNumber(), dest->getNumber());
                   _cfg->addEdge(TR::CFGEdge::createEdge(newBlock,  dest, trMemory()));
                   }
                else if(branchNode->getOpCode().isJumpWithMultipleTargets() && branchNode->getOpCode().hasBranchChildren())
@@ -1550,13 +1469,10 @@ void TR_LoopReplicator::addBlocksAndFixEdges(LoopInfo *lInfo)
                      if (target->getNumber() == saveDest->getNumber())
                         {
                         branchNode->getChild(i)->setBranchDestination(dest->getEntry());
-                        if (trace())
-                           log->printf("   fixed switch child %d -> %d\n", i, dest->getNumber());
+                        trprintf(trace(), log, "   fixed switch child %d -> %d\n", i, dest->getNumber());
                         }
                      }
-                  if (trace())
-                     log->printf("      added  edge %d -> %d\n", newBlock->getNumber(),
-                                      dest->getNumber());
+                  trprintf(trace(), log, "      added  edge %d -> %d\n", newBlock->getNumber(), dest->getNumber());
                   _cfg->addEdge(TR::CFGEdge::createEdge(newBlock,  dest, trMemory()));
                   }
                else
@@ -1568,8 +1484,7 @@ void TR_LoopReplicator::addBlocksAndFixEdges(LoopInfo *lInfo)
                      // but if it is via a goto, fix the destination as C2
                      branchNode->setBranchDestination(dest->getEntry());
                      }
-                  if (trace())
-                     log->printf("      added edge %d -> %d\n", newBlock->getNumber(), dest->getNumber());
+                  trprintf(trace(), log, "      added edge %d -> %d\n", newBlock->getNumber(), dest->getNumber());
                   }
                }
             }
@@ -1589,8 +1504,7 @@ void TR_LoopReplicator::addBlocksAndFixEdges(LoopInfo *lInfo)
             if ( (branchNode->getOpCode().isJumpWithMultipleTargets() && branchNode->getOpCode().hasBranchChildren()) || branchNode->getOpCode().isGoto())
                {
                _cfg->addEdge(TR::CFGEdge::createEdge(newBlock,  dest, trMemory()));
-               if (trace())
-                  log->printf("   added edge %d -> %d\n", newBlock->getNumber(), dest->getNumber());
+               trprintf(trace(), log, "   added edge %d -> %d\n", newBlock->getNumber(), dest->getNumber());
                }
             else
                {
@@ -1599,9 +1513,7 @@ void TR_LoopReplicator::addBlocksAndFixEdges(LoopInfo *lInfo)
                _cfg->addNode(gotoBlock);
                _cfg->addEdge(TR::CFGEdge::createEdge(newBlock,  gotoBlock, trMemory()));
                _cfg->addEdge(TR::CFGEdge::createEdge(gotoBlock,  dest, trMemory()));
-               if (trace())
-                  log->printf("      added goto-block_%d->%d->%d\n", newBlock->getNumber(),
-                                    gotoBlock->getNumber(), dest->getNumber());
+               trprintf(trace(), log, "      added goto-block_%d->%d->%d\n", newBlock->getNumber(), gotoBlock->getNumber(), dest->getNumber());
                }
             }
          // case 5
@@ -1612,31 +1524,26 @@ void TR_LoopReplicator::addBlocksAndFixEdges(LoopInfo *lInfo)
             {
             // see comment above for the _nodesInCFG test
             _cfg->addEdge(TR::CFGEdge::createEdge(newBlock,  dest, trMemory()));
-            if (trace())
-               log->printf("      added exit edge %d -> %d\n", newBlock->getNumber(), dest->getNumber());
+            trprintf(trace(), log, "      added exit edge %d -> %d\n", newBlock->getNumber(), dest->getNumber());
             }
          }
       }
 
    // remove edges
-   if (trace())
-      log->prints("removing edges and adding predecessor edges if required\n");
+   trprints(trace(), log, "removing edges and adding predecessor edges if required\n");
    EdgeEntry *ee = NULL;
    for (ee = (lInfo->_removedEdges).getFirst(); ee; ee = ee->getNext())
       {
       TR::CFGEdge *e = ee->_edge;
-      if (trace())
-         log->prints("processing edge \n");
+      trprints(trace(), log, "processing edge \n");
       if (ee->_removeOnly)
          {
-         if (trace())
-            log->printf("   removed %d -> %d\n", e->getFrom()->getNumber(), e->getTo()->getNumber());
+         trprintf(trace(), log, "   removed %d -> %d\n", e->getFrom()->getNumber(), e->getTo()->getNumber());
          continue;
          }
       TR::Block *source = toBlock(e->getFrom());
       TR::Block *dest = toBlock(e->getTo());
-      if (trace())
-         log->printf("   removed & fixed up %d -> %d\n", source->getNumber(), dest->getNumber());
+      trprintf(trace(), log, "   removed & fixed up %d -> %d\n", source->getNumber(), dest->getNumber());
       TR::Block *newDest = _blockMapper[dest->getNumber()];
       //dumpOptDetails(comp(), "next block - %p (%p)\n", source->getNextBlock(), dest);
 
@@ -1660,13 +1567,11 @@ void TR_LoopReplicator::addBlocksAndFixEdges(LoopInfo *lInfo)
                if (target->getNumber() == dest->getNumber())
                   {
                   branchNode->getChild(i)->setBranchDestination(newDest->getEntry());
-                  if (trace())
-                     log->printf("   fixed switch child %d -> %d\n", i, dest->getNumber());
+                  trprintf(trace(), log, "   fixed switch child %d -> %d\n", i, dest->getNumber());
                   }
                }
             _cfg->addEdge(TR::CFGEdge::createEdge(source,  newDest, trMemory()));
-            if (trace())
-               log->printf("   added edge %d -> %d\n", source->getNumber(), newDest->getNumber());
+            trprintf(trace(), log, "   added edge %d -> %d\n", source->getNumber(), newDest->getNumber());
             }
          else if(branchNode->getOpCode().isJumpWithMultipleTargets() && branchNode->getOpCode().hasBranchChildren())
             {
@@ -1676,13 +1581,11 @@ void TR_LoopReplicator::addBlocksAndFixEdges(LoopInfo *lInfo)
                if (target->getNumber() == dest->getNumber())
                   {
                   branchNode->getChild(i)->setBranchDestination(newDest->getEntry());
-                  if (trace())
-                     log->printf("   fixed switch child %d -> %d\n", i, dest->getNumber());
+                  trprintf(trace(), log, "   fixed switch child %d -> %d\n", i, dest->getNumber());
                   }
                }
             _cfg->addEdge(TR::CFGEdge::createEdge(source,  newDest, trMemory()));
-            if (trace())
-               log->printf("   added edge %d -> %d\n", source->getNumber(), newDest->getNumber());
+            trprintf(trace(), log, "   added edge %d -> %d\n", source->getNumber(), newDest->getNumber());
             }
          else
             {
@@ -1693,11 +1596,9 @@ void TR_LoopReplicator::addBlocksAndFixEdges(LoopInfo *lInfo)
                // -or- branch with target as the next block;
                // adjust targets to C1
                branchNode->setBranchDestination(newDest->getEntry());
-               if (trace())
-                  log->printf("   fixed branch target %d -> %d\n", source->getNumber(), dest->getNumber());
+               trprintf(trace(), log, "   fixed branch target %d -> %d\n", source->getNumber(), dest->getNumber());
                _cfg->addEdge(TR::CFGEdge::createEdge(source,  newDest, trMemory()));
-               if (trace())
-                  log->printf("   added edge %d -> %d\n", source->getNumber(), newDest->getNumber());
+               trprintf(trace(), log, "   added edge %d -> %d\n", source->getNumber(), newDest->getNumber());
                }
             else
                {
@@ -1707,9 +1608,7 @@ void TR_LoopReplicator::addBlocksAndFixEdges(LoopInfo *lInfo)
                _cfg->addNode(gotoBlock);
                _cfg->addEdge(TR::CFGEdge::createEdge(source,  gotoBlock, trMemory()));
                _cfg->addEdge(TR::CFGEdge::createEdge(gotoBlock,  newDest, trMemory()));
-               if (trace())
-                  log->printf("   added goto block_%d->%d->%d\n", source->getNumber(),
-                                    gotoBlock->getNumber(), newDest->getNumber());
+               trprintf(trace(), log, "   added goto block_%d->%d->%d\n", source->getNumber(), gotoBlock->getNumber(), newDest->getNumber());
                }
             }
          }
@@ -1719,8 +1618,7 @@ void TR_LoopReplicator::addBlocksAndFixEdges(LoopInfo *lInfo)
       else
          {
          _cfg->addEdge(TR::CFGEdge::createEdge(source,  newDest, trMemory()));
-         if (trace())
-            log->printf("   added edge %d -> %d\n", source->getNumber(), newDest->getNumber());
+         trprintf(trace(), log, "   added edge %d -> %d\n", source->getNumber(), newDest->getNumber());
          TR::Node *branchNode = source->getExit()->getPrevRealTreeTop()->getNode();
          if (branchNode->getOpCode().isBranch())
             {
@@ -1740,8 +1638,7 @@ void TR_LoopReplicator::addBlocksAndFixEdges(LoopInfo *lInfo)
                if (target->getNumber() == dest->getNumber())
                   {
                   branchNode->getChild(i)->setBranchDestination(newDest->getEntry());
-                  if (trace())
-                     log->printf("   fixed switch child %d -> %d\n", i, dest->getNumber());
+                  trprintf(trace(), log, "   fixed switch child %d -> %d\n", i, dest->getNumber());
                   }
                }
             }
@@ -1754,8 +1651,7 @@ void TR_LoopReplicator::addBlocksAndFixEdges(LoopInfo *lInfo)
                if (target->getNumber() == dest->getNumber())
                   {
                   branchNode->getChild(i)->setBranchDestination(newDest->getEntry());
-                  if (trace())
-                     log->printf("   fixed switch child %d -> %d\n", i, dest->getNumber());
+                  trprintf(trace(), log, "   fixed switch child %d -> %d\n", i, dest->getNumber());
                   }
                }
             }
@@ -1764,8 +1660,7 @@ void TR_LoopReplicator::addBlocksAndFixEdges(LoopInfo *lInfo)
 
    // call removeEdge here as it might result in rearraging
    // trees [due to unreachable blocks]
-   if (trace())
-      log->prints("actually removing above edges\n");
+   trprints(trace(), log, "actually removing above edges\n");
    for (ee = (lInfo->_removedEdges).getFirst(); ee; ee = ee->getNext())
       {
       TR::CFGEdge *e = ee->_edge;
@@ -1798,8 +1693,7 @@ TR::Block * TR_LoopReplicator::createEmptyGoto(TR::Block *source, TR::Block *des
    if (source->getFrequency() < dest->getFrequency())
       freq = source->getFrequency();
    TR::Block *gotoBlock = TR::Block::createEmptyBlock(destEntry->getNode(), comp(), freq, source);
-   if (trace())
-      comp()->log()->printf("goto block %p freq %d src freq %d dst freq %d\n", gotoBlock, freq, source->getFrequency(), dest->getFrequency());
+   trprintf(trace(), comp()->log(), "goto block %p freq %d src freq %d dst freq %d\n", gotoBlock, freq, source->getFrequency(), dest->getFrequency());
    TR::TreeTop *gotoEntry = gotoBlock->getEntry();
    TR::TreeTop *gotoExit = gotoBlock->getExit();
    TR::TreeTop *target = NULL;
@@ -1921,8 +1815,7 @@ void TR_LoopReplicator::fixUpLoopEntry(LoopInfo *lInfo, TR::Block *loopHeader)
    loopHeader->getExit()->join(startTT);
 
    //fix exception successors edges
-   if (trace())
-        log->printf("adding exception successors for new loop header %d\n", clonedHeader->getNumber());
+   trprintf(trace(), log, "adding exception successors for new loop header %d\n", clonedHeader->getNumber());
 
    _cfg->copyExceptionSuccessors(loopHeader, clonedHeader);
 
@@ -1938,8 +1831,7 @@ void TR_LoopReplicator::fixUpLoopEntry(LoopInfo *lInfo, TR::Block *loopHeader)
    // of the cloned header;
    // remove the successors of the original header and add a single edge
    // from the original header to the cloned header
-   if (trace())
-      log->printf("adding successors for new loop header %d\n", clonedHeader->getNumber());
+   trprintf(trace(), log, "adding successors for new loop header %d\n", clonedHeader->getNumber());
    for (auto e = loopHeader->getSuccessors().begin(); e != loopHeader->getSuccessors().end(); ++e)
       {
       EdgeEntry *eE = new (trStackMemory()) EdgeEntry;
@@ -1951,20 +1843,16 @@ void TR_LoopReplicator::fixUpLoopEntry(LoopInfo *lInfo, TR::Block *loopHeader)
       if (dest == loopHeader)
          continue;
       _cfg->addEdge(TR::CFGEdge::createEdge(clonedHeader,  dest, trMemory()));
-      if (trace())
-         log->printf("   added edge %d -> %d\n", clonedHeader->getNumber(), dest->getNumber());
+      trprintf(trace(), log, "   added edge %d -> %d\n", clonedHeader->getNumber(), dest->getNumber());
       }
    _cfg->addEdge(TR::CFGEdge::createEdge(loopHeader,  clonedHeader, trMemory()));
-   if (trace())
-      log->printf("added edge orig header(%d) -> new header(%d)\n", loopHeader->getNumber(),
-                        clonedHeader->getNumber());
+   trprintf(trace(), log, "added edge orig header(%d) -> new header(%d)\n", loopHeader->getNumber(), clonedHeader->getNumber());
 
    // make the loop backedges that originate from the trace point to the
    // cloned header; backedges from blocks not in the trace still point
    // to the original loop header
    ListIterator<TR::CFGEdge> bIt(&backEdges);
-   if (trace())
-      log->printf("fixing back-edges for new loop header %d\n", clonedHeader->getNumber());
+   trprintf(trace(), log, "fixing back-edges for new loop header %d\n", clonedHeader->getNumber());
    for (e = bIt.getFirst(); e; e = bIt.getNext())
       {
       TR::Block *predBlock = toBlock(e->getFrom());
@@ -1976,14 +1864,12 @@ void TR_LoopReplicator::fixUpLoopEntry(LoopInfo *lInfo, TR::Block *loopHeader)
          eE->_edge = e;
          eE->_removeOnly = true;
          (lInfo->_removedEdges).add(eE);
-         if (trace())
-            log->printf("   checking edge %d -> %d\n", predBlock->getNumber(), loopHeader->getNumber());
+         trprintf(trace(), log, "   checking edge %d -> %d\n", predBlock->getNumber(), loopHeader->getNumber());
          // LH has a back-edge to itself, so CLH gets a backedge to itself
          if (predBlock == loopHeader)
             {
             _cfg->addEdge(TR::CFGEdge::createEdge(clonedHeader,  clonedHeader, trMemory()));
-            if (trace())
-               log->printf("   added edge %d -> %d\n", predBlock->getNumber(), clonedHeader->getNumber());
+            trprintf(trace(), log, "   added edge %d -> %d\n", predBlock->getNumber(), clonedHeader->getNumber());
             TR::Node *branchNode = clonedHeader->getExit()->getPrevRealTreeTop()->getNode();
             if (branchNode->getOpCode().isBranch() || branchNode->getOpCode().isGoto())
                {
@@ -1992,61 +1878,53 @@ void TR_LoopReplicator::fixUpLoopEntry(LoopInfo *lInfo, TR::Block *loopHeader)
             continue;
             }
          TR::Node *branchNode = predBlock->getExit()->getPrevRealTreeTop()->getNode();
-	 if (branchNode->getOpCode().isSwitch())
+         if (branchNode->getOpCode().isSwitch())
             {
             bool edgeFixed = false;
-	    for (int32_t i = branchNode->getCaseIndexUpperBound()-1; i > 0; i--)
-	       {
-	       TR::Block *target = branchNode->getChild(i)->getBranchDestination()->getNode()->getBlock();
-	       if (target == loopHeader)
-		  {
-		  branchNode->getChild(i)->setBranchDestination(clonedHeader->getEntry());
-		  if (trace())
-		     log->printf("   fixed switch child %d -> %d\n", i, clonedHeader->getNumber());
-		  if (!edgeFixed)
+            for (int32_t i = branchNode->getCaseIndexUpperBound()-1; i > 0; i--)
+               {
+               TR::Block *target = branchNode->getChild(i)->getBranchDestination()->getNode()->getBlock();
+               if (target == loopHeader)
+                  {
+                  branchNode->getChild(i)->setBranchDestination(clonedHeader->getEntry());
+                  trprintf(trace(), log, "   fixed switch child %d -> %d\n", i, clonedHeader->getNumber());
+                  if (!edgeFixed)
                      {
-		     if (trace())
-		        log->printf("      added  edge %d -> %d\n", predBlock->getNumber(),
-                                           clonedHeader->getNumber());
-                     _cfg->addEdge(TR::CFGEdge::createEdge(predBlock,  clonedHeader, trMemory()));
+                     trprintf(trace(), log, "      added  edge %d -> %d\n", predBlock->getNumber(), clonedHeader->getNumber());
+                     _cfg->addEdge(TR::CFGEdge::createEdge(predBlock, clonedHeader, trMemory()));
                      edgeFixed = true;
                      }
-		  }
-
-	       }
-	    }
+                  }
+               }
+            }
          else if (branchNode->getOpCode().isJumpWithMultipleTargets() && branchNode->getOpCode().hasBranchChildren())
             {
             bool edgeFixed = false;
-	    for (int32_t i = 0 ; i < branchNode->getNumChildren() -1 ; i++)
-	       {
-	       TR::Block *target = branchNode->getChild(i)->getBranchDestination()->getNode()->getBlock();
-	       if (target == loopHeader)
-		  {
-		  branchNode->getChild(i)->setBranchDestination(clonedHeader->getEntry());
-		  if (trace())
-		     log->printf("   fixed switch child %d -> %d\n", i, clonedHeader->getNumber());
-		  if (!edgeFixed)
+            for (int32_t i = 0 ; i < branchNode->getNumChildren() -1 ; i++)
+               {
+               TR::Block *target = branchNode->getChild(i)->getBranchDestination()->getNode()->getBlock();
+               if (target == loopHeader)
+                  {
+                  branchNode->getChild(i)->setBranchDestination(clonedHeader->getEntry());
+                  trprintf(trace(), log, "   fixed switch child %d -> %d\n", i, clonedHeader->getNumber());
+                  if (!edgeFixed)
                      {
-		     if (trace())
-		        log->printf("      added  edge %d -> %d\n", predBlock->getNumber(),
-                                           clonedHeader->getNumber());
+                     trprintf(trace(), log, "      added  edge %d -> %d\n", predBlock->getNumber(), clonedHeader->getNumber());
                      _cfg->addEdge(TR::CFGEdge::createEdge(predBlock,  clonedHeader, trMemory()));
                      edgeFixed = true;
                      }
-		  }
-	       }
-	    }
-	 else if (branchNode->getOpCode().isBranch())
-	    {
-	    // block branches to the loopheader through a conditional
+                  }
+               }
+            }
+         else if (branchNode->getOpCode().isBranch())
+            {
+            // block branches to the loopheader through a conditional
             if (branchNode->getBranchDestination()->getNode()->getBlock() == loopHeader)
                {
                // loopheader is the target of the conditional
                branchNode->setBranchDestination(clonedHeader->getEntry());
                _cfg->addEdge(TR::CFGEdge::createEdge(predBlock,  clonedHeader, trMemory()));
-               if (trace())
-                  log->printf("   added edge %d -> %d\n", predBlock->getNumber(), clonedHeader->getNumber());
+               trprintf(trace(), log, "   added edge %d -> %d\n", predBlock->getNumber(), clonedHeader->getNumber());
                }
             else
                {
@@ -2056,9 +1934,7 @@ void TR_LoopReplicator::fixUpLoopEntry(LoopInfo *lInfo, TR::Block *loopHeader)
                _cfg->addNode(gotoBlock);
                _cfg->addEdge(TR::CFGEdge::createEdge(predBlock,  gotoBlock, trMemory()));
                _cfg->addEdge(TR::CFGEdge::createEdge(gotoBlock,  clonedHeader, trMemory()));
-               if (trace())
-                  log->printf("   added goto-block_%d->%d->%d\n", predBlock->getNumber(),
-				  gotoBlock->getNumber(), clonedHeader->getNumber());
+               trprintf(trace(), log, "   added goto-block_%d->%d->%d\n", predBlock->getNumber(), gotoBlock->getNumber(), clonedHeader->getNumber());
                }
             //else
             //   TR_ASSERT(0, "back edge destination is not the loopheader?\n");
@@ -2071,8 +1947,7 @@ void TR_LoopReplicator::fixUpLoopEntry(LoopInfo *lInfo, TR::Block *loopHeader)
             predBlock->getExit()->getPrevRealTreeTop()->join(gotoTT);
             gotoTT->join(predBlock->getExit());
             _cfg->addEdge(TR::CFGEdge::createEdge(predBlock,  clonedHeader, trMemory()));
-            if (trace())
-               log->printf("   added edge %d -> %d\n", predBlock->getNumber(), clonedHeader->getNumber());
+            trprintf(trace(), log, "   added edge %d -> %d\n", predBlock->getNumber(), clonedHeader->getNumber());
             }
          }
       }
@@ -2337,8 +2212,7 @@ bool TR_LoopReplicator::heuristics(LoopInfo *lInfo, bool dumb)
    TR::Logger *log = comp()->log();
    TR_RegionStructure *region = lInfo->_region;
 
-   if (trace())
-      log->printf("analyzing region - %p\n", region);
+   trprintf(trace(), log, "analyzing region - %p\n", region);
 
    TR_Queue<TR::Block> splitNodes(trMemory());
 
@@ -2348,8 +2222,7 @@ bool TR_LoopReplicator::heuristics(LoopInfo *lInfo, bool dumb)
    BlockEntry *be = new (trStackMemory()) BlockEntry;
    be->_block = current;
    (lInfo->_nodesCommon).append(be);
-   if (trace())
-      log->printf("   adding loop header %d\n", current->getNumber());
+   trprintf(trace(), log, "   adding loop header %d\n", current->getNumber());
 
    TR_ScratchList<TR::Block> blocksInLoop(trMemory());
    region->getBlocks(&blocksInLoop);
@@ -2357,19 +2230,16 @@ bool TR_LoopReplicator::heuristics(LoopInfo *lInfo, bool dumb)
    TR::Block *b = NULL;
    for (b = bilIt.getFirst(); b; b = bilIt.getNext())
       {
-      if (trace())
-         log->printf("   current cand - %d ", b->getNumber());
+      trprintf(trace(), log, "   current cand - %d ", b->getNumber());
       if (!searchList(b, common, lInfo))
          {
-         if (trace())
-            log->println();
+         trprintln(trace(), log);
          TR::Block *cand = b;
          TR::CFGEdge *edge = NULL;
          nextSuccessor(region, &cand, &edge);
          if (cand != b)
             {
-            if (trace())
-               log->prints("   inner loop found bypassing\n");
+            trprints(trace(), log, "   inner loop found bypassing\n");
             b = cand;
             }
          if ((b->getNumber() % 2) == 0)
@@ -2379,15 +2249,13 @@ bool TR_LoopReplicator::heuristics(LoopInfo *lInfo, bool dumb)
                BlockEntry *be = new (trStackMemory()) BlockEntry;
                be->_block = b;
                (lInfo->_nodesCommon).append(be);
-               if (trace())
-                  log->printf("   next candidate chosen - %d\n", cand->getNumber());
+               trprintf(trace(), log, "   next candidate chosen - %d\n", cand->getNumber());
                }
             }
          }
       else
          {
-         if (trace())
-            log->prints("is already visited\n");
+         trprints(trace(), log, "is already visited\n");
          }
       if (!((b->getSuccessors()).size() == 1) && !splitNodes.find(b))
             splitNodes.enqueue(b);

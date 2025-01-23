@@ -102,8 +102,7 @@ int32_t TR_LocalLiveRangeReduction::perform()
       transformExtendedBlock(tt,exitTT->getNextTreeTop());
       }
 
-   if (trace())
-      comp()->log()->prints("\nEnding LocalLiveRangeReducer\n");
+   trprints(trace(), comp()->log(), "\nEnding LocalLiveRangeReducer\n");
 
    return 2;
    }
@@ -470,8 +469,7 @@ bool TR_LocalLiveRangeReduction::isAnySymInDefinedOrUsedBy(TR_TreeRefInfo *curre
    ////if ((opCode.getOpCodeValue() == TR::monent) || (opCode.getOpCodeValue() == TR::monexit))
    if (nodeMaybeMonitor(currentNode))
       {
-      if (trace())
-         log->printf("cannot move %p beyond monitor %p\n",movingNode,currentNode);
+      trprintf(trace(), log, "cannot move %p beyond monitor %p\n", movingNode, currentNode);
       return true;
       }
 
@@ -480,8 +478,7 @@ bool TR_LocalLiveRangeReduction::isAnySymInDefinedOrUsedBy(TR_TreeRefInfo *curre
    if (movingNode->canGCandReturn() ||
          currentNode->canGCandReturn())
       {
-      if (trace())
-         log->printf("cannot move gc points %p past %p\n", movingNode, currentNode);
+      trprintf(trace(), log, "cannot move gc points %p past %p\n", movingNode, currentNode);
       return true;
       }
 
@@ -489,8 +486,7 @@ bool TR_LocalLiveRangeReduction::isAnySymInDefinedOrUsedBy(TR_TreeRefInfo *curre
    //
    if (containsCallOrCheck(movingTreeRefInfo,movingNode))
       {
-      if (trace())
-         log->printf("cannot move check or call %s\n", getDebug()->getName(movingNode));
+      trprintf(trace(), log, "cannot move check or call %s\n", getDebug()->getName(movingNode));
       return true;
       }
 
@@ -498,8 +494,7 @@ bool TR_LocalLiveRangeReduction::isAnySymInDefinedOrUsedBy(TR_TreeRefInfo *curre
    //
    if ((currentNode->getOpCode().isWrtBar() || currentNode->canCauseGC()) && mayBeObjectHeaderStore(movingNode, fe()))
       {
-      if (trace())
-         log->printf("cannot move possible object header store %s past GC point %s\n", getDebug()->getName(movingNode), getDebug()->getName(currentNode));
+      trprintf(trace(), log, "cannot move possible object header store %s past GC point %s\n", getDebug()->getName(movingNode), getDebug()->getName(currentNode));
       return true;
       }
 
@@ -529,8 +524,7 @@ bool TR_LocalLiveRangeReduction::isAnySymInDefinedOrUsedBy(TR_TreeRefInfo *curre
       if (movingNode->getOpCode().isStoreIndirect() ||
           (movingNode->getOpCode().isStoreDirect() && !movingNode->getSymbol()->isParm() && !movingNode->getSymbol()->isAuto()))
          {
-         if (trace())
-            log->printf("cannot move %p beyond flush %p - (flush for possible stack alloc)", movingNode, currentNode);
+         trprintf(trace(), log, "cannot move %p beyond flush %p - (flush for possible stack alloc)", movingNode, currentNode);
          return true;
          }
       }
@@ -547,8 +541,7 @@ bool TR_LocalLiveRangeReduction::isAnySymInDefinedOrUsedBy(TR_TreeRefInfo *curre
          if (child->exceptionsRaised() ||
              (child->getOpCode().hasSymbolReference() && child->getSymbolReference()->isUnresolved()))
             {
-            if (trace())
-               log->printf("cannot move %p beyond %p - cannot change evaluation point of %p\n ",movingNode,currentTreeRefInfo->getTreeTop()->getNode(),child);
+            trprintf(trace(), log, "cannot move %p beyond %p - cannot change evaluation point of %p\n ", movingNode, currentTreeRefInfo->getTreeTop()->getNode(), child);
             return true;
             }
 
@@ -569,8 +562,8 @@ bool TR_LocalLiveRangeReduction::isAnySymInDefinedOrUsedBy(TR_TreeRefInfo *curre
 
          else if (movingNode->getOpCode().isResolveOrNullCheck())
             {
-            if (trace())
-               log->printf("cannot move %p beyond %p - node %p under ResolveOrNullCheck",movingNode,currentTreeRefInfo->getTreeTop()->getNode(),currentNode);
+            trprintf(trace(), log, "cannot move %p beyond %p - node %p under ResolveOrNullCheck",
+                  movingNode, currentTreeRefInfo->getTreeTop()->getNode(), currentNode);
             return true;
             }
 
@@ -579,8 +572,8 @@ bool TR_LocalLiveRangeReduction::isAnySymInDefinedOrUsedBy(TR_TreeRefInfo *curre
            ((opCode.getOpCodeValue() == TR::i2l) || (opCode.getOpCodeValue() == TR::iu2l)) &&
            !child->isNonNegative())
           {
-          if (trace())
-             log->printf("cannot move %p beyond %p - changing the eval point of %p will casue extra cg instruction ",movingNode,currentTreeRefInfo->getTreeTop()->getNode(),currentNode);
+          trprintf(trace(), log, "cannot move %p beyond %p - changing the eval point of %p will casue extra cg instruction ",
+                movingNode, currentTreeRefInfo->getTreeTop()->getNode(), currentNode);
           return true;
           }
          }
@@ -610,8 +603,6 @@ bool TR_LocalLiveRangeReduction::moveTreeBefore(TR_TreeRefInfo *treeToMove,TR_Tr
 
    if (!performTransformation(comp(), "%sPass %d: moving tree [%p] before Tree %p\n", OPT_DETAILS, passNumber, treeToMoveTT->getNode(),anchorTT->getNode()))
       return false;
-
-   //   printf("Moving [%p] before Tree %p\n",  treeToMoveTT->getNode(),anchorTT->getNode());
 
 
    //changing location in block
@@ -1028,6 +1019,7 @@ void TR_LocalLiveRangeReduction::printRefInfo(TR_TreeRefInfo *treeRefInfo)
 bool TR_LocalLiveRangeReduction::verifyRefInfo(List<TR::Node> *verifier,List<TR::Node> *refList)
    {
 
+   TR::Logger *log = comp()->log();
    ListIterator<TR::Node> listIt(refList);
    TR::Node *node = NULL;
    for ( node = listIt.getFirst(); node != NULL; node = listIt.getNext())
@@ -1036,16 +1028,14 @@ bool TR_LocalLiveRangeReduction::verifyRefInfo(List<TR::Node> *verifier,List<TR:
          verifier->remove(node);
       else
          {
-         if (trace())
-            comp()->log()->printf("LocalLiveRangeReduction:node %p should not have beed in the List\n",node);
+         trprintf(trace(), log, "LocalLiveRangeReduction:node %p should not have beed in the List\n", node);
          return false;
          }
       }
 
    if (!verifier->isEmpty())
       {
-      if (trace())
-         comp()->log()->prints("LocalLiveRangeReduction: there are nodes that should have been in the List\n");
+      trprints(trace(), log, "LocalLiveRangeReduction: there are nodes that should have been in the List\n");
       return false;
       }
    return true;
