@@ -168,7 +168,7 @@ OMR::AliasBuilder::createAliasInfo()
       callAliases->_methodSymbol->setHasVeryRefinedAliasSets(false);
    _callAliases.setFirst(0);
 
-   if (comp()->getOption(TR_TraceAliases) && comp()->getLoggingEnabled())
+   if (comp()->getOption(TR_TraceAliases))
       {
       comp()->getDebug()->printAliasInfo(comp()->log(), symRefTab());
       }

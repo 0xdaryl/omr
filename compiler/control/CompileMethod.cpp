@@ -236,8 +236,11 @@ printCompFailureInfo(TR::JitConfig *jitConfig, TR::Compilation * comp, const cha
    {
    if (comp)
       {
-      if (comp->getLoggingEnabled())
-         comp->log()->printf("\n=== EXCEPTION THROWN (%s) ===\n", reason);
+      TR::Logger *log = comp->log();
+
+      static char *disableExceptionLogging = feGetEnv("TR_DisableJITExceptionLogging");
+      if (!disableExceptionLogging && comp->log()->isEnabled())
+         log->printf("\n=== EXCEPTION THROWN (%s) ===\n", reason);
 
       if (debug("traceCompilationException"))
          {
@@ -251,7 +254,8 @@ printCompFailureInfo(TR::JitConfig *jitConfig, TR::Compilation * comp, const cha
          TR_VerboseLog::writeLineLocked(TR_Vlog_COMPFAIL,"%s failed compilation", comp->signature());
          }
 
-      trprints(comp->getOption(TR_TraceAll), comp->log(), "<result success=\"false\">exception thrown by the compiler</result>\n");
+      if (!disableExceptionLogging && comp->log()->isEnabled())
+         log->prints("<result success=\"false\">exception thrown by the compiler</result>\n");
       }
    }
 

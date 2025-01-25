@@ -52,7 +52,7 @@
 
 #define OPT_DETAILS "O^O ILBLD: "
 
-#define TraceEnabled    (comp()->getOption(TR_TraceILGen) && comp()->getLoggingEnabled())
+#define TraceEnabled    (comp()->getOption(TR_TraceILGen))
 #define TraceIL(m, ...) {if (TraceEnabled) {comp()->log()->printf(m, ##__VA_ARGS__);}}
 
 

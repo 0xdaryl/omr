@@ -7803,7 +7803,7 @@ void OMR::ValuePropagation::doDelayedTransformations()
       invalidateUseDefInfo();
       invalidateValueNumberInfo();
 
-      if (debug("traceThrowToGoto") && comp()->getLoggingEnabled())
+      if (debug("traceThrowToGoto"))
          {
          comp()->log()->printf("\nthrow converted to goto in %s ", comp()->signature());
          }
