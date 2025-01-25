@@ -1184,6 +1184,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"traceBenefitInlinerProposal",      "L\ttrace benefit inliner inlining proposal",      SET_OPTION_BIT(TR_TraceBIProposal), "P" },
    {"traceBenefitInlinerSummary",       "L\ttrace benefit inliner inlining summary",       SET_OPTION_BIT(TR_TraceBISummary), "P" },
    {"traceBlockFrequencyGeneration",    "L\ttrace block frequency generation",             SET_OPTION_BIT(TR_TraceBFGeneration), "P"},
+   {"traceBlockIteration",              "L\ttrace block iteration",                        SET_OPTION_BIT(TR_TraceBlockIteration), "P" },
    {"traceBlockShuffling",              "L\ttrace random rearrangement of blocks",         TR::Options::traceOptimization, blockShuffling, 0, "P"},
    {"traceBlockSplitter",               "L\ttrace block splitter",                         TR::Options::traceOptimization, blockSplitter, 0, "P"},
    {"traceBlockVerification",           "L\ttrace block verification",                     SET_OPTION_BIT(TR_TraceBlockVerification), "P" },
