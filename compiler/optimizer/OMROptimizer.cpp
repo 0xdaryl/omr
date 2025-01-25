@@ -1001,6 +1001,7 @@ TR_ValueNumberInfo *OMR::Optimizer::createValueNumberInfo(bool requiresGlobals, 
 void OMR::Optimizer::optimize()
    {
    TR::Compilation::CompilationPhaseScope mainCompilationPhaseScope(comp());
+   TR::Logger *log = comp()->log();
 
    if (isIlGenOpt())
       {
@@ -1013,7 +1014,7 @@ void OMR::Optimizer::optimize()
          }
 
       if (comp()->getOption(TR_TraceTrees) && (comp()->isOutermostMethod() || comp()->trace(inlining) || comp()->getOption(TR_DebugInliner)))
-         comp()->dumpMethodTrees(comp()->log(), "Pre IlGenOpt Trees", getMethodSymbol());
+         comp()->dumpMethodTrees(log, "Pre IlGenOpt Trees", getMethodSymbol());
       }
 
    LexicalTimer t("optimize", comp()->signature(), comp()->phaseTimer());
@@ -1035,7 +1036,7 @@ void OMR::Optimizer::optimize()
         {
         const char *hotnessString = comp()->getHotnessName(comp()->getMethodHotness());
         TR_ASSERT(hotnessString, "expected to have a hotness string");
-        comp()->log()->printf("<optimize\n"
+        log->printf("<optimize\n"
                "\tmethod=\"%s\"\n"
                "\thotness=\"%s\">\n",
                comp()->signature(), hotnessString);
@@ -1049,7 +1050,7 @@ void OMR::Optimizer::optimize()
          {
          const char *hotnessString = comp()->getHotnessName(comp()->getMethodHotness());
          TR_ASSERT(hotnessString, "expected to have a hotness string");
-         comp()->log()->printf("<strategy hotness=\"%s\">\n", hotnessString);
+         log->printf("<strategy hotness=\"%s\">\n", hotnessString);
          }
       }
 
@@ -1100,7 +1101,7 @@ void OMR::Optimizer::optimize()
    TR_SingleTimer myTimer;
    TR_FrontEnd * fe = comp()->fe();
    bool doTiming = comp()->getOption(TR_Timing);
-   if (doTiming && comp()->getLoggingEnabled())
+   if (doTiming && log->isEnabled())
       {
       myTimer.initialize("all optimizations", trMemory());
       }
@@ -1145,13 +1146,13 @@ void OMR::Optimizer::optimize()
    if (comp()->getOption(TR_TraceOpts))
       {
       if (comp()->isOutermostMethod())
-         comp()->log()->prints("</strategy>\n");
+         log->prints("</strategy>\n");
       }
 
    if (comp()->getOption(TR_TraceOptDetails))
       {
       if (comp()->isOutermostMethod())
-         comp()->log()->prints("</optimize>\n");
+         log->prints("</optimize>\n");
       }
 
    comp()->setOptimizer(stackedOptimizer);
@@ -1921,10 +1922,6 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
          comp()->generateAccurateNodeCount();
          }
 
-
-
-      //dumpOptDetails(comp(), "\n");
-
 #ifdef OPT_TIMING
       if (*(statOptTiming[optNum].getName()) == 0) // has no name yet
          statOptTiming[optNum].setName(manager->name());
@@ -2106,7 +2103,7 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
 #endif
 
    #ifdef DEBUG
-      if (manager->getDumpStructure() && debug("dumpStructure") && comp()->getLoggingEnabled())
+      if (manager->getDumpStructure() && debug("dumpStructure"))
          {
          log->prints("\nStructures:\n");
          getDebug()->print(log, comp()->getFlowGraph()->getStructure(), 6);
@@ -2119,12 +2116,12 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
          {
          dumpOptDetails(comp(), "Trivial opt -- omitting listings\n");
          }
-      else if ((needTreeDump || (finalOptMsgIndex != origOptMsgIndex)) && comp()->getLoggingEnabled())
+      else if ((needTreeDump || (finalOptMsgIndex != origOptMsgIndex)) && log->isEnabled())
          comp()->dumpMethodTrees(log, "Trees after ", manager->name(), getMethodSymbol());
       else if (finalOptMsgIndex == origOptMsgIndex)
          {
          dumpOptDetails(comp(), "No transformations done by this pass -- omitting listings\n");
-         if (needStructureDump && comp()->getLoggingEnabled() && comp()->getFlowGraph()->getStructure())
+         if (needStructureDump && log->isEnabled() && comp()->getFlowGraph()->getStructure())
             {
             comp()->getDebug()->print(log, comp()->getFlowGraph()->getStructure(), 6);
             }
@@ -2216,7 +2213,7 @@ int32_t OMR::Optimizer::doStructuralAnalysis()
       rootStructure = TR_RegionAnalysis::getRegions(comp());
       comp()->getFlowGraph()->setStructure(rootStructure);
 
-      if (debug("dumpStructure") && comp()->getLoggingEnabled())
+      if (debug("dumpStructure"))
          {
          comp()->log()->prints("\nStructures:\n");
          getDebug()->print(comp()->log(), rootStructure, 6);
@@ -2749,10 +2746,12 @@ OMR::Optimizer::optimizationStrategy(TR::Compilation *c)
    {
    // Mock strategies are used for testing, and override
    // the compilation strategy.
-   if (NULL != OMR::Optimizer::_mockStrategy)
+   if (OMR::Optimizer::_mockStrategy != NULL)
       {
-      if (c->getLoggingEnabled())
-         c->log()->printf("Using mock optimization strategy %p\n", OMR::Optimizer::_mockStrategy);
+      TR::Logger *log = c->log();
+      if (log->isEnabled())
+         log->printf("Using mock optimization strategy %p\n", OMR::Optimizer::_mockStrategy);
+
       return OMR::Optimizer::_mockStrategy;
       }
 

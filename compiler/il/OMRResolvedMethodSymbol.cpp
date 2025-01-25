@@ -1152,25 +1152,24 @@ OMR::ResolvedMethodSymbol::genIL(TR_FrontEnd * fe, TR::Compilation * comp, TR::S
    {
    LexicalTimer t("IL generation", comp->phaseTimer());
    TR::LexicalMemProfiler mp("IL generation", comp->phaseMemProfiler());
+   TR::Logger *log = comp->log();
    bool traceIt = false;
+   bool traceBC = comp->getOption(TR_TraceBC);
    if (comp->ilGenTrace() || comp->isPeekingMethod())
       traceIt = true;
 
-   if (traceIt && comp->getLoggingEnabled() && comp->getOption(TR_TraceBC))
+   if (traceIt && traceBC)
       {
       // matching its traceflag
       if (comp->isPeekingMethod())
-         comp->log()->printf("<peeking ilgen\n"
-                 "\tmethod=\"%s\">\n",
-                 self()->signature(comp->trMemory()));
+         log->printf("<peeking ilgen\n" "\tmethod=\"%s\">\n", self()->signature(comp->trMemory()));
       else
-         comp->log()->printf("<ilgen\n"
-                 "\tmethod=\"%s\">\n",
-                 self()->signature(comp->trMemory()));
+         log->printf("<ilgen\n" "\tmethod=\"%s\">\n", self()->signature(comp->trMemory()));
+
       if (comp->getDebug())
          {
-         comp->log()->prints("   <request> ");
-         customRequest.print(comp->log(), fe, " </request>\n");
+         log->prints("   <request> ");
+         customRequest.print(log, fe, " </request>\n");
          }
       }
 
@@ -1208,10 +1207,7 @@ OMR::ResolvedMethodSymbol::genIL(TR_FrontEnd * fe, TR::Compilation * comp, TR::S
          auto genIL_rc = ilGen->genIL();
          _methodFlags.set(IlGenSuccess, genIL_rc);
 
-         if (comp->getLoggingEnabled() && comp->getOption(TR_TraceBC))
-            {
-            comp->log()->printf("genIL() returned %d\n", genIL_rc);
-            }
+         trprintf(traceBC, log, "genIL() returned %d\n", genIL_rc);
 
          if (_methodFlags.testAny(IlGenSuccess))
             {
@@ -1273,8 +1269,7 @@ OMR::ResolvedMethodSymbol::genIL(TR_FrontEnd * fe, TR::Compilation * comp, TR::S
                }
             else
                {
-               if (comp->getLoggingEnabled() && comp->getOption(TR_TraceBC))
-                  comp->log()->prints("Skipping ilgen opts\n");
+               trprints(traceBC, log, "Skipping ilgen opts\n");
                }
             }
          }
@@ -1291,12 +1286,12 @@ OMR::ResolvedMethodSymbol::genIL(TR_FrontEnd * fe, TR::Compilation * comp, TR::S
          comp->setCurrentIlGenerator(0);
       }
 
-   if (traceIt && comp->getLoggingEnabled() && comp->getOption(TR_TraceBC))
+   if (traceIt && traceBC)
       {
       if (comp->isPeekingMethod())
-         comp->log()->prints("</peeking ilgen>\n");
+         log->prints("</peeking ilgen>\n");
       else
-         comp->log()->prints("</ilgen>\n");
+         log->prints("</ilgen>\n");
       }
    return _methodFlags.testAny(IlGenSuccess);
    }

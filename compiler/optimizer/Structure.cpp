@@ -2054,7 +2054,7 @@ void TR_RegionStructure::addExternalEdge(TR_Structure *from, int32_t toNumber, b
 
 void TR_RegionStructure::collapseIntoParent()
    {
-   if (debug("traceCollapseRegion") && comp()->getLoggingEnabled())
+   if (debug("traceCollapseRegion"))
       {
       diagnostic("==> Structure before collapsing %d into parent %d\n",
                   getNumber(), getParent()->getNumber());
@@ -2791,7 +2791,7 @@ void TR_Structure::mergeBlocks(TR::Block *merged, TR::Block *mergedInto)
    merged->setStructureOf(s);
 
    TR_ASSERT(s->getNumber() == merged->getNumber(),"Structure: bad structure when merging blocks");
-   if (debug("dumpStructure") && comp()->getLoggingEnabled())
+   if (debug("dumpStructure"))
       comp()->getDebug()->print(comp()->log(), comp()->getFlowGraph()->getStructure(), 6);
    }
 

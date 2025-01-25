@@ -1662,8 +1662,8 @@ void OMR::X86::CodeGenerator::doBackwardsRegisterAssignment(
 
 #ifdef DEBUG
    TR::Instruction *origNextInstruction;
-   bool dumpPreGP = (debug("dumpGPRA") || debug("dumpGPRA0")) && comp->getLoggingEnabled();
-   bool dumpPostGP = (debug("dumpGPRA") || debug("dumpGPRA1")) && comp->getLoggingEnabled();
+   bool dumpPreGP = (debug("dumpGPRA") || debug("dumpGPRA0"));
+   bool dumpPostGP = (debug("dumpGPRA") || debug("dumpGPRA1"));
 #endif
 
    if (self()->getUseNonLinearRegisterAssigner())
@@ -1740,10 +1740,10 @@ void OMR::X86::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssig
 
 #if defined(DEBUG)
    TR::Instruction *origPrevInstruction;
-   bool            dumpPreFP = (debug("dumpFPRA") || debug("dumpFPRA0")) && comp->getLoggingEnabled();
-   bool            dumpPostFP = (debug("dumpFPRA") || debug("dumpFPRA1")) && comp->getLoggingEnabled();
-   bool            dumpPreGP = (debug("dumpGPRA") || debug("dumpGPRA0")) && comp->getLoggingEnabled();
-   bool            dumpPostGP = (debug("dumpGPRA") || debug("dumpGPRA1")) && comp->getLoggingEnabled();
+   bool            dumpPreFP = (debug("dumpFPRA") || debug("dumpFPRA0"));
+   bool            dumpPostFP = (debug("dumpFPRA") || debug("dumpFPRA1"));
+   bool            dumpPreGP = (debug("dumpGPRA") || debug("dumpGPRA0"));
+   bool            dumpPostGP = (debug("dumpGPRA") || debug("dumpGPRA1"));
 #endif
 
    LexicalTimer pt1("total register assignment", comp->phaseTimer());

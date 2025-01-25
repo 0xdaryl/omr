@@ -26,6 +26,7 @@
 #include <stdint.h>
 
 namespace TR { class Compilation; }
+namespace TR { class Logger; }
 
 class TR_CallStackIterator
    {
@@ -73,7 +74,7 @@ public:
    TR_LinuxCallStackIterator() {}
    virtual void printStackBacktrace(TR::Compilation *comp);
 private:
-   void printSymbol(int32_t frame, char *sig, TR::Compilation *comp);
+   void printSymbol(int32_t frame, char *sig, TR::Logger *log);
    friend class TR_CallStackIterator;
    };
 
