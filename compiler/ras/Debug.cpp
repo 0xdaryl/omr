@@ -386,7 +386,9 @@ TR_Debug::addInstructionComment(TR::Instruction *instr, char * comment, ...)
    {
    TR_ASSERT(_comp, "Required compilation object is NULL.\n");
 
-   if (comment == NULL || !_comp->getLoggingEnabled())
+   static char *disableInstructionComments = feGetEnv("TR_DisableInstructionComments");
+
+   if (disableInstructionComments || comment == NULL || !_comp->log()->isEnabled())
       return;
 
    CS2::HashIndex hashIndex;
@@ -406,6 +408,7 @@ TR_Debug::addInstructionComment(TR::Instruction *instr, char * comment, ...)
 bool
 TR_Debug::performTransformationImpl(bool canOmitTransformation, const char * format, ...)
    {
+   TR::Logger *log = _comp->log();
    int32_t optIndex = _comp->getOptIndex();
    int32_t firstOptIndex = _comp->getOptions()->getFirstOptIndex();
    int32_t lastOptIndex = _comp->getOptions()->getLastOptIndex();
@@ -423,10 +426,12 @@ TR_Debug::performTransformationImpl(bool canOmitTransformation, const char * for
    bool alreadyFormatted = false;
    char messageBuffer[300];
 
+   static char *disablePerformTransformationLogging = feGetEnv("TR_DisablePerformTransformationLogging");
+
    // We try to avoid doing the work of formatting the string if we don't need to.
    //
    if (  (_comp->getOption(TR_CountOptTransformations) && _comp->getOptions()->getVerboseOptTransformationsRegex())
-      || (_comp->getLoggingEnabled() && canOmitTransformation && _comp->getOptions()->getDisabledOptTransformations()))
+      || (!disablePerformTransformationLogging && log->isEnabled() && canOmitTransformation && _comp->getOptions()->getDisabledOptTransformations()))
       {
       va_list args;
       va_start(args,format);
@@ -472,10 +477,8 @@ TR_Debug::performTransformationImpl(bool canOmitTransformation, const char * for
 
    // No need to do the printing logic below if logging is disabled
    //
-   if (!_comp->getLoggingEnabled())
+   if (disablePerformTransformationLogging || !log->isEnabled())
       return true;
-
-   TR::Logger *log = _comp->log();
 
    if (canOmitTransformation)
       {
@@ -519,7 +522,7 @@ TR_Debug::performTransformationImpl(bool canOmitTransformation, const char * for
 void
 TR_Debug::trace(const char *format, ...)
    {
-   if (_comp->getLoggingEnabled())
+   if (getLogger()->isEnabled())
       {
       va_list args;
       va_start(args, format);
@@ -548,9 +551,9 @@ TR_Debug::vtrace(const char *format, va_list args)
 void
 TR_Debug::traceLnFromLogTracer(const char *preFormatted)
    {
-   if (_comp->getLoggingEnabled())
+   TR::Logger *log = getLogger();
+   if (log->isEnabled())
       {
-      TR::Logger *log = getLogger();
       log->prints(preFormatted);
       log->println();
       log->flush();

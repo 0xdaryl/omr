@@ -342,10 +342,10 @@ void OMR::ValuePropagation::initialize()
 
          optimizer()->doStructuralAnalysis();
 
-         if ( doTiming)
+         if (doTiming)
             {
             myTimer.stopTiming(comp());
-            if (comp()->getLoggingEnabled())
+            if (trace())
                {
                TR::Logger *log = comp()->log();
                log->printf("Time taken for %s = ", myTimer.title());

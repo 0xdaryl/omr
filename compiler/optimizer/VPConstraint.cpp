@@ -5909,10 +5909,7 @@ TR::VPConstraint *TR::VPNotEqual::propagateRelativeConstraint(TR::VPRelation *ot
 
 void TR::VPConstraint::print(OMR::ValuePropagation *vp)
    {
-   if (vp->comp()->getLoggingEnabled())
-      {
-      print(vp->comp()->log(), vp->comp());
-      }
+   print(vp->comp()->log(), vp->comp());
    }
 
 void TR::VPConstraint::print(TR::Logger *log, TR::Compilation *comp)

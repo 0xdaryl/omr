@@ -33,15 +33,23 @@
 
 void TR_CallStackIterator::printStackBacktrace(TR::Compilation *comp)
    {
+   static char *disableOutputStackTrace = feGetEnv("TR_DisableOutputStackTrace");
+   if (disableOutputStackTrace)
+      return;
+
+   TR::Logger *log = NULL;
+   if (comp)
+      {
+      log = comp->log();
+      if (!log->isEnabled())
+         return;
+      }
+   else
+      log = TR::CStdIOStreamLogger::Stderr;
+
    while (!isDone())
       {
-      if (comp)
-         {
-         if (comp->getLoggingEnabled())
-            comp->log()->printf("%s+0x%" OMR_PRIxPTR "\n", getProcedureName(), getOffsetInProcedure());
-         }
-      else
-         fprintf(stderr, "%s+0x%" OMR_PRIxPTR "\n", getProcedureName(), getOffsetInProcedure());
+      log->printf("%s+0x%" OMR_PRIxPTR "\n", getProcedureName(), getOffsetInProcedure());
       getNext();
       }
    }
@@ -213,7 +221,7 @@ const char *TR_PPCCallStackIterator::getProcedureName()
 #include <execinfo.h>
 #include <cxxabi.h>
 
-void TR_LinuxCallStackIterator::printSymbol(int32_t frame, char *sig, TR::Compilation *comp)
+void TR_LinuxCallStackIterator::printSymbol(int32_t frame, char *sig, TR::Logger *log)
    {
    char lib[256];
    char func[256];
@@ -229,37 +237,37 @@ void TR_LinuxCallStackIterator::printSymbol(int32_t frame, char *sig, TR::Compil
       int32_t status = -1;
       char *demangled = abi::__cxa_demangle(func, buffer, &length, &status);
       if (status == 0) funcToPrint = demangled;
-      if (comp)
-         {
-         if (comp->getLoggingEnabled())
-            comp->log()->printf("#%" OMR_PRId32 ": function %s+%#" OMR_PRIxPTR " [%#" OMR_PRIxPTR "]\n",
-                 frame,
-                 funcToPrint,
-                 offset,
-                 address);
-         }
-      else
-         fprintf(stderr, "#%" OMR_PRId32 ": function %s+%#" OMR_PRIxPTR" [%#" OMR_PRIxPTR "]\n",
-                 frame,
-                 funcToPrint,
-                 offset,
-                 address);
+
+      log->printf("#%" OMR_PRId32 ": function %s+%#" OMR_PRIxPTR " [%#" OMR_PRIxPTR "]\n",
+            frame,
+            funcToPrint,
+            offset,
+            address);
+
       if (demangled) free(demangled);
       }
    else
       {
-      if (comp)
-         {
-         if (comp->getLoggingEnabled())
-            comp->log()->printf("#%" OMR_PRId32 ": %s\n", frame, sig);
-         }
-      else
-         fprintf(stderr, "#%" OMR_PRId32 ": %s\n", frame, sig);
+      log->printf("#%" OMR_PRId32 ": %s\n", frame, sig);
       }
    }
 
 void TR_LinuxCallStackIterator::printStackBacktrace(TR::Compilation *comp)
    {
+   static char *disableOutputStackTrace = feGetEnv("TR_DisableOutputStackTrace");
+   if (disableOutputStackTrace)
+      return;
+
+   TR::Logger *log = NULL;
+   if (comp)
+      {
+      log = comp->log();
+      if (!log->isEnabled())
+         return;
+      }
+   else
+      log = TR::CStdIOStreamLogger::Stderr;
+
    const uint32_t MAX_TRACE_SIZE = 30;
    const uint32_t SKIP_FRAMES = 0;
    void *trace[MAX_TRACE_SIZE];
@@ -269,7 +277,7 @@ void TR_LinuxCallStackIterator::printStackBacktrace(TR::Compilation *comp)
    for (uint32_t i = SKIP_FRAMES; i < size; ++i)
       {
       char *signature = symbols[i];
-      printSymbol(i, signature, comp);
+      printSymbol(i, signature, log);
       }
    free(symbols);
    }
