@@ -83,36 +83,36 @@ enum TR_CompilationOptions
 
    // Option word 0
    //
-   TR_AOTCompileOnlyFromBootstrap= 0x00000020,
+   TR_AOTCompileOnlyFromBootstrap    = 0x00000020,
    TR_AggressiveSwitchingToProfiling = 0x00000040,
-   TR_ReportMethodEnter          = 0x00000080,
-   TR_ReportMethodExit           = 0x00000100,
-   TR_EntryBreakPoints           = 0x00000200,
-   TR_EnableOldEDO               = 0x00000400,
-   TR_InstallAOTToColdCode       = 0x00000800,
-   TR_RegisterMaps               = 0x00001000,
-   TR_CreatePCMaps               = 0x00002000,
-   TR_AggressiveInlining         = 0x00004000,
-   TR_MimicInterpreterFrameShape = 0x00008000,
+   TR_ReportMethodEnter              = 0x00000080,
+   TR_ReportMethodExit               = 0x00000100,
+   TR_EntryBreakPoints               = 0x00000200,
+   TR_EnableOldEDO                   = 0x00000400,
+   TR_InstallAOTToColdCode           = 0x00000800,
+   TR_RegisterMaps                   = 0x00001000,
+   TR_CreatePCMaps                   = 0x00002000,
+   TR_AggressiveInlining             = 0x00004000,
+   TR_MimicInterpreterFrameShape     = 0x00008000,
 
-   TR_TraceBC                    = 0x00010000,
-   // Available                  = 0x00020000,
-   TR_TraceTrees                 = 0x00040000,
-   TR_TraceCG                    = 0x00080000,
-   TR_TraceAliases               = 0x00100000,
-   // Available                  = 0x00200000,
-   TR_TraceOptDetails            = 0x00400000,
-   TR_TraceAll                   = TR_TraceBC | TR_TraceTrees | TR_TraceCG | TR_TraceOptDetails, // intentionally omits TR_TraceAliases
+   TR_TraceBC                        = 0x00010000,
+   // Available                      = 0x00020000,
+   TR_TraceTrees                     = 0x00040000,
+   TR_TraceCG                        = 0x00080000,
+   TR_TraceAliases                   = 0x00100000,
+   // Available                      = 0x00200000,
+   TR_TraceOptDetails                = 0x00400000,
+   TR_TraceAll                       = TR_TraceBC | TR_TraceTrees | TR_TraceCG | TR_TraceOptDetails, // intentionally omits TR_TraceAliases
 
-   TR_CountOptTransformations    = 0x00800000, // Must be same option word as TR_TraceOptDetails to allow performTransformation macros to do getAnyOption on them
-   TR_NoRecompile                = 0x01000000,
-   TR_DebugBeforeCompile         = 0x02000000,
-   TR_DebugOnEntry               = 0x04000000,
-   TR_BreakBeforeCompile         = 0x08000000,
-   TR_FailRecompile              = 0x10000000,
-   TR_FailPreXRecompile          = 0x20000000,
-   TR_TraceBBVA                  = 0x40000000,
-   TR_TraceBVA                   = 0x80000000,
+   TR_CountOptTransformations        = 0x00800000, // Must be same option word as TR_TraceOptDetails to allow performTransformation macros to do getAnyOption on them
+   TR_NoRecompile                    = 0x01000000,
+   TR_DebugBeforeCompile             = 0x02000000,
+   TR_DebugOnEntry                   = 0x04000000,
+   TR_BreakBeforeCompile             = 0x08000000,
+   TR_FailRecompile                  = 0x10000000,
+   TR_FailPreXRecompile              = 0x20000000,
+   TR_TraceBBVA                      = 0x40000000,
+   TR_TraceBVA                       = 0x80000000,
 
    // Option word 1
    //
@@ -408,10 +408,10 @@ enum TR_CompilationOptions
    TR_DisableSSE4_1                       = 0x01000000 + 10,
    TR_DisableSSE4_2                       = 0x02000000 + 10,
    TR_DisableNewX86VolatileSupport        = 0x04000000 + 10,
-   // Available                           = 0x08000000 + 10,
-   // Available                           = 0x10000000 + 10,
-   // Available                           = 0x20000000 + 10,
-   // Available                           = 0x40000000 + 10,
+   TR_TraceBlockVerification              = 0x08000000 + 10,
+   TR_TraceTreeVerification               = 0x10000000 + 10,
+   TR_TraceNodeRefCountVerification       = 0x20000000 + 10,
+   TR_TraceCFGVerification                = 0x40000000 + 10,
    TR_DisableDirectToJNIInline            = 0x80000000 + 10,
 
    // Option word 11
