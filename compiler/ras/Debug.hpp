@@ -590,7 +590,6 @@ public:
    virtual void         dump(TR::Logger *log, TR_CHTable *);
 #endif
 
-   virtual void         trace(const char *, ...);
    virtual void         traceLnFromLogTracer(const char *);
    virtual bool         performTransformationImpl(bool, const char *, ...);
 
@@ -1235,7 +1234,6 @@ public:
    friend class TR_CFGChecker;
 
 protected:
-   virtual void vtrace(const char *, va_list args);
 
    TR::FILE                  *_outFile;
    TR::Compilation           *_comp;
