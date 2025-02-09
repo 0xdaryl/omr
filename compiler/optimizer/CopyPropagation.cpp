@@ -117,13 +117,14 @@ bool foundInterferenceBetweenCurrentNodeAndPropagation(TR::Compilation * comp, b
 
    if (trace)
       {
-      comp->getDebug()->trace("foundInterferenceBetweenCurrentNodeAndPropagation: currentNode %p storeNode %p checkNodes [", currentNode, storeNode);
+      TR::Logger *log = comp->log();
+      log->printf("foundInterferenceBetweenCurrentNodeAndPropagation: currentNode %p storeNode %p checkNodes [", currentNode, storeNode);
       for (auto checkNodesCursor = checkNodes.begin(); checkNodesCursor != checkNodes.end(); ++checkNodesCursor)
          {
-         comp->getDebug()->trace("%p ", (*checkNodesCursor));
+         log->printf("%p ", (*checkNodesCursor));
          }
 
-      comp->getDebug()->trace("] = %s\n", result ? "interference" : "ok");
+      log->printf("] = %s\n", result ? "interference" : "ok");
       }
 
    comp->setVisitCount(save_vc);
@@ -240,11 +241,9 @@ class TR_ExpressionPropagation
 
             TR_ASSERT(parentNode != 0, "parentNode == 0!");
 
-            if (trace())
-               {
-               comp()->getDebug()->trace("%s   Propagating new RHS " POINTER_PRINTF_FORMAT " in place of old instance location " POINTER_PRINTF_FORMAT " child index %d\n",
-                                         OPT_DETAILS, sourceTree, parentNode, childIndex);
-               }
+            trprintf(trace(), comp()->log(),
+                  "%s   Propagating new RHS " POINTER_PRINTF_FORMAT " in place of old instance location " POINTER_PRINTF_FORMAT " child index %d\n",
+                  OPT_DETAILS, sourceTree, parentNode, childIndex);
 
             TR::Node * commonedNode = parentNode->getChild(static_cast<int32_t>(childIndex));
             parentNode->setAndIncChild(static_cast<int32_t>(childIndex), sourceTree);
@@ -395,11 +394,9 @@ class TR_ExpressionPropagation
                if (oldNode->getReferenceCount() == 0)
                   {
                   // Replaced all occurrences later in the block, bail out.
-                  if (trace())
-                     {
-                     comp()->getDebug()->trace("%s   Propagating new RHS " POINTER_PRINTF_FORMAT " stops because oldNode ref count = 0\n",
-                                               OPT_DETAILS, newNode);
-                     }
+                  trprintf(trace(), comp()->log(),
+                        "%s   Propagating new RHS " POINTER_PRINTF_FORMAT " stops because oldNode ref count = 0\n",
+                        OPT_DETAILS, newNode);
 
                   break;
                   }
@@ -1687,10 +1684,7 @@ TR::Node *TR_CopyPropagation::areAllDefsInCorrectForm(TR::Node *useNode, const T
 
          if (foundInterferenceBetweenCurrentNodeAndPropagation(comp(), trace(), currentNode, lastDefNode, checkNodes, refsToCheckIfKilled))
             {
-            if (trace())
-               {
-               comp()->getDebug()->trace("%s   Cannot propagate RHS of i = i + 1 (node %p)\n", OPT_DETAILS, lastDefNode);
-               }
+            trprintf(trace(), comp()->log(), "%s   Cannot propagate RHS of i = i + 1 (node %p)\n", OPT_DETAILS, lastDefNode);
 
             return NULL;
             }
@@ -2360,11 +2354,7 @@ TR::Node * TR_CopyPropagation::isCheapRematerializationCandidate(TR::Node * defN
 
    if (!cheapExpression)
       {
-      if (trace())
-         {
-         comp()->getDebug()->trace("%s   skipping attempt at propagating %p because it is not cheap\n",
-                                   OPT_DETAILS, node);
-         }
+      trprintf(trace(), comp()->log(), "%s   skipping attempt at propagating %p because it is not cheap\n", OPT_DETAILS, node);
 
       return NULL;
       }
