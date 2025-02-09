@@ -1252,10 +1252,7 @@ void ArtificiallyInflateReferenceCountWhenNecessary(TR::MemoryReference * mr, co
             }
          else
             {
-            if (trace)
-               {
-               comp->getDebug()->trace(" could not add node %p to cg stack\n", nodeArray[i]);
-               }
+            trprintf(trace, log, " could not add node %p to cg stack\n", nodeArray[i]);
             }
          }
       }
