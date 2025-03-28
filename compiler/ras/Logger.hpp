@@ -311,6 +311,47 @@ private:
 
    };
 
+
+/**
+ * A Logger class that implements circular logging over a bounded log size
+ */
+class CircularLogger : public Logger
+   {
+
+public:
+
+   static CircularLogger *create(TR::Logger *innerLogger, int64_t maxLogSizeInBytes);
+
+   virtual int32_t printf(const char *format, ...);
+
+   virtual int32_t prints(const char *string);
+
+   virtual int32_t printc(char c);
+
+   virtual int32_t println();
+
+   virtual int32_t vprintf(const char *format, va_list args);
+
+   virtual int64_t tell();
+
+   virtual void rewind();
+
+   virtual void flush();
+
+   virtual void close();
+
+   virtual bool supportsRewinding() { return true; }
+
+private:
+
+   CircularLogger(TR::Logger *innerLogger, int64_t maxLogSizeInBytes);
+
+   TR::Logger *_innerLogger;
+
+   int64_t _maxLogSizeInBytes;
+
+   };
+
 }
 
 #endif
