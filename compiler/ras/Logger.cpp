@@ -315,3 +315,111 @@ TR::TRIOStreamLogger::close()
    setEnabled(false);
    }
 
+
+/*
+ * -----------------------------------------------------------------------------
+ * CircularLogger
+ * -----------------------------------------------------------------------------
+ */
+TR::CircularLogger::CircularLogger(TR::Logger *innerLogger, int64_t maxLogSizeInBytes)
+   {
+   TR_ASSERT_FATAL(innerLogger->supportsRewinding(), "Inner logger must support rewinding for use in a circular logger");
+   TR_ASSERT_FATAL(maxLogSizeInBytes > 0, "Circular log size must be a non-zero, positive integer");
+
+   _innerLogger = innerLogger;
+   _maxLogSizeInBytes = maxLogSizeInBytes;
+   }
+
+TR::CircularLogger *TR::CircularLogger::create(TR::Logger *innerLogger, int64_t maxLogSizeInBytes)
+   {
+   return new TR::CircularLogger(innerLogger, maxLogSizeInBytes);
+   }
+
+int32_t
+TR::CircularLogger::printf(const char *format, ...)
+   {
+   va_list args;
+   va_start(args, format);
+
+   if (_innerLogger->tell() > _maxLogSizeInBytes)
+      {
+      _innerLogger->rewind();
+      }
+
+   int32_t length = _innerLogger->vprintf(format, args);
+   va_end(args);
+   return length;
+   }
+
+int32_t
+TR::CircularLogger::prints(const char *str)
+   {
+   if (_innerLogger->tell() > _maxLogSizeInBytes)
+      {
+      _innerLogger->rewind();
+      }
+
+   _innerLogger->prints(str);
+   return 0;
+   }
+
+int32_t
+TR::CircularLogger::printc(char c)
+   {
+   if (_innerLogger->tell() > _maxLogSizeInBytes)
+      {
+      _innerLogger->rewind();
+      }
+
+   _innerLogger->printc(c);
+   return 0;
+   }
+
+int32_t
+TR::CircularLogger::println()
+   {
+   if (_innerLogger->tell() > _maxLogSizeInBytes)
+      {
+      _innerLogger->rewind();
+      }
+
+   _innerLogger->println();
+   return 0;
+   }
+
+int32_t
+TR::CircularLogger::vprintf(const char *format, va_list args)
+   {
+   if (_innerLogger->tell() > _maxLogSizeInBytes)
+      {
+      _innerLogger->rewind();
+      }
+
+   return _innerLogger->vprintf(format, args);
+   }
+
+int64_t
+TR::CircularLogger::tell()
+   {
+   return _innerLogger->tell();
+   }
+
+void
+TR::CircularLogger::flush()
+   {
+   _innerLogger->flush();
+   }
+
+void
+TR::CircularLogger::rewind()
+   {
+   _innerLogger->rewind();
+   }
+
+void
+TR::CircularLogger::close()
+   {
+   _innerLogger->close();
+   setEnabled(false);
+   }
+
