@@ -955,13 +955,16 @@ omrvmem_find_valid_page_size(struct OMRPortLibrary *portLibrary, uintptr_t mode,
 	Assert_PRT_true_wrapper(OMRPORT_VMEM_PAGE_FLAG_NOT_USED == validPageFlags);
 
 	if (0 != validPageSize) {
-		/* for 32-bit executable pages, search through the list of page sizes only if
+		/* For executable pages search through the list of supported page sizes only if
 		 * - request is for 64K pages, or
-		 * - request is for 16M pages AND CodeCacheConsolidation is enabled
-		 *
-		 * for 64-bit, accept any request supported by the OS
+		 * - request is for 16M pages, and
+		 * - 64 bit system OR (32 bit system AND CodeCacheConsolidation is enabled)
 		 */
-#if !defined(OMR_ENV_DATA64)
+#if defined(OMR_ENV_DATA64)
+		if ((OMRPORT_VMEM_MEMORY_MODE_EXECUTE != (OMRPORT_VMEM_MEMORY_MODE_EXECUTE & mode))
+			|| (SIXTY_FOUR_K == validPageSize)
+			|| (SIXTEEN_M == validPageSize)
+#else
 		BOOLEAN codeCacheConsolidationEnabled = FALSE;
 
 		/* Check if the TR_ppcCodeCacheConsolidationEnabled env variable is set.
@@ -975,9 +978,9 @@ omrvmem_find_valid_page_size(struct OMRPortLibrary *portLibrary, uintptr_t mode,
 		}
 		if ((OMRPORT_VMEM_MEMORY_MODE_EXECUTE != (OMRPORT_VMEM_MEMORY_MODE_EXECUTE & mode))
 			|| ((TRUE == codeCacheConsolidationEnabled) && (SIXTEEN_M == validPageSize))
-			|| (SIXTY_FOUR_K == validPageSize))
-#endif /* !defined(OMR_ENV_DATA64) */
-		{
+			|| (SIXTY_FOUR_K == validPageSize)
+#endif /* defined(OMR_ENV_DATA64) */
+		) {
 			uintptr_t pageIndex = 0;
 			uintptr_t *supportedPageSizes = portLibrary->vmem_supported_page_sizes(portLibrary);
 			uintptr_t *supportedPageFlags = portLibrary->vmem_supported_page_flags(portLibrary);
