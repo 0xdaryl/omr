@@ -1928,9 +1928,10 @@ void OMR::X86::TreeEvaluator::arrayCopy64BitPrimitiveInlineSmallSizeWithoutREPMO
 
    generateLabelInstruction(TR::InstOpCode::JA4, node, copyLabel2, cg);
 
-   // 40-64 Bytes
-   generateMemoryCopyInstructions(node, dstReg, srcReg, sizeReg, tmpXmmYmmReg1, tmpXmmYmmReg2, 32, cg);
-   generateLabelInstruction(TR::InstOpCode::JMP4, node, mainEndLabel, cg);
+    // 40-64 Bytes
+    generateMemoryCopyInstructions(node, dstReg, srcReg, sizeReg, tmpXmmYmmReg1, tmpXmmYmmReg2, 32, cg);
+    generateInstruction(TR::InstOpCode::VZEROUPPER, node, cg);
+    generateLabelInstruction(TR::InstOpCode::JMP4, node, mainEndLabel, cg);
 
    if (repMovsThresholdBytes == 64)
       return;
@@ -1940,10 +1941,11 @@ void OMR::X86::TreeEvaluator::arrayCopy64BitPrimitiveInlineSmallSizeWithoutREPMO
    generateRegImmInstruction(TR::InstOpCode::CMPRegImm4(), node, sizeReg, 128, cg);
    generateLabelInstruction(TR::InstOpCode::JA4, node, repMovsLabel, cg);
 
-   // 72-128 Bytes
-   generateMemoryCopyInstructions(node, dstReg, srcReg, sizeReg, tmpXmmYmmReg1, tmpXmmYmmReg2, 64, cg);
-   generateLabelInstruction(TR::InstOpCode::JMP4, node, mainEndLabel, cg);
-   }
+    // 72-128 Bytes
+    generateMemoryCopyInstructions(node, dstReg, srcReg, sizeReg, tmpXmmYmmReg1, tmpXmmYmmReg2, 64, cg);
+    generateInstruction(TR::InstOpCode::VZEROUPPER, node, cg);
+    generateLabelInstruction(TR::InstOpCode::JMP4, node, mainEndLabel, cg);
+}
 
 void OMR::X86::TreeEvaluator::arrayCopy32BitPrimitiveInlineSmallSizeWithoutREPMOVSImplRoot16(TR::Node *node,
                                                                                              TR::Register *dstReg,
@@ -2060,9 +2062,10 @@ void OMR::X86::TreeEvaluator::arrayCopy32BitPrimitiveInlineSmallSizeWithoutREPMO
 
    generateLabelInstruction(TR::InstOpCode::JA4, node, copyLabel2, cg);
 
-   // 36-64 Bytes
-   generateMemoryCopyInstructions(node, dstReg, srcReg, sizeReg, tmpXmmYmmReg1, tmpXmmYmmReg2, 32, cg);
-   generateLabelInstruction(TR::InstOpCode::JMP4, node, mainEndLabel, cg);
+    // 36-64 Bytes
+    generateMemoryCopyInstructions(node, dstReg, srcReg, sizeReg, tmpXmmYmmReg1, tmpXmmYmmReg2, 32, cg);
+    generateInstruction(TR::InstOpCode::VZEROUPPER, node, cg);
+    generateLabelInstruction(TR::InstOpCode::JMP4, node, mainEndLabel, cg);
 
    if (repMovsThresholdBytes == 64)
       return;
@@ -2072,10 +2075,11 @@ void OMR::X86::TreeEvaluator::arrayCopy32BitPrimitiveInlineSmallSizeWithoutREPMO
    generateRegImmInstruction(TR::InstOpCode::CMPRegImm4(), node, sizeReg, 128, cg);
    generateLabelInstruction(TR::InstOpCode::JA4, node, repMovsLabel, cg);
 
-   // 68-128 Bytes
-   generateMemoryCopyInstructions(node, dstReg, srcReg, sizeReg, tmpXmmYmmReg1, tmpXmmYmmReg2, 64, cg);
-   generateLabelInstruction(TR::InstOpCode::JMP4, node, mainEndLabel, cg);
-   }
+    // 68-128 Bytes
+    generateMemoryCopyInstructions(node, dstReg, srcReg, sizeReg, tmpXmmYmmReg1, tmpXmmYmmReg2, 64, cg);
+    generateInstruction(TR::InstOpCode::VZEROUPPER, node, cg);
+    generateLabelInstruction(TR::InstOpCode::JMP4, node, mainEndLabel, cg);
+}
 
 /** \brief
 *    Generate instructions to do array copy for 16-bit primitives.
@@ -2283,10 +2287,11 @@ static void arrayCopy16BitPrimitiveInlineSmallSizeWithoutREPMOVSImplRoot16(TR::N
    generateRegImmInstruction(TR::InstOpCode::CMPRegImm4(), node, sizeReg, 64, cg);
    generateLabelInstruction(TR::InstOpCode::JA4, node, repMovsLabel, cg);
 
-   // 34-64 Bytes
-   generateMemoryCopyInstructions(node, dstReg, srcReg, sizeReg, tmpXmmYmmReg1, tmpXmmYmmReg2, 32, cg);
-   generateLabelInstruction(TR::InstOpCode::JMP4, node, mainEndLabel, cg);
-   }
+    // 34-64 Bytes
+    generateMemoryCopyInstructions(node, dstReg, srcReg, sizeReg, tmpXmmYmmReg1, tmpXmmYmmReg2, 32, cg);
+    generateInstruction(TR::InstOpCode::VZEROUPPER, node, cg);
+    generateLabelInstruction(TR::InstOpCode::JMP4, node, mainEndLabel, cg);
+}
 
 static void arrayCopy8BitPrimitiveInlineSmallSizeWithoutREPMOVSImplRoot8(TR::Node *node,
                                                                          TR::Register *dstReg,
@@ -2429,10 +2434,11 @@ static void arrayCopy8BitPrimitiveInlineSmallSizeWithoutREPMOVSImplRoot8(TR::Nod
    generateRegImmInstruction(TR::InstOpCode::CMPRegImm4(), node, sizeReg, 64, cg);
    generateLabelInstruction(TR::InstOpCode::JA4, node, repMovsLabel, cg);
 
-   // 33-64 Bytes
-   generateMemoryCopyInstructions(node, dstReg, srcReg, sizeReg, tmpXmmYmmReg1, tmpXmmYmmReg2, 32, cg);
-   generateLabelInstruction(TR::InstOpCode::JMP4, node, mainEndLabel, cg);
-   }
+    // 33-64 Bytes
+    generateMemoryCopyInstructions(node, dstReg, srcReg, sizeReg, tmpXmmYmmReg1, tmpXmmYmmReg2, 32, cg);
+    generateInstruction(TR::InstOpCode::VZEROUPPER, node, cg);
+    generateLabelInstruction(TR::InstOpCode::JMP4, node, mainEndLabel, cg);
+}
 
 /** \brief
 *      Select rep movs[b|w|d|q] instruction based on element size and CPU if applicable
@@ -3015,46 +3021,47 @@ static void arrayCopyPrimitiveInlineSmallSizeConstantCopySize(TR::Node* node,
 
    TR_ASSERT_FATAL(copySize <= 64, "%s: copySize %u is not supported\n", __FUNCTION__, copySize);
 
-   TR::Register* tmpReg1 = cg->allocateRegister(TR_GPR);
-   TR::Register* tmpReg2 = cg->allocateRegister(TR_GPR);
-   TR::Register* tmpVRFReg1 = cg->allocateRegister(TR_VRF);
-   TR::Register* tmpVRFReg2 = cg->allocateRegister(TR_VRF);
+    TR::Register *tmpReg1 = cg->allocateRegister(TR_GPR);
+    TR::Register *tmpReg2 = cg->allocateRegister(TR_GPR);
+    TR::Register *tmpVRFReg1 = cg->allocateRegister(TR_VRF);
+    TR::Register *tmpVRFReg2 = cg->allocateRegister(TR_VRF);
 
-   if (((copySize < 64) && ((copySize & (copySize - 1)) == 0)) // power of 2
-       || ((copySize == 64) && cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F)))
-      {
-      TR::Register* valueReg = (copySize >= 16) ? tmpVRFReg1 : tmpReg1;
-      generateArrayElementLoad(node, valueReg, copySize, srcReg, 0 /* index */, cg);
-      generateArrayElementStore(node, dstReg, 0 /* index */, valueReg, copySize, cg);
-      }
-   else
-      {
-      uint8_t regSize = 0;
-      TR::Register* t1 = tmpReg1;
-      TR::Register* t2 = tmpReg2;
+    bool emitVzeroupper = false;
 
-      if (copySize < 8)
-         {
-         regSize = (copySize < 4) ? 2 : 4;
-         }
-      else if (copySize < 16) // 8-15
-         {
-         regSize = 8;
-         }
-      else // 16-64
-         {
-         regSize = (copySize < 32) ? 16 : 32;
-         t1 = tmpVRFReg1;
-         t2 = tmpVRFReg2;
-         }
-      generateMemoryCopyInstructions(node, dstReg, srcReg, sizeReg, t1, t2, regSize, cg);
-      }
+    if (((copySize < 64) && ((copySize & (copySize - 1)) == 0)) // power of 2
+        || ((copySize == 64) && cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F))) {
+        TR::Register *valueReg = (copySize >= 16) ? tmpVRFReg1 : tmpReg1;
+        emitVzeroupper = copySize >= 32;
+        generateArrayElementLoad(node, valueReg, copySize, srcReg, 0 /* index */, cg);
+        generateArrayElementStore(node, dstReg, 0 /* index */, valueReg, copySize, cg);
+    } else {
+        uint8_t regSize = 0;
+        TR::Register *t1 = tmpReg1;
+        TR::Register *t2 = tmpReg2;
 
-   cg->stopUsingRegister(tmpReg1);
-   cg->stopUsingRegister(tmpReg2);
-   cg->stopUsingRegister(tmpVRFReg1);
-   cg->stopUsingRegister(tmpVRFReg2);
-   }
+        if (copySize < 8) {
+            regSize = (copySize < 4) ? 2 : 4;
+        } else if (copySize < 16) // 8-15
+        {
+            regSize = 8;
+        } else // 16-64
+        {
+            regSize = (copySize < 32) ? 16 : 32;
+            t1 = tmpVRFReg1;
+            t2 = tmpVRFReg2;
+        }
+        emitVzeroupper = regSize >= 32;
+        generateMemoryCopyInstructions(node, dstReg, srcReg, sizeReg, t1, t2, regSize, cg);
+    }
+
+    if (emitVzeroupper)
+        generateInstruction(TR::InstOpCode::VZEROUPPER, node, cg);
+
+    cg->stopUsingRegister(tmpReg1);
+    cg->stopUsingRegister(tmpReg2);
+    cg->stopUsingRegister(tmpVRFReg1);
+    cg->stopUsingRegister(tmpVRFReg2);
+}
 
 /** \brief
 *    Generate instructions to do array copy.
