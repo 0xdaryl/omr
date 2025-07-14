@@ -551,19 +551,6 @@ TR_Debug::traceLnFromLogTracer(const char *preFormatted)
       }
    }
 
-
-void
-TR_Debug::printInstruction(TR::Instruction *instr)
-   {
-   if (_file != NULL)
-      {
-      print(_file, instr);
-      trfflush(_file);
-      }
-   }
-
-
-
 void
 TR_Debug::printHeader()
    {

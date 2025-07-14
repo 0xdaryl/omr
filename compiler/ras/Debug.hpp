@@ -591,8 +591,6 @@ public:
    virtual void         traceLnFromLogTracer(const char *);
    virtual bool         performTransformationImpl(bool, const char *, ...);
 
-   virtual void         printInstruction(TR::Instruction*);
-
    virtual void         dumpGlobalRegisterTable();
    virtual void         dumpSimulatedNode(TR::Node *node, char tagChar);
 
