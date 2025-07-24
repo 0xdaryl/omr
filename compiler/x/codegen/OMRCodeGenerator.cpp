@@ -3509,3 +3509,31 @@ OMR::X86::CodeGenerator::moveOutOfLineInstructionsToWarmCode()
       ++oiIterator;
       }
    }
+
+void
+OMR::X86::CodeGenerator::cacheLiveGPRs(TR::Node *node)
+{
+   TR::CodeGenerator *cg = self();
+
+   if (!cg->getIsFooMethod())
+      return;
+
+   TR_LiveRegisters *lr = cg->getLiveRegisters(TR_GPR);
+   int32_t numLive = lr ? lr->getNumberOfLiveRegisters() : 0;
+   if (numLive && cg->liveGPRCacheCursor < 16)
+      {
+      for (TR_LiveRegisterInfo *info = lr->getFirstLiveRegister(); info; info = info->getNext())
+         {
+         TR::Register *vreg = info->getRegister();
+
+         if (!vreg->containsCollectedReference())
+            continue;
+
+         TR::SymbolReference *sr = cg->liveGPRCacheSymRef[cg->liveGPRCacheCursor];
+         TR::MemoryReference *tempMR = generateX86MemoryReference(sr, cg);
+
+         generateMemRegInstruction(TR::InstOpCode::SMemReg(true), node, tempMR, vreg, cg);
+         cg->liveGPRCacheCursor++;
+         }
+      }
+}

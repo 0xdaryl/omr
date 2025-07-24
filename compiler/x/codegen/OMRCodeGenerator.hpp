@@ -385,6 +385,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    void doRegisterAssignment(TR_RegisterKinds kindsToAssign);
    void doBinaryEncoding();
 
+   void cacheLiveGPRs(TR::Node *node);
 
    /*
     * \brief

@@ -326,6 +326,8 @@ OMR::CodeGenerator::initialize()
    cg->setIsLeafMethod();
 
    cg->createObjectFormat();
+
+
    }
 
 TR_StackMemory
@@ -548,6 +550,10 @@ void OMR::CodeGenerator::lowerTrees()
    {
 
    TR::Delimiter d(self()->comp(), self()->comp()->getOption(TR_TraceCG), "LowerTrees");
+
+
+   postInitialize();
+
 
    // Go through the trees and lower any nodes that need to be lowered. This
    // involves a call to the VM to replace the trees with other trees.
@@ -3687,3 +3693,24 @@ OMR::CodeGenerator::getMethodStats(MethodStats &methodStats)
       traceMsg(self()->comp(), "FOOTPRINT: COLD BLOCK TYPE: OTHER = %d\n", coldBlocks - known_cold_blocks);
       }
    }
+
+void
+OMR::CodeGenerator::postInitialize()
+{
+   TR::CodeGenerator *cg = self();
+   TR::Compilation *comp = cg->comp();
+
+   if (!strncmp(comp->signature(), "MiscMonitorTests$TestContentionWithSyncMethods.foo()V", 53))
+      {
+      printf("QQQQQ Found foo method\n"); fflush(stdout);
+
+      cg->setIsFooMethod();
+
+      for (int i=0; i<16; i++)
+         {
+         liveGPRCacheSymRef[i] = cg->allocateLocalTemp(TR::Address);
+         }
+
+      liveGPRCacheCursor = 0;
+      }
+}

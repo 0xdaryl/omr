@@ -315,6 +315,13 @@ public:
     */
    void initialize();
 
+   void postInitialize();
+   TR::SymbolReference *liveGPRCacheSymRef[16];
+   int32_t liveGPRCacheCursor;
+
+
+
+
    inline TR::CodeGenerator *self();
 
    TR_StackMemory trStackMemory();
@@ -1729,6 +1736,9 @@ public:
    bool getSupportsArrayTranslateTRTO255() {return _flags4.testAny(SupportsArrayTranslateTRTO255);}
    void setSupportsArrayTranslateTRTO255() {_flags4.set(SupportsArrayTranslateTRTO255);}
 
+   bool getIsFooMethod() {return _flags4.testAny(IsFooMethod);}
+   void setIsFooMethod() {_flags4.set(IsFooMethod);}
+
    bool getSupportsArrayTranslateTRTO() {return _flags4.testAny(SupportsArrayTranslateTRTO);}
    void setSupportsArrayTranslateTRTO() {_flags4.set(SupportsArrayTranslateTRTO);}
 
@@ -2066,7 +2076,7 @@ public:
       SupportsEfficientNarrowUnsignedIntComputation       = 0x00000400,
       SupportsAtomicLoadAndAdd                            = 0x00000800,
       // AVAILABLE                                        = 0x00001000,
-      // AVAILABLE                                        = 0x00002000,
+      IsFooMethod                                         = 0x00002000,
       // AVAILABLE                                        = 0x00004000,
       SupportsArrayTranslateTRTO255                       = 0x00008000, //if (ca[i] < 256) ba[i] = (byte) ca[i]
       SupportsArrayTranslateTROTNoBreak                   = 0x00010000, //ca[i] = (char) ba[i]
