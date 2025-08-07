@@ -22,7 +22,9 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
+#ifdef LINUX
 #include <unistd.h>
+#endif
 #include "env/FrontEnd.hpp"
 #include "env/IO.hpp"
 #include "infra/Assert.hpp"
