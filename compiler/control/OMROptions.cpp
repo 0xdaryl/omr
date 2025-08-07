@@ -1816,7 +1816,7 @@ bool OMR::Options::createDebug()
 
 TR::Logger *OMR::Options::getDefaultLogger()
    {
-   return TR::NullLogger::create();
+   return TR::AssertingLogger::create();
    }
 
 bool
