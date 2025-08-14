@@ -111,6 +111,7 @@ class CodeGenerator;
 class Instruction;
 class LabelSymbol;
 class Linkage;
+class Logger;
 class MemoryReference;
 class ObjectFormat;
 class RealRegister;
@@ -1303,11 +1304,7 @@ public:
     // X86 only
     uint32_t estimateBinaryLength(TR::MemoryReference *) { return 0; }
 
-#ifdef DEBUG
-    static void shutdown(TR_FrontEnd *fe, TR::FILE *logFile);
-#endif
-
-    void dumpDataSnippets(TR::FILE *outFile) {}
+    void dumpDataSnippets(TR::Logger *log) {}
 
     // --------------------------------------------------------------------------
     // Register assignment tracing
