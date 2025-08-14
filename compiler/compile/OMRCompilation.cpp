@@ -511,36 +511,34 @@ void OMR::Compilation::setSeenClassPreventingInducedOSR()
 
 bool OMR::Compilation::supportsInduceOSR()
 {
+    TR::Logger *log = self()->log();
+    bool trace = self()->getOption(TR_TraceOSR);
+
     if (_osrInfrastructureRemoved) {
-        if (self()->getOption(TR_TraceOSR))
-            self()->log()->prints("OSR induction cannot be performed after OSR infrastructure has been removed\n");
+        trprints(trace, log, "OSR induction cannot be performed after OSR infrastructure has been removed\n");
         return false;
     }
 
     if (!self()->canAffordOSRControlFlow()) {
-        if (self()->getOption(TR_TraceOSR))
-            self()->log()->prints("canAffordOSRControlFlow is false - OSR induction is not supported\n");
+        trprints(trace, log, "canAffordOSRControlFlow is false - OSR induction is not supported\n");
         return false;
     }
 
     if (self()->getOption(TR_MimicInterpreterFrameShape)
         && !self()->getOption(TR_FullSpeedDebug) /* && areSlotsSharedByRefAndNonRef() */) {
-        if (self()->getOption(TR_TraceOSR))
-            self()->log()->prints("MimicInterpreterFrameShape is set - OSR induction is not supported\n");
+        trprints(trace, log, "MimicInterpreterFrameShape is set - OSR induction is not supported\n");
         return false;
     }
 
     if (self()->isDLT() /* && getJittedMethodSymbol()->sharesStackSlots(self()) */) {
-        if (self()->getOption(TR_TraceOSR))
-            self()->log()->prints("DLT compilation - OSR induction is not supported\n");
+        trprints(trace, log, "DLT compilation - OSR induction is not supported\n");
         return false;
     }
 
     if (_osrCompilationData && _osrCompilationData->seenClassPreventingInducedOSR()) {
-        if (self()->getOption(TR_TraceOSR))
-            self()->log()->prints(
-                "Cannot guarantee OSR transfer of control to the interpreter will work for calls preventing induced "
-                "OSR (e.g. Quad) because of differences in JIT vs interpreter representations\n");
+        trprints(trace, log,
+            "Cannot guarantee OSR transfer of control to the interpreter will work for calls preventing induced OSR "
+            "(e.g. Quad) because of differences in JIT vs interpreter representations\n");
         return false;
     }
 
@@ -877,8 +875,7 @@ int32_t OMR::Compilation::compile()
     }
 #endif /* defined(AIXPPC) */
 
-    if (self()->getLoggingEnabled()
-        && (self()->getOption(TR_TraceAll) || debug("traceStartCompile") || self()->getOption(TR_Timing))) {
+    if (self()->getOption(TR_TraceAll) || debug("traceStartCompile") || self()->getOption(TR_Timing)) {
         self()->getDebug()->printHeader(self()->log());
 
         static char *randomExercisePeriodStr = feGetEnv("TR_randomExercisePeriod");
@@ -1226,9 +1223,8 @@ bool OMR::Compilation::incInlineDepth(TR_OpaqueMethodBlock *methodInfo, TR::Reso
     // This restriction is due to a limited number of bits allocated to callerIndex in TR_ByteCodeInfo
     // For example, in Java TR_ByteCodeInfo::maxCallerIndex is set to 4095 (12 bits and one used for signness)
     if (self()->getNumInlinedCallSites() >= unsigned(maxCallerIndex)) {
-        if (self()->getOption(TR_TraceAll))
-            self()->log()->printf("The maximum number of inlined methods %d is reached\n",
-                TR_ByteCodeInfo::maxCallerIndex);
+        trprintf(self()->getOption(TR_TraceAll), self()->log(), "The maximum number of inlined methods %d is reached\n",
+            TR_ByteCodeInfo::maxCallerIndex);
         return false;
     }
 
@@ -1434,10 +1430,9 @@ TR_VirtualGuard *OMR::Compilation::findVirtualGuardInfo(TR::Node *guardNode)
 
 void OMR::Compilation::removeVirtualGuard(TR_VirtualGuard *guard)
 {
-    if (self()->getOption(TR_TraceRelocatableDataDetailsCG)) {
-        self()->log()->printf("removeVirtualGuard %p, kind %d bcindex %d calleeindex %d\n", guard, guard->getKind(),
-            guard->getByteCodeIndex(), guard->getCalleeIndex());
-    }
+    trprintf(self()->getOption(TR_TraceRelocatableDataDetailsCG), self()->log(),
+        "removeVirtualGuard %p, kind %d bcindex %d calleeindex %d\n", guard, guard->getKind(),
+        guard->getByteCodeIndex(), guard->getCalleeIndex());
 
     bool wasPresent = _virtualGuards.erase(guard) != 0;
     TR_ASSERT_FATAL_WITH_NODE(guard->getGuardNode(), wasPresent, "missing guard");
@@ -1618,8 +1613,8 @@ void OMR::Compilation::resetVisitCounts(vcount_t count, TR::TreeTop *start)
 
 void OMR::Compilation::reportFailure(const char *reason)
 {
-    if (self()->getOption(TR_TraceAll))
-        self()->log()->printf("Compilation Failed Because: %s\n", reason);
+    trprintf(self()->getOption(TR_TraceAll), self()->log(), "Compilation Failed Because: %s\n", reason);
+
     if (self()->getOption(TR_PrintErrorInfoOnCompFailure)) {
         fprintf(stderr, "Compilation Failed Because: %s\n", reason);
     }
@@ -1807,10 +1802,9 @@ void OMR::Compilation::verifyAndFixRdbarAnchors()
                 TR::Node *newttNode = TR::Node::create(TR::treetop, 1, node);
                 iter.currentTree()->insertBefore(TR::TreeTop::create(self(), newttNode));
 
-                if (self()->getOption(TR_TraceAll))
-                    self()->log()->printf(
-                        "node (n%dn) %p is an unanchored readbar, anchor it now under treetop node (n%dn) %p\n",
-                        node->getGlobalIndex(), node, newttNode->getGlobalIndex(), newttNode);
+                trprintf(self()->getOption(TR_TraceAll), self()->log(),
+                    "node (n%dn) %p is an unanchored readbar, anchor it now under treetop node (n%dn) %p\n",
+                    node->getGlobalIndex(), node, newttNode->getGlobalIndex(), newttNode);
             }
         }
     }
