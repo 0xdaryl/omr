@@ -925,7 +925,7 @@ int32_t OMR::Compilation::compile()
                 self()->failCompilation<TR::CompilationException>("Catch blocks have real predecessors");
             }
 
-            if ((debug("dumpInitialTrees") || self()->getOption(TR_TraceTrees)) && self()->getLoggingEnabled()) {
+            if (self()->getOption(TR_TraceTrees)) {
                 TR::Logger *log = self()->log();
                 self()->dumpMethodTrees(log, "Initial Trees");
                 self()->getDebug()->print(log, self()->getSymRefTab());
@@ -1813,10 +1813,6 @@ void OMR::Compilation::verifyAndFixRdbarAnchors()
 #ifdef DEBUG
 void OMR::Compilation::dumpMethodGraph(int index, TR::ResolvedMethodSymbol *methodSymbol)
 {
-    if (!self()->getLoggingEnabled()) {
-        return;
-    }
-
     TR::Logger *log = log();
 
     if (methodSymbol == 0)
@@ -2192,8 +2188,8 @@ void OMR::Compilation::diagnosticImpl(const char *s, ...)
 
 void OMR::Compilation::diagnosticImplVA(const char *s, va_list ap)
 {
-    if (self()->getLoggingEnabled()) {
-        TR::Logger *log = self()->log();
+    TR::Logger *log = self()->log();
+    if (log->isEnabled()) {
         log->vprintf(s, ap);
         log->flush();
     }
