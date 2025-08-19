@@ -7681,26 +7681,23 @@ void OMR::ValuePropagation::doDelayedTransformations()
                }
             }
 
-         //else
-         //traceMsg(comp(), "Reached 2 for call %p\n", callNode);
-         //traceMsg(comp(), "unreachable %d guarded %d\n", callUnreachable, callGuarded);
-         if (!callGuarded || !callUnreachable)
-            {
-            TR::ResolvedMethodSymbol *methodSymbol = callNode->getSymbol()->castToResolvedMethodSymbol();
 #ifdef J9_PROJECT_SPECIFIC
-            if (methodSymbol->isJNI())
-               callNode->processJNICall(ci->_tt, comp()->getMethodSymbol());
-            else
-#endif
-               {
-               if (comp()->getMethodHotness() <= warm && comp()->getOption(TR_DisableInliningDuringVPAtWarm))
-                  {
-                  if (trace()) traceMsg(comp(), "\tDo not inline call at [%p]\n", callNode);
-                  }
-               else
-                  {
-#ifdef J9_PROJECT_SPECIFIC
-                  TR_InlineCall newInlineCall(optimizer(), this);
+            if (!callGuarded || !callUnreachable) {
+                TR::ResolvedMethodSymbol *methodSymbol = callNode->getSymbol()->castToResolvedMethodSymbol();
+                if (methodSymbol->isJNI())
+                    callNode->processJNICall(ci->_tt, comp()->getMethodSymbol());
+                else {
+                    bool tryToInline = true;
+
+                    if (comp()->getMethodHotness() <= warm && comp()->getOption(TR_DisableInliningDuringVPAtWarm)) {
+                        tryToInline = false;
+                        if (trace())
+                            traceMsg(comp(), "\tDo not inline call at [%p]: TR_DisableInliningDuringVPAtWarm\n",
+                                callNode);
+                    }
+
+                    if (tryToInline) {
+                        TR_InlineCall newInlineCall(optimizer(), this);
 
                   // restrict the amount of inlining in warm/cold bodies
                   int32_t initialMaxSize = 0;
@@ -7710,26 +7707,25 @@ void OMR::ValuePropagation::doDelayedTransformations()
                      newInlineCall.setSizeThreshold(initialMaxSize);
                      }
 
-                  if (!newInlineCall.inlineCall(ci->_tt, ci->_thisType, true, ci->_argInfo, initialMaxSize))
-                     {
-                     // If inlining failed, try to issue a direct call
-                     if (!callNode->getSymbolReference()->getSymbol()->castToMethodSymbol()->isInterpreted() ||
-                         callNode->getSymbolReference()->getSymbol()->castToMethodSymbol()->isJITInternalNative())
-                        {
-                        if (callNode->getOpCode().isCallIndirect())
-                           {
-                           //printf("XXX Added devirtualized call info in %s for %x\n", comp()->signature(), callNode);
-                           comp()->findOrCreateDevirtualizedCall(callNode, ci->_thisType);
-                           }
+                        if (!newInlineCall.inlineCall(ci->_tt, ci->_thisType, true, ci->_argInfo, initialMaxSize)) {
+                            // If inlining failed, try to issue a direct call
+                            if (!callNode->getSymbolReference()->getSymbol()->castToMethodSymbol()->isInterpreted()
+                                || callNode->getSymbolReference()
+                                       ->getSymbol()
+                                       ->castToMethodSymbol()
+                                       ->isJITInternalNative()) {
+                                if (callNode->getOpCode().isCallIndirect()) {
+                                    comp()->findOrCreateDevirtualizedCall(callNode, ci->_thisType);
+                                }
+                            }
                         }
-                     }
-#endif
-                  }
-               }
+                    }
+                }
             }
-         }
-      }
-   _devirtualizedCalls.setFirst(0);
+#endif
+        }
+    }
+    _devirtualizedCalls.setFirst(0);
 
 #ifdef J9_PROJECT_SPECIFIC
    ListIterator<TR::Node> nodesIt(&_javaLangClassGetComponentTypeCalls);
