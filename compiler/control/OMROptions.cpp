@@ -5444,6 +5444,11 @@ void OMR::Options::setAggressiveThroughput()
 #ifdef J9_PROJECT_SPECIFIC
    TR::Options::_scorchingSampleThreshold = 500; // 6% CPU
    TR::Options::_veryHotSampleThreshold = 1000; // 3% CPU
+
+   self()->setDisabled(OMR::loopReplicator, true);
+   self()->setDisabled(OMR::loopStrider, true);
+   self()->setDisabled(OMR::escapeAnalysis, true);
+   self()->setOption(TR_DisableLoopTransfer);
 #endif
    self()->setOption(TR_DisablePersistIProfile); // Want to rely on freshly collected IProfiler data
    self()->setOption(TR_UseHigherMethodCounts); // Increase counts to gather more IProfiler data
