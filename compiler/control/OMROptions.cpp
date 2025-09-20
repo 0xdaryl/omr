@@ -2566,7 +2566,7 @@ bool OMR::Options::createDebug()
     return _debug != 0;
 }
 
-TR::Logger *OMR::Options::getDefaultLogger() { return TR::NullLogger::create(); }
+TR::Logger *OMR::Options::getDefaultLogger() { return TR::AssertingLogger::create(); }
 
 bool OMR::Options::requiresDebugObject()
 {
