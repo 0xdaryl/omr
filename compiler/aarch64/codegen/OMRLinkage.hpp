@@ -96,8 +96,15 @@ struct ARM64LinkageProperties {
     uint8_t _firstIntegerReturnRegister;
     uint8_t _firstFloatReturnRegister;
     TR::RealRegister::RegNum _returnRegisters[TR::RealRegister::NumRegisters];
+
     uint8_t _numAllocatableIntegerRegisters;
+    uint8_t _firstAllocatableIntegerArgumentRegister;
+    uint8_t _lastAllocatableIntegerVolatileRegister;
+
     uint8_t _numAllocatableFloatRegisters;
+    uint8_t _firstAllocatableFloatArgumentRegister;
+    uint8_t _lastAllocatableFloatVolatileRegister;
+
     uint32_t _allocationOrder[TR::RealRegister::NumRegisters];
     uint32_t _preservedRegisterMapForGC;
     TR::RealRegister::RegNum _methodMetaDataRegister;
@@ -150,6 +157,14 @@ struct ARM64LinkageProperties {
     {
         return (_registerFlags[regNum] & CallerAllocatesBackingStore);
     }
+
+    int32_t getFirstAllocatableIntegerArgumentRegister() const { return _firstAllocatableIntegerArgumentRegister; }
+
+    int32_t getLastAllocatableIntegerVolatileRegister() const { return _lastAllocatableIntegerVolatileRegister; }
+
+    int32_t getFirstAllocatableFloatArgumentRegister() const { return _firstAllocatableFloatArgumentRegister; }
+
+    int32_t getLastAllocatableFloatVolatileRegister() const { return _lastAllocatableFloatVolatileRegister; }
 
     uint32_t getKilledAndNonReturn(TR::RealRegister::RegNum regNum) const
     {

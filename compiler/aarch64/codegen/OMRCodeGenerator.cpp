@@ -35,6 +35,9 @@
 #include "codegen/Linkage_inlines.hpp"
 #include "codegen/LiveRegister.hpp"
 #include "codegen/MemoryReference.hpp"
+#include "il/ParameterSymbol.hpp"
+#include "optimizer/RegisterCandidate.hpp"
+#include "optimizer/Structure.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterDependency.hpp"
 #include "codegen/RegisterIterator.hpp"
@@ -49,6 +52,7 @@
 OMR::ARM64::CodeGenerator::CodeGenerator(TR::Compilation *comp)
     : OMR::CodeGenerator(comp)
     , _dataSnippetList(getTypedAllocator<TR::ARM64ConstantDataSnippet *>(comp->allocator()))
+    , _blockCallInfo(NULL)
     , _outOfLineCodeSectionList(getTypedAllocator<TR_ARM64OutOfLineCodeSection *>(comp->allocator()))
 {}
 
@@ -76,7 +80,17 @@ void OMR::ARM64::CodeGenerator::initialize()
     //
     cg->setGlobalRegisterTable(_linkageProperties->getRegisterAllocationOrder());
     _numGPR = _linkageProperties->getNumAllocatableIntegerRegisters();
+    _firstGPR = 0;
+    _lastGPR = _numGPR - 1;
+    _firstParmGPR = _linkageProperties->getFirstAllocatableIntegerArgumentRegister();
+    _lastVolatileGPR = _linkageProperties->getLastAllocatableIntegerVolatileRegister();
+
     _numFPR = _linkageProperties->getNumAllocatableFloatRegisters();
+    _firstFPR = _numGPR;
+    _lastFPR = _firstFPR + _numFPR - 1;
+    _firstParmFPR = _linkageProperties->getFirstAllocatableFloatArgumentRegister();
+    _lastVolatileFPR = _linkageProperties->getLastAllocatableFloatVolatileRegister();
+
     cg->setLastGlobalGPR(_numGPR - 1);
     cg->setLastGlobalFPR(_numGPR + _numFPR - 1);
 
@@ -482,11 +496,286 @@ void OMR::ARM64::CodeGenerator::buildRegisterMapForInstruction(TR_GCStackMap *ma
     map->setInternalPointerMap(internalPtrMap);
 }
 
+inline static bool callInTree(TR::TreeTop *treeTop)
+{
+    TR::Node *node = treeTop->getNode();
+    TR::ILOpCodes l1OpCode = node->getOpCodeValue();
+
+    // Cover instanceOf and those NEW opCodes
+    if (l1OpCode == TR::treetop || l1OpCode == TR::ificmpeq || l1OpCode == TR::ificmpne)
+        l1OpCode = node->getFirstChild()->getOpCodeValue();
+
+    if (l1OpCode == TR::monent || l1OpCode == TR::monexit || l1OpCode == TR::checkcast || l1OpCode == TR:: instanceof
+        || l1OpCode == TR::ArrayStoreCHK || l1OpCode == TR::MethodEnterHook || l1OpCode == TR::MethodExitHook
+            || l1OpCode == TR::New || l1OpCode == TR::newarray || l1OpCode == TR::anewarray
+            || l1OpCode == TR::multianewarray)
+        return (true);
+
+    return (node->getNumChildren() != 0 && node->getFirstChild()->getOpCode().isCall()
+        && node->getFirstChild()->getOpCodeValue() != TR::arraycopy);
+}
+
+TR_BitVector *OMR::ARM64::CodeGenerator::computeCallInfoBitVector()
+{
+    uint32_t blockCount = self()->comp()->getFlowGraph()->getNextNodeNumber();
+    TR_BitVector bvec, *ebvec = new (self()->trHeapMemory()) TR_BitVector(blockCount, self()->trMemory());
+    TR::TreeTop *pTree, *exitTree;
+    TR::Block *block;
+    uint32_t blockNum, btemp;
+
+    bvec.init(blockCount, self()->trMemory());
+
+    for (pTree = self()->comp()->getStartTree(); pTree != NULL; pTree = exitTree->getNextTreeTop()) {
+        block = pTree->getNode()->getBlock();
+        exitTree = block->getExit();
+        blockNum = block->getNumber();
+        TR_ASSERT(blockNum < blockCount, "Block index must be less than the total number of blocks.\n");
+
+        while (pTree != exitTree) {
+            if (callInTree(pTree)) {
+                bvec.set(blockNum);
+                break;
+            }
+            pTree = pTree->getNextTreeTop();
+        }
+
+        if (pTree == exitTree && callInTree(pTree)) {
+            bvec.set(blockNum);
+        }
+    }
+
+    for (pTree = self()->comp()->getStartTree(); pTree != NULL; pTree = exitTree->getNextTreeTop()) {
+        block = pTree->getNode()->getBlock();
+        exitTree = block->getExit();
+        blockNum = block->getNumber();
+
+        TR::Block *eblock = block->startOfExtendedBlock();
+        btemp = eblock->getNumber();
+        while (!bvec.isSet(btemp)) {
+            eblock = eblock->getNextBlock();
+            if (eblock == NULL || !eblock->isExtensionOfPreviousBlock())
+                break;
+            btemp = eblock->getNumber();
+        }
+
+        if (bvec.isSet(btemp))
+            ebvec->set(blockNum);
+    }
+
+    return ebvec;
+}
+
 TR_GlobalRegisterNumber OMR::ARM64::CodeGenerator::pickRegister(TR::RegisterCandidate *regCan, TR::Block **barr,
     TR_BitVector &availRegs, TR_GlobalRegisterNumber &highRegisterNumber,
     TR_LinkHead<TR::RegisterCandidate> *candidates)
 {
-    return OMR::CodeGenerator::pickRegister(regCan, barr, availRegs, highRegisterNumber, candidates);
+    // The Power pickRegister() is an alternative way of assigning GRA registers based
+    // on the Power architecture implementation.
+    //
+    //static const char *enablePowerPickRegister = feGetEnv("TR_EnablePowerPickRegister");
+    bool enablePowerPickRegister = true;
+
+    if (!enablePowerPickRegister || !self()->comp()->getOption(TR_DisableRegisterPressureSimulation)) {
+        return OMR::CodeGenerator::pickRegister(regCan, barr, availRegs, highRegisterNumber, candidates);
+    }
+
+    if (self()->getBlockCallInfo() == NULL) {
+        self()->setBlockCallInfo(self()->computeCallInfoBitVector());
+    }
+
+    uint32_t firstIndex, lastIndex, lastVolIndex;
+    TR::Symbol *sym = regCan->getSymbolReference()->getSymbol();
+    TR_BitVector *ebvec = self()->getBlockCallInfo();
+    TR_BitVectorIterator candidateLiveOnEntryBlocks(regCan->getBlocksLiveOnEntry());
+    bool hasCallInPath = false, isParm = sym->isParm(), isAddressType = false, isFloatType = false;
+    bool isVector = false;
+
+    switch (sym->getDataType()) {
+        case TR::Float:
+        case TR::Double:
+            isFloatType = true;
+            firstIndex = _firstFPR;
+            lastIndex = _lastFPR;
+            lastVolIndex = _lastVolatileFPR;
+            break;
+
+        case TR::Address:
+            isAddressType = true;
+            firstIndex = _firstGPR;
+            lastIndex = _lastFPR;
+            lastVolIndex = _lastVolatileGPR;
+            break;
+
+        case TR::Int64:
+            firstIndex = _firstGPR;
+            lastIndex = _lastFPR;
+            lastVolIndex = _lastVolatileGPR;
+            break;
+
+        default:
+            if (sym->getDataType().isVector()) {
+                TR_ASSERT_FATAL(false, "Can't GRA vector regs");
+            }
+
+            firstIndex = _firstGPR;
+            lastIndex = _lastFPR;
+            lastVolIndex = _lastVolatileGPR;
+            break;
+    }
+
+    bool gprCandidate = true;
+    if ((sym->getDataType() == TR::Float) || (sym->getDataType() == TR::Double) || sym->getDataType().isVector())
+        gprCandidate = false;
+
+    if (gprCandidate) {
+        int32_t numExtraRegs = 0;
+        int32_t maxRegisterPressure = 0;
+
+        vcount_t visitCount = self()->comp()->incVisitCount();
+        int32_t maxFrequency = 0;
+
+        while (candidateLiveOnEntryBlocks.hasMoreElements()) {
+            int32_t liveBlockNum = candidateLiveOnEntryBlocks.getNextElement();
+            TR::Block *block = barr[liveBlockNum];
+            if (block->getFrequency() > maxFrequency)
+                maxFrequency = block->getFrequency();
+        }
+
+        int32_t maxStaticFrequency = 0;
+        if (maxFrequency == 0) {
+            candidateLiveOnEntryBlocks.setBitVector(regCan->getBlocksLiveOnEntry());
+            while (candidateLiveOnEntryBlocks.hasMoreElements()) {
+                int32_t liveBlockNum = candidateLiveOnEntryBlocks.getNextElement();
+                TR::Block *block = barr[liveBlockNum];
+                TR_BlockStructure *blockStructure = block->getStructureOf();
+                int32_t blockWeight = 1;
+                if (blockStructure && !block->isCold()) {
+                    blockStructure->calculateFrequencyOfExecution(&blockWeight);
+                    if (blockWeight > maxStaticFrequency)
+                        maxStaticFrequency = blockWeight;
+                }
+            }
+        }
+
+        if (!_assignedGlobalRegisters)
+            _assignedGlobalRegisters = new (self()->trStackMemory())
+                TR_BitVector(self()->comp()->getSymRefCount(), self()->trMemory(), stackAlloc, growable);
+
+        bool vmThreadUsed = false;
+        bool assigningEDX = false;
+
+        candidateLiveOnEntryBlocks.setBitVector(regCan->getBlocksLiveOnEntry());
+        while (candidateLiveOnEntryBlocks.hasMoreElements()) {
+            int32_t liveBlockNum = candidateLiveOnEntryBlocks.getNextElement();
+            TR::Block *block = barr[liveBlockNum];
+
+            _assignedGlobalRegisters->empty();
+            int32_t numAssignedGlobalRegs = 0;
+            TR::RegisterCandidate *prev;
+            for (prev = candidates->getFirst(); prev; prev = prev->getNext()) {
+                bool gprCandidate = true;
+                if ((prev->getSymbol()->getDataType() == TR::Float) || (prev->getSymbol()->getDataType() == TR::Double)
+                    || sym->getDataType().isVector())
+                    gprCandidate = false;
+
+                if (gprCandidate && prev->getBlocksLiveOnEntry().get(liveBlockNum)) {
+                    numAssignedGlobalRegs++;
+                    if (prev->getDataType() == TR::Int64)
+                        numAssignedGlobalRegs++;
+                    _assignedGlobalRegisters->set(prev->getSymbolReference()->getReferenceNumber());
+                }
+            }
+
+            maxRegisterPressure
+                = self()->estimateRegisterPressure(block, visitCount, maxStaticFrequency, maxFrequency, vmThreadUsed,
+                    numAssignedGlobalRegs, _assignedGlobalRegisters, regCan->getSymbolReference(), assigningEDX);
+
+            if (maxRegisterPressure >= _numGPR)
+                break;
+        }
+
+        // Determine if we can spare any extra registers for this candidate without spilling
+        // in any hot (critical) blocks
+        if (maxRegisterPressure < _numGPR)
+            numExtraRegs = _numGPR - maxRegisterPressure;
+
+        if (numExtraRegs <= 0)
+            return -1;
+    }
+
+    int32_t i1;
+    candidateLiveOnEntryBlocks.setBitVector(regCan->getBlocksLiveOnEntry());
+    while (candidateLiveOnEntryBlocks.hasMoreElements()) {
+        i1 = candidateLiveOnEntryBlocks.getNextElement();
+        if (ebvec->isSet(barr[i1]->getNumber())) {
+            hasCallInPath = true;
+            break;
+        }
+    }
+
+    if (hasCallInPath) {
+        // Find first available non-volatile
+        //
+        i1 = lastVolIndex + 1;
+        while (i1 <= lastIndex && !availRegs.isSet(i1))
+            i1++;
+
+        if (i1 <= lastIndex)
+            return i1;
+
+        if (isParm) {
+            i1 = sym->getParmSymbol()->getLinkageRegisterIndex();
+            if (i1 >= 0) {
+                if (isVector)
+                    TR_ASSERT_FATAL(false, "Can't GRA vector regs");
+
+                i1 = (isFloatType ? _firstParmFPR : _firstParmGPR) - i1;
+                if (availRegs.isSet(i1))
+                    return i1;
+            }
+        } else {
+            // Assign the first available parm or volatile reg
+            //
+            i1 = firstIndex;
+            while (i1 <= lastVolIndex && !availRegs.isSet(i1))
+                i1++;
+            if (i1 < lastVolIndex || (i1 == _lastVolatileGPR && !isAddressType))
+                return i1;
+        }
+
+        return -1;
+    } else {
+        if (isParm) {
+            i1 = sym->getParmSymbol()->getLinkageRegisterIndex();
+            if (i1 >= 0) {
+                if (isVector)
+                    TR_ASSERT_FATAL(false, "Can't GRA vector regs");
+                i1 = (isFloatType ? _firstParmFPR : _firstParmGPR) - i1;
+                if (availRegs.isSet(i1))
+                    return i1;
+            }
+        }
+
+        if (!isParm || sym->getParmSymbol()->getLinkageRegisterIndex() < 0) {
+            i1 = firstIndex;
+            while (i1 <= lastVolIndex && (!availRegs.isSet(i1) || (isAddressType && i1 == _lastVolatileGPR)))
+                i1++;
+
+            if (i1 <= lastVolIndex)
+                return i1;
+        }
+
+        i1 = lastVolIndex + 1;
+        while (i1 <= lastIndex && !availRegs.isSet(i1))
+            i1++;
+        if (i1 <= lastIndex)
+            return i1;
+        else {
+            if (isAddressType && availRegs.isSet(_lastVolatileGPR))
+                return _lastVolatileGPR;
+            return -1;
+        }
+    }
 }
 
 bool OMR::ARM64::CodeGenerator::allowGlobalRegisterAcrossBranch(TR::RegisterCandidate *regCan, TR::Node *branchNode)

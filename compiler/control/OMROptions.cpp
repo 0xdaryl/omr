@@ -3273,7 +3273,9 @@ void OMR::Options::jitPreProcess()
 
     self()->setOption(TR_RestrictStaticFieldFolding);
 
-    if (TR::Compiler->target.cpu.isPower())
+
+    static char *disableNewPickRegister = feGetEnv("TR_DisableNewPickRegister");
+    if (TR::Compiler->target.cpu.isPower() || !disableNewPickRegister)
         self()->setOption(TR_DisableRegisterPressureSimulation);
 
 #if defined(TR_HOST_ARM)

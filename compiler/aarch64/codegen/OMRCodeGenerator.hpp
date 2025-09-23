@@ -636,6 +636,10 @@ public:
     bool considerTypeForGRA(TR::DataType dt);
     bool considerTypeForGRA(TR::SymbolReference *symRef);
 
+    TR_BitVector *getBlockCallInfo() { return _blockCallInfo; }
+
+    TR_BitVector *setBlockCallInfo(TR_BitVector *v) { return (_blockCallInfo = v); }
+
 private:
     enum // flags
     {
@@ -645,8 +649,20 @@ private:
 
     flags32_t _flags;
 
+    TR_BitVector *computeCallInfoBitVector();
+    TR_BitVector *_blockCallInfo;
+
     uint32_t _numGPR;
+    uint32_t _firstGPR;
+    uint32_t _lastGPR;
+    uint32_t _firstParmGPR;
+    uint32_t _lastVolatileGPR;
+
     uint32_t _numFPR;
+    uint32_t _firstFPR;
+    uint32_t _lastFPR;
+    uint32_t _firstParmFPR;
+    uint32_t _lastVolatileFPR;
 
     TR::RealRegister *_stackPtrRegister;
     TR::RealRegister *_methodMetaDataRegister;
