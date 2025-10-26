@@ -66,7 +66,6 @@ class TR_FilterBST;
 class TR_FrontEnd;
 class TR_GCStackMap;
 class TR_InductionVariable;
-class TR_PrettyPrinterString;
 class TR_PseudoRandomNumbersListElement;
 class TR_RegionAnalysis;
 class TR_RegionStructure;
@@ -607,11 +606,22 @@ public:
     virtual void print(TR::Logger *log, TR_RegionAnalysis *structure, uint32_t indentation);
     virtual int32_t print(TR::Logger *log, TR::TreeTop *);
     virtual int32_t print(TR::Logger *log, TR::Node *, uint32_t indentation = 0, bool printSubtree = true);
-    virtual void print(TR::Logger *log, TR::SymbolReference *);
-    virtual void print(TR::SymbolReference *, TR_PrettyPrinterString &, bool hideHelperMethodInfo = false,
-        bool verbose = false);
+
+    virtual void print(TR::Logger *log, TR::SymbolReference *, bool hideHelperMethodInfo = false, bool verbose = false);
+
+    /**
+     * The following "printSymRef" family of functions support the `print` function for
+     * `TR::SymbolReference`. While they can be called outside of that context, their
+     * usefulness may be limited.
+     */
+    void printSymRefOffset(TR::Logger *log, TR::SymbolReference *symRef, bool omitSpacer = false);
+    void printSymRefObjIndex(TR::Logger *log, TR::SymbolReference *symRef);
+    void printSymRefKind(TR::Logger *log, TR::SymbolReference *symRef);
+    void printSymRefName(TR::Logger *log, TR::SymbolReference *symRef);
+    void printSymRefOtherInfo(TR::Logger *log, TR::SymbolReference *symRef);
+    void printSymRefLabelSymbol(TR::Logger *log, TR::SymbolReference *symRef);
+
     virtual void print(TR::Logger *log, TR::LabelSymbol *);
-    virtual void print(TR::LabelSymbol *, TR_PrettyPrinterString &);
     virtual void print(TR::Logger *log, TR_BitVector *);
     virtual void print(TR::Logger *log, TR_SingleBitContainer *);
     virtual void print(TR::Logger *log, TR::BitVector *bv);
@@ -750,13 +760,11 @@ public:
 
     TR_OpaqueClassBlock *containingClass(TR::SymbolReference *);
     const char *signature(TR::ResolvedMethodSymbol *s);
-    virtual void nodePrintAllFlags(TR::Node *, TR_PrettyPrinterString &);
+    virtual int32_t nodePrintAllFlags(TR::Logger *log, TR::Node *);
 
     // used by DebugExt and may be overridden
     virtual void printDestination(TR::Logger *log, TR::TreeTop *);
-    virtual void printDestination(TR::TreeTop *, TR_PrettyPrinterString &);
     virtual void printNodeInfo(TR::Logger *log, TR::Node *);
-    virtual void printNodeInfo(TR::Node *, TR_PrettyPrinterString &output, bool);
     virtual void print(TR::Logger *log, TR::CFGNode *, uint32_t indentation);
     virtual void printNodesInEdgeListIterator(TR::Logger *log, TR::CFGEdgeList &li, bool fromNode);
     virtual void print(TR::Logger *log, TR::Block *block, uint32_t indentation);
@@ -788,7 +796,6 @@ public:
     void printNodeFlags(TR::Logger *log, TR::Node *);
 #ifdef J9_PROJECT_SPECIFIC
     void printBCDNodeInfo(TR::Logger *log, TR::Node *node);
-    void printBCDNodeInfo(TR::Node *node, TR_PrettyPrinterString &output);
 #endif
 
     int32_t *printStackAtlas(TR::Logger *log, uintptr_t startPC, uint8_t *mapBits, int32_t numberOfSlotsMapped,
@@ -824,7 +831,6 @@ public:
     void printFirstAndConstant(TR::Logger *log, int32_t i, int32_t j);
 
     void printLoadConst(TR::Logger *log, TR::Node *);
-    void printLoadConst(TR::Node *, TR_PrettyPrinterString &);
 
     TR::CompilationFilters *findOrCreateFilters(TR::CompilationFilters *);
     TR::CompilationFilters *findOrCreateFilters(bool loadLimit);
@@ -1359,49 +1365,6 @@ protected:
         = 82; // Tree information printed to the right of node OPCode will be aligned if node OPCode's length <=
               // DEFAULT_NODE_LENGTH, or will follow the node OPCode immediately (non-aligned) otherwise.
     const static uint32_t MAX_GLOBAL_INDEX_LENGTH = 5;
-};
-
-class TR_PrettyPrinterString {
-public:
-    TR_PrettyPrinterString(TR_Debug *debug);
-
-    /**
-     * @brief Append a null-terminated string with format specifiers to the buffer.
-     *        The buffer is guaranteed not to overflow and will be null-terminated.
-     *
-     * @param[in] format : null-terminated string to append with optional format specifiers
-     * @param[in] ... : optional arguments for format specifiers
-     */
-    void appendf(char const *format, ...);
-
-    /**
-     * @brief Append a null-terminated string to the buffer.  No format specifiers
-     *        are permitted.  The buffer is guaranteed not to overflow and will be
-     *        null-terminated.
-     *
-     * @param[in] str : null-terminated string to append
-     */
-    void appends(char const *str);
-
-    const char *getStr() { return buffer; }
-
-    int32_t getLength() { return len; }
-
-    void reset()
-    {
-        buffer[0] = '\0';
-        len = 0;
-    }
-
-    bool isEmpty() { return len <= 0; }
-
-    static const int32_t maxBufferLength = 2000;
-
-private:
-    char buffer[maxBufferLength];
-    int32_t len;
-    TR::Compilation *_comp;
-    TR_Debug *_debug;
 };
 
 typedef TR_Debug *(*TR_CreateDebug_t)(TR::Compilation *);

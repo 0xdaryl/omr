@@ -707,13 +707,6 @@ void TR_Debug::print(TR::Logger *log, TR::SparseBitVector *sparse)
     log->printc('}');
 }
 
-void TR_Debug::print(TR::Logger *log, TR::SymbolReference *symRef)
-{
-    TR_PrettyPrinterString output(this);
-    print(symRef, output);
-    log->prints(output.getStr());
-}
-
 const char *TR_Debug::signature(TR::ResolvedMethodSymbol *s)
 {
 #ifdef J9_PROJECT_SPECIFIC
@@ -736,32 +729,34 @@ TR_OpaqueClassBlock *TR_Debug::containingClass(TR::SymbolReference *symRef)
     return NULL;
 }
 
-void TR_Debug::nodePrintAllFlags(TR::Node *node, TR_PrettyPrinterString &output)
+int32_t TR_Debug::nodePrintAllFlags(TR::Logger *log, TR::Node *node)
 {
+    int32_t len = 0;
+
     // This guard info is not strictly speaking in the node flags anymore, but
     // with the node flags is a good place to show it.
     TR_VirtualGuard *guard = node->virtualGuardInfo();
     if (guard != NULL) {
         const char *kind = getVirtualGuardKindName(guard->getKind());
         const char *testType = getVirtualGuardTestTypeName(guard->getTestType());
-        output.appendf("%s/%s", kind, testType);
+        len += log->printf("%s/%s", kind, testType);
 
         if (guard->mergedWithHCRGuard())
-            output.appends("+HCRGuard");
+            len += log->prints_len("+HCRGuard");
 
         if (guard->mergedWithOSRGuard())
-            output.appends("+OSRGuard");
+            len += log->prints_len("+OSRGuard");
 
         if (!guard->getInnerAssumptions().isEmpty())
-            output.appends("+inner");
+            len += log->prints_len("+inner");
 
-        output.appends(" ");
+        len += log->prints_len(" ");
     }
 
-#define FLAG_IF(cond, text)           \
-    do {                              \
-        if (cond)                     \
-            output.appends(text " "); \
+#define FLAG_IF(cond, text)                   \
+    do {                                      \
+        if (cond)                             \
+            len += log->prints_len(text " "); \
     } while (false)
 #define FLAG(query, text) FLAG_IF(node->query(), text)
 
@@ -885,19 +880,15 @@ void TR_Debug::nodePrintAllFlags(TR::Node *node, TR_PrettyPrinterString &output)
 
 #undef FLAG
 #undef FLAG_IF
+
+    return len;
 }
 
-void TR_Debug::print(TR::SymbolReference *symRef, TR_PrettyPrinterString &output, bool hideHelperMethodInfo,
-    bool verbose)
+// Prints the SymRef offset if non-zero
+void TR_Debug::printSymRefOffset(TR::Logger *log, TR::SymbolReference *symRef, bool omitSpacer)
 {
     int32_t displacement = 0;
-    uint32_t numSpaces;
-    TR_PrettyPrinterString symRefNum(this), symRefOffset(this), symRefAddress(this), symRefName(this), symRefKind(this),
-        otherInfo(this), symRefObjIndex(this), labelSymbol(this);
-
     TR::Symbol *sym = symRef->getSymbol();
-
-    symRefAddress.appendf("%s", getName(sym));
 
     if (sym) {
         if (_comp->cg()->getMappingAutomatics() && sym->isRegisterMappedSymbol()
@@ -907,182 +898,273 @@ void TR_Debug::print(TR::SymbolReference *symRef, TR_PrettyPrinterString &output
     }
 
     if (symRef->getOffset() + displacement) {
-        symRefOffset.appendf("%+d", displacement + symRef->getOffset());
+        log->printf("%s%+d", omitSpacer ? "" : " ", displacement + symRef->getOffset());
     }
+}
 
-    if (symRef->getKnownObjectIndex() != TR::KnownObjectTable::UNKNOWN)
-        symRefObjIndex.appendf(" (obj%d)", (int)symRef->getKnownObjectIndex());
-    else if (sym && sym->isFixedObjectRef() && comp()->getKnownObjectTable() && !symRef->isUnresolved()) {
-        symRefObjIndex.appends(" (fixed obj ref missing known object index)");
+void TR::Debug::printSymRefObjIndex(TR::Logger *log, TR::SymbolReference *symRef)
+{
+    TR::Symbol *sym = symRef->getSymbol();
+
+    if (symRef->getKnownObjectIndex() != TR::KnownObjectTable::UNKNOWN) {
+        log->printf(" (obj%d)", (int32_t)symRef->getKnownObjectIndex());
+    } else if (sym && sym->isFixedObjectRef() && comp()->getKnownObjectTable() && !symRef->isUnresolved()) {
+        log->prints(" (fixed obj ref missing known object index)");
+
         TR::KnownObjectTable::Index i = comp()->getKnownObjectTable()->getExistingIndexAt(
             (uintptr_t *)sym->castToStaticSymbol()->getStaticAddress());
+
         if (i != TR::KnownObjectTable::UNKNOWN)
-            symRefObjIndex.appendf(" (==obj%d)", (int)i);
+            log->printf(" (==obj%d)", (int32_t)i);
     }
+}
+
+void TR::Debug::printSymRefKind(TR::Logger *log, TR::SymbolReference *symRef)
+{
+    TR::Symbol *sym = symRef->getSymbol();
 
     if (sym) {
-        if (symRef->isUnresolved())
-            symRefKind.appends(" unresolved");
+        if (symRef->isUnresolved()) {
+            log->prints(" unresolved");
+        }
+
         switch (symRef->hasBeenAccessedAtRuntime()) {
             case TR_yes:
-                symRefKind.appends(" accessed");
+                log->prints(" accessed");
                 break;
             case TR_no:
-                symRefKind.appends(" notAccessed");
+                log->prints(" notAccessed");
                 break;
             default:
                 break;
         }
-        if (symRef->getSymbol()->isFinal())
-            symRefKind.appends(" final");
-        if (!symRef->getSymbol()->isTransparent())
-            symRefKind.appendf(" %s", TR::Symbol::getMemoryOrderingName(symRef->getSymbol()->getMemoryOrdering()));
+
+        if (symRef->getSymbol()->isFinal()) {
+            log->prints(" final");
+        }
+
+        if (!symRef->getSymbol()->isTransparent()) {
+            log->printf(" %s", TR::Symbol::getMemoryOrderingName(symRef->getSymbol()->getMemoryOrdering()));
+        }
+
         switch (sym->getKind()) {
             case TR::Symbol::IsAutomatic:
-                symRefName.appendf(" %s", getName(symRef));
                 if (sym->getAutoSymbol()->getName() == NULL)
-                    symRefKind.appends(" Auto");
+                    log->prints(" Auto");
                 else
-                    symRefKind.appendf(" %s", sym->getAutoSymbol()->getName());
+                    log->printf(" %s", sym->getAutoSymbol()->getName());
                 break;
             case TR::Symbol::IsParameter:
-                symRefKind.appends(" Parm");
-                symRefName.appendf(" %s", getName(symRef));
+                log->prints(" Parm");
                 break;
             case TR::Symbol::IsStatic:
                 if (symRef->isFromLiteralPool()) {
-                    symRefKind.appends(" DLP-Static");
-                    symRefName.appendf(" %s", getName(symRef));
+                    log->prints(" DLP-Static");
                 } else {
-                    symRefKind.appends(" Static");
-                    if (sym->isNamed()) {
-                        symRefName.appendf(" \"%s\"", ((TR::StaticSymbol *)sym)->getName());
-                    }
-                    symRefName.appendf(" %s", getName(symRef));
+                    log->prints(" Static");
                 }
                 break;
-
             case TR::Symbol::IsResolvedMethod:
             case TR::Symbol::IsMethod: {
                 TR::MethodSymbol *methodSym = sym->castToMethodSymbol();
-                if (methodSym->isNative())
-                    symRefKind.appends(" native");
-                switch (methodSym->getMethodKind()) {
-                    case TR::MethodSymbol::Virtual:
-                        symRefKind.appends(" virtual");
-                        break;
-                    case TR::MethodSymbol::Interface:
-                        symRefKind.appends(" interface");
-                        break;
-                    case TR::MethodSymbol::Static:
-                        symRefKind.appends(" static");
-                        break;
-                    case TR::MethodSymbol::Special:
-                        symRefKind.appends(" special");
-                        break;
-                    case TR::MethodSymbol::Helper:
-                        symRefKind.appends(" helper");
-                        break;
-                    case TR::MethodSymbol::ComputedStatic:
-                        symRefKind.appends(" computed-static");
-                        break;
-                    case TR::MethodSymbol::ComputedVirtual:
-                        symRefKind.appends(" computed-virtual");
-                        break;
-                    default:
-                        symRefKind.appends(" UNKNOWN");
-                        break;
+                if (methodSym->isNative()) {
+                    log->prints(" native");
                 }
 
-                symRefKind.appends(" Method");
-                symRefName.appendf(" %s", getName(symRef));
-                TR_OpaqueClassBlock *clazz = containingClass(symRef);
-                if (clazz) {
-                    if (TR::Compiler->cls.isInterfaceClass(_comp, clazz))
-                        otherInfo.appends(" (Interface class)");
-                    else if (TR::Compiler->cls.isAbstractClass(_comp, clazz))
-                        otherInfo.appends(" (Abstract class)");
+                switch (methodSym->getMethodKind()) {
+                    case TR::MethodSymbol::Virtual:
+                        log->prints(" virtual Method");
+                        break;
+                    case TR::MethodSymbol::Interface:
+                        log->prints(" interface Method");
+                        break;
+                    case TR::MethodSymbol::Static:
+                        log->prints(" static Method");
+                        break;
+                    case TR::MethodSymbol::Special:
+                        log->prints(" special Method");
+                        break;
+                    case TR::MethodSymbol::Helper:
+                        log->prints(" helper Method");
+                        break;
+                    case TR::MethodSymbol::ComputedStatic:
+                        log->prints(" computed-static Method");
+                        break;
+                    case TR::MethodSymbol::ComputedVirtual:
+                        log->prints(" computed-virtual Method");
+                        break;
+                    default:
+                        log->prints(" UNKNOWN Method");
+                        break;
                 }
             } break;
 
             case TR::Symbol::IsShadow:
                 if (sym->isNamedShadowSymbol() && sym->getNamedShadowSymbol()->getName() != NULL) {
-                    symRefKind.appendf(" Named Shadow");
-                    symRefName.appendf(" %s", getName(symRef));
+                    log->prints(" Named Shadow");
                 } else {
-                    symRefKind.appends(" Shadow");
-                    symRefName.appendf(" %s", getName(symRef));
+                    log->prints(" Shadow");
                 }
                 break;
             case TR::Symbol::IsMethodMetaData:
-                symRefKind.appends(" MethodMeta");
-                symRefName.appendf(" %s", symRef->getSymbol()->getMethodMetaDataSymbol()->getName());
+                log->prints(" MethodMeta");
                 break;
             case TR::Symbol::IsLabel:
-                print(sym->castToLabelSymbol(), labelSymbol);
-                if (!labelSymbol.isEmpty())
-                    labelSymbol.appends(" ");
                 break;
             default:
-                TR_ASSERT(0, "unexpected symbol kind");
+                TR_ASSERT_FATAL(0, "unexpected symbol kind");
         }
-        otherInfo.appendf(" [flags 0x%x 0x%x ]", sym->getFlags(), sym->getFlags2());
     }
+}
 
-    numSpaces
-        = getNumSpacesAfterIndex(symRef->getReferenceNumber(), getIntLength(_comp->getSymRefTab()->baseArray.size()));
+void TR_Debug::printSymRefName(TR::Logger *log, TR::SymbolReference *symRef)
+{
+    TR::Symbol *sym = symRef->getSymbol();
 
-    symRefNum.appendf("#%d", symRef->getReferenceNumber());
+    if (sym) {
+        switch (sym->getKind()) {
+            case TR::Symbol::IsStatic:
+                if (!symRef->isFromLiteralPool() && sym->isNamed()) {
+                    log->printf(" \"%s\"", ((TR::StaticSymbol *)sym)->getName());
+                }
+                // deliberate fall through
+
+            case TR::Symbol::IsAutomatic:
+            case TR::Symbol::IsParameter:
+            case TR::Symbol::IsResolvedMethod:
+            case TR::Symbol::IsMethod:
+            case TR::Symbol::IsShadow:
+                log->printf(" %s", getName(symRef));
+                break;
+
+            case TR::Symbol::IsMethodMetaData:
+                log->printf(" %s", sym->getMethodMetaDataSymbol()->getName());
+                break;
+            case TR::Symbol::IsLabel:
+                break;
+            default:
+                TR_ASSERT_FATAL(0, "unexpected symbol kind");
+        }
+    }
+}
+
+void TR_Debug::printSymRefOtherInfo(TR::Logger *log, TR::SymbolReference *symRef)
+{
+    TR::Symbol *sym = symRef->getSymbol();
+
+    if (sym) {
+        switch (sym->getKind()) {
+            case TR::Symbol::IsAutomatic:
+            case TR::Symbol::IsParameter:
+            case TR::Symbol::IsStatic:
+            case TR::Symbol::IsShadow:
+            case TR::Symbol::IsMethodMetaData:
+            case TR::Symbol::IsLabel:
+                break;
+
+            case TR::Symbol::IsResolvedMethod:
+            case TR::Symbol::IsMethod: {
+                TR_OpaqueClassBlock *clazz = containingClass(symRef);
+
+                if (clazz) {
+                    if (TR::Compiler->cls.isInterfaceClass(_comp, clazz))
+                        log->prints(" (Interface class)");
+                    else if (TR::Compiler->cls.isAbstractClass(_comp, clazz))
+                        log->prints(" (Abstract class)");
+                }
+            } break;
+
+            default:
+                TR_ASSERT_FATAL(0, "unexpected symbol kind");
+        }
+
+        log->printf(" [flags 0x%x 0x%x ]", sym->getFlags(), sym->getFlags2());
+    }
+}
+
+void TR_Debug::printSymRefLabelSymbol(TR::Logger *log, TR::SymbolReference *symRef)
+{
+    TR::Symbol *sym = symRef->getSymbol();
+
+    if (sym && sym->getKind() == TR::Symbol::IsLabel) {
+        log->prints(getName(sym->castToLabelSymbol()));
+    }
+}
+
+void TR_Debug::print(TR::Logger *log, TR::SymbolReference *symRef, bool hideHelperMethodInfo, bool verbose)
+{
+    TR::Symbol *sym = symRef->getSymbol();
 
     if (verbose) {
-        output.appendf("%s:%*s", symRefNum.getStr(), numSpaces, "");
+        uint32_t numSpaces
+            = getNumSpacesAfterIndex(symRef->getReferenceNumber(), getIntLength(_comp->getSymRefTab()->baseArray.size()));
+        log->printf("#%d:%*s", symRef->getReferenceNumber(), numSpaces, "");
 
-        if (hideHelperMethodInfo)
-            output.appendf(" %s[%s]%s", labelSymbol.getStr(), symRefOffset.getStr(), symRefObjIndex.getStr());
-        else
-            output.appendf(" %s%s[%s%s%s]%s%s", symRefName.getStr(), labelSymbol.getStr(), symRefKind.getStr(),
-                symRefOffset.isEmpty() ? "" : " ", symRefOffset.getStr(), symRefObjIndex.getStr(), otherInfo.getStr());
+        if (hideHelperMethodInfo) {
+            log->printc(' ');
+            printSymRefLabelSymbol(log, symRef);
+            log->prints(" [");
+            printSymRefOffset(log, symRef, true /* omitSpacer */);
+            log->printc(']');
+            printSymRefObjIndex(log, symRef);
+        } else {
+            log->printc(' ');
+            printSymRefName(log, symRef);
+            printSymRefLabelSymbol(log, symRef);
+            log->prints(" [");
+            printSymRefKind(log, symRef);
+            printSymRefOffset(log, symRef);
+            log->printc(']');
+            printSymRefObjIndex(log, symRef);
+            printSymRefOtherInfo(log, symRef);
+        }
 
-        output.appendf(" [%s]", symRefAddress.getStr());
+        // Print base TR::Symbol name
+        log->printf(" [");
+        log->prints(getName(sym));
+        log->printc(']');
 
         if (sym) {
-            output.appendf(" (%s", TR::DataType::getName(sym->getDataType()));
+            log->printf(" (%s", TR::DataType::getName(sym->getDataType()));
 
             TR_OpaqueClassBlock *klass = sym->getDeclaredClass();
-            if (klass != NULL) {
+            if (klass) {
                 int32_t len = 0;
                 const char *className = TR::Compiler->cls.classNameChars(_comp, klass, len);
-
-                output.appendf(": %p %.*s", klass, len, className);
+                log->printf(": %p %.*s", klass, len, className);
             }
 
-            output.appendf(")");
+            log->printc(')');
 
             if (!sym->isTransparent()) {
-                output.appendf(" [%s]", TR::Symbol::getMemoryOrderingName(sym->getMemoryOrdering()));
+                log->printf(" [%s]", TR::Symbol::getMemoryOrderingName(sym->getMemoryOrdering()));
             }
         }
     } else {
-        if (hideHelperMethodInfo)
-            output.appendf(" %s[%s%s%s]%s", labelSymbol.getStr(), symRefNum.getStr(), symRefOffset.isEmpty() ? "" : " ",
-                symRefOffset.getStr(), symRefObjIndex.getStr());
-        else
-            output.appendf(" %s%s[%s%s%s%s%s]%s%s", symRefName.getStr(), labelSymbol.getStr(), symRefNum.getStr(),
-                symRefKind.isEmpty() ? "" : " ", symRefKind.getStr(), symRefOffset.isEmpty() ? "" : " ",
-                symRefOffset.getStr(), symRefObjIndex.getStr(), otherInfo.getStr());
+        if (hideHelperMethodInfo) {
+            log->printc(' ');
+            printSymRefLabelSymbol(log, symRef);
+            log->printf(" [#%d", symRef->getReferenceNumber());
+            printSymRefOffset(log, symRef);
+            log->printc(']');
+            printSymRefObjIndex(log, symRef);
+        } else {
+            log->printc(' ');
+            printSymRefName(log, symRef);
+            printSymRefLabelSymbol(log, symRef);
+            log->printf(" [#%d", symRef->getReferenceNumber());
+            printSymRefKind(log, symRef);
+            printSymRefOffset(log, symRef);
+            log->printc(']');
+            printSymRefObjIndex(log, symRef);
+            printSymRefOtherInfo(log, symRef);
+        }
     }
 }
 
 void TR_Debug::print(TR::Logger *log, TR::LabelSymbol *labelSymbol)
 {
-    TR_PrettyPrinterString output(this);
-    print(labelSymbol, output);
-    log->prints(output.getStr());
-}
-
-void TR_Debug::print(TR::LabelSymbol *labelSymbol, TR_PrettyPrinterString &output)
-{
-    output.appendf("%s", getName(labelSymbol));
+    log->prints(getName(labelSymbol));
 }
 
 const char *TR_Debug::getName(TR_YesNoMaybe value)
