@@ -43,6 +43,18 @@ TR::Logger::Logger()
     setSkipFlush(envSkipLoggerFlushes ? true : false);
 }
 
+int32_t TR::Logger::prints_len(const char *string)
+{
+    int32_t rc = prints(string);
+    return (rc > 0) ? strlen(string) : rc;
+}
+
+int32_t TR::Logger::printc_len(char c)
+{
+    int32_t rc = printc(c);
+    return (rc > 0) ? 1 : rc;
+}
+
 /*
  * -----------------------------------------------------------------------------
  * NullLogger
