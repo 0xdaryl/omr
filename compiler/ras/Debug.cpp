@@ -919,7 +919,7 @@ void TR_Debug::printSymRefObjIndex(TR::Logger *log, TR::SymbolReference *symRef)
     }
 }
 
-void TR::Debug::printSymRefKind(TR::Logger *log, TR::SymbolReference *symRef)
+void TR_Debug::printSymRefKind(TR::Logger *log, TR::SymbolReference *symRef)
 {
     TR::Symbol *sym = symRef->getSymbol();
 
