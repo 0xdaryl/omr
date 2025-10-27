@@ -891,7 +891,7 @@ void TR_Debug::printSymRefOffset(TR::Logger *log, TR::SymbolReference *symRef, b
     TR::Symbol *sym = symRef->getSymbol();
 
     if (sym) {
-        if (_comp->cg()->getMappingAutomatics() && sym->isRegisterMappedSymbol()
+        if (comp()->cg()->getMappingAutomatics() && sym->isRegisterMappedSymbol()
             && sym->getRegisterMappedSymbol()->getOffset() != 0) {
             displacement = sym->getRegisterMappedSymbol()->getOffset();
         }
@@ -902,7 +902,7 @@ void TR_Debug::printSymRefOffset(TR::Logger *log, TR::SymbolReference *symRef, b
     }
 }
 
-void TR::Debug::printSymRefObjIndex(TR::Logger *log, TR::SymbolReference *symRef)
+void TR_Debug::printSymRefObjIndex(TR::Logger *log, TR::SymbolReference *symRef)
 {
     TR::Symbol *sym = symRef->getSymbol();
 
@@ -1067,9 +1067,9 @@ void TR_Debug::printSymRefOtherInfo(TR::Logger *log, TR::SymbolReference *symRef
                 TR_OpaqueClassBlock *clazz = containingClass(symRef);
 
                 if (clazz) {
-                    if (TR::Compiler->cls.isInterfaceClass(_comp, clazz))
+                    if (TR::Compiler->cls.isInterfaceClass(comp(), clazz))
                         log->prints(" (Interface class)");
-                    else if (TR::Compiler->cls.isAbstractClass(_comp, clazz))
+                    else if (TR::Compiler->cls.isAbstractClass(comp(), clazz))
                         log->prints(" (Abstract class)");
                 }
             } break;
@@ -1097,7 +1097,7 @@ void TR_Debug::print(TR::Logger *log, TR::SymbolReference *symRef, bool hideHelp
 
     if (verbose) {
         uint32_t numSpaces
-            = getNumSpacesAfterIndex(symRef->getReferenceNumber(), getIntLength(_comp->getSymRefTab()->baseArray.size()));
+            = getNumSpacesAfterIndex(symRef->getReferenceNumber(), getIntLength(comp()->getSymRefTab()->baseArray.size()));
         log->printf("#%d:%*s", symRef->getReferenceNumber(), numSpaces, "");
 
         if (hideHelperMethodInfo) {
@@ -1130,7 +1130,7 @@ void TR_Debug::print(TR::Logger *log, TR::SymbolReference *symRef, bool hideHelp
             TR_OpaqueClassBlock *klass = sym->getDeclaredClass();
             if (klass) {
                 int32_t len = 0;
-                const char *className = TR::Compiler->cls.classNameChars(_comp, klass, len);
+                const char *className = TR::Compiler->cls.classNameChars(comp(), klass, len);
                 log->printf(": %p %.*s", klass, len, className);
             }
 
