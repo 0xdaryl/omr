@@ -222,7 +222,7 @@ void TR_Debug::printLoadConst(TR::Logger *log, TR::Node *node)
                     if (TR::Compiler->cls.isInterfaceClass(_comp, clazz))
                         len += log->prints_len(" Interface");
                     else if (TR::Compiler->cls.isAbstractClass(_comp, clazz))
-                        len += log->prints_len((" Abstract");
+                        len += log->prints_len(" Abstract");
                 }
                 len += log->printf(" (%.*s.class)", sigLen, sig);
             }
