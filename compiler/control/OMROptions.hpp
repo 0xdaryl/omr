@@ -239,7 +239,7 @@ enum TR_CompilationOptions {
     TR_EnableAnnotations                                      = 0x00002000 + 4, // change to disable when on by default
     TR_UnresolvedAreNotColdAtCold                             = 0x00004000 + 4, // cold block marker marks unresolved blocks as cold at hotness cold or less
     TR_UseSymbolValidationManager                             = 0x00008000 + 4,
-    TR_EnablePIDExtension                                     = 0x00010000 + 4,
+    TR_ApplyLogFileNameSuffix                                 = 0x00010000 + 4,
     TR_GenerateCompleteInlineRanges                           = 0x00020000 + 4,
     TR_DisableInliningOfNatives                               = 0x00040000 + 4,
     TR_AssignEveryGlobalRegister                              = 0x00080000 + 4,
@@ -1541,8 +1541,18 @@ public:
 
     TR::OptionSet *getFirstOptionSet() { return _optionSets; }
 
-    char *getLogFileNameSuffix() { return _logFileNameSuffix; }
-    void setLogFileNameSuffix(char *s) { _logFileNameSuffix = s; }
+    /**
+     * @brief Returns the suffix for log file names.
+     *
+     * @return Returns the most specialized name from downstream extensions.
+     */
+    static char *getLogFileNameSuffix();
+
+    /**
+     * @brief Sets the suffix for log file names.  Updates the most specialized name in downstream
+     *     extensions.
+     */
+    static void setLogFileNameSuffix(char *s);
 
     // methods that set or query the command line option and the option sets
     //
@@ -2529,6 +2539,7 @@ protected:
     const char *_startOptions;
     const char *_envOptions;
     static const char *_compilationStrategyName;
+    static char *_logFileNameSuffix;
 
     // Option flag words
     //
@@ -2537,7 +2548,6 @@ protected:
     // Logging and debugging options
     //
     char *_logFileName;
-    char *_logFileNameSuffix;
     TR::FILE *_logFile;
     OMR::Logger *_logger;
 

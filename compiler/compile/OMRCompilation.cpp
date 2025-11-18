@@ -1919,7 +1919,7 @@ void OMR::Compilation::dumpMethodGraph(int index, TR::ResolvedMethodSymbol *meth
         sprintf(fileName, "cfg%d.vcg", index);
 
         char tmp[1025];
-        char *fn = self()->fe()->getFormattedName(tmp, 1025, fileName, NULL, false);
+        char *fn = TR::Options::buildLogFileName(tmp, 1025, fileName, -1, NULL, false);
         TR::FILE *pFile = trfopen(fn, "wb", false);
         TR_ASSERT(pFile != NULL, "unable to open cfg file");
 
