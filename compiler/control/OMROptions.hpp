@@ -1541,7 +1541,8 @@ public:
 
     TR::OptionSet *getFirstOptionSet() { return _optionSets; }
 
-    char *getSuffixLogsFormat() { return _suffixLogsFormat; }
+    char *getLogFileNameSuffix() { return _logFileNameSuffix; }
+    void setLogFileNameSuffix(char *s) { _logFileNameSuffix = s; }
 
     // methods that set or query the command line option and the option sets
     //
@@ -2536,7 +2537,7 @@ protected:
     // Logging and debugging options
     //
     char *_logFileName;
-    char *_suffixLogsFormat;
+    char *_logFileNameSuffix;
     TR::FILE *_logFile;
     OMR::Logger *_logger;
 

@@ -1831,7 +1831,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
     { "suffixLogs", "O\tadd the date/time/pid suffix to the file name of the logs",
      SET_OPTION_BIT(TR_EnablePIDExtension), "F", NOT_IN_SUBSET },
     { "suffixLogsFormat=", "O\tadd the suffix in specified format to the file name of the logs", TR::Options::setString,
-     offsetof(OMR::Options, _suffixLogsFormat), 0, "P%s", NOT_IN_SUBSET },
+     offsetof(OMR::Options, _logFileNameSuffix), 0, "P%s", NOT_IN_SUBSET },
     { "supportSwitchToInterpeter", "C\tGenerate code to allow each method to switch to the interpreter",
      SET_OPTION_BIT(TR_SupportSwitchToInterpreter), "P" },
     { "suppressEA=",
@@ -2746,7 +2746,7 @@ void OMR::Options::initialize()
     _startOptions = NULL;
     _envOptions = NULL;
     _logFileName = NULL;
-    _suffixLogsFormat = NULL;
+    _logFileNameSuffix = NULL;
     _logFile = NULL;
     _logger = TR::Options::getDefaultLogger();
     _optFileName = NULL;
@@ -4683,8 +4683,9 @@ void OMR::Options::openLogFileCreateLogger(int32_t idSuffix)
 
     TR_ASSERT_FATAL(_logFileName, "assertion failure");
 
-    if (_suffixLogsFormat)
+    if (self()->getLogFileNameSuffix()) {
         self()->setOption(TR_EnablePIDExtension);
+    }
 
 #define FN_BUF_SIZE 1025
     char buf0[FN_BUF_SIZE];
@@ -4706,7 +4707,7 @@ void OMR::Options::openLogFileCreateLogger(int32_t idSuffix)
 
     const char *fmodeString = "wb+";
     if (self()->getOption(TR_EnablePIDExtension)) {
-        if (!_suffixLogsFormat) {
+        if (!self()->getLogFileNameSuffix()) {
             // Append time id. TPO may invoke TR multiple times with different partition
             size_t len = strlen(fn);
             char pid_buf[20];
@@ -4720,7 +4721,7 @@ void OMR::Options::openLogFileCreateLogger(int32_t idSuffix)
             std::swap(destBuf, otherBuf);
         }
 
-        fn = _fe->getFormattedName(destBuf, FN_BUF_SIZE, fn, _suffixLogsFormat, true);
+        fn = _fe->getFormattedName(destBuf, FN_BUF_SIZE, fn, self()->getLogFileNameSuffix(), true);
         _logFile = trfopen(fn, fmodeString, false);
     } else {
         fn = _fe->getFormattedName(destBuf, FN_BUF_SIZE, fn, NULL, false);
