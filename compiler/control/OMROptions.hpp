@@ -1513,6 +1513,21 @@ public:
     char *getLogFileName() { return _logFileName; }
 
     /**
+     * @brief Constructs a filename for a log file into the provided buffer
+     *
+     * @param[in] buf
+     * @param[in] bufSize
+     * @param[in] baseLogFileName
+     * @param[in] idSuffix
+     * @param[in] logFileNameSuffix
+     * @param[in] applySuffix
+     *
+     * @return \c buf if a filename was successfully built; NULL on any error
+     */
+    static char *buildLogFileName(char *buf, int32_t bufSize, const char *baseLogFileName, int32_t idSuffix,
+        const char *logFileNameSuffix, bool applySuffix);
+
+    /**
      * @brief Creates a \c OMR::Logger object for this compilation that wraps
      *    around the log file.  The default logger is a \c OMR::CStdIOStreamLogger.
      *
