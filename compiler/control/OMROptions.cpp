@@ -2584,7 +2584,15 @@ bool OMR::Options::createDebug()
     return _debug != 0;
 }
 
-OMR::Logger *OMR::Options::getDefaultLogger() { return OMR::NullLogger::create(); }
+
+OMR::Logger *OMR::Options::getDefaultLogger()
+{
+    if (_defaultLogger == NULL) {
+        _defaultLogger = OMR::NullLogger::create(trPersistentMemory);
+    }
+
+    return _defaultLogger;
+}
 
 bool OMR::Options::requiresDebugObject()
 {
@@ -4665,18 +4673,18 @@ OMR::Logger *OMR::Options::createLoggerForLogFile(TR::FILE *file)
     OMR::Logger *logger = NULL;
 
     if (self()->getOption(TR_ForceTRIOForLoggers)) {
-        logger = OMR::TRIOStreamLogger::create(file);
+        logger = OMR::TRIOStreamLogger::create(trPersistentMemory, file);
     } else {
         // An OMR::CStdIOStreamLogger is the default logger
         //
-        logger = OMR::CStdIOStreamLogger::create((::FILE *)file);
+        logger = OMR::CStdIOStreamLogger::create(trPersistentMemory, (::FILE *)file);
     }
 
     if (_traceFileLengthInMiB > 0) {
         // Wrap the logger in a CircularLogger if requested. The wrapped logger must be enabled first.
         //
         logger->setEnabled_DEPRECATED(true);
-        logger = OMR::CircularLogger::create(logger, _traceFileLengthInMiB << 20);
+        logger = OMR::CircularLogger::create(trPersistentMemory, logger, _traceFileLengthInMiB << 20);
     }
 
     return logger;

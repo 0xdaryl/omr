@@ -24,6 +24,7 @@
 
 #include <stdint.h>
 #include "env/FilePointerDecl.hpp"
+#include "env/TRMemory.hpp"
 
 /**
  * @brief Convenience macro to perform a conditionally guarded print to the
@@ -100,6 +101,8 @@ namespace OMR {
 
 class Logger {
 public:
+    TR_ALLOC(TR_Memory::Logger)
+
     Logger();
 
     /**
@@ -254,7 +257,14 @@ private:
  */
 class NullLogger : public Logger {
 public:
-    static NullLogger *create();
+    /**
+     * @brief \c NullLogger factory function
+     *
+     * @param[in] t : \c TR_Memory allocator type from which to allocate
+     *
+     * @return A \c NullLogger object if successful; NULL on any error
+     */
+    template<typename AllocatorType> static NullLogger *create(AllocatorType t);
 
     virtual int32_t printf(const char *format, ...) { return 0; }
 
@@ -289,7 +299,14 @@ private:
  */
 class AssertingLogger : public Logger {
 public:
-    static AssertingLogger *create();
+    /**
+     * @brief \c AssertingLogger factory function
+     *
+     * @param[in] t : \c TR_Memory allocator type from which to allocate
+     *
+     * @return An \c AssertingLogger object if successful; NULL on any error
+     */
+    template<typename AllocatorType> static AssertingLogger *create(AllocatorType t);
 
     virtual int32_t printf(const char *format, ...);
 
@@ -322,7 +339,16 @@ private:
  */
 class CStdIOStreamLogger : public Logger {
 public:
-    static CStdIOStreamLogger *create(::FILE *stream);
+    /**
+     * @brief \c CStdIOStreamLogger factory function
+     *
+     * @param[in] t : \c TR_Memory allocator type from which to allocate
+     * @param[in] stream : \c ::FILE pointer where logging output will be directed
+     *     The stream is not managed (opened/closed) by the Logger.
+     *
+     * @return A \c CStdIOStreamLogger object if successful; NULL on any error
+     */
+    template<typename AllocatorType> static CStdIOStreamLogger *create(AllocatorType t, ::FILE *stream);
 
     /**
      * @brief
@@ -331,11 +357,12 @@ public:
      *     overwritten if it already exists. The file will be opened for
      *     writing.
      *
+     * @param[in] t : \c TR_Memory allocator type from which to allocate
      * @param[in] filename : name of file to direct logging output to
      *
-     * @return A CStdIOStreamLogger object if successful; NULL on any error
+     * @return A \c CStdIOStreamLogger object if successful; NULL on any error
      */
-    static CStdIOStreamLogger *create(const char *filename);
+    template<typename AllocatorType> static CStdIOStreamLogger *create(AllocatorType t, const char *filename);
 
     ~CStdIOStreamLogger();
 
@@ -389,7 +416,16 @@ private:
  */
 class TRIOStreamLogger : public Logger {
 public:
-    static TRIOStreamLogger *create(TR::FILE *stream);
+    /**
+     * @brief \c TRIOStreamLogger factory function
+     *
+     * @param[in] t : \c TR_Memory allocator type from which to allocate
+     * @param[in] stream : \c TR::FILE pointer where logging output will be directed
+     *     The stream is not managed (opened/closed) by the Logger.
+     *
+     * @return A \c TRIOStreamLogger object if successful; NULL on any error
+     */
+    template<typename AllocatorType> static TRIOStreamLogger *create(AllocatorType t, TR::FILE *stream);
 
     virtual int32_t printf(const char *format, ...);
 
@@ -430,11 +466,11 @@ private:
 class CircularLogger : public Logger {
 public:
     /**
-     * @brief The \c CircularLogger factory function
+     * @brief \c CircularLogger factory function
      *
+     * @param[in] t : \c TR_Memory allocator type from which to allocate
      * @param[in] innerLogger : the underlying Logger managed with circular
      *     logging functionality. The inner Logger must already be created.
-     *
      * @param[in] rewindThresholdInChars : the threshold number of chars after
      *     which the Logger will rewind and resuming logging. This is not a
      *     guaranteed threshold, but an aspirational one. Some chars may be written
@@ -442,7 +478,7 @@ public:
      *
      * @return A new \c CircularLogger object
      */
-    static CircularLogger *create(OMR::Logger *innerLogger, int64_t rewindThresholdInChars);
+    template<typename AllocatorType> static CircularLogger *create(AllocatorType t, OMR::Logger *innerLogger, int64_t rewindThresholdInChars);
 
     virtual int32_t printf(const char *format, ...);
 
@@ -500,8 +536,9 @@ private:
 class MemoryBufferLogger : public Logger {
 public:
     /**
-     * @brief The \c MemoryBufferLogger factory function
+     * @brief \c MemoryBufferLogger factory function
      *
+     * @param[in] t : \c TR_Memory allocator type from which to allocate
      * @param[in] buf : a non-NULL pointer to an already allocated memory buffer
      * @param[in] maxBufLen : the maximum capacity of the buffer in chars. Note
      *     that the size of the buffer must include space for one '\0'-termination
@@ -509,7 +546,7 @@ public:
      *
      * @return An allocated \c MemoryBufferLogger object
      */
-    static MemoryBufferLogger *create(char *buf, size_t maxBufLen);
+    template<typename AllocatorType> static MemoryBufferLogger *create(AllocatorType t, char *buf, size_t maxBufLen);
 
     /**
      * @anchor membuf_printf
