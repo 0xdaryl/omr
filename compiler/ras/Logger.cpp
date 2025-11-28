@@ -202,7 +202,7 @@ OMR::CStdIOStreamLogger *OMR::CStdIOStreamLogger::stderr()
          * However, the worst case result is that there will be multiple wrappers around stderr,
          * which is perfectly fine.
          */
-        _stderr = OMR::CStdIOStreamLogger::create(trPersistentMemory, stderr);
+        _stderr = OMR::CStdIOStreamLogger::create(trPersistentMemory, ::stderr);
     }
 
     return _stderr;
@@ -216,7 +216,7 @@ OMR::CStdIOStreamLogger *OMR::CStdIOStreamLogger::stdout()
          * However, the worst case result is that there will be multiple wrappers around stdout,
          * which is perfectly fine.
          */
-        _stdout = OMR::CStdIOStreamLogger::create(trPersistentMemory, stdout);
+        _stdout = OMR::CStdIOStreamLogger::create(trPersistentMemory, ::stdout);
     }
 
     return _stdout;
