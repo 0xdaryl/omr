@@ -2590,6 +2590,12 @@ bool OMR::Options::createDebug()
 OMR::Logger *OMR::Options::getDefaultLogger()
 {
     if (_defaultLogger == NULL) {
+        /**
+         * Initializing this static field can be an unlikely race between compilation threads.
+         * However, this is unlikely (if not impossible) to occur in practice because it will be
+         * initialized when the top-level Options object is created.  Even if multiple default
+         * Loggers are somehow created, this is perfectly fine from a functional perspective.
+         */
         _defaultLogger = OMR::NullLogger::create(trPersistentMemory);
     }
 

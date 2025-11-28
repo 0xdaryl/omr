@@ -191,9 +191,36 @@ int32_t OMR::CStdIOStreamLogger::close()
     return result;
 }
 
-OMR::CStdIOStreamLogger *OMR::CStdIOStreamLogger::Stderr = OMR::CStdIOStreamLogger::create(trPersistentMemory, stderr);
+CStdIOStreamLogger *_stderr = NULL;
+CStdIOStreamLogger *_stdout = NULL;
 
-OMR::CStdIOStreamLogger *OMR::CStdIOStreamLogger::Stdout = OMR::CStdIOStreamLogger::create(trPersistentMemory, stdout);
+OMR::CStdIOStreamLogger *OMR::CStdIOStreamLogger::stderr()
+{
+    if (!_stderr) {
+        /**
+         * Initializing this static field can be an unlikely race between compilation threads.
+         * However, the worst case result is that there will be multiple wrappers around stderr,
+         * which is perfectly fine.
+         */
+        _stderr = OMR::CStdIOStreamLogger::create(trPersistentMemory, stderr);
+    }
+
+    return _stderr;
+}
+
+OMR::CStdIOStreamLogger *OMR::CStdIOStreamLogger::stdout()
+{
+    if (!_stdout) {
+        /**
+         * Initializing this static field can be an unlikely race between compilation threads.
+         * However, the worst case result is that there will be multiple wrappers around stdout,
+         * which is perfectly fine.
+         */
+        _stdout = OMR::CStdIOStreamLogger::create(trPersistentMemory, stdout);
+    }
+
+    return _stdout;
+}
 
 /*
  * -----------------------------------------------------------------------------

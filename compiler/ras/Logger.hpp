@@ -418,15 +418,25 @@ public:
 
     void setStream(::FILE *s) { _stream = s; }
 
-    static CStdIOStreamLogger *Stderr;
+    /**
+     * @brief Returns the \c CStdIOStreamLogger singleton wrapped around C stderr
+     */
+    static CStdIOStreamLogger *stderr();
 
-    static CStdIOStreamLogger *Stdout;
+    /**
+     * @brief Returns the \c CStdIOStreamLogger singleton wrapped around C stdout
+     */
+    static CStdIOStreamLogger *stdout();
 
 private:
     CStdIOStreamLogger(::FILE *stream, bool requiresStreamClose = false);
 
     ::FILE *_stream;
     bool _requiresStreamClose;
+
+    static CStdIOStreamLogger *_stderr;
+
+    static CStdIOStreamLogger *_stdout;
 };
 
 template<typename AllocatorType> OMR::CStdIOStreamLogger *OMR::CStdIOStreamLogger::create(AllocatorType t, ::FILE *stream) { return new (t) OMR::CStdIOStreamLogger(stream); }
