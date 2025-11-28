@@ -49,7 +49,7 @@ OMR::Logger::Logger()
  * NullLogger
  * -----------------------------------------------------------------------------
  */
-
+#if 0
 template<typename AllocatorType> OMR::NullLogger *OMR::NullLogger::create(AllocatorType t) { return new(t) OMR::NullLogger(); }
 //
 // Explicit instantiations
@@ -57,6 +57,7 @@ template<typename AllocatorType> OMR::NullLogger *OMR::NullLogger::create(Alloca
 template OMR::NullLogger *OMR::NullLogger::create(TR_HeapMemory t);
 
 template OMR::NullLogger *OMR::NullLogger::create(PERSISTENT_NEW_DECLARE t);
+#endif
 
 int32_t OMR::NullLogger::close()
 {

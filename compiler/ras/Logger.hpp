@@ -292,6 +292,15 @@ private:
     {}
 };
 
+template<typename AllocatorType> OMR::NullLogger *OMR::NullLogger::create(AllocatorType t) { return new(t) OMR::NullLogger(); }
+
+// Explicit instantiations
+//
+template OMR::NullLogger *OMR::NullLogger::create(TR_HeapMemory t);
+
+template OMR::NullLogger *OMR::NullLogger::create(PERSISTENT_NEW_DECLARE t);
+
+
 /**
  * A Logger class that fatally asserts if any of the logging functions
  * is called. This is useful for test environments to detect unguarded
