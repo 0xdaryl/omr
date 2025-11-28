@@ -2541,6 +2541,8 @@ int32_t OMR::Options::_TransactionalMemoryRetryCount = 1;
 
 int32_t OMR::Options::_minimalNumberOfTreeTopsInsideTMMonitor = 6;
 
+OMR::Logger *OMR::Options::_defaultLogger = NULL;
+
 TR::SimpleRegex *OMR::Options::_debugCounterInsertByteCode = NULL;
 TR::SimpleRegex *OMR::Options::_debugCounterInsertJittedBody = NULL;
 TR::SimpleRegex *OMR::Options::_debugCounterInsertMethod = NULL;
