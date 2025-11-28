@@ -191,8 +191,8 @@ int32_t OMR::CStdIOStreamLogger::close()
     return result;
 }
 
-CStdIOStreamLogger *OMR::CStdIOStreamLogger::_stderr = NULL;
-CStdIOStreamLogger *OMR::CStdIOStreamLogger::_stdout = NULL;
+OMR::CStdIOStreamLogger *OMR::CStdIOStreamLogger::_stderr = NULL;
+OMR::CStdIOStreamLogger *OMR::CStdIOStreamLogger::_stdout = NULL;
 
 OMR::CStdIOStreamLogger *OMR::CStdIOStreamLogger::stderr()
 {
