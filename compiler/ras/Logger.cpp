@@ -226,9 +226,9 @@ int32_t OMR::CStdIOStreamLogger::close()
     return result;
 }
 
-OMR::CStdIOStreamLogger *OMR::CStdIOStreamLogger::Stderr = OMR::CStdIOStreamLogger::create(trPersistentMemory stderr);
+OMR::CStdIOStreamLogger *OMR::CStdIOStreamLogger::Stderr = OMR::CStdIOStreamLogger::create(trPersistentMemory, stderr);
 
-OMR::CStdIOStreamLogger *OMR::CStdIOStreamLogger::Stdout = OMR::CStdIOStreamLogger::create(trPersistentMemory stdout);
+OMR::CStdIOStreamLogger *OMR::CStdIOStreamLogger::Stdout = OMR::CStdIOStreamLogger::create(trPersistentMemory, stdout);
 
 /*
  * -----------------------------------------------------------------------------
