@@ -49,15 +49,6 @@ OMR::Logger::Logger()
  * NullLogger
  * -----------------------------------------------------------------------------
  */
-#if 0
-template<typename AllocatorType> OMR::NullLogger *OMR::NullLogger::create(AllocatorType t) { return new(t) OMR::NullLogger(); }
-//
-// Explicit instantiations
-//
-template OMR::NullLogger *OMR::NullLogger::create(TR_HeapMemory t);
-
-template OMR::NullLogger *OMR::NullLogger::create(PERSISTENT_NEW_DECLARE t);
-#endif
 
 int32_t OMR::NullLogger::close()
 {
@@ -71,14 +62,6 @@ int32_t OMR::NullLogger::close()
  * AssertingLogger
  * -----------------------------------------------------------------------------
  */
-
-template<typename AllocatorType> OMR::AssertingLogger *OMR::AssertingLogger::create(AllocatorType t) { return new (t) OMR::AssertingLogger(); }
-
-// Explicit instantiations
-//
-template OMR::AssertingLogger *OMR::AssertingLogger::create(TR_HeapMemory t);
-
-template OMR::AssertingLogger *OMR::AssertingLogger::create(PERSISTENT_NEW_DECLARE t);
 
 int32_t OMR::AssertingLogger::printf(const char *format, ...)
 {
@@ -141,25 +124,6 @@ OMR::CStdIOStreamLogger::CStdIOStreamLogger(::FILE *stream, bool requiresStreamC
     : _stream(stream)
     , _requiresStreamClose(requiresStreamClose)
 {}
-
-template<typename AllocatorType> OMR::CStdIOStreamLogger *OMR::CStdIOStreamLogger::create(AllocatorType t, ::FILE *stream) { return new (t) OMR::CStdIOStreamLogger(stream); }
-
-template<typename AllocatorType> OMR::CStdIOStreamLogger *OMR::CStdIOStreamLogger::create(AllocatorType t, const char *filename)
-{
-    ::FILE *fd = fopen(filename, "w");
-    if (!fd) {
-        // Error opening/creating the Logger file
-        return NULL;
-    }
-
-    return new (t) OMR::CStdIOStreamLogger(fd, true);
-}
-
-// Explicit instantiations
-//
-template OMR::CStdIOStreamLogger *OMR::CStdIOStreamLogger::create(TR_HeapMemory t, ::FILE *stream);
-
-template OMR::CStdIOStreamLogger *OMR::CStdIOStreamLogger::create(PERSISTENT_NEW_DECLARE t, const char *filename);
 
 OMR::CStdIOStreamLogger::~CStdIOStreamLogger()
 {
@@ -240,8 +204,6 @@ OMR::TRIOStreamLogger::TRIOStreamLogger(TR::FILE *stream)
     : _stream(stream)
 {}
 
-template<typename AllocatorType> OMR::TRIOStreamLogger *OMR::TRIOStreamLogger::create(AllocatorType t, TR::FILE *stream) { return new (t) OMR::TRIOStreamLogger(stream); }
-
 int32_t OMR::TRIOStreamLogger::printf(const char *format, ...)
 {
     va_list args;
@@ -300,17 +262,6 @@ OMR::CircularLogger::CircularLogger(OMR::Logger *innerLogger, int64_t rewindThre
         "Inner logger must support rewinding for use in a circular logger");
     TR_ASSERT_FATAL(rewindThresholdInChars > 0, "Circular log threshold must be a non-zero, positive integer");
 }
-
-template<typename AllocatorType> OMR::CircularLogger *OMR::CircularLogger::create(AllocatorType t, OMR::Logger *innerLogger, int64_t rewindThresholdInChars)
-{
-    return new (t) OMR::CircularLogger(innerLogger, rewindThresholdInChars);
-}
-
-// Explicit instantiations
-//
-template OMR::CircularLogger *OMR::CircularLogger::create(TR_HeapMemory t, OMR::Logger *innerLogger, int64_t rewindThresholdInChars);
-
-template OMR::CircularLogger *OMR::CircularLogger::create(PERSISTENT_NEW_DECLARE t, OMR::Logger *innerLogger, int64_t rewindThresholdInChars);
 
 int32_t OMR::CircularLogger::printf(const char *format, ...)
 {
@@ -380,17 +331,6 @@ int32_t OMR::CircularLogger::close()
  * MemoryBufferLogger
  * -----------------------------------------------------------------------------
  */
-
-template<typename AllocatorType> OMR::MemoryBufferLogger *OMR::MemoryBufferLogger::create(AllocatorType t, char *buf, size_t maxBufLen)
-{
-    return new (t) OMR::MemoryBufferLogger(buf, maxBufLen);
-}
-
-// Explicit instantiations
-//
-template OMR::MemoryBufferLogger *OMR::MemoryBufferLogger::create(TR_HeapMemory t, char *buf, size_t maxBufLen);
-
-template OMR::MemoryBufferLogger *OMR::MemoryBufferLogger::create(PERSISTENT_NEW_DECLARE t, char *buf, size_t maxBufLen);
 
 OMR::MemoryBufferLogger::MemoryBufferLogger(char *buf, size_t maxBufLen)
     : _buf(buf)
