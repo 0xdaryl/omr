@@ -45,6 +45,7 @@ typedef OMR::CompilerEnv CompilerEnvConnector;
 #include "env/VMEnv.hpp"
 #include "env/VMMethodEnv.hpp"
 #include "env/TRMemory.hpp"
+#include "ras/Logger.hpp"
 
 namespace TR {
 class CompilerEnv;
@@ -116,7 +117,17 @@ public:
 
     OMRPortLibrary * const omrPortLib;
 
+    /**
+     * Logger for compiler messages for exceptional circumstances.
+     */
+    OMR::Logger *msg;
+
 protected:
+
+    // Initialize message Logger for this compiler
+    //
+    void initializeMessageLogger();
+
     // Initialize 'target' environment for this compiler
     //
     void initializeTargetEnvironment();
