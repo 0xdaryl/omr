@@ -103,6 +103,9 @@ class Logger {
 public:
     TR_ALLOC(TR_Memory::Logger)
 
+    inline void *operator new(size_t size, TR::RawAllocator allocator) { return allocator.allocate(size); }
+    inline void operator delete(void *ptr, TR::RawAllocator allocator) throw() { allocator.deallocate(ptr); }
+
     Logger();
 
     /**
