@@ -194,7 +194,7 @@ int32_t OMR::CStdIOStreamLogger::close()
 OMR::CStdIOStreamLogger *OMR::CStdIOStreamLogger::_stderr = NULL;
 OMR::CStdIOStreamLogger *OMR::CStdIOStreamLogger::_stdout = NULL;
 
-OMR::CStdIOStreamLogger *OMR::CStdIOStreamLogger::stderr()
+OMR::CStdIOStreamLogger *OMR::CStdIOStreamLogger::Stderr()
 {
     if (!_stderr) {
         /**
@@ -202,13 +202,13 @@ OMR::CStdIOStreamLogger *OMR::CStdIOStreamLogger::stderr()
          * However, the worst case result is that there will be multiple wrappers around stderr,
          * which is perfectly fine.
          */
-        _stderr = OMR::CStdIOStreamLogger::create(trPersistentMemory, ::stderr);
+        _stderr = OMR::CStdIOStreamLogger::create(trPersistentMemory, stderr);
     }
 
     return _stderr;
 }
 
-OMR::CStdIOStreamLogger *OMR::CStdIOStreamLogger::stdout()
+OMR::CStdIOStreamLogger *OMR::CStdIOStreamLogger::Stdout()
 {
     if (!_stdout) {
         /**
@@ -216,7 +216,7 @@ OMR::CStdIOStreamLogger *OMR::CStdIOStreamLogger::stdout()
          * However, the worst case result is that there will be multiple wrappers around stdout,
          * which is perfectly fine.
          */
-        _stdout = OMR::CStdIOStreamLogger::create(trPersistentMemory, ::stdout);
+        _stdout = OMR::CStdIOStreamLogger::create(trPersistentMemory, stdout);
     }
 
     return _stdout;

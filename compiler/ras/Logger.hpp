@@ -429,12 +429,12 @@ public:
     /**
      * @brief Returns the \c CStdIOStreamLogger singleton wrapped around C stderr
      */
-    static CStdIOStreamLogger *stderr();
+    static CStdIOStreamLogger *Stderr();
 
     /**
      * @brief Returns the \c CStdIOStreamLogger singleton wrapped around C stdout
      */
-    static CStdIOStreamLogger *stdout();
+    static CStdIOStreamLogger *Stdout();
 
 private:
     CStdIOStreamLogger(::FILE *stream, bool requiresStreamClose = false);
