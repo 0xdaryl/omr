@@ -59,7 +59,7 @@ void OMR::CompilerEnv::initializeMessageLogger()
      *
      * Default destination for messages is essentially stderr.
      */
-    mesg = OMR::CStdIOStreamLogger::create(rawAllocator, ::stderr);
+    mesg = OMR::CStdIOStreamLogger::create(rawAllocator, stderr);
 }
 
 void OMR::CompilerEnv::initializeHostEnvironment()
