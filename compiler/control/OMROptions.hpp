@@ -2346,13 +2346,20 @@ private:
 
     void setLogListForOtherCompThreads(TR_MCTLogs *l) { _logListForOtherCompThreads = l; }
 
-    TR_MCTLogs *findLogFileForCompilationThread(int32_t compThreadID);
+    OMR::Logger *findLoggerForLogFileName(TR::Options *cmdLineOptions, TR::OptionSet *optSet, char *logFileName);
+    OMR::Logger *findLoggerForLogFileName(TR::Options *aotCmdLineOptions, TR::Options *jitCmdLineOptions,
+        TR::OptionSet *optSet, char *logFileName);
+    OMR::Logger *findLoggerForLogFileNameOnCompilationThread(const char *logFileName,
+        TR::Options *aotCmdLineOptions, TR::Options *jitCmdLineOptions, int32_t compThreadID);
+    OMR::Logger *findLoggerForCompilationThread(int32_t compThreadID);
     void setLogForCompilationThread(int32_t compThreadID, TR::Options *mainOptions);
     static void safelyCloseLogs(TR::Options *options, TR_MCTLogs *&closedLogs, TR_FrontEnd *fe);
     static void closeLogsForOtherCompilationThreads(TR_FrontEnd *fe);
 
 protected:
-    void openLogFileCreateLogger(int32_t idSuffix = -1, bool applyLogFileNameSuffix = true);
+    OMR::Logger *findLoggerForLogFileNameOnCompilationThreadInner(const char *logFileName,
+        TR::Options *cmdLineOptions, int32_t compThreadID);
+    OMR::Logger *openLogFileCreateLogger(int32_t idSuffix = -1, bool applyLogFileNameSuffix = true);
     static void closeLogFile(TR_FrontEnd *fe, TR::FILE *file, OMR::Logger *log);
 
 private:
