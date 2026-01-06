@@ -155,6 +155,23 @@ public:
     virtual int32_t println() = 0;
 
     /**
+     * @brief
+     *     Read at most \c bufSizeInBytes from the current Logger position into \c buf
+     *     and advance the current Logger position accordingly.
+     *
+     * @details
+     *     Only those Loggers where \c supportsRead() returns true support read
+     *     operations. Loggers that do not support read operations will return 0.
+     *
+     * @param[in] buf : a non-NULL buffer of size at least \c bufSizeInBytes bytes
+     * @param[in] bufSizeInBytes : buffer size in bytes and the maximum number of bytes
+     *     of data read by a single call to this function
+     *
+     * @return Number of bytes read into \c buf; 0 for any error or no bytes read
+     */
+    virtual size_t read(char *buf, size_t bufSizeInBytes) { return 0; }
+
+    /**
      * @brief Returns the current zero-based output position indicator for this Logger.
      *
      * @return a nonnegative number on success, or a negative value on any error
@@ -197,6 +214,13 @@ public:
      *     useful for implementing circular Loggers.
      */
     virtual bool supportsRewinding() = 0;
+
+    /**
+     * @brief
+     *     Answers whether this Logger supports the ability to read data
+     *     back from the Logger. The default answer is false.
+     */
+    virtual bool supportsRead() { return false; }
 
     /**
      * @brief
@@ -406,6 +430,8 @@ public:
 
     virtual int32_t vprintf(const char *format, va_list args);
 
+    virtual size_t read(char *buf, size_t bufSizeInBytes);
+
     virtual int64_t tell();
 
     virtual void rewind();
@@ -415,6 +441,8 @@ public:
     virtual int32_t close();
 
     virtual bool supportsRewinding() { return true; }
+
+    virtual bool supportsRead() { return true; }
 
     /**
      * @brief
@@ -522,6 +550,8 @@ public:
 
     virtual int32_t vprintf(const char *format, va_list args);
 
+    virtual size_t read(char *buf, size_t bufSizeInBytes);
+
     virtual int64_t tell();
 
     virtual void rewind();
@@ -531,6 +561,8 @@ public:
     virtual int32_t close();
 
     virtual bool supportsRewinding() { return true; }
+
+    virtual bool supportsRead() { return true; }
 
     /**
      * @brief
