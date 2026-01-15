@@ -1552,7 +1552,7 @@ public:
      * @param[in] logFileName : A NUL-terminated log file name
      * @param[in] fileMode : mode to open the underlying log file
      *
-     * @return : an \c OMR::Logger object
+     * @return : an \c OMR::Logger object; or NULL on any error
      */
     OMR::Logger *createLoggerForLogFileName(const char *logFileName, const char *fileMode = "wb+");
 
@@ -2357,6 +2357,11 @@ private:
 protected:
     OMR::Logger *findLoggerForLogFileNameOnCompilationThreadInner(const char *logFileName,
         TR::Options *cmdLineOptions, int32_t compThreadID);
+
+    /**
+     *
+     * @return A valid, non-NULL Logger object
+     */
     OMR::Logger *openLogFileCreateLogger(int32_t idSuffix = -1, bool applyLogFileNameSuffix = true);
     static void closeLogger(OMR::Logger *log);
     static void safelyCloseLoggersInner(TR::Options *options, TR_MCTLogs *&closedLoggers, TR_FrontEnd *fe);
