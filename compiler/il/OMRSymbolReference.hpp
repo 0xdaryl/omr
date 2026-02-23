@@ -166,7 +166,23 @@ public:
     bool isThisPointer();
     bool isTemporary(TR::Compilation *c);
 
-    virtual const char *getName(TR_Debug *debug);
+    const char *getName(TR::Region &region, TR::Compilation *comp);
+
+    int32_t printName(OMR::Logger *log, TR::Compilation *comp);
+
+    int32_t printAutoName(OMR::Logger *log, TR::Compilation *comp);
+
+    int32_t printParmName(OMR::Logger *log, TR::Compilation *comp);
+
+    int32_t printMethodName(OMR::Logger *log, TR::Compilation *comp);
+
+    int32_t printStaticName(OMR::Logger *log, TR::Compilation *comp);
+
+    int32_t printShadowName(OMR::Logger *log, TR::Compilation *comp);
+
+    int32_t printMetaDataName(OMR::Logger *log, TR::Compilation *comp);
+
+    const char *getPerCodeCacheHelperName(TR_CCPreLoadedCode helper);
 
     /**
      * Alias functions

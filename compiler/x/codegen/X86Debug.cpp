@@ -531,7 +531,7 @@ void TR_Debug::print(OMR::Logger *log, TR::X86ImmInstruction *instr)
 
     if (instr->getOpCode().isCallImmOp() && instr->getNode()->getSymbolReference()) {
         TR::SymbolReference *symRef = instr->getNode()->getSymbolReference();
-        const char *symName = getName(symRef);
+        const char *symName = symRef->getName(comp()->trMemory()->currentStackRegion(), comp());
 
         log->printf("%-24s", symName);
         printInstructionComment(log, 0, instr);
@@ -556,7 +556,7 @@ void TR_Debug::print(OMR::Logger *log, TR::AMD64Imm64Instruction *instr)
 
     if (instr->getOpCode().isCallImmOp() && instr->getNode()->getSymbolReference()) {
         TR::SymbolReference *symRef = instr->getNode()->getSymbolReference();
-        const char *symName = getName(symRef);
+        const char *symName = symRef->getName(comp()->trMemory()->currentStackRegion(), comp());
 
         log->printf("%-24s", symName);
         printInstructionComment(log, 0, instr);

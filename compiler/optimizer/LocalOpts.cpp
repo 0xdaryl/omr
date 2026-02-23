@@ -6191,7 +6191,7 @@ static bool specializeInvokeExactSymbol(TR::Node *callNode, TR::KnownObjectTable
         TR::SymbolReference *specimenSymRef = comp->getSymRefTab()->findOrCreateMethodSymbol(
             owningMethod->getResolvedMethodIndex(), -1, resolvedMethod, TR::MethodSymbol::ComputedVirtual);
         if (performTransformation(comp, "%sSubstituting more specific method symbol on %p: %s <- %s\n",
-                opt->optDetailString(), callNode, specimenSymRef->getName(comp->getDebug()),
+                opt->optDetailString(), callNode, specimenSymRef->getName(comp->trMemory()->currentStackRegion(), comp),
                 callNode->getSymbolReference()->getName(comp->getDebug()))) {
             callNode->setSymbolReference(specimenSymRef);
             return true;

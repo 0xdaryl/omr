@@ -904,7 +904,9 @@ void TR_Debug::print(OMR::Logger *log, TR::S390RRInstruction *instr)
     if ((instr->getOpCodeValue() == TR::InstOpCode::BASR || instr->getOpCodeValue() == TR::InstOpCode::BRASL)
         && instr->getNode() && instr->getNode()->getOpCode().hasSymbolReference()
         && instr->getNode()->getSymbolReference()) {
-        log->printf(" \t\t# Call \"%s\"", getName(instr->getNode()->getSymbolReference()));
+        log->prints(" \t\t# Call \"");
+        instr->getNode()->getSymbolReference()->printName(log, comp());
+        log->printc('"');
     }
 
     printInstructionComment(log, 1, instr, true);
@@ -932,7 +934,9 @@ void TR_Debug::print(OMR::Logger *log, TR::S390TranslateInstruction *instr)
         log->printf(",%04x", instr->getMask());
     }
     if (instr->getOpCodeValue() == TR::InstOpCode::BASR && instr->getNode()->getOpCode().hasSymbolReference()) {
-        log->printf(" \t\t# Call \"%s\"", getName(instr->getNode()->getSymbolReference()));
+        log->prints(" \t\t# Call \"");
+        instr->getNode()->getSymbolReference()->printName(log, comp());
+        log->printc('"');
     }
     printInstructionComment(log, 1, instr, true);
     log->flush();
@@ -963,7 +967,9 @@ void TR_Debug::print(OMR::Logger *log, TR::S390RRFInstruction *instr)
         log->printf(",%p", instr->getMask3());
     }
     if (instr->getOpCodeValue() == TR::InstOpCode::BASR && instr->getNode()->getOpCode().hasSymbolReference()) {
-        log->printf(" \t\t# Call \"%s\"", getName(instr->getNode()->getSymbolReference()));
+        log->prints(" \t\t# Call \"");
+        instr->getNode()->getSymbolReference()->printName(log, comp());
+        log->printc('"');
     }
     printInstructionComment(log, 1, instr, true);
     log->flush();

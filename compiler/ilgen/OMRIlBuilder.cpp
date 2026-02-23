@@ -2044,11 +2044,15 @@ TR::IlValue *OMR::IlBuilder::genCall(const char *name, TR::SymbolReference *meth
     }
 
     if (returnValue != NULL) {
-        TraceIL("IlBuilder[ %p ]::%d is %s %s", this, returnValue->getID(), name,
-            methodSymRef->getName(comp()->getDebug()));
+        TraceIL("IlBuilder[ %p ]::%d is %s ", this, returnValue->getID(), name);
     } else {
-        TraceIL("IlBuilder[ %p ]::%s %s", this, name, methodSymRef->getName(comp()->getDebug()));
+        TraceIL("IlBuilder[ %p ]::%s ", this, name);
     }
+
+    if (TraceEnabled) {
+        methodSymRef->printName(comp()->log(), comp());
+    }
+
     for (int32_t a = 0; a < numArgs; a++)
         TraceIL(" %d", argValues[a]->getID());
     TraceIL("\n");

@@ -559,7 +559,6 @@ public:
     virtual const char *getName(TR::DataType);
     virtual const char *getName(TR_RawBCDSignCode);
     virtual const char *getName(TR::LabelSymbol *);
-    virtual const char *getName(TR::SymbolReference *);
     virtual const char *getName(TR::Register *, TR_RegisterSizes = TR_WordReg);
     virtual const char *getRealRegisterName(uint32_t regNum);
     virtual const char *getGlobalRegisterName(TR_GlobalRegisterNumber regNum, TR_RegisterSizes size = TR_WordReg);
@@ -825,19 +824,6 @@ public:
     TR::CompilationFilters *findOrCreateFilters(bool loadLimit);
 
     void printFilterTree(TR_FilterBST *root);
-
-    TR::ResolvedMethodSymbol *getOwningMethodSymbol(TR::SymbolReference *);
-    TR_ResolvedMethod *getOwningMethod(TR::SymbolReference *);
-
-    const char *getAutoName(TR::SymbolReference *);
-    const char *getParmName(TR::SymbolReference *);
-    const char *getStaticName(TR::SymbolReference *);
-    const char *getStaticName_ForListing(TR::SymbolReference *);
-
-    virtual const char *getMethodName(TR::SymbolReference *);
-
-    const char *getShadowName(TR::SymbolReference *);
-    const char *getMetaDataName(TR::SymbolReference *);
 
     void printPreds(OMR::Logger *log, TR::CFGNode *);
     void printBaseInfo(OMR::Logger *log, TR_Structure *structure, uint32_t indentation);

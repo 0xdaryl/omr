@@ -167,7 +167,7 @@ void TR_Debug::print(OMR::Logger *log, TR::S390HelperCallSnippet *snippet)
     TR::SymbolReference *helperSymRef = snippet->getHelperSymRef();
 
     uint8_t *bufferPos = snippet->getSnippetLabel()->getCodeLocation();
-    printSnippetLabel(log, snippet->getSnippetLabel(), bufferPos, "Helper Call Snippet", getName(helperSymRef));
+    printSnippetLabel(log, snippet->getSnippetLabel(), bufferPos, "Helper Call Snippet", helperSymRef->getName(cg()->comp()->currentStackRegion(), cg()->comp()));
 
     bufferPos = printLoadVMThreadInstruction(log, bufferPos);
 

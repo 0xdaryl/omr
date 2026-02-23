@@ -1947,7 +1947,7 @@ static void rememberMostRecentValue(TR::SymbolReference *symRef, TR::Node *value
         || (state->_candidate && (state->getCandidateSymRef() == symRef))) {
         TR::RegisterCandidate *candidate = findCandidate(symRef, state->_candidatesAlreadyAssigned, state->_candidate);
         TR_ASSERT(candidate, "rememberMostRecentValue: there should be a matching candidate for #%d %s",
-            symRef->getReferenceNumber(), cg->getDebug()->getName(symRef));
+            symRef->getReferenceNumber(), symRef->getName(cg->comp()->trMemory()->currentStackRegion(), cg->comp()));
         if (candidate)
             candidate->setMostRecentValue(valueNode);
     }

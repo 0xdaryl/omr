@@ -198,7 +198,8 @@ void TR_Debug::print(OMR::Logger *log, TR::X86FPConvertToIntSnippet *snippet)
     }
 
     printPrefix(log, NULL, bufferPos, 5);
-    log->printf("call\t%s", getName(snippet->getHelperSymRef()));
+    log->prints("call\t")
+    snippet->getHelperSymRef()->printName(log, comp());
     bufferPos += 5;
 
     printPrefix(log, NULL, bufferPos, 3);
@@ -346,7 +347,8 @@ void TR_Debug::print(OMR::Logger *log, TR::X86FPConvertToLongSnippet *snippet)
     }
 
     printPrefix(log, NULL, bufferPos, 5);
-    log->printf("call\t%s", getName(snippet->getHelperSymRef()));
+    log->prints("call\t");
+    snippet->getHelperSymRef()->printName(log, comp());
     bufferPos += 5;
 
     if (action & snippet->kMOVLow) {

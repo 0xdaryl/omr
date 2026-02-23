@@ -235,14 +235,6 @@ bool OMR::SymbolReference::isTemporary(TR::Compilation *c)
             || self()->getCPIndex() < 0);
 }
 
-const char *OMR::SymbolReference::getName(TR_Debug *debug)
-{
-    if (debug)
-        return debug->getName(self());
-    else
-        return "<unknown symref>";
-}
-
 TR::SymbolReference *OMR::SymbolReference::create(TR::SymbolReferenceTable *symRefTab, TR::Symbol *sym,
     ConstRefIndex koi)
 {

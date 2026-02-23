@@ -2106,7 +2106,7 @@ TR::Node *constrainAloadi(OMR::ValuePropagation *vp, TR::Node *node)
             case TR::Symbol::Java_lang_invoke_MethodHandle_thunks:
                 if (!node->isNonNull()
                     && performTransformation(vp->comp(), "%s[%p] recognized field is never null: %s\n", OPT_DETAILS,
-                        node, symRef->getName(vp->comp()->getDebug()))) {
+                        node, symRef->getName(vp->comp()->trMemory()->currentStackRegion(), vp->comp()))) {
                     vp->addGlobalConstraint(node, TR::VPNonNullObject::create(vp));
                     node->setIsNonNull(true);
                 }
@@ -4398,7 +4398,7 @@ static void devirtualizeCall(OMR::ValuePropagation *vp, TR::Node *node)
                     TR::SymbolReference *specimenSymRef = vp->getSymRefTab()->findOrCreateMethodSymbol(
                         owningMethod->getResolvedMethodIndex(), -1, resolvedMethod, TR::MethodSymbol::ComputedVirtual);
                     if (performTransformation(vp->comp(), "%sSubstituting more specific method symbol on %p: %s\n",
-                            OPT_DETAILS, node, specimenSymRef->getName(vp->getDebug()))) {
+                            OPT_DETAILS, node, specimenSymRef->getName(vp->comp()->trMemory()->currentStackRegion(), vp->comp()))) {
                         node->setSymbolReference(specimenSymRef);
                     } else {
                         return;
