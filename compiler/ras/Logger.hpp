@@ -720,6 +720,21 @@ public:
     template<typename AllocatorType> static MemoryBufferLogger *create(AllocatorType t, char *buf, size_t maxBufLen);
 
     /**
+     * @brief \c MemoryBufferLogger factory function
+     *
+     * @param[in] region : \c TR::Region from which to allocate
+     * @param[in] buf : a non-NULL pointer to an already allocated memory buffer
+     * @param[in] maxBufLen : the maximum capacity of the buffer in chars. Note
+     *     that the size of the buffer must include space for one '\0'-termination
+     *     character.
+     *
+     * @return An allocated \c MemoryBufferLogger object
+     */
+    static MemoryBufferLogger *create(TR::Region &region, char *buf, size_t maxBufLen);
+
+    MemoryBufferLogger(char *buf, size_t maxBufLen);
+
+    /**
      * @anchor membuf_printf
      *
      * @brief
@@ -787,7 +802,6 @@ public:
     virtual bool supportsRewinding() { return true; }
 
 private:
-    MemoryBufferLogger(char *buf, size_t maxBufLen);
 
     char *_buf;
     char *_bufCursor;

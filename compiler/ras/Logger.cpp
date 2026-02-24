@@ -386,6 +386,11 @@ int32_t OMR::CircularLogger::close()
  * -----------------------------------------------------------------------------
  */
 
+OMR::MemoryBufferLogger::create(TR::Region &region, char *buf, size_t maxBufLen)
+{
+    return new (region) OMR::MemoryBufferLogger(buf, maxBufLen);
+}
+
 OMR::MemoryBufferLogger::MemoryBufferLogger(char *buf, size_t maxBufLen)
     : _buf(buf)
     , _bufCursor(buf)
