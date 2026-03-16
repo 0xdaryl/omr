@@ -3749,18 +3749,6 @@ TR::X86FPRegMemInstruction *generateFPRegMemInstruction(TR::InstOpCode::Mnemonic
     return new (cg->trHeapMemory()) TR::X86FPRegMemInstruction(op, node, treg, mr, cg);
 }
 
-TR::X86FPReturnInstruction *generateFPReturnInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node,
-    TR::RegisterDependencyConditions *cond, TR::CodeGenerator *cg)
-{
-    return new (cg->trHeapMemory()) TR::X86FPReturnInstruction(cond, node, op, cg);
-}
-
-TR::X86FPReturnImmInstruction *generateFPReturnImmInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, int32_t imm,
-    TR::RegisterDependencyConditions *cond, TR::CodeGenerator *cg)
-{
-    return new (cg->trHeapMemory()) TR::X86FPReturnImmInstruction(op, node, imm, cond, cg);
-}
-
 TR::AMD64RegImm64Instruction *generateRegImm64Instruction(TR::InstOpCode::Mnemonic op, TR::Node *node,
     TR::Register *treg, uint64_t imm, TR::CodeGenerator *cg, int32_t reloKind)
 {

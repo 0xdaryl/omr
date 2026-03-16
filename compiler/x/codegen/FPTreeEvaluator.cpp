@@ -407,9 +407,9 @@ TR::Register *OMR::X86::TreeEvaluator::fpReturnEvaluator(TR::Node *node, TR::Cod
     }
 
     if (linkageProperties.getCallerCleanup()) {
-        generateFPReturnInstruction(TR::InstOpCode::RET, node, dependencies, cg);
+        generateInstruction(TR::InstOpCode::RET, node, dependencies, cg);
     } else {
-        generateFPReturnImmInstruction(TR::InstOpCode::RETImm2, node, 0, dependencies, cg);
+        generateImmInstruction(TR::InstOpCode::RETImm2, node, 0, dependencies, cg);
     }
 
     if (comp->getJittedMethodSymbol()->getLinkageConvention() == TR_Private) {

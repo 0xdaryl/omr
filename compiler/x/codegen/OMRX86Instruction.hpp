@@ -2848,11 +2848,6 @@ TR::AMD64Imm64SymInstruction *generateImm64SymInstruction(TR::Instruction *prece
     TR::InstOpCode::Mnemonic op, uint64_t imm, TR::SymbolReference *sr, TR::RegisterDependencyConditions *cond,
     TR::CodeGenerator *cg);
 
-namespace TR {
-typedef TR::Instruction X86FPReturnInstruction;
-typedef TR::X86ImmInstruction X86FPReturnImmInstruction;
-} // namespace TR
-
 TR::X86FPST0ST1RegRegInstruction *generateFPST0ST1RegRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *,
     TR::Register *reg1, TR::Register *reg2, TR::CodeGenerator *cg);
 TR::X86FPSTiST0RegRegInstruction *generateFPSTiST0RegRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *,
@@ -2862,12 +2857,6 @@ TR::X86FPMemRegInstruction *generateFPMemRegInstruction(TR::InstOpCode::Mnemonic
     TR::MemoryReference *mr, TR::Register *reg1, TR::CodeGenerator *cg);
 TR::X86FPRegMemInstruction *generateFPRegMemInstruction(TR::InstOpCode::Mnemonic op, TR::Node *, TR::Register *reg1,
     TR::MemoryReference *mr, TR::CodeGenerator *cg);
-
-TR::X86FPReturnInstruction *generateFPReturnInstruction(TR::InstOpCode::Mnemonic op, TR::Node *,
-    TR::RegisterDependencyConditions *, TR::CodeGenerator *cg);
-
-TR::X86FPReturnImmInstruction *generateFPReturnImmInstruction(TR::InstOpCode::Mnemonic cp, TR::Node *, int32_t imm,
-    TR::RegisterDependencyConditions *, TR::CodeGenerator *cg);
 
 TR::X86PatchableCodeAlignmentInstruction *generatePatchableCodeAlignmentInstruction(
     const TR_AtomicRegion *atomicRegions, TR::Instruction *patchableCode, TR::CodeGenerator *cg);
