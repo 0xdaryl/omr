@@ -134,8 +134,6 @@ void TR_Debug::printx(OMR::Logger *log, TR::Instruction *instr)
         case TR::Instruction::IsFPST0ST1RegReg:
         case TR::Instruction::IsFPST0STiRegReg:
         case TR::Instruction::IsFPSTiST0RegReg:
-        case TR::Instruction::IsFPArithmeticRegReg:
-        case TR::Instruction::IsFPCompareRegReg:
             print(log, (TR::X86FPRegRegInstruction *)instr);
             break;
 #ifdef TR_TARGET_64BIT
@@ -203,7 +201,6 @@ void TR_Debug::printx(OMR::Logger *log, TR::Instruction *instr)
         default:
             TR_ASSERT(0, "Unknown instruction kind");
             // fall thru
-        case TR::Instruction::IsFPCompareEval:
         case TR::Instruction::IsNotExtended: {
             printPrefix(log, instr);
             log->printf("%-32s", getMnemonicName(&instr->getOpCode()));
