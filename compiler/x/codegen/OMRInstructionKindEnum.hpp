@@ -28,7 +28,7 @@ IsNotExtended, IsLabel, IsVirtualGuardNOP, IsFence, IsPadding, IsAlignment, IsBo
     IsPatchableCodeAlignment, IsImm, IsImmSnippet, IsImmSym, IsImm64, IsImm64Sym, IsVFPSave, IsVFPRestore,
     IsVFPDedicate, IsVFPRelease, IsVFPCallCleanup, IsReg, IsRegReg, IsRegRegImm, IsRegRegReg, IsRegMaskRegReg,
     IsRegMaskRegRegImm, IsFPRegReg, IsFPST0ST1RegReg, IsFPST0STiRegReg, IsFPSTiST0RegReg, IsFPArithmeticRegReg,
-    IsFPCompareRegReg, IsFPRemainderRegReg, IsRegMaskReg, IsRegImm, IsRegImmSym, IsRegImm64, IsRegImm64Sym, IsRegMem,
+    IsFPCompareRegReg, IsRegMaskReg, IsRegImm, IsRegImmSym, IsRegImm64, IsRegImm64Sym, IsRegMem,
     IsRegMemImm, IsRegRegMem, IsRegMaskMem, IsRegMaskRegMem, IsFPRegMem, IsFPReg, IsMem, IsMemTable, IsCallMem,
     IsMemImm, IsMemImmSym, IsMemImmSnippet, IsMemReg, IsMemMaskReg, IsMemRegImm, IsFPMemReg, IsFPCompareEval,
     IsFfsdPPSRecord,

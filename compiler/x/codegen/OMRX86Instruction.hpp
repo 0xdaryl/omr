@@ -2430,26 +2430,6 @@ public:
     virtual uint8_t *generateOperand(uint8_t *cursor);
 };
 
-class X86FPRemainderRegRegInstruction : public TR::X86FPST0ST1RegRegInstruction {
-    TR::Register *_accRegister;
-
-public:
-    X86FPRemainderRegRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::Register *treg, TR::Register *sreg,
-        TR::CodeGenerator *cg);
-
-    X86FPRemainderRegRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::Register *treg, TR::Register *sreg,
-        TR::Register *accReg, TR::RegisterDependencyConditions *cond, TR::CodeGenerator *cg);
-
-    X86FPRemainderRegRegInstruction(TR::Instruction *precedingInstruction, TR::InstOpCode::Mnemonic op,
-        TR::Register *treg, TR::Register *sreg, TR::CodeGenerator *cg);
-
-    virtual const char *description() { return "X86FPRemainderRegReg"; }
-
-    virtual Kind getKind() { return IsFPRemainderRegReg; }
-
-    virtual void assignRegisters(TR_RegisterKinds kindsToBeAssigned);
-};
-
 class X86FPMemRegInstruction : public TR::X86MemRegInstruction {
 public:
     X86FPMemRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::MemoryReference *mr, TR::Register *sreg,
@@ -2980,12 +2960,6 @@ TR::X86FPSTiST0RegRegInstruction *generateFPSTiST0RegRegInstruction(TR::InstOpCo
 
 TR::X86FPArithmeticRegRegInstruction *generateFPArithmeticRegRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *,
     TR::Register *reg1, TR::Register *reg2, TR::CodeGenerator *cg);
-
-TR::X86FPRemainderRegRegInstruction *generateFPRemainderRegRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *,
-    TR::Register *reg1, TR::Register *reg2, TR::CodeGenerator *cg);
-TR::X86FPRemainderRegRegInstruction *generateFPRemainderRegRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *,
-    TR::Register *reg1, TR::Register *reg2, TR::Register *accReg, TR::RegisterDependencyConditions *cond,
-    TR::CodeGenerator *cg);
 
 TR::X86FPMemRegInstruction *generateFPMemRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *,
     TR::MemoryReference *mr, TR::Register *reg1, TR::CodeGenerator *cg);

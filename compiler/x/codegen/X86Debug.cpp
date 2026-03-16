@@ -136,7 +136,6 @@ void TR_Debug::printx(OMR::Logger *log, TR::Instruction *instr)
         case TR::Instruction::IsFPSTiST0RegReg:
         case TR::Instruction::IsFPArithmeticRegReg:
         case TR::Instruction::IsFPCompareRegReg:
-        case TR::Instruction::IsFPRemainderRegReg:
             print(log, (TR::X86FPRegRegInstruction *)instr);
             break;
 #ifdef TR_TARGET_64BIT
