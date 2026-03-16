@@ -131,7 +131,6 @@ void TR_Debug::printx(OMR::Logger *log, TR::Instruction *instr)
             print(log, (TR::X86RegRegImmInstruction *)instr);
             break;
         case TR::Instruction::IsFPRegReg:
-        case TR::Instruction::IsFPST0STiRegReg:
         case TR::Instruction::IsFPSTiST0RegReg:
             print(log, (TR::X86FPRegRegInstruction *)instr);
             break;

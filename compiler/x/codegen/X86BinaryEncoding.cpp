@@ -2501,15 +2501,6 @@ uint8_t *TR::X86FPRegRegInstruction::generateOperand(uint8_t *cursor)
     return cursor;
 }
 
-// TR::X86FPST0STiRegRegInstruction:: member functions
-
-uint8_t *TR::X86FPST0STiRegRegInstruction::generateOperand(uint8_t *cursor)
-{
-    uint8_t *opCode = cursor - 1;
-    applySourceRegisterToOpCode(opCode, cg()->machine());
-    return cursor;
-}
-
 // TR::X86FPSTiST0RegRegInstruction:: member functions
 
 uint8_t *TR::X86FPSTiST0RegRegInstruction::generateOperand(uint8_t *cursor)
