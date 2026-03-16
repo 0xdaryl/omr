@@ -2044,29 +2044,6 @@ public:
 #endif
 };
 
-class X86FPRegInstruction : public TR::X86RegInstruction {
-public:
-    X86FPRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::Register *reg, TR::CodeGenerator *cg);
-
-    X86FPRegInstruction(TR::Instruction *precedingInstruction, TR::InstOpCode::Mnemonic op, TR::Register *reg,
-        TR::CodeGenerator *cg);
-
-    virtual Kind getKind() { return IsFPReg; }
-
-    void applyTargetRegisterToOpCode(uint8_t *opCode)
-    {
-        TR::RealRegister *target = toRealRegister(getTargetRegister());
-        target->setRegisterFieldInOpcode(opCode);
-    }
-
-    virtual void assignRegisters(TR_RegisterKinds kindsToBeAssigned);
-    virtual uint8_t *generateOperand(uint8_t *cursor);
-
-#ifdef DEBUG
-    virtual uint32_t getNumOperandReferencedGPRegisters() { return 0; }
-#endif
-};
-
 class AMD64RegImm64Instruction : public TR::X86RegInstruction {
     uint64_t _sourceImmediate;
     int32_t _reloKind;
@@ -2875,9 +2852,6 @@ namespace TR {
 typedef TR::Instruction X86FPReturnInstruction;
 typedef TR::X86ImmInstruction X86FPReturnImmInstruction;
 } // namespace TR
-
-TR::X86FPRegInstruction *generateFPRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *, TR::Register *reg1,
-    TR::CodeGenerator *cg);
 
 TR::X86FPST0ST1RegRegInstruction *generateFPST0ST1RegRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *,
     TR::Register *reg1, TR::Register *reg2, TR::CodeGenerator *cg);

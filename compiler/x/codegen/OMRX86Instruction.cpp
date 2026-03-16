@@ -2717,22 +2717,6 @@ void TR::X86RegMaskMemInstruction::assignRegisters(TR_RegisterKinds kindsToBeAss
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TR::X86FPRegInstruction:: member functions
-////////////////////////////////////////////////////////////////////////////////
-
-TR::X86FPRegInstruction::X86FPRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::Register *reg,
-    TR::CodeGenerator *cg)
-    : TR::X86RegInstruction(reg, node, op, cg)
-{}
-
-TR::X86FPRegInstruction::X86FPRegInstruction(TR::Instruction *precedingInstruction, TR::InstOpCode::Mnemonic op,
-    TR::Register *reg, TR::CodeGenerator *cg)
-    : TR::X86RegInstruction(reg, op, precedingInstruction, cg)
-{}
-
-void TR::X86FPRegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned) {}
-
-////////////////////////////////////////////////////////////////////////////////
 // TR::X86FPRegRegInstruction:: member functions
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -3745,12 +3729,6 @@ TR::X86VFPCallCleanupInstruction *generateVFPCallCleanupInstruction(int32_t adju
     TR::CodeGenerator *cg)
 {
     return new (cg->trHeapMemory()) TR::X86VFPCallCleanupInstruction(adjustment, node, cg);
-}
-
-TR::X86FPRegInstruction *generateFPRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::Register *reg,
-    TR::CodeGenerator *cg)
-{
-    return new (cg->trHeapMemory()) TR::X86FPRegInstruction(op, node, reg, cg);
 }
 
 TR::X86FPSTiST0RegRegInstruction *generateFPSTiST0RegRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node,
