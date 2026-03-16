@@ -2501,10 +2501,6 @@ uint8_t *TR::X86FPRegRegInstruction::generateOperand(uint8_t *cursor)
     return cursor;
 }
 
-// TR::X86FPST0ST1RegRegInstruction:: member functions
-
-uint8_t *TR::X86FPST0ST1RegRegInstruction::generateOperand(uint8_t *cursor) { return cursor; }
-
 // TR::X86FPST0STiRegRegInstruction:: member functions
 
 uint8_t *TR::X86FPST0STiRegRegInstruction::generateOperand(uint8_t *cursor)

@@ -2340,25 +2340,6 @@ public:
 #endif
 };
 
-class X86FPST0ST1RegRegInstruction : public TR::X86FPRegRegInstruction {
-public:
-    X86FPST0ST1RegRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::Register *treg, TR::Register *sreg,
-        TR::CodeGenerator *cg);
-
-    X86FPST0ST1RegRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::Register *treg, TR::Register *sreg,
-        TR::RegisterDependencyConditions *cond, TR::CodeGenerator *cg);
-
-    X86FPST0ST1RegRegInstruction(TR::Instruction *precedingInstruction, TR::InstOpCode::Mnemonic op, TR::Register *treg,
-        TR::Register *sreg, TR::CodeGenerator *cg);
-
-    virtual const char *description() { return "X86FPST0ST1RegReg"; }
-
-    virtual Kind getKind() { return IsFPST0ST1RegReg; }
-
-    virtual void assignRegisters(TR_RegisterKinds kindsToBeAssigned);
-    virtual uint8_t *generateOperand(uint8_t *cursor);
-};
-
 class X86FPST0STiRegRegInstruction : public TR::X86FPRegRegInstruction {
 public:
     X86FPST0STiRegRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::Register *treg, TR::Register *sreg,

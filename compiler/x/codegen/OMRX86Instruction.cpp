@@ -2752,27 +2752,6 @@ TR::X86FPRegRegInstruction::X86FPRegRegInstruction(TR::Instruction *precedingIns
 {}
 
 ////////////////////////////////////////////////////////////////////////////////
-// TR::X86FPST0ST1RegRegInstruction:: member functions
-////////////////////////////////////////////////////////////////////////////////
-
-TR::X86FPST0ST1RegRegInstruction::X86FPST0ST1RegRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node,
-    TR::Register *treg, TR::Register *sreg, TR::CodeGenerator *cg)
-    : TR::X86FPRegRegInstruction(sreg, treg, node, op, cg)
-{}
-
-TR::X86FPST0ST1RegRegInstruction::X86FPST0ST1RegRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node,
-    TR::Register *treg, TR::Register *sreg, TR::RegisterDependencyConditions *cond, TR::CodeGenerator *cg)
-    : TR::X86FPRegRegInstruction(op, node, treg, sreg, cond, cg)
-{}
-
-TR::X86FPST0ST1RegRegInstruction::X86FPST0ST1RegRegInstruction(TR::Instruction *precedingInstruction,
-    TR::InstOpCode::Mnemonic op, TR::Register *treg, TR::Register *sreg, TR::CodeGenerator *cg)
-    : TR::X86FPRegRegInstruction(sreg, treg, op, precedingInstruction, cg)
-{}
-
-void TR::X86FPST0ST1RegRegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned) {}
-
-////////////////////////////////////////////////////////////////////////////////
 // TR::X86FPSTiST0RegRegInstruction:: member functions
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -3788,12 +3767,6 @@ TR::X86FPRegInstruction *generateFPRegInstruction(TR::InstOpCode::Mnemonic op, T
     TR::CodeGenerator *cg)
 {
     return new (cg->trHeapMemory()) TR::X86FPRegInstruction(op, node, reg, cg);
-}
-
-TR::X86FPST0ST1RegRegInstruction *generateFPST0ST1RegRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node,
-    TR::Register *treg, TR::Register *sreg, TR::CodeGenerator *cg)
-{
-    return new (cg->trHeapMemory()) TR::X86FPST0ST1RegRegInstruction(op, node, treg, sreg, cg);
 }
 
 TR::X86FPST0STiRegRegInstruction *generateFPST0STiRegRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node,
