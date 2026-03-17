@@ -2482,15 +2482,6 @@ int32_t TR::X86RegMemImmInstruction::estimateBinaryLength(int32_t currentEstimat
     return currentEstimate + getEstimatedBinaryLength();
 }
 
-// TR::X86FPRegRegInstruction:: member functions
-
-uint8_t *TR::X86FPRegRegInstruction::generateOperand(uint8_t *cursor)
-{
-    uint8_t *opCode = cursor - 1;
-    applyRegistersToOpCode(opCode, cg()->machine());
-    return cursor;
-}
-
 // TR::X86FPRegMemInstruction:: member functions
 
 uint8_t *TR::X86FPRegMemInstruction::generateOperand(uint8_t *cursor)

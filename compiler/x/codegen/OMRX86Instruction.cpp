@@ -2716,25 +2716,6 @@ void TR::X86RegMaskMemInstruction::assignRegisters(TR_RegisterKinds kindsToBeAss
     }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// TR::X86FPRegRegInstruction:: member functions
-////////////////////////////////////////////////////////////////////////////////
-
-TR::X86FPRegRegInstruction::X86FPRegRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::Register *treg,
-    TR::Register *sreg, TR::CodeGenerator *cg)
-    : TR::X86RegRegInstruction(sreg, treg, node, op, cg)
-{}
-
-TR::X86FPRegRegInstruction::X86FPRegRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::Register *treg,
-    TR::Register *sreg, TR::RegisterDependencyConditions *cond, TR::CodeGenerator *cg)
-    : TR::X86RegRegInstruction(op, node, treg, sreg, cond, cg)
-{}
-
-TR::X86FPRegRegInstruction::X86FPRegRegInstruction(TR::Instruction *precedingInstruction, TR::InstOpCode::Mnemonic op,
-    TR::Register *treg, TR::Register *sreg, TR::CodeGenerator *cg)
-    : TR::X86RegRegInstruction(sreg, treg, op, precedingInstruction, cg)
-{}
-
 TR::InstOpCode::Mnemonic getBranchOrSetOpCodeForFPComparison(TR::ILOpCodes cmpOp)
 {
     TR::InstOpCode::Mnemonic op;

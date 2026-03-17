@@ -130,9 +130,6 @@ void TR_Debug::printx(OMR::Logger *log, TR::Instruction *instr)
         case TR::Instruction::IsRegRegImm:
             print(log, (TR::X86RegRegImmInstruction *)instr);
             break;
-        case TR::Instruction::IsFPRegReg:
-            print(log, (TR::X86FPRegRegInstruction *)instr);
-            break;
 #ifdef TR_TARGET_64BIT
         case TR::Instruction::IsRegImm64:
         case TR::Instruction::IsRegImm64Sym:
@@ -1194,22 +1191,6 @@ void TR_Debug::printReferencedRegisterInfo(OMR::Logger *log, TR::X86RegRegMemIns
         printFullRegisterDependencyInfo(log, instr->getDependencyConditions());
     }
 
-    log->flush();
-}
-
-void TR_Debug::print(OMR::Logger *log, TR::X86FPRegRegInstruction *instr)
-{
-    printPrefix(log, instr);
-    log->printf("%s\t", getMnemonicName(&instr->getOpCode()));
-    if (!(instr->getOpCode().targetRegIsImplicit() != 0))
-        print(log, instr->getTargetRegister());
-    if (!(instr->getOpCode().targetRegIsImplicit() != 0) && !(instr->getOpCode().sourceRegIsImplicit() != 0))
-        log->prints(", ");
-    if (!(instr->getOpCode().sourceRegIsImplicit() != 0))
-        print(log, instr->getSourceRegister());
-    printInstructionComment(log, 2, instr);
-    printFPRegisterComment(log, instr->getTargetRegister(), instr->getSourceRegister());
-    dumpDependencies(log, instr);
     log->flush();
 }
 
