@@ -2482,18 +2482,6 @@ int32_t TR::X86RegMemImmInstruction::estimateBinaryLength(int32_t currentEstimat
     return currentEstimate + getEstimatedBinaryLength();
 }
 
-// TR::X86FPRegMemInstruction:: member functions
-
-uint8_t *TR::X86FPRegMemInstruction::generateOperand(uint8_t *cursor)
-{
-    return getMemoryReference()->generateBinaryEncoding(cursor - 1, this, cg());
-}
-
-uint8_t TR::X86FPRegMemInstruction::getBinaryLengthLowerBound()
-{
-    return getOpCode().length(self()->getEncodingMethod(), self()->rexBits());
-}
-
 // -----------------------------------------------------------------------------
 // TR::AMD64RegImm64Instruction:: member functions
 

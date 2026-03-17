@@ -2821,35 +2821,6 @@ TR::InstOpCode::Mnemonic getBranchOrSetOpCodeForFPComparison(TR::ILOpCodes cmpOp
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TR::X86FPRegMemInstruction:: member functions
-////////////////////////////////////////////////////////////////////////////////
-
-TR::X86FPRegMemInstruction::X86FPRegMemInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::Register *treg,
-    TR::MemoryReference *mr, TR::CodeGenerator *cg)
-    : TR::X86RegMemInstruction(mr, treg, node, op, cg)
-{}
-
-TR::X86FPRegMemInstruction::X86FPRegMemInstruction(TR::Instruction *precedingInstruction, TR::InstOpCode::Mnemonic op,
-    TR::Register *treg, TR::MemoryReference *mr, TR::CodeGenerator *cg)
-    : TR::X86RegMemInstruction(mr, treg, op, precedingInstruction, cg)
-{}
-
-void TR::X86FPRegMemInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned)
-{
-    if (kindsToBeAssigned & TR_GPR_Mask) {
-        getMemoryReference()->assignRegisters(this, cg());
-    }
-
-#ifdef J9_PROJECT_SPECIFIC
-    if (kindsToBeAssigned & (TR_FPR_Mask | TR_VRF_Mask)) {
-        TR::UnresolvedDataSnippet *snippet = getMemoryReference()->getUnresolvedDataSnippet();
-        if (snippet)
-            snippet->setHasLiveXMMRegisters((cg()->machine()->fpGetNumberOfLiveXMMRs() > 0) ? true : false);
-    }
-#endif
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // TR_IA32VFPxxx member functions
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -3661,12 +3632,6 @@ TR::X86VFPCallCleanupInstruction *generateVFPCallCleanupInstruction(int32_t adju
     TR::CodeGenerator *cg)
 {
     return new (cg->trHeapMemory()) TR::X86VFPCallCleanupInstruction(adjustment, node, cg);
-}
-
-TR::X86FPRegMemInstruction *generateFPRegMemInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::Register *treg,
-    TR::MemoryReference *mr, TR::CodeGenerator *cg)
-{
-    return new (cg->trHeapMemory()) TR::X86FPRegMemInstruction(op, node, treg, mr, cg);
 }
 
 TR::AMD64RegImm64Instruction *generateRegImm64Instruction(TR::InstOpCode::Mnemonic op, TR::Node *node,

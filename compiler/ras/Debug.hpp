@@ -150,7 +150,6 @@ class X86MemRegImmInstruction;
 class X86RegMemInstruction;
 class X86RegMemImmInstruction;
 class X86RegRegMemInstruction;
-class X86FPRegMemInstruction;
 class X86RestartSnippet;
 class X86PicDataSnippet;
 class X86DivideCheckSnippet;
@@ -906,7 +905,6 @@ public:
     void print(OMR::Logger *log, TR::X86RegMaskMemInstruction *);
     void print(OMR::Logger *log, TR::X86RegMemImmInstruction *);
     void print(OMR::Logger *log, TR::X86RegRegMemInstruction *);
-    void print(OMR::Logger *log, TR::X86FPRegMemInstruction *);
     void print(OMR::Logger *log, TR::AMD64Imm64Instruction *);
     void print(OMR::Logger *log, TR::AMD64Imm64SymInstruction *);
     void print(OMR::Logger *log, TR::AMD64RegImm64Instruction *);

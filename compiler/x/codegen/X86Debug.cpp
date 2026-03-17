@@ -149,9 +149,6 @@ void TR_Debug::printx(OMR::Logger *log, TR::Instruction *instr)
         case TR::Instruction::IsRegRegMem:
             print(log, (TR::X86RegRegMemInstruction *)instr);
             break;
-        case TR::Instruction::IsFPRegMem:
-            print(log, (TR::X86FPRegMemInstruction *)instr);
-            break;
         case TR::Instruction::IsMem:
         case TR::Instruction::IsMemTable:
         case TR::Instruction::IsCallMem:
@@ -1188,27 +1185,6 @@ void TR_Debug::printReferencedRegisterInfo(OMR::Logger *log, TR::X86RegRegMemIns
         printFullRegisterDependencyInfo(log, instr->getDependencyConditions());
     }
 
-    log->flush();
-}
-
-void TR_Debug::print(OMR::Logger *log, TR::X86FPRegMemInstruction *instr)
-{
-    int32_t barrier = memoryBarrierRequired(instr->getOpCode(), instr->getMemoryReference(), _cg, false);
-    int32_t barrierOffset = printPrefixAndMnemonicWithoutBarrier(log, instr, barrier);
-
-    if (!(instr->getOpCode().targetRegIsImplicit() != 0)) {
-        print(log, instr->getTargetRegister());
-        log->prints(", ");
-    }
-    print(log, instr->getMemoryReference(), getSourceSizeFromInstruction(instr));
-    printInstructionComment(log, 1, instr);
-    printFPRegisterComment(log, instr->getTargetRegister(), NULL);
-    printMemoryReferenceComment(log, instr->getMemoryReference());
-
-    if (barrier & NeedsExplicitBarrier)
-        printPrefixAndMemoryBarrier(log, instr, barrier, barrierOffset);
-
-    dumpDependencies(log, instr);
     log->flush();
 }
 

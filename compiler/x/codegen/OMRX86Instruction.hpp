@@ -2246,30 +2246,6 @@ public:
     virtual void addMetaDataForCodeAddress(uint8_t *cursor);
 };
 
-class X86FPRegMemInstruction : public TR::X86RegMemInstruction {
-public:
-    X86FPRegMemInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::Register *treg, TR::MemoryReference *mr,
-        TR::CodeGenerator *cg);
-
-    X86FPRegMemInstruction(TR::Instruction *precedingInstruction, TR::InstOpCode::Mnemonic op, TR::Register *treg,
-        TR::MemoryReference *mr, TR::CodeGenerator *cg);
-
-    virtual const char *description() { return "X86FPRegMem"; }
-
-    virtual Kind getKind() { return IsFPRegMem; }
-
-    virtual void assignRegisters(TR_RegisterKinds kindsToBeAssigned);
-    virtual uint8_t *generateOperand(uint8_t *cursor);
-    virtual uint8_t getBinaryLengthLowerBound();
-
-#ifdef DEBUG
-    virtual uint32_t getNumOperandReferencedGPRegisters()
-    {
-        return getMemoryReference()->getNumMRReferencedGPRegisters();
-    }
-#endif
-};
-
 class X86VFPSaveInstruction : public TR::Instruction {
     TR_VFPState _savedState;
 
@@ -2735,9 +2711,6 @@ TR::AMD64Imm64SymInstruction *generateImm64SymInstruction(TR::InstOpCode::Mnemon
 TR::AMD64Imm64SymInstruction *generateImm64SymInstruction(TR::Instruction *precedingInstruction,
     TR::InstOpCode::Mnemonic op, uint64_t imm, TR::SymbolReference *sr, TR::RegisterDependencyConditions *cond,
     TR::CodeGenerator *cg);
-
-TR::X86FPRegMemInstruction *generateFPRegMemInstruction(TR::InstOpCode::Mnemonic op, TR::Node *, TR::Register *reg1,
-    TR::MemoryReference *mr, TR::CodeGenerator *cg);
 
 TR::X86PatchableCodeAlignmentInstruction *generatePatchableCodeAlignmentInstruction(
     const TR_AtomicRegion *atomicRegions, TR::Instruction *patchableCode, TR::CodeGenerator *cg);
