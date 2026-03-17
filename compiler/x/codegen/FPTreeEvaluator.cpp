@@ -287,9 +287,6 @@ TR::Register *OMR::X86::TreeEvaluator::floatingPointStoreEvaluator(TR::Node *nod
             exceptionPoint
                 = generateMemImmInstruction(TR::InstOpCode::S4MemImm4, node, tempMR, valueChild->getFloatBits(), cg);
         }
-        TR::Register *firstChildReg = valueChild->getRegister();
-        if (firstChildReg && firstChildReg->getKind() == TR_X87 && valueChild->getReferenceCount() == 1)
-            generateFPSTiST0RegRegInstruction(TR::InstOpCode::FSTRegReg, valueChild, firstChildReg, firstChildReg, cg);
     } else if (debug("useGPRsForFP")
         && (cg->getLiveRegisters(TR_GPR)->getNumberOfLiveRegisters() < cg->getMaximumNumbersOfAssignableGPRs() - 1)
         && valueChild->getOpCode().isLoadVar() && valueChild->getRegister() == NULL

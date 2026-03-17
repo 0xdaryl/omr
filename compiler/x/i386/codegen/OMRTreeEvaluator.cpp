@@ -4048,10 +4048,6 @@ TR::Register *OMR::X86::I386::TreeEvaluator::dstoreEvaluator(TR::Node *node, TR:
             instr = generateMemImmInstruction(TR::InstOpCode::S4MemImm4, node,
                 generateX86MemoryReference(*storeLowMR, 4, cg), valueChild->getLongIntHigh(), cg);
             generateMemImmInstruction(TR::InstOpCode::S4MemImm4, node, storeLowMR, valueChild->getLongIntLow(), cg);
-            TR::Register *valueChildReg = valueChild->getRegister();
-            if (valueChildReg && valueChildReg->getKind() == TR_X87 && valueChild->getReferenceCount() == 1)
-                instr = generateFPSTiST0RegRegInstruction(TR::InstOpCode::DSTRegReg, valueChild, valueChildReg,
-                    valueChildReg, cg);
         } else if (debug("useGPRsForFP")
             && (cg->getLiveRegisters(TR_GPR)->getNumberOfLiveRegisters() < cg->getMaximumNumbersOfAssignableGPRs() - 1)
             && valueChild->getOpCode().isLoadVar() && valueChild->getRegister() == NULL

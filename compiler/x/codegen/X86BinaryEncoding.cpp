@@ -2491,15 +2491,6 @@ uint8_t *TR::X86FPRegRegInstruction::generateOperand(uint8_t *cursor)
     return cursor;
 }
 
-// TR::X86FPSTiST0RegRegInstruction:: member functions
-
-uint8_t *TR::X86FPSTiST0RegRegInstruction::generateOperand(uint8_t *cursor)
-{
-    uint8_t *opCode = cursor - 1;
-    applyTargetRegisterToOpCode(opCode, cg()->machine());
-    return cursor;
-}
-
 // TR::X86FPRegMemInstruction:: member functions
 
 uint8_t *TR::X86FPRegMemInstruction::generateOperand(uint8_t *cursor)

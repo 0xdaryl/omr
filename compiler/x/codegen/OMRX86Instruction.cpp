@@ -2735,26 +2735,6 @@ TR::X86FPRegRegInstruction::X86FPRegRegInstruction(TR::Instruction *precedingIns
     : TR::X86RegRegInstruction(sreg, treg, op, precedingInstruction, cg)
 {}
 
-////////////////////////////////////////////////////////////////////////////////
-// TR::X86FPSTiST0RegRegInstruction:: member functions
-////////////////////////////////////////////////////////////////////////////////
-
-TR::X86FPSTiST0RegRegInstruction::X86FPSTiST0RegRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node,
-    TR::Register *treg, TR::Register *sreg, TR::CodeGenerator *cg, bool forcePop)
-    : TR::X86FPRegRegInstruction(sreg, treg, node, op, cg)
-{
-    _forcePop = forcePop;
-}
-
-TR::X86FPSTiST0RegRegInstruction::X86FPSTiST0RegRegInstruction(TR::Instruction *precedingInstruction,
-    TR::InstOpCode::Mnemonic op, TR::Register *treg, TR::Register *sreg, TR::CodeGenerator *cg, bool forcePop)
-    : TR::X86FPRegRegInstruction(sreg, treg, op, precedingInstruction, cg)
-{
-    _forcePop = forcePop;
-}
-
-void TR::X86FPSTiST0RegRegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned) {}
-
 TR::InstOpCode::Mnemonic getBranchOrSetOpCodeForFPComparison(TR::ILOpCodes cmpOp)
 {
     TR::InstOpCode::Mnemonic op;
@@ -3729,12 +3709,6 @@ TR::X86VFPCallCleanupInstruction *generateVFPCallCleanupInstruction(int32_t adju
     TR::CodeGenerator *cg)
 {
     return new (cg->trHeapMemory()) TR::X86VFPCallCleanupInstruction(adjustment, node, cg);
-}
-
-TR::X86FPSTiST0RegRegInstruction *generateFPSTiST0RegRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node,
-    TR::Register *treg, TR::Register *sreg, TR::CodeGenerator *cg, bool forcePop)
-{
-    return new (cg->trHeapMemory()) TR::X86FPSTiST0RegRegInstruction(op, node, treg, sreg, cg, forcePop);
 }
 
 TR::X86FPMemRegInstruction *generateFPMemRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node,

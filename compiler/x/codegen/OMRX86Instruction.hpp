@@ -2317,24 +2317,6 @@ public:
 #endif
 };
 
-class X86FPSTiST0RegRegInstruction : public TR::X86FPRegRegInstruction {
-public:
-    X86FPSTiST0RegRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::Register *treg, TR::Register *sreg,
-        TR::CodeGenerator *cg, bool forcePop = false);
-
-    X86FPSTiST0RegRegInstruction(TR::Instruction *precedingInstruction, TR::InstOpCode::Mnemonic op, TR::Register *treg,
-        TR::Register *sreg, TR::CodeGenerator *cg, bool forcePop = false);
-
-    virtual const char *description() { return "X86FPSTiST0RegReg"; }
-
-    virtual Kind getKind() { return IsFPSTiST0RegReg; }
-
-    virtual void assignRegisters(TR_RegisterKinds kindsToBeAssigned);
-    virtual uint8_t *generateOperand(uint8_t *cursor);
-
-    bool _forcePop;
-};
-
 class X86FPMemRegInstruction : public TR::X86MemRegInstruction {
 public:
     X86FPMemRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::MemoryReference *mr, TR::Register *sreg,
@@ -2847,11 +2829,6 @@ TR::AMD64Imm64SymInstruction *generateImm64SymInstruction(TR::InstOpCode::Mnemon
 TR::AMD64Imm64SymInstruction *generateImm64SymInstruction(TR::Instruction *precedingInstruction,
     TR::InstOpCode::Mnemonic op, uint64_t imm, TR::SymbolReference *sr, TR::RegisterDependencyConditions *cond,
     TR::CodeGenerator *cg);
-
-TR::X86FPST0ST1RegRegInstruction *generateFPST0ST1RegRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *,
-    TR::Register *reg1, TR::Register *reg2, TR::CodeGenerator *cg);
-TR::X86FPSTiST0RegRegInstruction *generateFPSTiST0RegRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *,
-    TR::Register *reg1, TR::Register *reg2, TR::CodeGenerator *cg, bool forcePop = false);
 
 TR::X86FPMemRegInstruction *generateFPMemRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *,
     TR::MemoryReference *mr, TR::Register *reg1, TR::CodeGenerator *cg);
