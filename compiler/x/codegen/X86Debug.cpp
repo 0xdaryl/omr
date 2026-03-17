@@ -171,9 +171,6 @@ void TR_Debug::printx(OMR::Logger *log, TR::Instruction *instr)
         case TR::Instruction::IsMemRegImm:
             print(log, (TR::X86MemRegImmInstruction *)instr);
             break;
-        case TR::Instruction::IsFPMemReg:
-            print(log, (TR::X86FPMemRegInstruction *)instr);
-            break;
         case TR::Instruction::IsVFPSave:
             print(log, (TR::X86VFPSaveInstruction *)instr);
             break;
@@ -1191,22 +1188,6 @@ void TR_Debug::printReferencedRegisterInfo(OMR::Logger *log, TR::X86RegRegMemIns
         printFullRegisterDependencyInfo(log, instr->getDependencyConditions());
     }
 
-    log->flush();
-}
-
-void TR_Debug::print(OMR::Logger *log, TR::X86FPMemRegInstruction *instr)
-{
-    printPrefix(log, instr);
-    log->printf("%s\t", getMnemonicName(&instr->getOpCode()));
-    print(log, instr->getMemoryReference(), getTargetSizeFromInstruction(instr));
-    if (!(instr->getOpCode().sourceRegIsImplicit() != 0)) {
-        log->prints(", ");
-        print(log, instr->getSourceRegister());
-    }
-    printInstructionComment(log, 1, instr);
-    printFPRegisterComment(log, NULL, instr->getSourceRegister());
-    printMemoryReferenceComment(log, instr->getMemoryReference());
-    dumpDependencies(log, instr);
     log->flush();
 }
 

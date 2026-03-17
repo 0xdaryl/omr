@@ -2821,35 +2821,6 @@ TR::InstOpCode::Mnemonic getBranchOrSetOpCodeForFPComparison(TR::ILOpCodes cmpOp
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TR::X86FPMemRegInstruction:: member functions
-////////////////////////////////////////////////////////////////////////////////
-
-TR::X86FPMemRegInstruction::X86FPMemRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::MemoryReference *mr,
-    TR::Register *sreg, TR::CodeGenerator *cg)
-    : TR::X86MemRegInstruction(sreg, mr, node, op, cg)
-{}
-
-TR::X86FPMemRegInstruction::X86FPMemRegInstruction(TR::Instruction *precedingInstruction, TR::InstOpCode::Mnemonic op,
-    TR::MemoryReference *mr, TR::Register *sreg, TR::CodeGenerator *cg)
-    : TR::X86MemRegInstruction(sreg, mr, op, precedingInstruction, cg)
-{}
-
-void TR::X86FPMemRegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned)
-{
-    if (kindsToBeAssigned & TR_GPR_Mask) {
-        getMemoryReference()->assignRegisters(this, cg());
-    }
-
-#ifdef J9_PROJECT_SPECIFIC
-    if (kindsToBeAssigned & (TR_FPR_Mask | TR_VRF_Mask)) {
-        TR::UnresolvedDataSnippet *snippet = getMemoryReference()->getUnresolvedDataSnippet();
-        if (snippet)
-            snippet->setHasLiveXMMRegisters((cg()->machine()->fpGetNumberOfLiveXMMRs() > 0) ? true : false);
-    }
-#endif
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // TR::X86FPRegMemInstruction:: member functions
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -3690,12 +3661,6 @@ TR::X86VFPCallCleanupInstruction *generateVFPCallCleanupInstruction(int32_t adju
     TR::CodeGenerator *cg)
 {
     return new (cg->trHeapMemory()) TR::X86VFPCallCleanupInstruction(adjustment, node, cg);
-}
-
-TR::X86FPMemRegInstruction *generateFPMemRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node,
-    TR::MemoryReference *mr, TR::Register *sreg, TR::CodeGenerator *cg)
-{
-    return new (cg->trHeapMemory()) TR::X86FPMemRegInstruction(op, node, mr, sreg, cg);
 }
 
 TR::X86FPRegMemInstruction *generateFPRegMemInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::Register *treg,

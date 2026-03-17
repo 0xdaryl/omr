@@ -2494,18 +2494,6 @@ uint8_t TR::X86FPRegMemInstruction::getBinaryLengthLowerBound()
     return getOpCode().length(self()->getEncodingMethod(), self()->rexBits());
 }
 
-// TR::X86FPMemRegInstruction:: member functions
-
-uint8_t *TR::X86FPMemRegInstruction::generateOperand(uint8_t *cursor)
-{
-    cursor = getMemoryReference()->generateBinaryEncoding(cursor - 1, this, cg());
-    if (cursor) {
-        setBinaryLength(static_cast<int8_t>(cursor - getBinaryEncoding()));
-        cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - getBinaryLength());
-    }
-    return cursor;
-}
-
 // -----------------------------------------------------------------------------
 // TR::AMD64RegImm64Instruction:: member functions
 

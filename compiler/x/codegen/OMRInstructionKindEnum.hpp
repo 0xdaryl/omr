@@ -30,5 +30,5 @@ IsNotExtended, IsLabel, IsVirtualGuardNOP, IsFence, IsPadding, IsAlignment, IsBo
     IsRegMaskRegRegImm,
     IsRegMaskReg, IsRegImm, IsRegImmSym, IsRegImm64, IsRegImm64Sym, IsRegMem,
     IsRegMemImm, IsRegRegMem, IsRegMaskMem, IsRegMaskRegMem, IsFPRegMem, IsMem, IsMemTable, IsCallMem,
-    IsMemImm, IsMemImmSym, IsMemImmSnippet, IsMemReg, IsMemMaskReg, IsMemRegImm, IsFPMemReg,
+    IsMemImm, IsMemImmSym, IsMemImmSnippet, IsMemReg, IsMemMaskReg, IsMemRegImm,
     IsFfsdPPSRecord,

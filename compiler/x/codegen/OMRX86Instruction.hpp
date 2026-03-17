@@ -2246,29 +2246,6 @@ public:
     virtual void addMetaDataForCodeAddress(uint8_t *cursor);
 };
 
-class X86FPMemRegInstruction : public TR::X86MemRegInstruction {
-public:
-    X86FPMemRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::MemoryReference *mr, TR::Register *sreg,
-        TR::CodeGenerator *cg);
-
-    X86FPMemRegInstruction(TR::Instruction *precedingInstruction, TR::InstOpCode::Mnemonic op, TR::MemoryReference *mr,
-        TR::Register *sreg, TR::CodeGenerator *cg);
-
-    virtual const char *description() { return "X86FPMemReg"; }
-
-    virtual Kind getKind() { return IsFPMemReg; }
-
-    virtual void assignRegisters(TR_RegisterKinds kindsToBeAssigned);
-    virtual uint8_t *generateOperand(uint8_t *cursor);
-
-#ifdef DEBUG
-    virtual uint32_t getNumOperandReferencedGPRegisters()
-    {
-        return getMemoryReference()->getNumMRReferencedGPRegisters();
-    }
-#endif
-};
-
 class X86FPRegMemInstruction : public TR::X86RegMemInstruction {
 public:
     X86FPRegMemInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::Register *treg, TR::MemoryReference *mr,
@@ -2759,8 +2736,6 @@ TR::AMD64Imm64SymInstruction *generateImm64SymInstruction(TR::Instruction *prece
     TR::InstOpCode::Mnemonic op, uint64_t imm, TR::SymbolReference *sr, TR::RegisterDependencyConditions *cond,
     TR::CodeGenerator *cg);
 
-TR::X86FPMemRegInstruction *generateFPMemRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *,
-    TR::MemoryReference *mr, TR::Register *reg1, TR::CodeGenerator *cg);
 TR::X86FPRegMemInstruction *generateFPRegMemInstruction(TR::InstOpCode::Mnemonic op, TR::Node *, TR::Register *reg1,
     TR::MemoryReference *mr, TR::CodeGenerator *cg);
 

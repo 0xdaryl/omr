@@ -4064,12 +4064,8 @@ TR::Register *OMR::X86::I386::TreeEvaluator::dstoreEvaluator(TR::Node *node, TR:
             cg->stopUsingRegister(tempRegister);
         } else {
             TR::Register *sourceRegister = cg->evaluate(valueChild);
-            if (sourceRegister->getKind() == TR_FPR) {
-                TR_ASSERT(!sourceRegister->isSinglePrecision(), "dstore cannot have float operand\n");
-                instr = generateMemRegInstruction(TR::InstOpCode::MOVSDMemReg, node, storeLowMR, sourceRegister, cg);
-            } else {
-                instr = generateFPMemRegInstruction(TR::InstOpCode::DSTMemReg, node, storeLowMR, sourceRegister, cg);
-            }
+            TR_ASSERT(!sourceRegister->isSinglePrecision(), "dstore cannot have float operand\n");
+            instr = generateMemRegInstruction(TR::InstOpCode::MOVSDMemReg, node, storeLowMR, sourceRegister, cg);
         }
 
         cg->decReferenceCount(valueChild);
@@ -4306,10 +4302,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::dbits2lEvaluator(TR::Node *node, TR
         TR::Register *doubleReg = cg->evaluate(child);
 
         tempMR = cg->machine()->getDummyLocalMR(TR::Double);
-        if (doubleReg->getKind() == TR_FPR)
-            generateMemRegInstruction(TR::InstOpCode::MOVSDMemReg, node, tempMR, doubleReg, cg);
-        else
-            generateFPMemRegInstruction(TR::InstOpCode::DSTMemReg, node, tempMR, doubleReg, cg);
+        generateMemRegInstruction(TR::InstOpCode::MOVSDMemReg, node, tempMR, doubleReg, cg);
 
         generateRegMemInstruction(TR::InstOpCode::L4RegMem, node, lowReg, generateX86MemoryReference(*tempMR, 0, cg),
             cg);
