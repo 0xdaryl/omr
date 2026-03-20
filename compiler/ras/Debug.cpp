@@ -2433,10 +2433,10 @@ const char *TR_Debug::getGlobalRegisterName(TR_GlobalRegisterNumber regNum, TR::
                             regSize = TR_VectorReg128;
                             break;
                         case TR::VectorLength256:
-                            regSize = TR_VectorReg256:
+                            regSize = TR_VectorReg256;
                             break;
                         case TR::VectorLength512:
-                            regSize = TR_VectorReg512:
+                            regSize = TR_VectorReg512;
                             break;
                         default:
                             regSize = TR_UnknownSizeReg;
