@@ -160,11 +160,11 @@ int32_t estimateMemoryBarrierBinaryLength(int32_t barrier, TR::CodeGenerator *cg
     if (barrier & LockOR)
         length = 5;
     else if ((barrier & kLoadFence) && cg->comp()->target().cpu.requiresLFence())
-        length = TR::InstOpCode(TR::InstOpCode::LFENCE).length(OMR::X86::Default);
+        length = TR::InstOpCode(OP::LFENCE).length(OMR::X86::Default);
     else if ((barrier & kMemoryFence) == kMemoryFence)
-        length = TR::InstOpCode(TR::InstOpCode::MFENCE).length(OMR::X86::Default);
+        length = TR::InstOpCode(OP::MFENCE).length(OMR::X86::Default);
     else if (barrier & kStoreFence)
-        length = TR::InstOpCode(TR::InstOpCode::SFENCE).length(OMR::X86::Default);
+        length = TR::InstOpCode(OP::SFENCE).length(OMR::X86::Default);
 
     return length;
 }
@@ -379,7 +379,7 @@ uint8_t *TR::X86AlignmentInstruction::generateBinaryEncoding()
 
 void TR::X86LabelInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
 {
-    if (!getOpCode().hasRelativeBranchDisplacement() && !(getOpCodeValue() == TR::InstOpCode::label)) {
+    if (!getOpCode().hasRelativeBranchDisplacement() && !(getOpCodeValue() == OP::label)) {
         if (getReloType() == TR_AbsoluteMethodAddress) {
             cg()->addProjectSpecializedRelocation(cursor, NULL, NULL, TR_AbsoluteMethodAddress, __FILE__, __LINE__,
                 getNode());
@@ -423,8 +423,8 @@ uint8_t *TR::X86LabelInstruction::generateBinaryEncoding()
                     - (cursor + IA32LengthOfShortBranch + cg()->getAccumulatedInstructionLengthError()));
             }
 
-            TR_ASSERT(getOpCodeValue() != TR::InstOpCode::XBEGIN4 || !_permitShortening,
-                "TR::InstOpCode::XBEGIN4 cannot be shortened and can only be used with a label instruction that cannot "
+            TR_ASSERT(getOpCodeValue() != OP::XBEGIN4 || !_permitShortening,
+                "OP::XBEGIN4 cannot be shortened and can only be used with a label instruction that cannot "
                 "shorten - use generateLongLabel!\n");
 
             if (distance >= -128 && distance <= 127 && getOpCode().isBranchOp() && _permitShortening) {
@@ -471,7 +471,7 @@ uint8_t *TR::X86LabelInstruction::generateBinaryEncoding()
                 cursor += 4;
             }
         }
-    } else if (getOpCodeValue() == TR::InstOpCode::label) {
+    } else if (getOpCodeValue() == OP::label) {
         label->setCodeLocation(instructionStart);
         immediateCursor = cursor;
     } else // assume absolute code address referencing instruction like push label
@@ -493,10 +493,10 @@ uint8_t *TR::X86LabelInstruction::generateBinaryEncoding()
 
 uint8_t TR::X86LabelInstruction::getBinaryLengthLowerBound()
 {
-    if (getOpCodeValue() == TR::InstOpCode::label)
+    if (getOpCodeValue() == OP::label)
         return 0;
 
-    if (getOpCodeValue() == TR::InstOpCode::vgnop) {
+    if (getOpCodeValue() == OP::vgnop) {
         return 0;
     }
 
@@ -513,11 +513,11 @@ OMR::X86::EnlargementResult TR::X86LabelInstruction::enlarge(int32_t requestedEn
         return OMR::X86::EnlargementResult(0, 0);
 
     // enlargement for label instructions operates on the following principle:
-    // in the X86 codegen a branch instruction has a size eg TR::InstOpCode::JMP4 and that size is the
-    // maximum requested size - we never make a TR::InstOpCode::JMP1 a TR::InstOpCode::JMP4 for example - we trust
+    // in the X86 codegen a branch instruction has a size eg OP::JMP4 and that size is the
+    // maximum requested size - we never make a OP::JMP1 a OP::JMP4 for example - we trust
     // people choosing a lower maximum size know what they are doing
     // the binary encoding will, usually try to use the smallest instruction it can
-    // and so if a TR::InstOpCode::JMP4 can be encoded as a TR::InstOpCode::JMP1 it will be
+    // and so if a OP::JMP4 can be encoded as a OP::JMP1 it will be
     // this function prevents this instruction shrinking by calling prohibitShortening()
     // this increases the size lowerbound of the instruction, thus "enlarging" the
     // instruction and, hopefully, making it a suitable candidate for patching
@@ -525,7 +525,7 @@ OMR::X86::EnlargementResult TR::X86LabelInstruction::enlarge(int32_t requestedEn
     if (!getOpCode().isBranchOp())
         return OMR::X86::EnlargementResult(0, 0);
 
-    if (!getOpCode().hasIntImmediate() || !_permitShortening || getOpCodeValue() == TR::InstOpCode::vgnop)
+    if (!getOpCode().hasIntImmediate() || !_permitShortening || getOpCodeValue() == OP::vgnop)
         return OMR::X86::EnlargementResult(0, 0);
 
     if ((maxEnlargementSize < requestedEnlargementSize && !allowPartialEnlargement)
@@ -548,17 +548,17 @@ int32_t TR::X86LabelInstruction::estimateBinaryLength(int32_t currentEstimate)
                 int32_t distance
                     = getLabelSymbol()->getEstimatedCodeLocation() - (currentEstimate + IA32LengthOfShortBranch);
                 if (distance >= -128 && distance < 0 && _permitShortening) {
-                    immediateLength = 0; // really 1, but for conditional branches (all excep TR::InstOpCode::JMP4) the
+                    immediateLength = 0; // really 1, but for conditional branches (all excep OP::JMP4) the
                                          // opcode entry will be 1 too big for short branch because the short branch op
                                          // is 1 byte, but the long branch op for conditionals is 2
-                    if (getOpCodeValue() == TR::InstOpCode::JMP4) {
+                    if (getOpCodeValue() == OP::JMP4) {
                         immediateLength = 1;
                     }
                 }
             }
         }
         setEstimatedBinaryLength(getOpCode().length(self()->getEncodingMethod(), self()->rexBits()) + immediateLength);
-    } else if (getOpCodeValue() == TR::InstOpCode::label) {
+    } else if (getOpCodeValue() == OP::label) {
         getLabelSymbol()->setEstimatedCodeLocation(currentEstimate);
     } else // assume absolute code reference
     {
@@ -959,13 +959,13 @@ void TR::X86ImmSymInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
                     }
                 }
             }
-        } else if (getOpCodeValue() == TR::InstOpCode::DDImm4) {
+        } else if (getOpCodeValue() == OP::DDImm4) {
             cg()->addExternalRelocation(
                 TR::ExternalRelocation::create(cursor, (uint8_t *)(uintptr_t)getSourceImmediate(),
                     getNode() ? (uint8_t *)(intptr_t)getNode()->getInlinedSiteIndex() : (uint8_t *)-1, TR_ConstantPool,
                     cg()),
                 __FILE__, __LINE__, getNode());
-        } else if (getOpCodeValue() == TR::InstOpCode::PUSHImm4) {
+        } else if (getOpCodeValue() == OP::PUSHImm4) {
             TR::Symbol *symbol = getSymbolReference()->getSymbol();
             if (symbol->isConst()) {
                 cg()->addExternalRelocation(
@@ -1078,7 +1078,7 @@ uint8_t *TR::X86ImmSymInstruction::generateOperand(uint8_t *cursor)
              * Branches to labels do not require trampolines on x86
              */
             if (cg()->comp()->target().is64Bit() && cg()->hasCodeCacheSwitched()
-                && getOpCodeValue() == TR::InstOpCode::CALLImm4 && !labelSym) {
+                && getOpCodeValue() == OP::CALLImm4 && !labelSym) {
                 cg()->redoTrampolineReservationIfNecessary(this, getSymbolReference());
             }
 
@@ -1168,7 +1168,7 @@ uint8_t *TR::X86ImmSymInstruction::generateOperand(uint8_t *cursor)
             // Compute relative target displacement.
             //
             *(int32_t *)cursor = (int32_t)(targetAddress - nextInstructionAddress);
-        } else if (getOpCodeValue() == TR::InstOpCode::PUSHImm4) {
+        } else if (getOpCodeValue() == OP::PUSHImm4) {
             TR::Symbol *symbol = getSymbolReference()->getSymbol();
             if (!symbol->isConst() && symbol->isClassObject()) {
                 if (cg()->needClassAndMethodPointerRelocations()) {
@@ -2841,7 +2841,7 @@ int32_t TR::AMD64Imm64SymInstruction::estimateBinaryLength(int32_t currentEstima
 
 void TR::AMD64Imm64SymInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
 {
-    if (getOpCodeValue() == TR::InstOpCode::DQImm64) {
+    if (getOpCodeValue() == OP::DQImm64) {
         cg()->addProjectSpecializedRelocation(cursor, (uint8_t *)(uint64_t)getSourceImmediate(),
             getNode() ? (uint8_t *)(intptr_t)getNode()->getInlinedSiteIndex() : (uint8_t *)-1, TR_Thunks, __FILE__,
             __LINE__, getNode());
@@ -2850,8 +2850,8 @@ void TR::AMD64Imm64SymInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
 
 uint8_t *TR::AMD64Imm64SymInstruction::generateOperand(uint8_t *cursor)
 {
-    TR_ASSERT(getOpCodeValue() == TR::InstOpCode::DQImm64,
-        "TR::AMD64Imm64SymInstruction expected to be TR::InstOpCode::DQImm64 only");
+    TR_ASSERT(getOpCodeValue() == OP::DQImm64,
+        "TR::AMD64Imm64SymInstruction expected to be OP::DQImm64 only");
 
     *(int64_t *)cursor = (int64_t)getSourceImmediate();
     addMetaDataForCodeAddress(cursor);

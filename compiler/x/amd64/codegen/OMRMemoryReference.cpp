@@ -534,7 +534,7 @@ uint8_t *OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(uint8_t *modRM
             symRef = new (cg->trHeapMemory()) TR::SymbolReference(cg->symRefTab(), _symbolReference, 0);
 
             addressLoadInstruction = INST_RegImm64Sym(containingInstruction->getPrev(),
-                TR::InstOpCode::MOV8RegImm64, _addressRegister,
+                OP::MOV8RegImm64, _addressRegister,
                 (!self()->getUnresolvedDataSnippet() && sr.getSymbol()->isStatic() && sr.getSymbol()->isClassObject()
                     && cg->needClassAndMethodPointerRelocations())
                     ? (uint64_t)TR::Compiler->cls.persistentClassPointerFromClassPointer(comp,
@@ -550,7 +550,7 @@ uint8_t *OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(uint8_t *modRM
             TR_ASSERT(!self()->getUnresolvedDataSnippet(), "Unresolved references should always have a symbol");
 
             addressLoadInstruction = INST_RegImm64(containingInstruction->getPrev(),
-                TR::InstOpCode::MOV8RegImm64, _addressRegister, displacement, cg);
+                OP::MOV8RegImm64, _addressRegister, displacement, cg);
         }
 
         self()->addMetaDataForCodeAddressWithLoad(displacementLocation, containingInstruction, cg, symRef);
@@ -578,7 +578,7 @@ uint8_t *OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(uint8_t *modRM
 
         if (self()->getBaseRegister() && self()->getIndexRegister()) {
             TR::Instruction *addressAddInstruction = INST_RegReg(addressLoadInstruction,
-                TR::InstOpCode::ADD8RegReg, self()->getAddressRegister(), self()->getBaseRegister(), cg);
+                OP::ADD8RegReg, self()->getAddressRegister(), self()->getBaseRegister(), cg);
             cursor = addressAddInstruction->generateBinaryEncoding();
             cg->setBinaryBufferCursor(cursor);
         }
