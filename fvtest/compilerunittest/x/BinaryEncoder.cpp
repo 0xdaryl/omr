@@ -37,7 +37,7 @@ TR::RealRegister *getRealRegister(TR::RealRegister::RegNum regNum, TR::CodeGener
 class XDirectEncodingTest : public TRTest::BinaryEncoderTest<>, public ::testing::WithParamInterface<std::tuple<TR::InstOpCode::Mnemonic, OMR::X86::Encoding, TRTest::BinaryInstruction>> {};
 
 TEST_P(XDirectEncodingTest, encode) {
-    TR::Instruction *instr = generateInstruction(std::get<0>(GetParam()), fakeNode, cg(), std::get<1>(GetParam()));
+    TR::Instruction *instr = INST(std::get<0>(GetParam()), fakeNode, cg(), std::get<1>(GetParam()));
 
     ASSERT_EQ(std::get<2>(GetParam()), encodeInstruction(instr));
 }
@@ -48,7 +48,7 @@ TEST_P(XLabelEncodingTest, encode) {
     auto label = generateLabelSymbol(cg());
     label->setCodeLocation(reinterpret_cast<uint8_t*>(getAlignedBuf()) + std::get<1>(GetParam()));
 
-    auto instr = generateLabelInstruction(
+    auto instr = INST_Label(
         std::get<0>(GetParam()),
         fakeNode,
         label,
@@ -67,7 +67,7 @@ TEST_P(XRegRegEncodingTest, encode) {
     auto regA = getRealRegister(std::get<1>(GetParam()), cg());
     auto regB = getRealRegister(std::get<2>(GetParam()), cg());
 
-    auto instr = generateRegRegInstruction(std::get<0>(GetParam()), fakeNode, regA, regB, cg());
+    auto instr = INST_RegReg(std::get<0>(GetParam()), fakeNode, regA, regB, cg());
 
     ASSERT_EQ(std::get<3>(GetParam()), encodeInstruction(instr));
 }
@@ -80,7 +80,7 @@ TEST_P(XRegRegImm1EncodingTest, encode) {
     auto imm1 = std::get<3>(GetParam());
     auto encoding = std::get<4>(GetParam());
 
-    auto instr = generateRegRegImmInstruction(std::get<0>(GetParam()), fakeNode, regA, regB, imm1, cg(), encoding);
+    auto instr = INST_RegRegImm(std::get<0>(GetParam()), fakeNode, regA, regB, imm1, cg(), encoding);
 
     ASSERT_EQ(std::get<5>(GetParam()), encodeInstruction(instr));
 }
@@ -95,7 +95,7 @@ TEST_P(XRegMaskRegRegImmEncodingTest, encode) {
     auto imm1 = std::get<5>(GetParam());
     auto encoding = std::get<6>(GetParam());
 
-    auto instr = generateRegMaskRegRegImmInstruction(std::get<0>(GetParam()), fakeNode, regA, regB, regC, regD, imm1, cg(), encoding);
+    auto instr = INST_RegMaskRegRegImm(std::get<0>(GetParam()), fakeNode, regA, regB, regC, regD, imm1, cg(), encoding);
 
     ASSERT_EQ(std::get<7>(GetParam()), encodeInstruction(instr));
 }
@@ -107,7 +107,7 @@ TEST_P(XRegImm1EncodingTest, encode) {
     auto imm1 = std::get<2>(GetParam());
     auto encoding = std::get<3>(GetParam());
 
-    auto instr = generateRegImmInstruction(std::get<0>(GetParam()), fakeNode, regA, imm1, cg(), TR_NoRelocation, encoding);
+    auto instr = INST_RegImm(std::get<0>(GetParam()), fakeNode, regA, imm1, cg(), TR_NoRelocation, encoding);
 
     ASSERT_EQ(std::get<4>(GetParam()), encodeInstruction(instr));
 }
@@ -120,7 +120,7 @@ TEST_P(XRegMemEncodingTest, encode) {
     auto mrOffset = std::get<3>(GetParam());
 
     auto mr = generateX86MemoryReference(mrBaseReg, mrOffset, cg());
-    auto instr = generateRegMemInstruction(std::get<0>(GetParam()), fakeNode, regA, mr, cg());
+    auto instr = INST_RegMem(std::get<0>(GetParam()), fakeNode, regA, mr, cg());
 
     ASSERT_EQ(std::get<4>(GetParam()), encodeInstruction(instr));
 }
@@ -147,7 +147,7 @@ TEST_P(XRegRegEncEncodingTest, encode) {
     TR::RealRegister *regB = getRealRegister(std::get<2>(GetParam()), cg());
     auto enc = std::get<3>(GetParam());
 
-    auto instr = generateRegRegInstruction(std::get<0>(GetParam()), fakeNode, regA, regB, cg(), enc);
+    auto instr = INST_RegReg(std::get<0>(GetParam()), fakeNode, regA, regB, cg(), enc);
 
     ASSERT_EQ(std::get<4>(GetParam()), encodeInstruction(instr));
 }
@@ -578,7 +578,7 @@ TEST_P(XRegRegRegEncEncodingTest, encode) {
     auto regC = getRealRegister(std::get<3>(GetParam()), cg());
     auto enc = std::get<4>(GetParam());
 
-    auto instr = generateRegRegRegInstruction(std::get<0>(GetParam()), fakeNode, regA, regB, regC, cg(), enc);
+    auto instr = INST_RegRegReg(std::get<0>(GetParam()), fakeNode, regA, regB, regC, cg(), enc);
 
     ASSERT_EQ(std::get<5>(GetParam()), encodeInstruction(instr));
 }
@@ -945,7 +945,7 @@ TEST_P(XRegMemEncEncodingTest, encode) {
     auto enc = std::get<4>(GetParam());
 
     auto mr = generateX86MemoryReference(base, disp, cg());
-    auto instr = generateRegMemInstruction(std::get<0>(GetParam()), fakeNode, target, mr, cg(), enc);
+    auto instr = INST_RegMem(std::get<0>(GetParam()), fakeNode, target, mr, cg(), enc);
 
     ASSERT_EQ(std::get<5>(GetParam()), encodeInstruction(instr));
 }
@@ -1003,7 +1003,7 @@ TEST_P(XMemRegEncEncodingTest, encode) {
     auto enc = std::get<4>(GetParam());
 
     auto mr = generateX86MemoryReference(base, disp, cg());
-    auto instr = generateMemRegInstruction(std::get<0>(GetParam()), fakeNode, mr, target, cg(), enc);
+    auto instr = INST_MemReg(std::get<0>(GetParam()), fakeNode, mr, target, cg(), enc);
 
     ASSERT_EQ(std::get<5>(GetParam()), encodeInstruction(instr));
 }
@@ -1039,7 +1039,7 @@ TEST_P(XRegMaskRegRegEncEncodingTest, encode) {
     auto regC = getRealRegister(std::get<4>(GetParam()), cg());
     auto enc = std::get<5>(GetParam());
 
-    auto instr = generateRegMaskRegRegInstruction(std::get<0>(GetParam()), fakeNode, regA, maskReg, regB, regC, cg(), enc);
+    auto instr = INST_RegMaskRegReg(std::get<0>(GetParam()), fakeNode, regA, maskReg, regB, regC, cg(), enc);
 
     ASSERT_EQ(std::get<6>(GetParam()), encodeInstruction(instr));
 }
@@ -1054,7 +1054,7 @@ TEST_P(XRegMaskRegRegImmEncEncodingTest, encode) {
     auto imm = std::get<5>(GetParam());
     auto enc = std::get<6>(GetParam());
 
-    auto instr = generateRegMaskRegRegImmInstruction(std::get<0>(GetParam()), fakeNode, regA, maskReg, regB, regC, imm, cg(), enc);
+    auto instr = INST_RegMaskRegRegImm(std::get<0>(GetParam()), fakeNode, regA, maskReg, regB, regC, imm, cg(), enc);
 
     ASSERT_EQ(std::get<7>(GetParam()), encodeInstruction(instr));
 }
@@ -1081,7 +1081,7 @@ TEST_P(XRegMaskRegEncEncodingTest, encode) {
     auto regB = getRealRegister(std::get<3>(GetParam()), cg());
     auto enc = std::get<4>(GetParam());
 
-    auto instr = generateRegMaskRegInstruction(std::get<0>(GetParam()), fakeNode, regA, maskReg, regB, cg(), enc);
+    auto instr = INST_RegMaskReg(std::get<0>(GetParam()), fakeNode, regA, maskReg, regB, cg(), enc);
 
     ASSERT_EQ(std::get<5>(GetParam()), encodeInstruction(instr));
 }
@@ -1105,7 +1105,7 @@ TEST_P(XMemEncEncodingTest, encode) {
     auto disp = std::get<2>(GetParam());
 
     auto mr = generateX86MemoryReference(base, disp, cg());
-    auto instr = generateMemInstruction(std::get<0>(GetParam()), fakeNode, mr, cg());
+    auto instr = INST_Mem(std::get<0>(GetParam()), fakeNode, mr, cg());
     ASSERT_EQ(std::get<3>(GetParam()), encodeInstruction(instr));
 }
 
@@ -1123,7 +1123,7 @@ TEST_P(XRegMaskMemEncEncodingTest, encode) {
     auto enc = std::get<5>(GetParam());
 
     auto mr = generateX86MemoryReference(base, disp, cg());
-    auto instr = generateRegMaskMemInstruction(std::get<0>(GetParam()), fakeNode, target, mask, mr, cg(), enc);
+    auto instr = INST_RegMaskMem(std::get<0>(GetParam()), fakeNode, target, mask, mr, cg(), enc);
 
     ASSERT_EQ(std::get<6>(GetParam()), encodeInstruction(instr));
 }
@@ -1153,7 +1153,7 @@ TEST_P(XMemMaskRegEncEncodingTest, encode) {
     auto enc = std::get<5>(GetParam());
 
     auto mr = generateX86MemoryReference(base, disp, cg());
-    auto instr = generateMemMaskRegInstruction(std::get<0>(GetParam()), fakeNode, mr, mask, target, cg(), enc);
+    auto instr = INST_MemMaskReg(std::get<0>(GetParam()), fakeNode, mr, mask, target, cg(), enc);
 
     ASSERT_EQ(std::get<6>(GetParam()), encodeInstruction(instr));
 }
