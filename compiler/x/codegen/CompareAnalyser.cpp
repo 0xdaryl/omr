@@ -371,9 +371,9 @@ void TR_X86CompareAnalyser::longOrderedCompareAndBranchAnalyser(TR::Node *root,
         //
         TR::Node *third = root->getChild(2);
         cg()->evaluate(third);
-        deps = generateRegisterDependencyConditions(third, cg(), numAdditionalRegDeps);
+        deps = REGDEPS(third, cg(), numAdditionalRegDeps);
     } else {
-        deps = generateRegisterDependencyConditions((uint8_t)0, (uint8_t)numAdditionalRegDeps, cg());
+        deps = REGDEPS((uint8_t)0, (uint8_t)numAdditionalRegDeps, cg());
     }
 
     startLabel->setStartInternalControlFlow();
@@ -633,16 +633,16 @@ void TR_X86CompareAnalyser::longEqualityCompareAndBranchAnalyser(TR::Node *root,
         cg()->evaluate(third);
         if (firstBranchLabel == NULL) {
             firstBranchLabel = TR::LabelSymbol::create(cg()->trHeapMemory(), cg());
-            deps = generateRegisterDependencyConditions(third, cg(), numAdditionalRegDeps);
+            deps = REGDEPS(third, cg(), numAdditionalRegDeps);
         } else {
-            deps = generateRegisterDependencyConditions(third, cg(), numAdditionalRegDeps);
+            deps = REGDEPS(third, cg(), numAdditionalRegDeps);
         }
     } else {
         if (firstBranchLabel == NULL) {
             firstBranchLabel = TR::LabelSymbol::create(cg()->trHeapMemory(), cg());
         }
 
-        deps = generateRegisterDependencyConditions((uint8_t)0, (uint8_t)numAdditionalRegDeps, cg());
+        deps = REGDEPS((uint8_t)0, (uint8_t)numAdditionalRegDeps, cg());
     }
 
     INST_Label(OP::label, root, startLabel, cg());
@@ -832,7 +832,7 @@ TR::Register *TR_X86CompareAnalyser::longOrderedBooleanAnalyser(TR::Node *root, 
 
     TR::LabelSymbol *startLabel = TR::LabelSymbol::create(cg()->trHeapMemory(), cg());
     TR::LabelSymbol *doneLabel = TR::LabelSymbol::create(cg()->trHeapMemory(), cg());
-    TR::RegisterDependencyConditions *deps = generateRegisterDependencyConditions((uint8_t)0, 5, cg());
+    TR::RegisterDependencyConditions *deps = REGDEPS((uint8_t)0, 5, cg());
     TR::MemoryReference *lowMR = NULL;
     TR::MemoryReference *highMR;
 
@@ -930,7 +930,7 @@ TR::Register *TR_X86CompareAnalyser::longCMPAnalyser(TR::Node *root)
     TR::LabelSymbol *highDoneLabel = TR::LabelSymbol::create(cg()->trHeapMemory(), cg());
     TR::LabelSymbol *startLabel = TR::LabelSymbol::create(cg()->trHeapMemory(), cg());
     TR::LabelSymbol *doneLabel = TR::LabelSymbol::create(cg()->trHeapMemory(), cg());
-    TR::RegisterDependencyConditions *deps = generateRegisterDependencyConditions((uint8_t)0, 6, cg());
+    TR::RegisterDependencyConditions *deps = REGDEPS((uint8_t)0, 6, cg());
     TR::MemoryReference *lowMR = NULL;
     TR::MemoryReference *highMR;
 

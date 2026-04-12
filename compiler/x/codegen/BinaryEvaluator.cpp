@@ -1412,7 +1412,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerDualMulEvaluator(TR::Node *node, T
         // result <-- RAX, but by-product is RDX will be required at later evaluation of lumulh
         // (or result/by-product may be reversed, if lumulh encountered first, and RAX may not be required if lumulh is
         // on its own)
-        TR::RegisterDependencyConditions *multDependencies = generateRegisterDependencyConditions((uint8_t)2, 2, cg);
+        TR::RegisterDependencyConditions *multDependencies = REGDEPS((uint8_t)2, 2, cg);
         TR::Register *lmulTargetRegister;
         TR::Register *lumulhTargetRegister;
         lmulTargetRegister = cg->longClobberEvaluate(lumulhNode->getFirstChild());
@@ -1538,7 +1538,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerMulEvaluator(TR::Node *node, TR::C
     if (!targetRegister && dataType == TR::Int8) {
         targetRegister = cg->intClobberEvaluate(secondChild);
         // Set register dependecy on EAX. AX = AL * r/m8
-        TR::RegisterDependencyConditions *multDependencies = generateRegisterDependencyConditions((uint8_t)1, 1, cg);
+        TR::RegisterDependencyConditions *multDependencies = REGDEPS((uint8_t)1, 1, cg);
         multDependencies->addPreCondition(targetRegister, TR::RealRegister::eax, cg);
         multDependencies->addPostCondition(targetRegister, TR::RealRegister::eax, cg);
 
@@ -1601,7 +1601,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerMulhEvaluator(TR::Node *node, TR::
     TR::Register *targetRegister = TR::TreeEvaluator::intOrLongClobberEvaluate(secondChild, nodeIs64Bit, cg);
     TR::Register *eaxRegister = TR::TreeEvaluator::intOrLongClobberEvaluate(firstChild, nodeIs64Bit, cg);
 
-    TR::RegisterDependencyConditions *multDependencies = generateRegisterDependencyConditions((uint8_t)2, 2, cg);
+    TR::RegisterDependencyConditions *multDependencies = REGDEPS((uint8_t)2, 2, cg);
     multDependencies->addPreCondition(eaxRegister, TR::RealRegister::eax, cg);
     multDependencies->addPostCondition(eaxRegister, TR::RealRegister::eax, cg);
     multDependencies->addPreCondition(targetRegister, TR::RealRegister::edx, cg);
@@ -1660,7 +1660,7 @@ TR::Register *OMR::X86::TreeEvaluator::signedIntegerDivOrRemAnalyser(TR::Node *n
         if (rootOpCode.isRem()) {
             // We only need the remainder.  We can get it with bitmask operations.
 
-            TR::RegisterDependencyConditions *deps = generateRegisterDependencyConditions((uint8_t)0, 1, cg);
+            TR::RegisterDependencyConditions *deps = REGDEPS((uint8_t)0, 1, cg);
             deps->addPostCondition(tempRegister, TR::RealRegister::NoReg, cg);
 
             // Note: a recurring complication with this logic is that we can only
@@ -1790,7 +1790,7 @@ TR::Register *OMR::X86::TreeEvaluator::signedIntegerDivOrRemAnalyser(TR::Node *n
             //
             if ((dividend->isNonNegative() == false) && (dvalue > 0)) {
                 TR::RegisterDependencyConditions *cdqDependencies
-                    = generateRegisterDependencyConditions((uint8_t)2, 2, cg);
+                    = REGDEPS((uint8_t)2, 2, cg);
                 cdqDependencies->addPreCondition(tempRegister, TR::RealRegister::eax, cg);
                 cdqDependencies->addPreCondition(edxRegister, TR::RealRegister::edx, cg);
                 cdqDependencies->addPostCondition(tempRegister, TR::RealRegister::eax, cg);
@@ -1868,7 +1868,7 @@ TR::Register *OMR::X86::TreeEvaluator::signedIntegerDivOrRemAnalyser(TR::Node *n
             s = ts;
         }
 
-        TR::RegisterDependencyConditions *multDependencies = generateRegisterDependencyConditions((uint8_t)2, 2, cg);
+        TR::RegisterDependencyConditions *multDependencies = REGDEPS((uint8_t)2, 2, cg);
         if (!rootOpCode.isRem() && !(dvalue > 0 && m < 0) && !(dvalue < 0 && m > 0)) {
             multDependencies->addPreCondition(eaxRegister, TR::RealRegister::eax, cg);
             multDependencies->addPreCondition(dividendRegister, TR::RealRegister::edx, cg);
@@ -1998,7 +1998,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerDivOrRemEvaluator(TR::Node *node, 
             divisorRegister = cg->evaluate(secondChild);
         }
 
-        TR::RegisterDependencyConditions *edxDeps = generateRegisterDependencyConditions((uint8_t)1, 1, cg);
+        TR::RegisterDependencyConditions *edxDeps = REGDEPS((uint8_t)1, 1, cg);
         edxDeps->addPreCondition(edxRegister, TR::RealRegister::edx, cg);
         edxDeps->addPostCondition(edxRegister, TR::RealRegister::edx, cg);
 
@@ -2181,7 +2181,7 @@ TR::X86RegInstruction *OMR::X86::TreeEvaluator::generateRegisterShift(TR::Node *
         if (!shiftAmountReg)
             shiftAmountReg = cg->evaluate(secondChild);
 
-        TR::RegisterDependencyConditions *shiftDependencies = generateRegisterDependencyConditions((uint8_t)1, 1, cg);
+        TR::RegisterDependencyConditions *shiftDependencies = REGDEPS((uint8_t)1, 1, cg);
         shiftDependencies->addPreCondition(shiftAmountReg, TR::RealRegister::ecx, cg);
         shiftDependencies->addPostCondition(shiftAmountReg, TR::RealRegister::ecx, cg);
         targetRegister = TR::TreeEvaluator::intOrLongClobberEvaluate(firstChild, nodeIs64Bit, cg);
@@ -2280,7 +2280,7 @@ TR::X86MemInstruction *OMR::X86::TreeEvaluator::generateMemoryShift(TR::Node *no
         if (!shiftAmountReg)
             shiftAmountReg = cg->evaluate(secondChild);
 
-        TR::RegisterDependencyConditions *shiftDependencies = generateRegisterDependencyConditions((uint8_t)1, 1, cg);
+        TR::RegisterDependencyConditions *shiftDependencies = REGDEPS((uint8_t)1, 1, cg);
         shiftDependencies->addPreCondition(shiftAmountReg, TR::RealRegister::ecx, cg);
         shiftDependencies->addPostCondition(shiftAmountReg, TR::RealRegister::ecx, cg);
         instr = INST_MemReg(regShiftOpCode, node, memRef, shiftAmountReg, shiftDependencies, cg);
@@ -2353,7 +2353,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerRolEvaluator(TR::Node *node, TR::C
     } else {
         targetRegister = TR::TreeEvaluator::intOrLongClobberEvaluate(firstChild, nodeIs64Bit, cg);
         TR::Register *rotateAmountReg = cg->evaluate(secondChild);
-        TR::RegisterDependencyConditions *rotateDependencies = generateRegisterDependencyConditions((uint8_t)1, 1, cg);
+        TR::RegisterDependencyConditions *rotateDependencies = REGDEPS((uint8_t)1, 1, cg);
 
         rotateDependencies->addPreCondition(rotateAmountReg, TR::RealRegister::ecx, cg);
         rotateDependencies->addPostCondition(rotateAmountReg, TR::RealRegister::ecx, cg);
@@ -2470,7 +2470,7 @@ TR::Register *OMR::X86::TreeEvaluator::bshlEvaluator(TR::Node *node, TR::CodeGen
     } else {
         TR::Register *shiftAmountReg = cg->evaluate(secondChild);
 
-        TR::RegisterDependencyConditions *shiftDependencies = generateRegisterDependencyConditions((uint8_t)1, 1, cg);
+        TR::RegisterDependencyConditions *shiftDependencies = REGDEPS((uint8_t)1, 1, cg);
         shiftDependencies->addPreCondition(shiftAmountReg, TR::RealRegister::ecx, cg);
         shiftDependencies->addPostCondition(shiftAmountReg, TR::RealRegister::ecx, cg);
 
@@ -2562,7 +2562,7 @@ TR::Register *OMR::X86::TreeEvaluator::sshlEvaluator(TR::Node *node, TR::CodeGen
     } else {
         TR::Register *shiftAmountReg = cg->evaluate(secondChild);
 
-        TR::RegisterDependencyConditions *shiftDependencies = generateRegisterDependencyConditions((uint8_t)1, 1, cg);
+        TR::RegisterDependencyConditions *shiftDependencies = REGDEPS((uint8_t)1, 1, cg);
         shiftDependencies->addPreCondition(shiftAmountReg, TR::RealRegister::ecx, cg);
         shiftDependencies->addPostCondition(shiftAmountReg, TR::RealRegister::ecx, cg);
 
@@ -2639,7 +2639,7 @@ TR::Register *OMR::X86::TreeEvaluator::bshrEvaluator(TR::Node *node, TR::CodeGen
     } else {
         TR::Register *shiftAmountReg = cg->evaluate(secondChild);
 
-        TR::RegisterDependencyConditions *shiftDependencies = generateRegisterDependencyConditions((uint8_t)1, 1, cg);
+        TR::RegisterDependencyConditions *shiftDependencies = REGDEPS((uint8_t)1, 1, cg);
         shiftDependencies->addPreCondition(shiftAmountReg, TR::RealRegister::ecx, cg);
         shiftDependencies->addPostCondition(shiftAmountReg, TR::RealRegister::ecx, cg);
 
@@ -2718,7 +2718,7 @@ TR::Register *OMR::X86::TreeEvaluator::sshrEvaluator(TR::Node *node, TR::CodeGen
     } else {
         TR::Register *shiftAmountReg = cg->evaluate(secondChild);
 
-        TR::RegisterDependencyConditions *shiftDependencies = generateRegisterDependencyConditions((uint8_t)1, 1, cg);
+        TR::RegisterDependencyConditions *shiftDependencies = REGDEPS((uint8_t)1, 1, cg);
         shiftDependencies->addPreCondition(shiftAmountReg, TR::RealRegister::ecx, cg);
         shiftDependencies->addPostCondition(shiftAmountReg, TR::RealRegister::ecx, cg);
 
@@ -2801,7 +2801,7 @@ TR::Register *OMR::X86::TreeEvaluator::bushrEvaluator(TR::Node *node, TR::CodeGe
     } else {
         TR::Register *shiftAmountReg = cg->evaluate(secondChild);
 
-        TR::RegisterDependencyConditions *shiftDependencies = generateRegisterDependencyConditions((uint8_t)1, 1, cg);
+        TR::RegisterDependencyConditions *shiftDependencies = REGDEPS((uint8_t)1, 1, cg);
         shiftDependencies->addPreCondition(shiftAmountReg, TR::RealRegister::ecx, cg);
         shiftDependencies->addPostCondition(shiftAmountReg, TR::RealRegister::ecx, cg);
 
@@ -2878,7 +2878,7 @@ TR::Register *OMR::X86::TreeEvaluator::sushrEvaluator(TR::Node *node, TR::CodeGe
     } else {
         TR::Register *shiftAmountReg = cg->evaluate(secondChild);
 
-        TR::RegisterDependencyConditions *shiftDependencies = generateRegisterDependencyConditions((uint8_t)1, 1, cg);
+        TR::RegisterDependencyConditions *shiftDependencies = REGDEPS((uint8_t)1, 1, cg);
         shiftDependencies->addPreCondition(shiftAmountReg, TR::RealRegister::ecx, cg);
         shiftDependencies->addPostCondition(shiftAmountReg, TR::RealRegister::ecx, cg);
 

@@ -107,7 +107,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::longArithmeticCompareRegisterWithIm
     INST_Label(OP::label, node, highDoneLabel, cg);
     INST_Label(secondBranchOpCode, node, doneLabel, cg);
     INST_Reg(OP::NEG1Reg, node, targetRegister, cg);
-    TR::RegisterDependencyConditions *deps = generateRegisterDependencyConditions((uint8_t)0, 3, cg);
+    TR::RegisterDependencyConditions *deps = REGDEPS((uint8_t)0, 3, cg);
     deps->addPostCondition(cmpRegister->getLowOrder(), TR::RealRegister::NoReg, cg);
     deps->addPostCondition(cmpRegister->getHighOrder(), TR::RealRegister::NoReg, cg);
     deps->addPostCondition(targetRegister, TR::RealRegister::ByteReg, cg);
@@ -156,7 +156,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::compareLongAndSetOrderedBoolean(TR:
         compareGPRegisterToImmediate(node, cmpRegister->getLowOrder(), lowValue, cg);
         INST_Reg(lowSetOpCode, node, targetRegister, cg);
 
-        TR::RegisterDependencyConditions *deps = generateRegisterDependencyConditions((uint8_t)0, 3, cg);
+        TR::RegisterDependencyConditions *deps = REGDEPS((uint8_t)0, 3, cg);
         deps->addPostCondition(cmpRegister->getLowOrder(), TR::RealRegister::NoReg, cg);
         deps->addPostCondition(cmpRegister->getHighOrder(), TR::RealRegister::NoReg, cg);
         deps->addPostCondition(targetRegister, TR::RealRegister::NoReg, cg);
@@ -207,7 +207,7 @@ void OMR::X86::I386::TreeEvaluator::compareLongsForOrder(TR::Node *node, OP::Mne
         if (node->getNumChildren() == 3) {
             TR::Node *third = node->getChild(2);
             cg->evaluate(third);
-            deps = generateRegisterDependencyConditions(third, cg, 2);
+            deps = REGDEPS(third, cg, 2);
             deps->addPostCondition(cmpRegister->getHighOrder(), TR::RealRegister::NoReg, cg);
             deps->addPostCondition(cmpRegister->getLowOrder(), TR::RealRegister::NoReg, cg);
             deps->stopAddingConditions();
@@ -221,7 +221,7 @@ void OMR::X86::I386::TreeEvaluator::compareLongsForOrder(TR::Node *node, OP::Mne
             INST_Label(OP::JNE4, node, doneLabel, cg);
             compareGPRegisterToImmediate(node, cmpRegister->getLowOrder(), lowValue, cg);
             INST_Label(lowOrderBranchOp, node, destinationLabel, cg);
-            deps = generateRegisterDependencyConditions((uint8_t)0, 2, cg);
+            deps = REGDEPS((uint8_t)0, 2, cg);
             deps->addPostCondition(cmpRegister->getHighOrder(), TR::RealRegister::NoReg, cg);
             deps->addPostCondition(cmpRegister->getLowOrder(), TR::RealRegister::NoReg, cg);
             deps->stopAddingConditions();
@@ -2151,7 +2151,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR:
                     edxReg = cg->allocateRegister();
                     ecxReg = cg->allocateRegister();
                     ebxReg = cg->allocateRegister();
-                    deps = generateRegisterDependencyConditions((uint8_t)4, (uint8_t)4, cg);
+                    deps = REGDEPS((uint8_t)4, (uint8_t)4, cg);
 
                     deps->addPostCondition(eaxReg, TR::RealRegister::eax, cg);
                     deps->addPostCondition(edxReg, TR::RealRegister::edx, cg);
@@ -2190,7 +2190,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR:
                 edxReg = cg->allocateRegister();
                 ecxReg = cg->allocateRegister();
                 ebxReg = cg->allocateRegister();
-                deps = generateRegisterDependencyConditions((uint8_t)4, (uint8_t)4, cg);
+                deps = REGDEPS((uint8_t)4, (uint8_t)4, cg);
 
                 deps->addPostCondition(eaxReg, TR::RealRegister::eax, cg);
                 deps->addPostCondition(edxReg, TR::RealRegister::edx, cg);
@@ -2267,7 +2267,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::integerPairReturnEvaluator(TR::Node
 
     TR::RegisterDependencyConditions *dependencies = NULL;
     if (machineLowReturnRegister != TR::RealRegister::NoReg) {
-        dependencies = generateRegisterDependencyConditions((uint8_t)3, 0, cg);
+        dependencies = REGDEPS((uint8_t)3, 0, cg);
         dependencies->addPreCondition(lowRegister, machineLowReturnRegister, cg);
         dependencies->addPreCondition(highRegister, machineHighReturnRegister, cg);
         dependencies->stopAddingConditions();
@@ -2695,7 +2695,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::integerPairMulEvaluator(TR::Node *n
                 highRegister = cg->allocateRegister();
             }
             lowRegister = loadConstant(node, lowValue, TR_RematerializableInt, cg);
-            TR::RegisterDependencyConditions *dependencies = generateRegisterDependencyConditions((uint8_t)2, 2, cg);
+            TR::RegisterDependencyConditions *dependencies = REGDEPS((uint8_t)2, 2, cg);
             dependencies->addPreCondition(lowRegister, TR::RealRegister::eax, cg);
             dependencies->addPreCondition(highRegister, TR::RealRegister::edx, cg);
             dependencies->addPostCondition(lowRegister, TR::RealRegister::eax, cg);
@@ -2745,7 +2745,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::integerPairMulEvaluator(TR::Node *n
 
                 // add dependencies for lowRegister, highRegister, mutiplierRegister and temp registers
                 uint8_t numDeps = 3 + tempRegArraySize;
-                TR::RegisterDependencyConditions *deps = generateRegisterDependencyConditions(numDeps, numDeps, cg);
+                TR::RegisterDependencyConditions *deps = REGDEPS(numDeps, numDeps, cg);
                 deps->addPreCondition(lowRegister, TR::RealRegister::eax, cg);
                 deps->addPreCondition(highRegister, TR::RealRegister::edx, cg);
                 deps->addPreCondition(multiplierRegister->getHighOrder(), TR::RealRegister::NoReg, cg);
@@ -2838,7 +2838,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::integerPairMulEvaluator(TR::Node *n
             // Second lowOrder * lowValue
 
             lowRegister = loadConstant(node, lowValue, TR_RematerializableInt, cg);
-            TR::RegisterDependencyConditions *dependencies = generateRegisterDependencyConditions((uint8_t)2, 2, cg);
+            TR::RegisterDependencyConditions *dependencies = REGDEPS((uint8_t)2, 2, cg);
             dependencies->addPreCondition(lowRegister, TR::RealRegister::eax, cg);
             dependencies->addPreCondition(highRegister, TR::RealRegister::edx, cg);
             dependencies->addPostCondition(lowRegister, TR::RealRegister::eax, cg);
@@ -2896,7 +2896,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::integerPairMulEvaluator(TR::Node *n
 
                 // add dependencies for lowRegister, highRegister, mutiplierRegister and temp registers
                 uint8_t numDeps = 3 + tempRegArraySize;
-                TR::RegisterDependencyConditions *deps = generateRegisterDependencyConditions(numDeps, numDeps, cg);
+                TR::RegisterDependencyConditions *deps = REGDEPS(numDeps, numDeps, cg);
 
                 deps->addPreCondition(lowRegister, TR::RealRegister::eax, cg);
                 deps->addPreCondition(highRegister, TR::RealRegister::edx, cg);
@@ -3030,7 +3030,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::integerPairShlEvaluator(TR::Node *n
             shiftAmountReg = shiftAmountReg->getLowOrder();
         }
 
-        TR::RegisterDependencyConditions *shiftDependencies = generateRegisterDependencyConditions((uint8_t)1, 1, cg);
+        TR::RegisterDependencyConditions *shiftDependencies = REGDEPS((uint8_t)1, 1, cg);
         shiftDependencies->addPreCondition(shiftAmountReg, TR::RealRegister::ecx, cg);
         shiftDependencies->addPostCondition(shiftAmountReg, TR::RealRegister::ecx, cg);
 
@@ -3105,7 +3105,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::integerPairRolEvaluator(TR::Node *n
             shiftAmountReg = shiftAmountReg->getLowOrder();
         }
 
-        TR::RegisterDependencyConditions *shiftDependencies = generateRegisterDependencyConditions((uint8_t)1, 1, cg);
+        TR::RegisterDependencyConditions *shiftDependencies = REGDEPS((uint8_t)1, 1, cg);
         shiftDependencies->addPreCondition(shiftAmountReg, TR::RealRegister::ecx, cg);
         shiftDependencies->addPostCondition(shiftAmountReg, TR::RealRegister::ecx, cg);
 
@@ -3164,7 +3164,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::integerPairShrEvaluator(TR::Node *n
             shiftAmountReg = shiftAmountReg->getLowOrder();
         }
 
-        TR::RegisterDependencyConditions *shiftDependencies = generateRegisterDependencyConditions((uint8_t)1, 1, cg);
+        TR::RegisterDependencyConditions *shiftDependencies = REGDEPS((uint8_t)1, 1, cg);
         shiftDependencies->addPreCondition(shiftAmountReg, TR::RealRegister::ecx, cg);
         shiftDependencies->addPostCondition(shiftAmountReg, TR::RealRegister::ecx, cg);
 
@@ -3221,7 +3221,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::integerPairUshrEvaluator(TR::Node *
             shiftAmountReg = shiftAmountReg->getLowOrder();
         }
 
-        TR::RegisterDependencyConditions *shiftDependencies = generateRegisterDependencyConditions((uint8_t)1, 1, cg);
+        TR::RegisterDependencyConditions *shiftDependencies = REGDEPS((uint8_t)1, 1, cg);
         shiftDependencies->addPreCondition(shiftAmountReg, TR::RealRegister::ecx, cg);
         shiftDependencies->addPostCondition(shiftAmountReg, TR::RealRegister::ecx, cg);
 
@@ -3870,7 +3870,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::i2lEvaluator(TR::Node *node, TR::Co
     TR::Machine *machine = cg->machine();
 
     if (machine->getVirtualAssociatedWithReal(TR::RealRegister::eax) == childReg) {
-        TR::RegisterDependencyConditions *cdqDependencies = generateRegisterDependencyConditions((uint8_t)2, 2, cg);
+        TR::RegisterDependencyConditions *cdqDependencies = REGDEPS((uint8_t)2, 2, cg);
         cdqDependencies->addPreCondition(childReg, TR::RealRegister::eax, cg);
         cdqDependencies->addPreCondition(highReg, TR::RealRegister::edx, cg);
         cdqDependencies->addPostCondition(childReg, TR::RealRegister::eax, cg);
@@ -4198,7 +4198,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::performLload(TR::Node *node, TR::Me
             highRegister = cg->allocateRegister();
             ecxReg = cg->allocateRegister();
             ebxReg = cg->allocateRegister();
-            deps = generateRegisterDependencyConditions((uint8_t)4, (uint8_t)4, cg);
+            deps = REGDEPS((uint8_t)4, (uint8_t)4, cg);
 
             deps->addPostCondition(lowRegister, TR::RealRegister::eax, cg);
             deps->addPostCondition(highRegister, TR::RealRegister::edx, cg);
@@ -4328,7 +4328,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::dbits2lEvaluator(TR::Node *node, TR
         INST_RegReg(OP::XOR4RegReg, node, lowReg, lowReg, cg);
     }
 
-    TR::RegisterDependencyConditions *deps = generateRegisterDependencyConditions((uint8_t)0, (uint8_t)2, cg);
+    TR::RegisterDependencyConditions *deps = REGDEPS((uint8_t)0, (uint8_t)2, cg);
     deps->addPostCondition(lowReg, TR::RealRegister::NoReg, cg);
     deps->addPostCondition(highReg, TR::RealRegister::NoReg, cg);
     INST_Label(OP::label, node, lab2, deps, cg);
@@ -4412,7 +4412,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::iflcmpeqEvaluator(TR::Node *node, T
             if (node->getNumChildren() == 3) {
                 TR::Node *third = node->getChild(2);
                 cg->evaluate(third);
-                deps = generateRegisterDependencyConditions(third, cg, 2);
+                deps = REGDEPS(third, cg, 2);
                 deps->addPostCondition(cmpRegister->getLowOrder(), TR::RealRegister::NoReg, cg);
                 deps->addPostCondition(cmpRegister->getHighOrder(), TR::RealRegister::NoReg, cg);
                 deps->stopAddingConditions();
@@ -4424,7 +4424,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::iflcmpeqEvaluator(TR::Node *node, T
                 INST_Label(OP::JNE4, node, doneLabel, cg);
                 compareGPRegisterToConstantForEquality(node, highValue, cmpRegister->getHighOrder(), cg);
                 INST_Label(OP::JE4, node, destinationLabel, cg);
-                deps = generateRegisterDependencyConditions((uint8_t)0, 2, cg);
+                deps = REGDEPS((uint8_t)0, 2, cg);
                 deps->addPostCondition(cmpRegister->getLowOrder(), TR::RealRegister::NoReg, cg);
                 deps->addPostCondition(cmpRegister->getHighOrder(), TR::RealRegister::NoReg, cg);
             }
@@ -4506,7 +4506,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::iflcmpneEvaluator(TR::Node *node, T
             if (node->getNumChildren() == 3) {
                 TR::Node *third = node->getChild(2);
                 cg->evaluate(third);
-                deps = generateRegisterDependencyConditions(third, cg, 1);
+                deps = REGDEPS(third, cg, 1);
                 deps->stopAddingConditions();
                 INST_Label(OP::JNE4, node, destinationLabel, deps, cg);
                 compareGPRegisterToConstantForEquality(node, highValue, cmpRegister->getHighOrder(), cg);
@@ -4696,7 +4696,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::lcmpsetEvaluator(TR::Node *node, TR
     TR::Register *resultReg = cg->allocateRegister();
     INST_RegReg(OP::XOR4RegReg, node, resultReg, resultReg, cg);
 
-    TR::RegisterDependencyConditions *deps = generateRegisterDependencyConditions((uint8_t)4, (uint8_t)4, cg);
+    TR::RegisterDependencyConditions *deps = REGDEPS((uint8_t)4, (uint8_t)4, cg);
     deps->addPreCondition(compareReg->getHighOrder(), TR::RealRegister::edx, cg);
     deps->addPreCondition(compareReg->getLowOrder(), TR::RealRegister::eax, cg);
     deps->addPreCondition(replaceReg->getHighOrder(), TR::RealRegister::ecx, cg);
