@@ -1530,3 +1530,68 @@ TR::MemoryReference *generateX86MemoryReference(TR::LabelSymbol *label, TR::Code
 {
     return new (cg->trHeapMemory()) TR::MemoryReference(label, cg);
 }
+
+/////////////////////////////////////////////////////////////////////
+// TR::MemoryReference factory functions
+/////////////////////////////////////////////////////////////////////
+
+TR::MemoryReference *TR::MREF(TR::CodeGenerator *cg)
+{
+    return new (cg->trHeapMemory()) TR::MemoryReference(cg);
+}
+
+TR::MemoryReference *TR::MREF_abs(intptr_t disp, TR::CodeGenerator *cg)
+{
+    return new (cg->trHeapMemory()) TR::MemoryReference(disp, cg);
+}
+
+TR::MemoryReference *TR::MREF_Bdisp32(TR::Register *br, intptr_t disp, TR::CodeGenerator *cg)
+{
+    return new (cg->trHeapMemory()) TR::MemoryReference(br, disp, cg);
+}
+
+TR::MemoryReference *TR::MREF_BIS(TR::Register *br, TR::Register *ir, uint8_t s, TR::CodeGenerator *cg)
+{
+    return new (cg->trHeapMemory()) TR::MemoryReference(br, ir, s, cg);
+}
+
+TR::MemoryReference *TR::MREF_BISdisp32(TR::Register *br, TR::Register *ir, uint8_t s, intptr_t disp32,
+    TR::CodeGenerator *cg)
+{
+    return new (cg->trHeapMemory()) TR::MemoryReference(br, ir, s, disp32, cg);
+}
+
+TR::MemoryReference *TR::MREF_const(TR::X86DataSnippet *cds, TR::CodeGenerator *cg)
+{
+    return new (cg->trHeapMemory()) TR::MemoryReference(cds, cg);
+}
+
+TR::MemoryReference *TR::MREF_label(TR::LabelSymbol *label, TR::CodeGenerator *cg)
+{
+    return new (cg->trHeapMemory()) TR::MemoryReference(label, cg);
+}
+
+TR::MemoryReference *TR::MREF_node(TR::Node *node, TR::CodeGenerator *cg, bool canRematerializeAddressAdds)
+{
+    TR::LabelSymbol *constRefLabel = cg->assignConstRefLabel(node);
+    if (constRefLabel != NULL) {
+        return MREF_label(constRefLabel, cg);
+    }
+
+    return new (cg->trHeapMemory()) TR::MemoryReference(node, cg, canRematerializeAddressAdds);
+}
+
+TR::MemoryReference *TR::MREF_sym(TR::SymbolReference *sr, TR::CodeGenerator *cg)
+{
+    return new (cg->trHeapMemory()) TR::MemoryReference(sr, cg);
+}
+
+TR::MemoryReference *TR::MREF_symOff(TR::SymbolReference *sr, intptr_t offset, TR::CodeGenerator *cg)
+{
+    return new (cg->trHeapMemory()) TR::MemoryReference(sr, offset, cg);
+}
+
+TR::MemoryReference *TR::MREF_MREFoff(TR::MemoryReference &mr, intptr_t offset, TR::CodeGenerator *cg)
+{
+    return new (cg->trHeapMemory()) TR::MemoryReference(mr, offset, cg);
+}

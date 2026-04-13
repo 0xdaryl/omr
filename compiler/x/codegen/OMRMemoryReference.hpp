@@ -439,4 +439,18 @@ TR::MemoryReference *generateX86MemoryReference(TR::SymbolReference *, intptr_t,
 TR::MemoryReference *generateX86MemoryReference(TR::X86DataSnippet *, TR::CodeGenerator *cg);
 TR::MemoryReference *generateX86MemoryReference(TR::LabelSymbol *, TR::CodeGenerator *cg);
 
+namespace TR {
+TR::MemoryReference *MREF(TR::CodeGenerator *cg);
+TR::MemoryReference *MREF_abs(intptr_t disp, TR::CodeGenerator *cg);
+TR::MemoryReference *MREF_Bdisp32(TR::Register *br, intptr_t disp, TR::CodeGenerator *cg);
+TR::MemoryReference *MREF_BIS(TR::Register *br, TR::Register *ir, uint8_t s, TR::CodeGenerator *cg);
+TR::MemoryReference *MREF_BISdisp32(TR::Register *br, TR::Register *ir, uint8_t s, intptr_t disp32, TR::CodeGenerator *cg);
+TR::MemoryReference *MREF_const(TR::X86DataSnippet *cds, TR::CodeGenerator *cg);
+TR::MemoryReference *MREF_label(TR::LabelSymbol *label, TR::CodeGenerator *cg);
+TR::MemoryReference *MREF_node(TR::Node *node, TR::CodeGenerator *cg, bool canRematerializeAddressAdds = true);
+TR::MemoryReference *MREF_sym(TR::SymbolReference *sr, TR::CodeGenerator *cg);
+TR::MemoryReference *MREF_symOff(TR::SymbolReference *sr, intptr_t offset, TR::CodeGenerator *cg);
+TR::MemoryReference *MREF_MREFoff(TR::MemoryReference &mr, intptr_t offset, TR::CodeGenerator *cg);
+}
+
 #endif
