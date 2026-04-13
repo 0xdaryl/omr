@@ -1800,7 +1800,7 @@ TR::RegisterDependencyConditions *TR_RegisterAssignerState::createDependenciesFr
     if (numDeps == 0)
         return NULL;
 
-    TR::RegisterDependencyConditions *deps = generateRegisterDependencyConditions(0, numDeps, _machine->cg());
+    TR::RegisterDependencyConditions *deps = REGDEPS(0, numDeps, _machine->cg());
 
     TR_RegisterAssignerState *rasAtMerge = oi->getRegisterAssignerStateAtMerge();
     TR_ASSERT(rasAtMerge, "Must have captured register assigner state at merge");
