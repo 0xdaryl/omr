@@ -50,29 +50,28 @@ class Node;
 // OMR::X86::Instruction:: member functions
 ////////////////////////////////////////////////////////////////////////////////
 
-OMR::X86::Instruction::Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
-    OMR::X86::Encoding encoding)
+OMR::X86::Instruction::Instruction(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, OMR::X86::Encoding encoding)
     : OMR::Instruction(cg, op, node)
     , _conditions(0)
     , _rexRepeatCount(0)
     , _encodingMethod(encoding)
 {}
 
-OMR::X86::Instruction::Instruction(TR::CodeGenerator *cg, TR::Instruction *precedingInstruction,
-    TR::InstOpCode::Mnemonic op, TR::Node *node, OMR::X86::Encoding encoding)
+OMR::X86::Instruction::Instruction(TR::CodeGenerator *cg, TR::Instruction *precedingInstruction, OP::Mnemonic op,
+    TR::Node *node, OMR::X86::Encoding encoding)
     : OMR::Instruction(cg, precedingInstruction, op, node)
     , _conditions(0)
     , _rexRepeatCount(0)
     , _encodingMethod(encoding)
 {}
 
-void OMR::X86::Instruction::initialize(TR::CodeGenerator *cg, TR::RegisterDependencyConditions *cond,
-    TR::InstOpCode::Mnemonic op, bool flag)
+void OMR::X86::Instruction::initialize(TR::CodeGenerator *cg, TR::RegisterDependencyConditions *cond, OP::Mnemonic op,
+    bool flag)
 {
     self()->assumeValidInstruction();
     self()->clobberRegsForRematerialisation();
 
-    if (cond && op != TR::InstOpCode::assocreg) {
+    if (cond && op != OP::assocreg) {
         cond->useRegisters(self(), cg);
 
         if (flag && cg->enableRegisterAssociations()) {
@@ -89,17 +88,17 @@ void OMR::X86::Instruction::assumeValidInstruction()
 bool OMR::X86::Instruction::isRegRegMove()
 {
     switch (getOpCodeValue()) {
-        case TR::InstOpCode::MOVAPSRegReg:
-        case TR::InstOpCode::MOVAPDRegReg:
-        case TR::InstOpCode::MOVUPSRegReg:
-        case TR::InstOpCode::MOVUPDRegReg:
-        case TR::InstOpCode::MOVSSRegReg:
-        case TR::InstOpCode::MOVSDRegReg:
-        case TR::InstOpCode::MOV1RegReg:
-        case TR::InstOpCode::MOV2RegReg:
-        case TR::InstOpCode::MOV4RegReg:
-        case TR::InstOpCode::MOV8RegReg:
-        case TR::InstOpCode::MOVDQURegReg:
+        case OP::MOVAPSRegReg:
+        case OP::MOVAPDRegReg:
+        case OP::MOVUPSRegReg:
+        case OP::MOVUPDRegReg:
+        case OP::MOVSSRegReg:
+        case OP::MOVSDRegReg:
+        case OP::MOV1RegReg:
+        case OP::MOV2RegReg:
+        case OP::MOV4RegReg:
+        case OP::MOV8RegReg:
+        case OP::MOVDQURegReg:
             return true;
         default:
             return false;

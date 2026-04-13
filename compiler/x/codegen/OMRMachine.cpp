@@ -143,9 +143,9 @@ bool existsNextInstructionToTestFlags(TR::Instruction *startInstr, uint8_t testM
         // Mask out those eflags that are modified by this instruction.
         //
         testMask = testMask & ~(cursor->getOpCode().getModifiedEFlags());
-    } while (testMask && cursor->getOpCodeValue() != TR::InstOpCode::label
-        && cursor->getOpCodeValue() != TR::InstOpCode::RET && cursor->getOpCodeValue() != TR::InstOpCode::RETImm2
-        && cursor->getOpCodeValue() != TR::InstOpCode::retn && !cursor->getOpCode().isBranchOp());
+    } while (testMask && cursor->getOpCodeValue() != OP::label && cursor->getOpCodeValue() != OP::RET
+        && cursor->getOpCodeValue() != OP::RETImm2 && cursor->getOpCodeValue() != OP::retn
+        && !cursor->getOpCode().isBranchOp());
 
     return false;
 }
@@ -357,10 +357,10 @@ TR::RealRegister *OMR::X86::Machine::findBestFreeGPRegister(TR::Instruction *cur
         TR::Instruction *cursor;
         int32_t distance = 0;
         for (cursor = currentInstruction->getPrev(); cursor && numCandidates > 1; cursor = cursor->getPrev()) {
-            if (cursor->getOpCodeValue() == TR::InstOpCode::proc)
+            if (cursor->getOpCodeValue() == OP::proc)
                 break;
 
-            if (cursor->getOpCodeValue() == TR::InstOpCode::assocreg)
+            if (cursor->getOpCodeValue() == OP::assocreg)
                 continue;
 
             for (i = 0; i < numCandidates; i++) {
@@ -433,7 +433,7 @@ TR::RealRegister *OMR::X86::Machine::freeBestGPRegister(TR::Instruction *current
             TR_ASSERT_FATAL(0, "unknown register size requested\n");
     }
 
-    TR::InstOpCode::Mnemonic vmrSpillOpcode;
+    OP::Mnemonic vmrSpillOpcode;
     int32_t vmrStoreSize;
 
     if (virtReg->getKind() == TR_VMR) {
@@ -499,7 +499,7 @@ TR::RealRegister *OMR::X86::Machine::freeBestGPRegister(TR::Instruction *current
     //
     TR::RealRegister::RegNum registerNumber;
     for (cursor = currentInstruction->getPrev(); cursor; cursor = cursor->getPrev()) {
-        if (cursor->getOpCodeValue() == TR::InstOpCode::proc)
+        if (cursor->getOpCodeValue() == OP::proc)
             break;
 
         if (numCandidates == 0)
@@ -508,7 +508,7 @@ TR::RealRegister *OMR::X86::Machine::freeBestGPRegister(TR::Instruction *current
         if (distance > FREE_BEST_REGISTER_SEARCH_DISTANCE)
             break;
 
-        if (cursor->getOpCodeValue() == TR::InstOpCode::fence) {
+        if (cursor->getOpCodeValue() == OP::fence) {
             // Don't walk past the start of the super (extended) block.
             // This is primarily for the non-linear register assigner because
             // the linear RA won't even have values live beyond the start of the
@@ -518,7 +518,7 @@ TR::RealRegister *OMR::X86::Machine::freeBestGPRegister(TR::Instruction *current
                 break;
         }
 
-        if (cursor->getOpCodeValue() == TR::InstOpCode::fence)
+        if (cursor->getOpCodeValue() == OP::fence)
             continue;
 
         for (i = 0; i < numCandidates; i++) {
@@ -684,7 +684,7 @@ done:
     TR::Instruction *instr = NULL;
 
     if (virtReg->getKind() == TR_VMR) {
-        vmrSpillOpcode = TR::InstOpCode::KMOVWMaskMem;
+        vmrSpillOpcode = OP::KMOVWMaskMem;
         vmrStoreSize = 2;
 
         if (comp->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512BW)) {
@@ -953,7 +953,7 @@ TR::RealRegister *OMR::X86::Machine::reverseGPRSpillState(TR::Instruction *curre
             spilledRegister->setBackingStorage(NULL);
         }
     } else if (spilledRegister->getKind() == TR_VMR) {
-        TR::InstOpCode::Mnemonic opcode = TR::InstOpCode::KMOVWMemMask;
+        OP::Mnemonic opcode = OP::KMOVWMemMask;
         int32_t spillSize = 2;
 
         if (comp->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512BW)) {
@@ -995,12 +995,11 @@ void OMR::X86::Machine::coerceGPRegisterAssignment(TR::Instruction *currentInstr
     TR::RealRegister *currentAssignedRegister = virtualRegister->getAssignedRealRegister();
     TR::Instruction *instr = NULL;
 
-    TR::InstOpCode::Mnemonic movOpcode = TR::InstOpCode::MOVRegReg();
+    OP::Mnemonic movOpcode = OP::MOVRegReg();
 
     if (virtualRegister->getKind() == TR_VMR) {
-        movOpcode = cg()->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512BW)
-            ? TR::InstOpCode::KMOVQMaskMask
-            : TR::InstOpCode::KMOVWMaskMask;
+        movOpcode = cg()->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512BW) ? OP::KMOVQMaskMask
+                                                                                         : OP::KMOVWMaskMask;
     }
 
     if (targetRegister->getState() == TR::RealRegister::Free) {
