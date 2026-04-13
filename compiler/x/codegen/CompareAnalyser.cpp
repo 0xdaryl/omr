@@ -105,7 +105,7 @@ void TR_X86CompareAnalyser::integerCompareAnalyser(TR::Node *root, TR::Node *fir
     if (getCmpReg1Reg2()) {
         INST_RegReg(regRegOpCode, root, firstRegister, secondRegister, cg());
     } else if (getCmpReg1Mem2()) {
-        TR::MemoryReference *tempMR = generateX86MemoryReference(secondChild, cg());
+        TR::MemoryReference *tempMR = MREF_node(secondChild, cg());
 
         TR::X86RegMemInstruction *inst = INST_RegMem(regMemOpCode, root, firstRegister, tempMR, cg());
 
@@ -114,7 +114,7 @@ void TR_X86CompareAnalyser::integerCompareAnalyser(TR::Node *root, TR::Node *fir
         tempMR->decNodeReferenceCounts(cg());
     } else // Must be CmpMem1Reg2
     {
-        TR::MemoryReference *tempMR = generateX86MemoryReference(firstChild, cg());
+        TR::MemoryReference *tempMR = MREF_node(firstChild, cg());
 
         TR::X86MemRegInstruction *inst = INST_MemReg(memRegOpCode, root, tempMR, secondRegister, cg());
         if (!cg()->getImplicitExceptionPoint())
@@ -267,10 +267,10 @@ void TR_X86CompareAnalyser::longOrderedCompareAndBranchAnalyser(TR::Node *root, 
             if (firstChild->getReferenceCount() == 1 && firstChild->getRegister() == NULL
                 && (firstChild->getOpCodeValue() == TR::lload
                     || (firstChild->getOpCodeValue() == TR::iload && firstIU2L))) {
-                lowFirstMR = generateX86MemoryReference(firstChild, cg());
+                lowFirstMR = MREF_node(firstChild, cg());
                 delayedFirst = cg()->allocateRegister();
                 if (!firstIU2L) {
-                    highFirstMR = generateX86MemoryReference(*lowFirstMR, 4, cg());
+                    highFirstMR = MREF_MREFoff(*lowFirstMR, 4, cg());
                     INST_RegMem(OP::L4RegMem, firstChild, delayedFirst, highFirstMR, cg());
                 }
             } else if (firstIU2L) {
@@ -283,10 +283,10 @@ void TR_X86CompareAnalyser::longOrderedCompareAndBranchAnalyser(TR::Node *root, 
             if (secondChild->getReferenceCount() == 1 && secondChild->getRegister() == NULL
                 && (secondChild->getOpCodeValue() == TR::lload
                     || (secondChild->getOpCodeValue() == TR::iload && secondIU2L))) {
-                lowSecondMR = generateX86MemoryReference(secondChild, cg());
+                lowSecondMR = MREF_node(secondChild, cg());
                 delayedSecond = cg()->allocateRegister();
                 if (!secondIU2L) {
-                    highSecondMR = generateX86MemoryReference(*lowSecondMR, 4, cg());
+                    highSecondMR = MREF_MREFoff(*lowSecondMR, 4, cg());
                     INST_RegMem(OP::L4RegMem, secondChild, delayedSecond, highSecondMR, cg());
                 }
             } else if (secondIU2L) {
@@ -300,10 +300,10 @@ void TR_X86CompareAnalyser::longOrderedCompareAndBranchAnalyser(TR::Node *root, 
             if (secondChild->getReferenceCount() == 1 && secondChild->getRegister() == NULL
                 && (secondChild->getOpCodeValue() == TR::lload
                     || (secondChild->getOpCodeValue() == TR::iload && secondIU2L))) {
-                lowSecondMR = generateX86MemoryReference(secondChild, cg());
+                lowSecondMR = MREF_node(secondChild, cg());
                 delayedSecond = cg()->allocateRegister();
                 if (!secondIU2L) {
-                    highSecondMR = generateX86MemoryReference(*lowSecondMR, 4, cg());
+                    highSecondMR = MREF_MREFoff(*lowSecondMR, 4, cg());
                     INST_RegMem(OP::L4RegMem, secondChild, delayedSecond, highSecondMR, cg());
                 }
             } else {
@@ -314,10 +314,10 @@ void TR_X86CompareAnalyser::longOrderedCompareAndBranchAnalyser(TR::Node *root, 
             if (firstChild->getReferenceCount() == 1 && firstChild->getRegister() == NULL
                 && (firstChild->getOpCodeValue() == TR::lload
                     || (firstChild->getOpCodeValue() == TR::iload && firstIU2L))) {
-                lowFirstMR = generateX86MemoryReference(firstChild, cg());
+                lowFirstMR = MREF_node(firstChild, cg());
                 delayedFirst = cg()->allocateRegister();
                 if (!firstIU2L) {
-                    highFirstMR = generateX86MemoryReference(*lowFirstMR, 4, cg());
+                    highFirstMR = MREF_MREFoff(*lowFirstMR, 4, cg());
                     INST_RegMem(OP::L4RegMem, firstChild, delayedFirst, highFirstMR, cg());
                 }
             } else {
@@ -351,13 +351,13 @@ void TR_X86CompareAnalyser::longOrderedCompareAndBranchAnalyser(TR::Node *root, 
     uint32_t numAdditionalRegDeps = 5;
 
     if (getCmpReg1Mem2()) {
-        lowMR = generateX86MemoryReference(secondChild, cg());
+        lowMR = MREF_node(secondChild, cg());
         if (secondIU2L == false)
-            highMR = generateX86MemoryReference(*lowMR, 4, cg());
+            highMR = MREF_MREFoff(*lowMR, 4, cg());
     } else if (getCmpMem1Reg2()) {
-        lowMR = generateX86MemoryReference(firstChild, cg());
+        lowMR = MREF_node(firstChild, cg());
         if (firstIU2L == false)
-            highMR = generateX86MemoryReference(*lowMR, 4, cg());
+            highMR = MREF_MREFoff(*lowMR, 4, cg());
     }
 
     bool hasGlobalDeps = (root->getNumChildren() == 3) ? true : false;
@@ -365,7 +365,7 @@ void TR_X86CompareAnalyser::longOrderedCompareAndBranchAnalyser(TR::Node *root, 
     if (hasGlobalDeps) {
         // This child must be evaluated last to ensure virtual regs
         // survive unclobbered up to the branch; all other evaluations (including
-        // generateX86MemoryReference on a node) must preceed this.
+        // MREF on a node) must preceed this.
         //
         TR::Node *third = root->getChild(2);
         cg()->evaluate(third);
@@ -612,11 +612,11 @@ void TR_X86CompareAnalyser::longEqualityCompareAndBranchAnalyser(TR::Node *root,
     uint32_t numAdditionalRegDeps = 5;
 
     if (getCmpReg1Mem2()) {
-        lowMR = generateX86MemoryReference(secondChild, cg());
-        highMR = generateX86MemoryReference(*lowMR, 4, cg());
+        lowMR = MREF_node(secondChild, cg());
+        highMR = MREF_MREFoff(*lowMR, 4, cg());
     } else if (getCmpMem1Reg2()) {
-        lowMR = generateX86MemoryReference(firstChild, cg());
-        highMR = generateX86MemoryReference(*lowMR, 4, cg());
+        lowMR = MREF_node(firstChild, cg());
+        highMR = MREF_MREFoff(*lowMR, 4, cg());
     }
 
     bool hasGlobalDeps = (root->getNumChildren() == 3) ? true : false;
@@ -624,7 +624,7 @@ void TR_X86CompareAnalyser::longEqualityCompareAndBranchAnalyser(TR::Node *root,
     if (hasGlobalDeps) {
         // This child must be evaluated last to ensure virtual regs
         // survive unclobbered up to the branch; all other evaluations (including
-        // generateX86MemoryReference on a node) must preceed this.
+        // MREF on a node) must preceed this.
         //
         TR::Node *third = root->getChild(2);
         cg()->evaluate(third);
@@ -761,16 +761,16 @@ TR::Register *TR_X86CompareAnalyser::longEqualityBooleanAnalyser(TR::Node *root,
         INST_Reg(setOpCode, root, lowRegister, cg());
         INST_RegReg(OP::CMP4RegReg, root, firstRegister->getHighOrder(), secondRegister->getHighOrder(), cg());
     } else if (getCmpReg1Mem2()) {
-        TR::MemoryReference *lowMR = generateX86MemoryReference(secondChild, cg());
-        TR::MemoryReference *highMR = generateX86MemoryReference(*lowMR, 4, cg());
+        TR::MemoryReference *lowMR = MREF_node(secondChild, cg());
+        TR::MemoryReference *highMR = MREF_MREFoff(*lowMR, 4, cg());
         INST_RegMem(OP::CMP4RegMem, root, firstRegister->getLowOrder(), lowMR, cg());
         INST_Reg(setOpCode, root, lowRegister, cg());
         INST_RegMem(OP::CMP4RegMem, root, firstRegister->getHighOrder(), highMR, cg());
         lowMR->decNodeReferenceCounts(cg());
     } else // Must be CmpMem1Reg2
     {
-        TR::MemoryReference *lowMR = generateX86MemoryReference(firstChild, cg());
-        TR::MemoryReference *highMR = generateX86MemoryReference(*lowMR, 4, cg());
+        TR::MemoryReference *lowMR = MREF_node(firstChild, cg());
+        TR::MemoryReference *highMR = MREF_MREFoff(*lowMR, 4, cg());
         INST_MemReg(OP::CMP4MemReg, root, lowMR, secondRegister->getLowOrder(), cg());
         INST_Reg(setOpCode, root, lowRegister, cg());
         INST_MemReg(OP::CMP4MemReg, root, highMR, secondRegister->getHighOrder(), cg());
@@ -843,8 +843,8 @@ TR::Register *TR_X86CompareAnalyser::longOrderedBooleanAnalyser(TR::Node *root, 
         deps->addPostCondition(secondRegister->getHighOrder(), TR::RealRegister::NoReg, cg());
         deps->addPostCondition(secondRegister->getLowOrder(), TR::RealRegister::NoReg, cg());
     } else if (getCmpReg1Mem2()) {
-        lowMR = generateX86MemoryReference(secondChild, cg());
-        highMR = generateX86MemoryReference(*lowMR, 4, cg());
+        lowMR = MREF_node(secondChild, cg());
+        highMR = MREF_MREFoff(*lowMR, 4, cg());
         INST_RegMem(OP::CMP4RegMem, root, firstRegister->getHighOrder(), highMR, cg());
         INST_Reg(highSetOpCode, root, setRegister, cg());
         INST_Label(OP::JNE4, root, doneLabel, cg());
@@ -853,8 +853,8 @@ TR::Register *TR_X86CompareAnalyser::longOrderedBooleanAnalyser(TR::Node *root, 
         deps->addPostCondition(firstRegister->getLowOrder(), TR::RealRegister::NoReg, cg());
     } else // Must be CmpMem1Reg2
     {
-        lowMR = generateX86MemoryReference(firstChild, cg());
-        highMR = generateX86MemoryReference(*lowMR, 4, cg());
+        lowMR = MREF_node(firstChild, cg());
+        highMR = MREF_MREFoff(*lowMR, 4, cg());
         INST_MemReg(OP::CMP4MemReg, root, highMR, secondRegister->getHighOrder(), cg());
         INST_Reg(highSetOpCode, root, setRegister, cg());
         INST_Label(OP::JNE4, root, doneLabel, cg());
@@ -940,8 +940,8 @@ TR::Register *TR_X86CompareAnalyser::longCMPAnalyser(TR::Node *root)
         deps->addPostCondition(secondRegister->getLowOrder(), TR::RealRegister::NoReg, cg());
 
     } else if (getCmpReg1Mem2()) {
-        lowMR = generateX86MemoryReference(secondChild, cg());
-        highMR = generateX86MemoryReference(*lowMR, 4, cg());
+        lowMR = MREF_node(secondChild, cg());
+        highMR = MREF_MREFoff(*lowMR, 4, cg());
         INST_RegMem(OP::CMP4RegMem, root, firstRegister->getHighOrder(), highMR, cg());
         INST_Reg(OP::SETNE1Reg, root, setRegister, cg());
         INST_Label(OP::JNE4, root, highDoneLabel, cg());
@@ -950,8 +950,8 @@ TR::Register *TR_X86CompareAnalyser::longCMPAnalyser(TR::Node *root)
         deps->addPostCondition(firstRegister->getLowOrder(), TR::RealRegister::NoReg, cg());
     } else // Must be CmpMem1Reg2
     {
-        lowMR = generateX86MemoryReference(firstChild, cg());
-        highMR = generateX86MemoryReference(*lowMR, 4, cg());
+        lowMR = MREF_node(firstChild, cg());
+        highMR = MREF_MREFoff(*lowMR, 4, cg());
         INST_MemReg(OP::CMP4MemReg, root, highMR, secondRegister->getHighOrder(), cg());
         INST_Reg(OP::SETNE1Reg, root, setRegister, cg());
         INST_Label(OP::JNE4, root, highDoneLabel, cg());

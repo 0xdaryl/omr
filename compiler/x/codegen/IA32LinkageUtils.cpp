@@ -78,7 +78,7 @@ TR::Register *IA32LinkageUtils::pushIntegerWordArg(TR::Node *child, TR::CodeGene
             return pushRegister;
         } else if (child->getOpCode().isMemoryReference() && (child->getReferenceCount() == 1)
             && (child->getSymbolReference() != cg->comp()->getSymRefTab()->findVftSymbolRef())) {
-            TR::MemoryReference *tempMR = generateX86MemoryReference(child, cg);
+            TR::MemoryReference *tempMR = MREF_node(child, cg);
             INST_Mem(OP::PUSHMem, child, tempMR, cg);
             tempMR->decNodeReferenceCounts(cg);
             cg->decReferenceCount(child);
@@ -122,8 +122,8 @@ TR::Register *IA32LinkageUtils::pushLongArg(TR::Node *child, TR::CodeGenerator *
             cg->decReferenceCount(child);
             return pushRegister;
         } else if (child->getOpCode().isMemoryReference() && child->getReferenceCount() == 1) {
-            TR::MemoryReference *lowMR = generateX86MemoryReference(child, cg);
-            INST_Mem(OP::PUSHMem, child, generateX86MemoryReference(*lowMR, 4, cg), cg);
+            TR::MemoryReference *lowMR = MREF_node(child, cg);
+            INST_Mem(OP::PUSHMem, child, MREF_MREFoff(*lowMR, 4, cg), cg);
             INST_Mem(OP::PUSHMem, child, lowMR, cg);
             lowMR->decNodeReferenceCounts(cg);
             return NULL;
@@ -154,7 +154,7 @@ TR::Register *IA32LinkageUtils::pushFloatArg(TR::Node *child, TR::CodeGenerator 
             return NULL;
         } else if (child->getReferenceCount() == 1) {
             if (child->getOpCode().isLoad()) {
-                TR::MemoryReference *tempMR = generateX86MemoryReference(child, cg);
+                TR::MemoryReference *tempMR = MREF_node(child, cg);
                 INST_Mem(OP::PUSHMem, child, tempMR, cg);
                 tempMR->decNodeReferenceCounts(cg);
                 cg->decReferenceCount(child);
@@ -171,7 +171,7 @@ TR::Register *IA32LinkageUtils::pushFloatArg(TR::Node *child, TR::CodeGenerator 
     TR::RealRegister *espReal = cg->machine()->getRealRegister(TR::RealRegister::esp);
     INST_RegImm(OP::SUB4RegImms, child, espReal, 4, cg);
 
-    INST_MemReg(OP::MOVSSMemReg, child, generateX86MemoryReference(espReal, 0, cg), pushRegister, cg);
+    INST_MemReg(OP::MOVSSMemReg, child, MREF_Bdisp32(espReal, 0, cg), pushRegister, cg);
 
     cg->decReferenceCount(child);
     return pushRegister;
@@ -203,8 +203,8 @@ TR::Register *IA32LinkageUtils::pushDoubleArg(TR::Node *child, TR::CodeGenerator
             return NULL;
         } else if (child->getReferenceCount() == 1) {
             if (child->getOpCode().isLoad()) {
-                TR::MemoryReference *lowMR = generateX86MemoryReference(child, cg);
-                INST_Mem(OP::PUSHMem, child, generateX86MemoryReference(*lowMR, 4, cg), cg);
+                TR::MemoryReference *lowMR = MREF_node(child, cg);
+                INST_Mem(OP::PUSHMem, child, MREF_MREFoff(*lowMR, 4, cg), cg);
                 INST_Mem(OP::PUSHMem, child, lowMR, cg);
                 lowMR->decNodeReferenceCounts(cg);
                 cg->decReferenceCount(child);
@@ -221,7 +221,7 @@ TR::Register *IA32LinkageUtils::pushDoubleArg(TR::Node *child, TR::CodeGenerator
     TR::RealRegister *espReal = cg->machine()->getRealRegister(TR::RealRegister::esp);
     INST_RegImm(OP::SUB4RegImms, child, espReal, 8, cg);
 
-    INST_MemReg(OP::MOVSDMemReg, child, generateX86MemoryReference(espReal, 0, cg), pushRegister, cg);
+    INST_MemReg(OP::MOVSDMemReg, child, MREF_Bdisp32(espReal, 0, cg), pushRegister, cg);
 
     cg->decReferenceCount(child);
     return pushRegister;
