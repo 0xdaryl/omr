@@ -674,7 +674,7 @@ int32_t TR::AMD64SystemLinkage::buildArgs(TR::Node *callNode, TR::RegisterDepend
         } else {
             // Ideally, we would like to push rather than move
             INST_MemReg(TR::Linkage::movOpcodes(MemReg, fullRegisterMovType(vreg)), child,
-                generateX86MemoryReference(espReal, offset, cg()), vreg, cg());
+                MREF_Bdisp32(espReal, offset, cg()), vreg, cg());
         }
 
         cg()->decReferenceCount(child);

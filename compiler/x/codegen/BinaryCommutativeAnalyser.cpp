@@ -162,7 +162,7 @@ TR::Register *TR_X86BinaryCommutativeAnalyser::genericAnalyserImpl(TR::Node *roo
         INST_RegReg(regRegOpCode, root, tempReg, firstRegister, _cg);
         notReversedOperands();
     } else if (getOpReg1Mem2()) {
-        TR::MemoryReference *tempMR = generateX86MemoryReference(secondChild, _cg);
+        TR::MemoryReference *tempMR = MREF_node(secondChild, _cg);
         if (regMemOpCode == OP::TEST4MemReg || regMemOpCode == OP::TEST8MemReg) {
             INST_MemReg(regMemOpCode, root, tempMR, firstRegister, _cg);
         } else {
@@ -171,7 +171,7 @@ TR::Register *TR_X86BinaryCommutativeAnalyser::genericAnalyserImpl(TR::Node *roo
         targetRegister = firstRegister;
         tempMR->decNodeReferenceCounts(_cg);
     } else {
-        TR::MemoryReference *tempMR = generateX86MemoryReference(firstChild, _cg);
+        TR::MemoryReference *tempMR = MREF_node(firstChild, _cg);
         if (regMemOpCode == OP::TEST4MemReg || regMemOpCode == OP::TEST8MemReg) {
             INST_MemReg(regMemOpCode, root, tempMR, secondRegister, _cg);
         } else {
@@ -480,13 +480,13 @@ void TR_X86BinaryCommutativeAnalyser::genericLongAnalyser(TR::Node *root, OP::Mn
         bool memHighZero = false;
         bool useMemHighOrder = false;
         if (getOpReg1Mem2()) {
-            lowMR = generateX86MemoryReference(secondChild, _cg);
+            lowMR = MREF_node(secondChild, _cg);
             targetReg = firstRegister;
             targetHighZero = firstHighZero;
             memHighZero = secondHighZero;
             useMemHighOrder = useSecondHighOrder;
         } else {
-            lowMR = generateX86MemoryReference(firstChild, _cg);
+            lowMR = MREF_node(firstChild, _cg);
             targetReg = secondRegister;
             targetHighZero = secondHighZero;
             memHighZero = firstHighZero;
@@ -517,11 +517,11 @@ void TR_X86BinaryCommutativeAnalyser::genericLongAnalyser(TR::Node *root, OP::Mn
             if (root->getOpCodeValue() == TR::land) {
                 INST_RegReg(OP::XOR4RegReg, root, targetHigh, targetHigh, _cg);
             } else {
-                highMR = generateX86MemoryReference(*lowMR, 4, _cg);
+                highMR = MREF_MREFoff(*lowMR, 4, _cg);
                 INST_RegMem(OP::L4RegMem, root, targetHigh, highMR, _cg);
             }
         } else {
-            highMR = generateX86MemoryReference(*lowMR, 4, _cg);
+            highMR = MREF_MREFoff(*lowMR, 4, _cg);
             INST_RegMem(highRegMemOpCode, root, targetHigh, highMR, _cg);
         }
         root->setRegister(_cg->allocateRegisterPair(targetLow, targetHigh));
@@ -708,18 +708,18 @@ TR::Register *TR_X86BinaryCommutativeAnalyser::integerAddAnalyserImpl(TR::Node *
             INST_RegReg(OP::MOVRegReg(is64Bit), root, tempReg, firstRegister, _cg);
             INST_RegReg(regRegOpCode, root, tempReg, secondRegister, _cg);
         } else {
-            TR::MemoryReference *tempMR = generateX86MemoryReference(_cg);
+            TR::MemoryReference *tempMR = MREF(_cg);
             tempMR->setBaseRegister(firstRegister);
             tempMR->setIndexRegister(secondRegister);
             INST_RegMem(OP::LEARegMem(is64Bit), root, tempReg, tempMR, _cg);
         }
     } else if (getOpReg1Mem2()) {
-        TR::MemoryReference *tempMR = generateX86MemoryReference(secondChild, _cg);
+        TR::MemoryReference *tempMR = MREF_node(secondChild, _cg);
         INST_RegMem(regMemOpCode, root, firstRegister, tempMR, _cg);
         targetRegister = firstRegister;
         tempMR->decNodeReferenceCounts(_cg);
     } else {
-        TR::MemoryReference *tempMR = generateX86MemoryReference(firstChild, _cg);
+        TR::MemoryReference *tempMR = MREF_node(firstChild, _cg);
         INST_RegMem(regMemOpCode, root, secondRegister, tempMR, _cg);
         targetRegister = secondRegister;
         tempMR->decNodeReferenceCounts(_cg);
@@ -1021,14 +1021,14 @@ TR::Register *TR_X86BinaryCommutativeAnalyser::longAddAnalyserImpl(TR::Node *roo
         bool memHighZero;
         bool useMemHighOrder = false;
         if (getOpReg1Mem2()) {
-            lowMR = generateX86MemoryReference(secondChild, _cg);
+            lowMR = MREF_node(secondChild, _cg);
             targetReg = firstRegister;
             targetHighZero = firstHighZero;
             memOp = secondOp;
             memHighZero = secondHighZero;
             useMemHighOrder = useSecondHighOrder;
         } else {
-            lowMR = generateX86MemoryReference(firstChild, _cg);
+            lowMR = MREF_node(firstChild, _cg);
             targetReg = secondRegister;
             targetHighZero = secondHighZero;
             memOp = firstOp;
@@ -1063,7 +1063,7 @@ TR::Register *TR_X86BinaryCommutativeAnalyser::longAddAnalyserImpl(TR::Node *roo
         if (memHighZero) {
             INST_RegImm(OP::ADC4RegImms, root, targetHigh, 0, _cg);
         } else {
-            highMR = generateX86MemoryReference(*lowMR, 4, _cg);
+            highMR = MREF_MREFoff(*lowMR, 4, _cg);
             INST_RegMem(OP::ADC4RegMem, root, targetHigh, highMR, _cg);
         }
         targetRegister = _cg->allocateRegisterPair(targetLow, targetHigh);
@@ -1185,8 +1185,8 @@ void TR_X86BinaryCommutativeAnalyser::longDualMultiplyAnalyser(TR::Node *root)
         r1 = _cg->allocateRegister();
         if (memOne) {
             r5 = _cg->allocateRegister();
-            oneLowMR = generateX86MemoryReference(oneChild, _cg);
-            TR::MemoryReference *oneHighMR = generateX86MemoryReference(*oneLowMR, 4, _cg);
+            oneLowMR = MREF_node(oneChild, _cg);
+            TR::MemoryReference *oneHighMR = MREF_MREFoff(*oneLowMR, 4, _cg);
             INST_RegMem(OP::L4RegMem, root, r1, oneLowMR, _cg);
             INST_RegMem(OP::L4RegMem, root, r5, oneHighMR, _cg);
         } else {
@@ -1634,8 +1634,8 @@ void TR_X86BinaryCommutativeAnalyser::longMultiplyAnalyser(TR::Node *root)
 
         root->setRegister(resultReg);
     } else if (getOpReg1Mem2()) {
-        TR::MemoryReference *lowMR = generateX86MemoryReference(secondChild, _cg);
-        TR::MemoryReference *highMR = generateX86MemoryReference(*lowMR, 4, _cg);
+        TR::MemoryReference *lowMR = MREF_node(secondChild, _cg);
+        TR::MemoryReference *highMR = MREF_MREFoff(*lowMR, 4, _cg);
 
         if (!firstHighZero) {
             oneLow = firstRegister->getLowOrder();
@@ -1673,7 +1673,7 @@ void TR_X86BinaryCommutativeAnalyser::longMultiplyAnalyser(TR::Node *root)
             intermediateResultReg = oneLowCopy;
         }
 
-        TR::MemoryReference *lowMR2 = generateX86MemoryReference(*lowMR, 0, _cg);
+        TR::MemoryReference *lowMR2 = MREF_MREFoff(*lowMR, 0, _cg);
         TR::RegisterDependencyConditions *deps = REGDEPS((uint8_t)2, 2, _cg);
         deps->addPreCondition(oneLow, TR::RealRegister::eax, _cg);
         deps->addPostCondition(oneLow, TR::RealRegister::eax, _cg);
@@ -1699,8 +1699,8 @@ void TR_X86BinaryCommutativeAnalyser::longMultiplyAnalyser(TR::Node *root)
         root->setRegister(resultReg);
         lowMR->decNodeReferenceCounts(_cg);
     } else {
-        TR::MemoryReference *lowMR = generateX86MemoryReference(firstChild, _cg);
-        TR::MemoryReference *highMR = generateX86MemoryReference(*lowMR, 4, _cg);
+        TR::MemoryReference *lowMR = MREF_node(firstChild, _cg);
+        TR::MemoryReference *highMR = MREF_MREFoff(*lowMR, 4, _cg);
         oneLow = _cg->allocateRegister();
         oneHigh = 0;
 

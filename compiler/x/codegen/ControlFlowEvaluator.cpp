@@ -429,12 +429,12 @@ TR::Register *OMR::X86::TreeEvaluator::tableEvaluator(TR::Node *node, TR::CodeGe
         //
         TR::LabelSymbol *label = generateLabelSymbol(cg);
         label->setCodeLocation(reinterpret_cast<uint8_t *>(branchTable));
-        TR::MemoryReference *branchTableLeaMR = generateX86MemoryReference(label, cg);
+        TR::MemoryReference *branchTableLeaMR = MREF_label(label, cg);
         branchTableReg = cg->allocateRegister();
         INST_RegMem(OP::LEA8RegMem, node, branchTableReg, branchTableLeaMR, cg);
-        jumpMR = generateX86MemoryReference(branchTableReg, selectorReg, 3, cg);
+        jumpMR = MREF_BIS(branchTableReg, selectorReg, 3, cg);
     } else {
-        jumpMR = generateX86MemoryReference((TR::Register *)NULL, selectorReg,
+        jumpMR = MREF_BISdisp32((TR::Register *)NULL, selectorReg,
             (uint8_t)(cg->comp()->target().is64Bit() ? 3 : 2), (intptr_t)branchTable, cg);
 
         jumpMR->setNeedsCodeAbsoluteExternalRelocation();
@@ -626,7 +626,7 @@ void OMR::X86::TreeEvaluator::compareIntegersForEquality(TR::Node *node, TR::Cod
                         if (andFirstChild->getRegister() == NULL && andFirstChild->getReferenceCount() == 1
                             && andFirstChild->getOpCode().isLoadVar()) {
                             // memory case
-                            TR::MemoryReference *tempMR = generateX86MemoryReference(andFirstChild, cg);
+                            TR::MemoryReference *tempMR = MREF_node(andFirstChild, cg);
                             if (((mask >> 8) == 0) || (andSecondChild->getSize() == 1))
                                 INST_MemImm(OP::TEST1MemImm1, node, tempMR,
                                     static_cast<int32_t>(mask), cg);
@@ -717,7 +717,7 @@ void OMR::X86::TreeEvaluator::compareIntegersForEquality(TR::Node *node, TR::Cod
                         }
                         if (firstChild->getOpCode().isMemoryReference() && firstChild->getRegister() == NULL
                             && firstChild->getReferenceCount() == 1) {
-                            TR::MemoryReference *tempMR = generateX86MemoryReference(firstChild, cg);
+                            TR::MemoryReference *tempMR = MREF_node(firstChild, cg);
                             if (compareSize == 1)
                                 INST_MemImm(OP::CMP1MemImm1, node, tempMR, 0, cg);
                             else if (compareSize == 2) {
@@ -767,7 +767,7 @@ void OMR::X86::TreeEvaluator::compareIntegersForEquality(TR::Node *node, TR::Cod
                 }
                 if (firstChild->getOpCode().isMemoryReference() && firstChild->getRegister() == NULL
                     && firstChild->getReferenceCount() == 1) {
-                    TR::MemoryReference *tempMR = generateX86MemoryReference(firstChild, cg);
+                    TR::MemoryReference *tempMR = MREF_node(firstChild, cg);
                     if (compareSize == 1)
                         INST_MemImm(OP::CMP1MemImm1, node, tempMR,
                             static_cast<int32_t>(constValue), cg);
@@ -911,7 +911,7 @@ void OMR::X86::TreeEvaluator::compareIntegersForOrder(TR::Node *node, TR::Node *
             //
             if (!node->getOpCode().isSpineCheck() && firstChild->getOpCode().isMemoryReference()
                 && firstChild->getRegister() == NULL && firstChild->getReferenceCount() == 1) {
-                TR::MemoryReference *tempMR = generateX86MemoryReference(firstChild, cg);
+                TR::MemoryReference *tempMR = MREF_node(firstChild, cg);
                 if (compareSize == 1) {
                     INST_MemImm(OP::CMP1MemImm1, node, tempMR,
                         static_cast<int32_t>(constValue), cg);
@@ -983,7 +983,7 @@ void OMR::X86::TreeEvaluator::compare2BytesForOrder(TR::Node *node, TR::CodeGene
 
         if ((firstChild->getReferenceCount() == 1) && (firstChild->getRegister() == NULL)
             && firstChild->getOpCode().isMemoryReference()) {
-            TR::MemoryReference *tempMR = generateX86MemoryReference(firstChild, cg);
+            TR::MemoryReference *tempMR = MREF_node(firstChild, cg);
             // try to avoid Imm2 instructions
             if (isByteValue)
                 INST_MemImm(OP::CMP2MemImms, firstChild, tempMR, value, cg);
@@ -1013,7 +1013,7 @@ void OMR::X86::TreeEvaluator::compareBytesForOrder(TR::Node *node, TR::CodeGener
         TR::Node *firstChild = node->getFirstChild();
         if ((firstChild->getReferenceCount() == 1) && (firstChild->getRegister() == NULL)
             && firstChild->getOpCode().isMemoryReference()) {
-            TR::MemoryReference *tempMR = generateX86MemoryReference(firstChild, cg);
+            TR::MemoryReference *tempMR = MREF_node(firstChild, cg);
             INST_MemImm(OP::CMP1MemImm1, firstChild, tempMR, secondChild->getByte(), cg);
             tempMR->decNodeReferenceCounts(cg);
         } else {
@@ -1065,7 +1065,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerReturnEvaluator(TR::Node *node, TR
     //
     if (cg->enableSinglePrecisionMethods() && comp->getJittedMethodSymbol()->usesSinglePrecisionMode()) {
         INST_Mem(OP::LDCWMem, node,
-            generateX86MemoryReference(cg->findOrCreate2ByteConstant(node, DOUBLE_PRECISION_ROUND_TO_NEAREST), cg), cg);
+            MREF_const(cg->findOrCreate2ByteConstant(node, DOUBLE_PRECISION_ROUND_TO_NEAREST), cg), cg);
     }
 
     TR::Node *firstChild = node->getFirstChild();
@@ -1121,7 +1121,7 @@ TR::Register *OMR::X86::TreeEvaluator::returnEvaluator(TR::Node *node, TR::CodeG
     //
     if (cg->enableSinglePrecisionMethods() && comp->getJittedMethodSymbol()->usesSinglePrecisionMode()) {
         INST_Mem(OP::LDCWMem, node,
-            generateX86MemoryReference(cg->findOrCreate2ByteConstant(node, DOUBLE_PRECISION_ROUND_TO_NEAREST), cg), cg);
+            MREF_const(cg->findOrCreate2ByteConstant(node, DOUBLE_PRECISION_ROUND_TO_NEAREST), cg), cg);
     }
 
     if (cg->getProperties().getCallerCleanup()) {
@@ -1331,7 +1331,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerIfCmpneEvaluator(TR::Node *node, T
                 INST_RegImm(OP::TEST4RegImm4, node, loadReg,
                     (((int32_t)-1) << node->getFirstChild()->getSecondChild()->getInt()), cg);
             } else {
-                TR::MemoryReference *sourceMR = generateX86MemoryReference(loadNode, cg);
+                TR::MemoryReference *sourceMR = MREF_node(loadNode, cg);
                 INST_MemImm(OP::TEST4MemImm4, node, sourceMR,
                     (((int32_t)-1) << node->getFirstChild()->getSecondChild()->getInt()), cg);
             }
@@ -1526,7 +1526,7 @@ TR::Register *OMR::X86::TreeEvaluator::ifbcmpeqEvaluator(TR::Node *node, TR::Cod
         TR::Node *firstChild = node->getFirstChild();
         if ((firstChild->getReferenceCount() == 1) && (firstChild->getRegister() == NULL)
             && firstChild->getOpCode().isMemoryReference()) {
-            TR::MemoryReference *tempMR = generateX86MemoryReference(firstChild, cg);
+            TR::MemoryReference *tempMR = MREF_node(firstChild, cg);
             INST_MemImm(OP::CMP1MemImm1, firstChild, tempMR, value, cg);
             tempMR->decNodeReferenceCounts(cg);
             cg->decReferenceCount(firstChild);
@@ -1552,7 +1552,7 @@ TR::Register *OMR::X86::TreeEvaluator::ifbcmpeqEvaluator(TR::Node *node, TR::Cod
 
             if (expr->getReferenceCount() == 1 && expr->getRegister() == NULL
                 && expr->getOpCode().isMemoryReference()) {
-                TR::MemoryReference *tempMR = generateX86MemoryReference(expr, cg);
+                TR::MemoryReference *tempMR = MREF_node(expr, cg);
                 INST_MemImm(OP::TEST1MemImm1, expr, tempMR, value, cg);
                 tempMR->decNodeReferenceCounts(cg);
                 cg->decReferenceCount(firstChild);
@@ -1659,7 +1659,7 @@ TR::Register *OMR::X86::TreeEvaluator::ifscmpeqEvaluator(TR::Node *node, TR::Cod
 
         if ((firstChild->getReferenceCount() == 1) && (firstChild->getRegister() == NULL)
             && firstChild->getOpCode().isMemoryReference()) {
-            TR::MemoryReference *tempMR = generateX86MemoryReference(firstChild, cg);
+            TR::MemoryReference *tempMR = MREF_node(firstChild, cg);
 
             if (value >= -128 && value <= 127) {
                 INST_MemImm(OP::CMP2MemImms, firstChild, tempMR, value, cg);

@@ -1965,7 +1965,7 @@ TR::Register *OMR::X86::AMD64::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR
 // also handles lloadi
 TR::Register *OMR::X86::AMD64::TreeEvaluator::lloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    TR::MemoryReference *sourceMR = generateX86MemoryReference(node, cg);
+    TR::MemoryReference *sourceMR = MREF_node(node, cg);
     TR::Register *reg
         = TR::TreeEvaluator::loadMemory(node, sourceMR, TR_RematerializableLong, node->getOpCode().isIndirect(), cg);
 
@@ -2166,7 +2166,7 @@ static TR::Register *l2fd(TR::Node *node, TR::RealRegister *target, OP::Mnemonic
     TR::MemoryReference *tempMR;
 
     if (child->getRegister() == NULL && child->getReferenceCount() == 1 && child->getOpCode().isLoadVar()) {
-        tempMR = generateX86MemoryReference(child, cg);
+        tempMR = MREF_node(child, cg);
         INST_RegMem(opRegMem8, node, target, tempMR, cg);
         tempMR->decNodeReferenceCounts(cg);
     } else {
@@ -2220,9 +2220,9 @@ TR::Register *OMR::X86::AMD64::TreeEvaluator::dbits2lEvaluator(TR::Node *node, T
             deps->addPostCondition(treg, TR::RealRegister::NoReg, cg);
 
             TR::MemoryReference *nan1MR
-                = generateX86MemoryReference(cg->findOrCreate8ByteConstant(node, DOUBLE_NAN_1_LOW), cg);
+                = MREF_const(cg->findOrCreate8ByteConstant(node, DOUBLE_NAN_1_LOW), cg);
             TR::MemoryReference *nan2MR
-                = generateX86MemoryReference(cg->findOrCreate8ByteConstant(node, DOUBLE_NAN_2_LOW), cg);
+                = MREF_const(cg->findOrCreate8ByteConstant(node, DOUBLE_NAN_2_LOW), cg);
 
             TR::LabelSymbol *startLabel = TR::LabelSymbol::create(cg->trHeapMemory(), cg);
             TR::LabelSymbol *normalizeLabel = TR::LabelSymbol::create(cg->trHeapMemory(), cg);
@@ -2253,7 +2253,7 @@ TR::Register *OMR::X86::AMD64::TreeEvaluator::dbits2lEvaluator(TR::Node *node, T
             helperDeps->addPostCondition(treg, TR::RealRegister::eax, cg);
 
             TR::MemoryReference *nanDetectorMR
-                = generateX86MemoryReference(cg->findOrCreate8ByteConstant(node, nanDetector), cg);
+                = MREF_const(cg->findOrCreate8ByteConstant(node, nanDetector), cg);
 
             TR::LabelSymbol *startLabel = TR::LabelSymbol::create(cg->trHeapMemory(), cg);
             TR::LabelSymbol *slowPathLabel = TR::LabelSymbol::create(cg->trHeapMemory(), cg);

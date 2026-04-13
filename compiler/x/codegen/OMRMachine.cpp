@@ -699,7 +699,7 @@ done:
         TR_RematerializationInfo *info = bestDiscardableRegister->getRematerializationInfo();
 
         if (info->isRematerializableFromMemory()) {
-            TR::MemoryReference *tempMR = generateX86MemoryReference(info->getSymbolReference(), self()->cg());
+            TR::MemoryReference *tempMR = MREF_sym(info->getSymbolReference(), self()->cg());
 
             if (info->isIndirect()) {
                 TR_ASSERT(info->getBaseRegister()->getAssignedRegister(),
@@ -718,13 +718,13 @@ done:
                     currentInstruction);
             }
         } else if (info->isRematerializableFromAddress()) {
-            TR::MemoryReference *tempMR = generateX86MemoryReference(info->getSymbolReference(), self()->cg());
+            TR::MemoryReference *tempMR = MREF_sym(info->getSymbolReference(), self()->cg());
             instr = INST_RegMem(currentInstruction, OP::LEARegMem(), best, tempMR,
                 self()->cg());
         } else {
             if (info->getDataType() == TR_RematerializableFloat) {
                 TR::MemoryReference *tempMR
-                    = generateX86MemoryReference(self()->cg()->findOrCreate4ByteConstant(currentInstruction->getNode(),
+                    = MREF_const(self()->cg()->findOrCreate4ByteConstant(currentInstruction->getNode(),
                                                      static_cast<int32_t>(info->getConstant())),
                         self()->cg());
                 instr = INST_RegMem(currentInstruction, OP::MOVSSRegMem, best, tempMR,
@@ -835,7 +835,7 @@ done:
             self()->cg()->getSpilledRegisterList()->push_front(bestRegister);
         }
 
-        TR::MemoryReference *tempMR = generateX86MemoryReference(location->getSymbolReference(), offset, self()->cg());
+        TR::MemoryReference *tempMR = MREF_symOff(location->getSymbolReference(), offset, self()->cg());
         bestRegister->setBackingStorage(location);
         TR_ASSERT(offset == 0 || offset == 4, "assertion failure");
         bestRegister->setIsSpilledToSecondHalf(offset > 0);
@@ -931,7 +931,7 @@ TR::RealRegister *OMR::X86::Machine::reverseGPRSpillState(TR::Instruction *curre
         }
     }
 
-    TR::MemoryReference *tempMR = generateX86MemoryReference(location->getSymbolReference(),
+    TR::MemoryReference *tempMR = MREF_symOff(location->getSymbolReference(),
         spilledRegister->isSpilledToSecondHalf() ? 4 : 0, self()->cg());
     TR::Instruction *instr = NULL;
 
@@ -2109,7 +2109,7 @@ TR::MemoryReference *OMR::X86::Machine::getDummyLocalMR(TR::DataType dt)
         _dummyLocal[dt] = self()->cg()->allocateLocalTemp(dt);
     }
 
-    return generateX86MemoryReference(_dummyLocal[dt], self()->cg());
+    return MREF_sym(_dummyLocal[dt], self()->cg());
 }
 
 uint32_t OMR::X86::Machine::maxAssignableRegisters()

@@ -238,43 +238,43 @@ TR::Register *TR_X86IntegerMultiplyDecomposer::generateDecompositionInstructions
                 break;
             case leaRegReg2:
                 INST_RegMem(OP::LEARegMem(nodeIs64Bit), _node, registerMap[component._target],
-                    generateX86MemoryReference(0, registerMap[component._index],
+                    MREF_BIS(0, registerMap[component._index],
                         TR::MemoryReference::convertMultiplierToStride(2), _cg),
                     _cg);
                 break;
             case leaRegReg4:
                 INST_RegMem(OP::LEARegMem(nodeIs64Bit), _node, registerMap[component._target],
-                    generateX86MemoryReference(0, registerMap[component._index],
+                    MREF_BIS(0, registerMap[component._index],
                         TR::MemoryReference::convertMultiplierToStride(4), _cg),
                     _cg);
                 break;
             case leaRegReg8:
                 INST_RegMem(OP::LEARegMem(nodeIs64Bit), _node, registerMap[component._target],
-                    generateX86MemoryReference(0, registerMap[component._index],
+                    MREF_BIS(0, registerMap[component._index],
                         TR::MemoryReference::convertMultiplierToStride(8), _cg),
                     _cg);
                 break;
             case leaRegRegReg:
                 INST_RegMem(OP::LEARegMem(nodeIs64Bit), _node, registerMap[component._target],
-                    generateX86MemoryReference(registerMap[component._baseOrImmed], registerMap[component._index],
+                    MREF_BIS(registerMap[component._baseOrImmed], registerMap[component._index],
                         TR::MemoryReference::convertMultiplierToStride(1), _cg),
                     _cg);
                 break;
             case leaRegRegReg2:
                 INST_RegMem(OP::LEARegMem(nodeIs64Bit), _node, registerMap[component._target],
-                    generateX86MemoryReference(registerMap[component._baseOrImmed], registerMap[component._index],
+                    MREF_BIS(registerMap[component._baseOrImmed], registerMap[component._index],
                         TR::MemoryReference::convertMultiplierToStride(2), _cg),
                     _cg);
                 break;
             case leaRegRegReg4:
                 INST_RegMem(OP::LEARegMem(nodeIs64Bit), _node, registerMap[component._target],
-                    generateX86MemoryReference(registerMap[component._baseOrImmed], registerMap[component._index],
+                    MREF_BIS(registerMap[component._baseOrImmed], registerMap[component._index],
                         TR::MemoryReference::convertMultiplierToStride(4), _cg),
                     _cg);
                 break;
             case leaRegRegReg8:
                 INST_RegMem(OP::LEARegMem(nodeIs64Bit), _node, registerMap[component._target],
-                    generateX86MemoryReference(registerMap[component._baseOrImmed], registerMap[component._index],
+                    MREF_BIS(registerMap[component._baseOrImmed], registerMap[component._index],
                         TR::MemoryReference::convertMultiplierToStride(8), _cg),
                     _cg);
                 break;

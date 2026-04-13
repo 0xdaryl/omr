@@ -646,7 +646,7 @@ void OMR::X86::RegisterDependencyGroup::assignRegisters(TR::Instruction *current
                     assignedReg = toRealRegister(virtReg->getAssignedRegister());
 
                     TR::MemoryReference *tempMR
-                        = generateX86MemoryReference(virtReg->getBackingStorage()->getSymbolReference(), cg);
+                        = MREF_sym(virtReg->getBackingStorage()->getSymbolReference(), cg);
 
                     OP::Mnemonic op;
                     if (assignedReg->getKind() == TR_FPR) {
