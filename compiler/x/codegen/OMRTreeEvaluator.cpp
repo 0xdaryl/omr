@@ -102,13 +102,13 @@ TR::Register *OMR::X86::TreeEvaluator::ifxcmpoEvaluator(TR::Node *node, TR::Code
 
     if ((opCode == TR::ificmno) || (opCode == TR::ificmnno) || (opCode == TR::iflcmno) || (opCode == TR::iflcmnno)) {
         TR::Register *tmp = cg->allocateRegister();
-        INST_RegReg(TR::InstOpCode::MOVRegReg(nodeIs64Bit), node, tmp, rs1, cg);
-        INST_RegReg(TR::InstOpCode::ADDRegReg(nodeIs64Bit), node, tmp, rs2, cg);
+        INST_RegReg(OP::MOVRegReg(nodeIs64Bit), node, tmp, rs1, cg);
+        INST_RegReg(OP::ADDRegReg(nodeIs64Bit), node, tmp, rs2, cg);
         cg->stopUsingRegister(tmp);
     } else
-        INST_RegReg(TR::InstOpCode::CMPRegReg(nodeIs64Bit), node, rs1, rs2, cg);
+        INST_RegReg(OP::CMPRegReg(nodeIs64Bit), node, rs1, rs2, cg);
 
-    INST_ConditionalJump(reverseBranch ? TR::InstOpCode::JNO4 : TR::InstOpCode::JO4, node, cg);
+    INST_ConditionalJump(reverseBranch ? OP::JNO4 : OP::JO4, node, cg);
 
     cg->decReferenceCount(node->getFirstChild());
     cg->decReferenceCount(node->getSecondChild());
