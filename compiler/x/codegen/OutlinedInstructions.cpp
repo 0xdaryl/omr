@@ -104,7 +104,7 @@ void TR_OutlinedInstructions::generateOutlinedInstructionsDispatch()
     cg()->setFirstInstruction(NULL);
     cg()->setAppendInstruction(NULL);
 
-    new (_cg->trHeapMemory()) TR::X86LabelInstruction(NULL, TR::InstOpCode::label, _entryLabel, _cg);
+    new (_cg->trHeapMemory()) TR::X86LabelInstruction(NULL, OP::label, _entryLabel, _cg);
 
     TR::Register *resultReg = NULL;
     if (_callNode->getOpCode().isCallIndirect())
@@ -123,19 +123,17 @@ void TR_OutlinedInstructions::generateOutlinedInstructionsDispatch()
         TR_ASSERT((targetRegPair == NULL && resultRegPair == NULL) || (targetRegPair != NULL && resultRegPair != NULL),
             "OutlinedInstructions: targetReg and resultReg must be both register pairs or neither register pairs.");
         if (targetRegPair) {
-            INST_RegReg(TR::InstOpCode::MOVRegReg(), _callNode, targetRegPair->getLowOrder(),
-                resultRegPair->getLowOrder(), _cg);
-            INST_RegReg(TR::InstOpCode::MOVRegReg(), _callNode, targetRegPair->getHighOrder(),
-                resultRegPair->getHighOrder(), _cg);
+            INST_RegReg(OP::MOVRegReg(), _callNode, targetRegPair->getLowOrder(), resultRegPair->getLowOrder(), _cg);
+            INST_RegReg(OP::MOVRegReg(), _callNode, targetRegPair->getHighOrder(), resultRegPair->getHighOrder(), _cg);
         } else {
-            TR::InstOpCode::Mnemonic mov = TR::InstOpCode::bad;
+            OP::Mnemonic mov = OP::bad;
             switch (resultReg->getKind()) {
                 case TR_GPR:
-                    mov = TR::InstOpCode::MOVRegReg();
+                    mov = OP::MOVRegReg();
                     break;
                 case TR_FPR:
                 case TR_VRF:
-                    mov = TR::InstOpCode::MOVDQURegReg;
+                    mov = OP::MOVDQURegReg;
                     break;
                 default:
                     TR_ASSERT(false, "OutlinedInstructions: unsupported result register kind.");
@@ -148,7 +146,7 @@ void TR_OutlinedInstructions::generateOutlinedInstructionsDispatch()
     _cg->decReferenceCount(_callNode);
 
     if (_restartLabel)
-        INST_Label(TR::InstOpCode::JMP4, _callNode, _restartLabel, _cg);
+        INST_Label(OP::JMP4, _callNode, _restartLabel, _cg);
     else {
         // Java-specific.
         // No restart label implies we're not coming back from this call,
@@ -158,12 +156,12 @@ void TR_OutlinedInstructions::generateOutlinedInstructionsDispatch()
         //
         // When the handshake is removed, we can delete this zero.
         //
-        INST_Imm(TR::InstOpCode::DDImm4, _callNode, 0, _cg);
+        INST_Imm(OP::DDImm4, _callNode, 0, _cg);
     }
 
     // Dummy label to delimit the end of the helper call dispatch sequence (for exception ranges).
     //
-    INST_Label(TR::InstOpCode::label, _callNode, TR::LabelSymbol::create(_cg->trHeapMemory(), _cg), _cg);
+    INST_Label(OP::label, _callNode, TR::LabelSymbol::create(_cg->trHeapMemory(), _cg), _cg);
 
     // Switch from cold helper instruction stream.
     //
@@ -349,12 +347,12 @@ TR_OutlinedInstructionsGenerator::TR_OutlinedInstructionsGenerator(TR::LabelSymb
     _oi->setCallNode(node);
     cg->getOutlinedInstructionsList().push_front(_oi);
     _oi->swapInstructionListsWithCompilation();
-    INST_Label(TR::InstOpCode::label, node, entryLabel, cg);
+    INST_Label(OP::label, node, entryLabel, cg);
 }
 
 void TR_OutlinedInstructionsGenerator::endOutlinedInstructionSequence()
 {
-    INST_Label(TR::InstOpCode::label, _oi->_callNode, generateLabelSymbol(_oi->_cg), _oi->_cg);
+    INST_Label(OP::label, _oi->_callNode, generateLabelSymbol(_oi->_cg), _oi->_cg);
     _oi->swapInstructionListsWithCompilation();
     _hasEnded = true;
 }
