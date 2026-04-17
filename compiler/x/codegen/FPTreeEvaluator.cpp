@@ -551,6 +551,54 @@ TR::Register *OMR::X86::TreeEvaluator::vsqrtEvaluator(TR::Node *node, TR::CodeGe
     return TR::TreeEvaluator::unaryVectorArithmeticEvaluator(node, cg);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
+
+
+uint8_t scalarFPBinaryCommutativeOpCodes[NUM_ENCODINGS][NUM_DATATYPES][NUM_FORMS][NUM_OPERATIONS] = {
+// clang-format off
+
+    // |----------------------- RegRegReg ------------------------|    |----------------------- RegRegMem ------------------------|
+    {{{ VADDSS_x1x2x3, VMULSS_x1x2x3, VSUBSS_x1x2x3, VDIVSS_x1x2x3 }, { VADDSS_x1x2m3, VMULSS_x1x2m3, VSUBSS_x1x2m3, VDIVSS_x1x2m3 }},  // VEX Float
+     {{ VADDSD_x1x2x3, VMULSD_x1x2x3, VSUBSD_x1x2x3, VDIVSD_x1x2x3 }, { VADDSD_x1x2m3, VMULSD_x1x2m3, VSUBSD_x1x2m3, VDIVSD_x1x2m3 }}}, // VEX Double
+
+    {{{ ADDSS_x1x2,    MULSS_x1x2,    SUBSS_x1x2,    DIVSS_x1x2    }, { ADDSS_x1m2,    MULSS_x1m2,    SUBSS_x1m2,    DIVSS_x1m2 }},     // SSE Float
+     {{ ADDSD_x1x2,    MULSD_x1x2,    SUBSD_x1x2,    DIVSD_x1x2    }, { ADDSD_x1m2,    MULSD_x1m2,    SUBSD_x1m2,    DIVSD_x1m2 }}}     // SSE Float
+
+
+    //  -------------------------- VEX ---------------------------
+    {{{ VADDSS_x1x2x3, VMULSS_x1x2x3, VSUBSS_x1x2x3, VDIVSS_x1x2x3 },   // Float RegRegReg
+      { VADDSS_x1x2m3, VMULSS_x1x2m3, VSUBSS_x1x2m3, VDIVSS_x1x2m3 }},  // Float RegRegMem
+     {{ VADDSD_x1x2x3, VMULSD_x1x2x3, VSUBSD_x1x2x3, VDIVSD_x1x2x3 },   // Double RegRegReg
+      { VADDSD_x1x2m3, VMULSD_x1x2m3, VSUBSD_x1x2m3, VDIVSD_x1x2m3 }}}, // Double RegRegMem
+
+    //  -------------------------- SSE ---------------------------
+    {{{ ADDSS_x1x2,    MULSS_x1x2,    SUBSS_x1x2,    DIVSS_x1x2    },   // SSE Float RegReg
+      { ADDSS_x1m2,    MULSS_x1m2,    SUBSS_x1m2,    DIVSS_x1m2    }},  // SSE Float RegMem
+     {{ ADDSD_x1x2,    MULSD_x1x2,    SUBSD_x1x2,    DIVSD_x1x2    },   // SSE Double RegReg
+      { ADDSD_x1m2,    MULSD_x1m2,    SUBSD_x1m2,    DIVSD_x1m2    }}}  // SSE Double RegMem
+
+// clang-format on
+};
+
+TR::Register *OMR::X86::TreeEvaluator::scalarFPBinaryCommutativeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+{
+    // fadd/dadd/fmul/dmul
+
+    if (cg->useVEXEncoding()) {
+        // 3-operand VEX BinaryCommutative analyzer
+        OMR::X86::ThreeOperandBinaryCommutativeAnalyzer analyzer;
+        analyzer.fp
+
+
+    } else {
+        // 2-operand SSE BinaryCommutative analyzer
+
+        OMR::X86::TwoOperandBinaryCommutativeAnalyzer analyzer;
+
+    }
+}
+
 TR::Register *OMR::X86::TreeEvaluator::faddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
     return TR::TreeEvaluator::floatingPointBinaryArithmeticEvaluator(node, cg);
