@@ -26,6 +26,12 @@ const OMR::X86::InstOpCode::OpCodeMetaData OMR::X86::InstOpCode::metadata[NumOpC
 #include "codegen/OMRInstOpCodeProperties.hpp"
 };
 
+
+
+// Helper to strip parentheses
+#define STRIP_PARENS_IMPL(...) __VA_ARGS__
+#define STRIP_PARENS(x) STRIP_PARENS_IMPL x
+
 // Heuristics for X87 second byte opcode
 // It could be eliminated if GCC/MSVC fully support initializer list
 #define X87_________________(x) ((uint8_t)((x & 0xE0) >> 5)), ((uint8_t)((x & 0x18) >> 3)), (uint8_t)(x & 0x07)
@@ -34,18 +40,26 @@ const OMR::X86::InstOpCode::OpCodeMetaData OMR::X86::InstOpCode::metadata[NumOpC
 #define PROPERTY1(value) +0
 #define PROPERTY2(value) +0
 #define FEATURES(value) +0
+#define OPND1(...) +0
+#define OPND2(...) +0
+#define OPND3(...) +0
+#define OPND4(...) +0
 
-#define GET_MACRO(_1, _2, _3, _4, NAME, ...) NAME
+#define GET_MACRO(_1, _2, _3, _4, _5, _6, _7, _8, NAME, ...) NAME
 
-#define INSTRUCTION_4(name, mnemonic, binary, a, b, c, d) a b c d
-#define INSTRUCTION_3(name, mnemonic, binary, a, b, c) a b c
-#define INSTRUCTION_2(name, mnemonic, binary, a, b) a b
-#define INSTRUCTION_1(name, mnemonic, binary, a) a
+#define INSTRUCTION_8(name, mnemonic, binary, a, b, c, d, e, f, g, h) STRIP_PARENS(a) STRIP_PARENS(b) STRIP_PARENS(c) STRIP_PARENS(d) STRIP_PARENS(e) STRIP_PARENS(f) STRIP_PARENS(g) STRIP_PARENS(h)
+#define INSTRUCTION_7(name, mnemonic, binary, a, b, c, d, e, f, g) STRIP_PARENS(a) STRIP_PARENS(b) STRIP_PARENS(c) STRIP_PARENS(d) STRIP_PARENS(e) STRIP_PARENS(f) STRIP_PARENS(g)
+#define INSTRUCTION_6(name, mnemonic, binary, a, b, c, d, e, f) STRIP_PARENS(a) STRIP_PARENS(b) STRIP_PARENS(c) STRIP_PARENS(d) STRIP_PARENS(e) STRIP_PARENS(f)
+#define INSTRUCTION_5(name, mnemonic, binary, a, b, c, d, e) STRIP_PARENS(a) STRIP_PARENS(b) STRIP_PARENS(c) STRIP_PARENS(d) STRIP_PARENS(e)
+#define INSTRUCTION_4(name, mnemonic, binary, a, b, c, d) STRIP_PARENS(a) STRIP_PARENS(b) STRIP_PARENS(c) STRIP_PARENS(d)
+#define INSTRUCTION_3(name, mnemonic, binary, a, b, c) STRIP_PARENS(a) STRIP_PARENS(b) STRIP_PARENS(c)
+#define INSTRUCTION_2(name, mnemonic, binary, a, b) STRIP_PARENS(a) STRIP_PARENS(b)
+#define INSTRUCTION_1(name, mnemonic, binary, a) STRIP_PARENS(a)
 #define INSTRUCTION_0(name, mnemonic, binary) 0
 
 #define EXPAND(...) __VA_ARGS__
 #define INSTRUCTION(name, mnemonic, binary, ...)                                                                   \
-    EXPAND(GET_MACRO(__VA_ARGS__, INSTRUCTION_4, INSTRUCTION_3, INSTRUCTION_2, INSTRUCTION_1, INSTRUCTION_0)(name, \
+    EXPAND(GET_MACRO(__VA_ARGS__, INSTRUCTION_8, INSTRUCTION_7, INSTRUCTION_6, INSTRUCTION_5, INSTRUCTION_4, INSTRUCTION_3, INSTRUCTION_2, INSTRUCTION_1, INSTRUCTION_0)(name, \
         mnemonic, binary, __VA_ARGS__))                                                                            \
     +0
 
@@ -78,6 +92,72 @@ const uint32_t OMR::X86::InstOpCode::_features[] = {
 #define FEATURES(value) +value
 #include "codegen/X86Ops.ins"
 #undef FEATURES
+#define FEATURES(value) +0
+};
+
+const OMR::X86::InstOpCode::OperandGroup_t OMR::X86::InstOpCode::_operands[] = {
+#undef OPND1
+#undef OPND2
+#undef OPND3
+#undef OPND4
+#undef FEATURES
+#undef PROPERTY0
+#undef PROPERTY1
+#undef PROPERTY2
+#define FEATURES(value)
+#define PROPERTY0(value)
+#define PROPERTY1(value)
+#define PROPERTY2(value)
+
+#define OPND1(kind, format, vector, width, access, implicit) { kind, format, vector, width, access, implicit },
+#define OPND2(kind, format, vector, width, access, implicit) { kind, format, vector, width, access, implicit },
+#define OPND3(kind, format, vector, width, access, implicit) { kind, format, vector, width, access, implicit },
+#define OPND4(kind, format, vector, width, access, implicit) { kind, format, vector, width, access, implicit },
+#undef INSTRUCTION_8
+#undef INSTRUCTION_7
+#undef INSTRUCTION_6
+#undef INSTRUCTION_5
+#undef INSTRUCTION_4
+#undef INSTRUCTION_3
+#undef INSTRUCTION_2
+#undef INSTRUCTION_1
+#undef INSTRUCTION_0
+
+// Redefine the INSTRUCTION macros to wrap the operand initialization in curly braces
+//
+#define INSTRUCTION_8(name, mnemonic, binary, a, b, c, d, e, f, g, h) { STRIP_PARENS(a) STRIP_PARENS(b) STRIP_PARENS(c) STRIP_PARENS(d) STRIP_PARENS(e) STRIP_PARENS(f) STRIP_PARENS(g) STRIP_PARENS(h) }
+#define INSTRUCTION_7(name, mnemonic, binary, a, b, c, d, e, f, g) { STRIP_PARENS(a) STRIP_PARENS(b) STRIP_PARENS(c) STRIP_PARENS(d) STRIP_PARENS(e) STRIP_PARENS(f) STRIP_PARENS(g) }
+#define INSTRUCTION_6(name, mnemonic, binary, a, b, c, d, e, f) { STRIP_PARENS(a) STRIP_PARENS(b) STRIP_PARENS(c) STRIP_PARENS(d) STRIP_PARENS(e) STRIP_PARENS(f) }
+#define INSTRUCTION_5(name, mnemonic, binary, a, b, c, d, e) { STRIP_PARENS(a) STRIP_PARENS(b) STRIP_PARENS(c) STRIP_PARENS(d) STRIP_PARENS(e) }
+#define INSTRUCTION_4(name, mnemonic, binary, a, b, c, d) { STRIP_PARENS(a) STRIP_PARENS(b) STRIP_PARENS(c) STRIP_PARENS(d) }
+#define INSTRUCTION_3(name, mnemonic, binary, a, b, c) { STRIP_PARENS(a) STRIP_PARENS(b) STRIP_PARENS(c) }
+#define INSTRUCTION_2(name, mnemonic, binary, a, b) { STRIP_PARENS(a) STRIP_PARENS(b) }
+#define INSTRUCTION_1(name, mnemonic, binary, a) { STRIP_PARENS(a) }
+#define INSTRUCTION_0(name, mnemonic, binary) { }
+
+#undef INSTRUCTION
+
+#define INSTRUCTION(name, mnemonic, binary, ...)                                                                   \
+    EXPAND(GET_MACRO(__VA_ARGS__, INSTRUCTION_8, INSTRUCTION_7, INSTRUCTION_6, INSTRUCTION_5, INSTRUCTION_4, INSTRUCTION_3, INSTRUCTION_2, INSTRUCTION_1, INSTRUCTION_0)(name, \
+        mnemonic, binary, __VA_ARGS__))
+
+#include "codegen/X86Ops.ins"
+
+#undef OPND1
+#undef OPND2
+#undef OPND3
+#undef OPND4
+#undef FEATURES
+#undef PROPERTY0
+#undef PROPERTY1
+#undef PROPERTY2
+#define OPND1(...) +0
+#define OPND2(...) +0
+#define OPND3(...) +0
+#define OPND4(...) +0
+#define PROPERTY0(value) +0
+#define PROPERTY1(value) +0
+#define PROPERTY2(value) +0
 #define FEATURES(value) +0
 };
 

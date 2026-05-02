@@ -339,6 +339,104 @@ class InstOpCode : public OMR::InstOpCode {
         Immediate_S = 0x7,
     };
 
+    // clang-format off
+    enum OperandWidth : uint8_t {
+        _8_bits   = 0,
+        _16_bits  = 1,
+        _32_bits  = 2,
+        _64_bits  = 3,
+        _128_bits = 4,
+        _256_bits = 5,
+        _512_bits = 6,
+    };
+
+    enum OperandIntOrFloat : uint8_t {
+        _int   = 0,
+        _float = 1,
+    };
+
+    enum OperandScalarOrVector : uint8_t {
+        _scalar = 0,
+        _vector = 1,
+    };
+
+    enum OperandAccess : uint8_t {
+        _read       = 0x1,
+        _write      = 0x2,
+        _read_write = (_read | _write),
+    };
+
+    enum OperandImplicit : uint8_t {
+        _explicit = 0,
+        _implicit = 1,
+    };
+
+    enum OperandKind : uint8_t {
+        _reg    = 0,
+        _memRef = 1,
+        _immed  = 2,
+    };
+
+    enum OperandImmedExtension : uint8_t {
+        _noExt   = 0,
+        _signExt = 1,
+        _zeroExt = 2,
+    };
+
+    struct Operand_t {
+        // 0 : register
+        // 1 : memRef
+        // 2 : immediate
+        uint16_t opnd_kind : 2;
+
+        // 0 : int operand
+        // 1 : float operand
+        uint16_t opnd_format : 1;
+
+        // 0 : scalar operand
+        // 1 : vector operand
+        uint16_t opnd_vector : 1;
+
+        // 0 : 8 bits
+        // 1 : 16 bits
+        // 2 : 32 bits
+        // 3 : 64 bits
+        // 4 : 128 bits
+        // 5 : 256 bits
+        // 6 : 512 bits
+        uint16_t opnd_width : 3;
+
+        // 1 : read
+        // 2 : write
+        // 3 : read_write
+        uint16_t opnd_access : 2;
+
+        // 0 : explicit operand
+        // 1 : implict operand
+        uint16_t opnd_implicit : 1;
+    //10
+        // 0 : ModRM_reg
+        // 1 : ModRM_rm
+        // 2 : VEX_vvvv
+        uint16_t opnd_encoding : 2;
+    //12
+
+    };
+
+    // Group of operands for each instruction, grouped for data locality
+    //
+    struct OperandGroup_t {
+        Operand_t opnd1;
+        Operand_t opnd2;
+        Operand_t opnd3;
+        Operand_t opnd4;
+    };
+
+// Opcode properties need
+// EVEX : tupletype
+
+    // clang-format on
+
     struct OpCode_t {
         uint8_t vex_l: 4;
         uint8_t vex_v: 1;
@@ -453,6 +551,7 @@ class InstOpCode : public OMR::InstOpCode {
     static const uint32_t _properties1[];
     static const uint32_t _properties2[];
     static const uint32_t _features[];
+    static const OperandGroup_t _operands[];
 
 protected:
     InstOpCode()
