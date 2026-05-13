@@ -223,7 +223,8 @@ TR::RealRegister *OMR::X86::Machine::findBestFreeGPRegister(TR::Instruction *cur
             || (considerUnlatched
                 && _registerFile[virtReg->getAssociation()]->getState() == TR::RealRegister::Unlatched))) {
         if (_registerFile[virtReg->getAssociation()]->getState() != TR::RealRegister::Locked) {
-            if (requestedRegSize != TR_ByteReg || virtReg->getAssociation() <= static_cast<uint32_t>(getLast8BitGPR())) {
+            if (requestedRegSize != TR_ByteReg
+                || virtReg->getAssociation() <= static_cast<uint32_t>(getLast8BitGPR())) {
                 cg()->setRegisterAssignmentFlag(TR_ByAssociation);
                 return _registerFile[virtReg->getAssociation()];
             }
