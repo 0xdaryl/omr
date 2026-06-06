@@ -174,12 +174,280 @@ uint8_t getMemoryBarrierBinaryLengthLowerBound(int32_t barrier, TR::CodeGenerato
 
 // -----------------------------------------------------------------------------
 // OMR::X86::Instruction:: member functions
+//
+
+
+bool OMR::X86::Instruction::mustEncodeWithEVEX()
+{
+    // Analyze the instruction opcode and registers and determine if an EVEX
+    // prefix must be used
+
+    // check if opcode must have an EVEX
+    // check XMM registers > xmm15
+    // check eGPRs > r15
+    // check NDD-form
+
+}
+
+
+void OMR::X86::Instruction::analyzeOperand(Operand_t &opnd, TR::InstOpCode::OperandBits &opndBits, TR::RealRegister *reg)
+{
+    TR_ASSERT_FATAL(opnd.opnd_kind == _reg, "Operand expected to be a register");
+
+    TR::RealRegister::RegNum regNum = reg->getRegisterNumber();
+
+    uint8_t id = binaryEncoding[regNum].id;
+    uint16_t vvvv = binaryEncoding[regNum].vvvv;
+
+    if (opnd.regType == GPR) {
+        opndBits.needsEGPR = needsRXBV4;
+    }
+
+    // TODO: Need something similar for extended XMMRs so that EVEX can be encoded as VEX if possible?
+
+    switch (opnd.opnd_encoding) {
+        case _MR_reg_R3:
+            opndBits.ModRM_reg = id;
+            opndBits.R3 = needsRXBV3;
+            opndBits.R4 = needsRXBV4;
+            opndBits.needsModRM = 1;
+            break;
+        case _MR_rm_B3:
+            opndBits.ModRM_rm = id;
+            opndBits.B3 = needsRXBV3;
+            opndBits.B4 = needsRXBV4;
+            opndBits.needsModRM = 1;
+            break;
+        case _OPC_reg_B3:
+            opndBits.opcodeReg = id; // opcodeReg needs to be just the 3 bits in the bitfield
+            opndBits.B3 = needsRXBV3;
+            opndBits.B4 = needsRXBV4;
+            break;
+        case _vvvv:
+            opndBits.vvvv = vvvv;
+            opndBits.V4 = needsRXBV4;
+            break;
+        default:
+            TR_ASSERT_FATAL(false, "Unexpected operand encoding");
+    }
+}
+
+void OMR::X86::Instruction::analyzeOperand(Operand_t &opnd, TR::InstOpCode::OperandBits &opndBits, TR::MemoryReference *mr)
+{
+    /*
+    [ base ]
+    [ base + idx
+    */
+
+
+}
+
+// virtual on each instruction
+void OMR::X86::Instruction::analyzeOperands(TR::InstOpCode::OperandBits &opndBits)
+{
+	// SAMPLE ONLY
+    analyzeOperand(op.opnd[0], opndBits, getTargetRegister());
+    analyzeOperand(op.opnd[1], opndBits, getSourceRegister());
+    analyzeOperand(op.opnd[2], opndBits, getMemoryReference());
+}
+
+
+#define MAX_INSTRUCTION_OPERANDS 4
+
+uint8_t *OMR::X86::Instruction::encodeWithVexEvexEevexPrefix()
+{
+    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
+    uint8_t *cursor = instructionStart;
+    setBinaryEncoding(instructionStart);
+
+    TR::InstOpCode::OperandBits opndBits;
+    // make sure there is a constructor that initializes opndBits to 0
+
+    // Check if target reg is encoded in the opcode. If so, populate the opcode
+    // now since it is aliased with the ModRM byte in the OperandBits
+    //
+    if (opnd[0].opnd_encoding == _OPC_reg_B3) {
+        opndBits.opcode = opcodeByte;
+    }
+
+    if (opcode.W) {
+        opndBits.W = 1;
+    }
+
+    // virtual on each instruction
+    analyzeOperands(opndBits);
+
+    TR_ASSERT_FATAL(!opcode.encodeRegInOpCode() || (opcode.encodeRegInOpCode() && !opndBits.needsModRM), "RegInOpcode and ModRM must be exclusive");
+
+
+
+    // Debugging option to force EVEXEEVEX encodings
+    // Don't check for cg->supportsAVX512F() now because it should have happened before choosing instruction
+
+    bool forceEVEX = opcode.encVEX && (opcode.encEVEX || opcode.encVEX2EVEX) && cg()->comp()->getOption(TR_ForceEVEX);
+    bool forceLEGACY2EVEX = opcode.encLEGACY2EVEX && cg()->comp()->getOption(TR_ForceEVEX);
+
+    enum { UNKNOWN, NONE, REX, REX2, VEX2, VEX3, EVEX, VEX2EVEX, LEGACY2EVEX } EncodingPrefix;
+    EncodingPrefix prefix = UNKNOWN;
+
+    /**
+     * Choose the best encoding prefix for this instruction. Generally, the most
+     * compact encoding scheme is preferred.
+     */
+    if (opcode.encVEX || opcode.encEVEX || opcode.encVEX2EVEX) {
+        if (opcode.encVEX) {
+            if (opndBits.requiresEGPR) {
+                TR_ASSERT_FATAL(opcode.encEVEX || opcode.encVEX2EVEX, "EVEX form required");
+                if (opcode.encVEX2EVEX) {
+                    prefix = VEX2EVEX;
+                } else {
+                    // consider introducing EVEX_EVEX??
+                    prefix = EVEX;
+                }
+            } else if (opndBits.requiresEXMM) {
+                TR_ASSERT_FATAL(opcode.encEVEX, "EVEX form required");
+                prefix = EVEX;
+            } else if (forceEVEX) {
+                if (opcode.encVEX2EVEX) {
+                    prefix = VEX2EVEX;
+                } else {
+                    prefix = EVEX;
+                }
+            } else {
+                if (opcode.mmmmm == 1 && !opndBits.X3 && !opndBits.B3 && !opndBits.W) {
+                    prefix = VEX2;
+                } else {
+                    prefix = VEX3;
+                }
+            }
+        } else {
+            TR_ASSERT_FATAL(opcode.encEVEX, "unexpected encoding prefix");
+            prefix = EVEX;
+        }
+    } else {
+        if (opndBits.requiresEGPR) {
+            if (opcode.encREX2) {
+                prefix = REX2;
+            } else {
+                TR_ASSERT_FATAL(opcode.encLEGACY2EVEX, "LEGACY2EVEX form required");
+                prefix = LEGACY2EVEX;
+            }
+        } else if (forceLEGACY2EVEX) {
+            prefix = LEGACY2EVEX;
+        } else {
+            if (opndBits.W || opndBits.R || opndBits.B || opndBits.X) {
+                prefix = REX;
+            } else {
+                prefix = NONE;
+            }
+        }
+    }
+
+    //
+    // EMIT LEGACY PREFIXES AND ESCAPE BYTES (if required)
+    //
+
+    /**
+     * Emit encoding prefix
+     */
+    switch (prefix) {
+        case REX:
+            emitREX(opcode, opndBits);
+            break;
+        case REX2:
+            emitREX2(opcode, opndBits);
+            break;
+        case VEX2:
+            emitVEX2(opcode, opndBits);
+            break;
+        case VEX3:
+            emitVEX3(opcode, opndBits);
+            break;
+        case EVEX:
+            emitEVEX(opcode, opndBits);
+            break;
+        case VEX2EVEX:
+            emitVEX2EVEX(opcode, opndBits);
+            break;
+        case LEGACY2EVEX:
+            emitLEGACY2EVEX(opcode, opndBits);
+            break;
+        default:
+            TR_ASSERT_FATAL(0, "Unknown encoding prefix %d", prefix);
+    }
+
+
+
+    ///////////////////////////////////////////////////////////////////////////////////////
+
+
+    if (getOpCode().requiresVexEvexEevex()) {  // check VEX,EVEX,EEVEX flags on opcode
+        if (opndBits.requiresEGPR || opcode.NF || opcode.ND) {
+            prefix = EEVEX;
+
+
+        if (opcode.NF || opcode.ND) {
+            prefix = EEVEX;
+        } else if (opndBits.requiresEGPR) {
+
+
+
+        } else if (opcode.hasVEXEncoding() && (opndBits.RXBV4 == 0) && !forceEVEX) {
+            if (opcode.mmmmm == 1 && !opndBits.X3 && !opndBits.B3 && !opndBits.W) {
+                prefix = VEX2;
+            } else {
+                prefix = VEX3;
+            }
+        } else if (opcode.hasEVEXEncoding() && !forceEEVEX) {
+            prefix = EVEX;
+        } else {
+            prefix = EEVEX;
+        }
+
+
+    } else {
+
+        if (opndBits.RXBV4 != 0) {
+            prefix = REX2
+        }
+
+
+    }
+
+
+
+    bool encodeWithEVEX = true;
+
+    if (getOpCode().hasVEXEncoding()) {
+        // Check each operand for registers that require an EVEX
+        //
+        if (!checkOperandsForExtendedRegisters()) {  // virtual function on each instruction
+            // Determine if a VEX2 or a VEX3 prefix should be used
+            //
+
+
+            encodeWithEVEX = false;
+        }
+    }
+
+    if (encodeWithEVEX) {
+
+    }
+
+}
+
 bool OMR::X86::Instruction::needsRepPrefix() { return getOpCode().needsRepPrefix() != 0; }
 
 bool OMR::X86::Instruction::needsLockPrefix() { return getOpCode().needsLockPrefix() != 0; }
 
 uint8_t *OMR::X86::Instruction::generateBinaryEncoding()
 {
+    // Does encoding this instruction require a VEX or EVEX prefix?
+    //
+    if (getOpCode().requiresVexEvexEevex()) {  // check VEX,EVEX,EEVEX flags on opcode
+        return encodeWithVexEvexEevexPrefix();
+    }
+
     // Normally the loop only executes once. It is needed to avoid recursive
     // calls when generateOperand() requests to regenerate the binary code by
     // returning NULL.

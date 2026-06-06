@@ -340,41 +340,48 @@ class InstOpCode : public OMR::InstOpCode {
     };
 
     // clang-format off
-    enum OperandWidth : uint8_t {
-        _8_bits   = 0,
-        _16_bits  = 1,
-        _32_bits  = 2,
-        _64_bits  = 3,
-        _128_bits = 4,
-        _256_bits = 5,
-        _512_bits = 6,
+    enum OperandKind : uint8_t {
+        _reg   = 0,
+        _mem   = 1,
+        _immed = 2,
     };
 
     enum OperandIntOrFloat : uint8_t {
-        _int   = 0,
-        _float = 1,
+        _int = 0,
+        _fp  = 1,
     };
 
     enum OperandScalarOrVector : uint8_t {
-        _scalar = 0,
-        _vector = 1,
+        _sclr = 0,
+        _vec  = 1,
+    };
+
+    enum OperandWidth : uint8_t {
+        _8   = 0,
+        _16  = 1,
+        _32  = 2,
+        _64  = 3,
+        _128 = 4,
+        _256 = 5,
+        _512 = 6,
     };
 
     enum OperandAccess : uint8_t {
-        _read       = 0x1,
-        _write      = 0x2,
-        _read_write = (_read | _write),
+        _r  = 0x1,
+        _w  = 0x2,
+        _rw = (_r | _w),
     };
 
     enum OperandImplicit : uint8_t {
-        _explicit = 0,
-        _implicit = 1,
+        _exp = 0,
+        _imp = 1,
     };
 
-    enum OperandKind : uint8_t {
-        _reg    = 0,
-        _memRef = 1,
-        _immed  = 2,
+    enum OperandEncoding : uint8_t {
+        _MR_reg_R3  = 0, // ModRM reg + R3
+        _MR_rm_B3   = 1, // ModRM rm + B3
+        _OPC_reg_B3 = 2, // Opcode reg field + B3
+        _vvvv       = 3, // vvvv field
     };
 
     enum OperandImmedExtension : uint8_t {
@@ -389,8 +396,9 @@ class InstOpCode : public OMR::InstOpCode {
         // 2 : immediate
         uint16_t opnd_kind : 2;
 
-        // 0 : int operand
-        // 1 : float operand
+        // 0 : int operand   (gpr)
+        // 1 : float operand (vector)
+        // opnd_regType
         uint16_t opnd_format : 1;
 
         // 0 : scalar operand
@@ -430,6 +438,8 @@ class InstOpCode : public OMR::InstOpCode {
         Operand_t opnd2;
         Operand_t opnd3;
         Operand_t opnd4;
+
+//        Operand_t opnd[MAX_INSTRUCTION_OPERANDS];
     };
 
 // Opcode properties need
@@ -495,6 +505,146 @@ class InstOpCode : public OMR::InstOpCode {
         // finalize instruction prefix information, currently only in-use for AVX instructions for VEX.vvvv field
         void finalize(uint8_t *cursor) const;
     };
+
+
+    struct OperandBits {
+        union {
+            uint32_t raw;  // Direct access to all 32 bits
+
+            struct {
+                // Byte 0: modRM (bits 0-7)
+                //
+                union {
+                    uint8_t opcode;
+                    ---> NEED opcodeReg for low 3 bits
+                    union {
+                        uint8_t modRM;
+                        struct {
+                            uint8_t rm   : 3;  // bits 0-2
+                            uint8_t reg  : 3;  // bits 3-5
+                            uint8_t mod  : 2;  // bits 6-7
+                        };
+                    };
+                };
+
+                // Byte 1: SIB (bits 8-15)
+                union {
+                    uint8_t SIB;
+                    struct {
+                        uint8_t base  : 3;  // bits 8-10
+                        uint8_t index : 3;  // bits 11-13
+                        uint8_t ss    : 2;  // bits 14-15
+                    };
+                };
+
+                // Byte 2: vvvv and extension bits (bits 16-23)
+                uint8_t vvvv : 4;  // bits 16-19
+                uint8_t V4   : 1;  // bit 20
+                uint8_t R4   : 1;  // bit 21
+                uint8_t X4   : 1;  // bit 22
+                uint8_t B4   : 1;  // bit 23
+
+                // Byte 3: R3/X3/B3, w, and control flags (bits 24-31)
+                union {
+                    struct {
+                        uint8_t R3            : 1;  // bit 24
+                        uint8_t X3            : 1;  // bit 25
+                        uint8_t B3            : 1;  // bit 26
+                        uint8_t W             : 1;  // bit 27
+                        uint8_t needModRM     : 1;  // bit 28
+                        uint8_t needSIBByte   : 1;  // bit 29
+                        uint8_t requiresEGPR  : 1;  // bit 30
+                        uint8_t reserved      : 2;  // bits 30-31 (unused)
+                    };
+                    struct {
+                        uint8_t RXB : 3;
+                        uint8_t _padding : 5;
+                    };
+                };
+            };
+        };
+
+        // Constructor - initialize to zero
+        OperandBits() : raw(0) {}
+
+        // Constructor from raw value
+        explicit OperandBits(uint32_t value) : raw(value) {}
+
+        // Helper methods for grouped access
+
+        // Get R3, x3, B3 as a 3-bit value
+        inline uint8_t getRXB() const {
+            return rxb;
+        }
+
+        // Set R3, x3, B3 as a 3-bit value
+        inline void setRXB(uint8_t value) {
+            rxb = value & 0x7;  // Mask to 3 bits
+        }
+
+        // Set individual R3, x3, B3 bits
+        inline void setR3(bool value) { R3 = value ? 1 : 0; }
+        inline void setX3(bool value) { x3 = value ? 1 : 0; }
+        inline void setB3(bool value) { B3 = value ? 1 : 0; }
+
+        // Get individual R3, x3, B3 bits
+        inline bool getR3() const { return R3 != 0; }
+        inline bool getX3() const { return x3 != 0; }
+        inline bool getB3() const { return B3 != 0; }
+
+        // Set modRM as a complete byte
+        inline void setModRM(uint8_t value) {
+            modRM = value;
+        }
+
+        // Get modRM as a complete byte
+        inline uint8_t getModRM() const {
+            return modRM;
+        }
+
+        // Set modRM using individual fields
+        inline void setModRM(uint8_t mod_val, uint8_t reg_val, uint8_t rm_val) {
+            mod = mod_val & 0x3;   // 2 bits
+            reg = reg_val & 0x7;   // 3 bits
+            rm = rm_val & 0x7;     // 3 bits
+        }
+
+        // Set SIB as a complete byte
+        inline void setSIB(uint8_t value) {
+            SIB = value;
+        }
+
+        // Get SIB as a complete byte
+        inline uint8_t getSIB() const {
+            return SIB;
+        }
+
+        // Set SIB using individual fields
+        inline void setSIB(uint8_t ss_val, uint8_t index_val, uint8_t base_val) {
+            ss = ss_val & 0x3;       // 2 bits
+            index = index_val & 0x7; // 3 bits
+            base = base_val & 0x7;   // 3 bits
+        }
+
+        // Set vvvv as a 4-bit unit
+        inline void setVVVV(uint8_t value) {
+            vvvv = value & 0xF;  // Mask to 4 bits
+        }
+
+        // Get vvvv as a 4-bit unit
+        inline uint8_t getVVVV() const {
+            return vvvv;
+        }
+
+        // Reset all bits to zero
+        inline void clear() {
+            raw = 0;
+        }
+    };
+
+    static_assert(sizeof(OperandBits) == 4, "OperandBits must be exactly 4 bytes");
+
+
 
     template<typename TCursor> class BufferBase {
     public:

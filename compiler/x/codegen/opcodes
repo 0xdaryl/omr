@@ -1,0 +1,136 @@
+ADC8ALImm8        M=0, 0x14
+ADC16AXImm16      M=0, 0x66, 0x15
+ADC32EAXImm32     M=0, 0x15
+ADC64RAXImm32s    REX M=0, W=1, 0x15
+
+ADC8RegReg        REX2 M0=0, 0x10
+ADC8MemReg        REX2 M0=0, 0x10
+ADC8RegMem        REX2 M0=0, 0x12
+
+ADC8RegImm8       REX2 M0=0, 0x80 /2
+ADC8MemImm8       REX2 M0=0, 0x80 /2
+
+ADC16RegImm16     REX2 M0=0, 0x66, 0x81 /2
+ADC16MemImm16     REX2 M0=0, 0x66, 0x81 /2
+
+ADC32RegImm32     REX2 M0=0, 0x81 /2
+ADC32MemImm32     REX2 M0=0, 0x81 /2
+
+ADC16RegImm8s     REX2 M0=0, 0x66, 0x83 /2
+ADC16MemImm8s     REX2 M0=0, 0x66, 0x83 /2
+
+ADC32RegImm8s     REX2 M0=0, 0x83 /2
+ADC32MemImm8s     REX2 M0=0, 0x83 /2
+
+ADC64RegImm8s     REX2 M0=0, W=1, 0x83 /2
+ADC64MemImm8s     REX2 M0=0, W=1, 0x83 /2
+
+ADC64RegImm32s    REX2 M0=0, W=1, 0x81 /2
+ADC64MemImm32s    REX2 M0=0, W=1, 0x81 /2
+
+ADC16RegReg       REX2 M0=0, 0x66, 0x11
+ADC16MemReg       REX2 M0=0, 0x66, 0x11
+ADC16RegMem       REX2 M0=0, 0x66, 0x13
+
+ADC32RegReg       REX2 M0=0, 0x11
+ADC32MemReg       REX2 M0=0, 0x11
+ADC32RegMem       REX2 M0=0, 0x13
+
+ADC64RegReg       REX2 M0=0, W=1, 0x11
+ADC64MemReg       REX2 M0=0, W=1, 0x11
+ADC64RegMem       REX2 M0=0, W=1, 0x13
+
+ADC8RegRegReg     EVEX_LEGACY (F) NF0, ND1, MAP4
+ADC8RegMemReg     EVEX_LEGACY (F) NF0, ND1, MAP4
+ADC8RegRegMem     EVEX_LEGACY (H) NF0, ND1, MAP4
+
+ADC16RegRegReg    EVEX_LEGACY (F) NF0, ND1, MAP4, 0x66
+ADC16RegMemReg    EVEX_LEGACY (F) NF0, ND1, MAP4, 0x66
+ADC16RegRegMem    EVEX_LEGACY (H) NF0, ND1, MAP4, 0x66
+
+ADC32RegRegReg    EVEX_LEGACY (F) NF0, ND1, MAP4
+ADC32RegMemReg    EVEX_LEGACY (F) NF0, ND1, MAP4
+ADC32RegRegMem    EVEX_LEGACY (H) NF0, ND1, MAP4
+
+ADC64RegRegReg    EVEX_LEGACY (F) NF0, ND1, MAP4, W=1
+ADC64RegMemReg    EVEX_LEGACY (F) NF0, ND1, MAP4, W=1
+ADC64RegRegMem    EVEX_LEGACY (H) NF0, ND1, MAP4, W=1
+
+ADC8RegRegImm8    EVEX_LEGACY (B) NF0, ND1, MAP4, 0x80 /2
+ADC8RegMemImm8    EVEX_LEGACY (B) NF0, ND1, MAP4, 0x80 /2
+
+ADC16RegRegImm16  EVEX_LEGACY (D) NF0, ND1, 0x66, MAP4, 0x81 /2
+ADC16RegMemImm16  EVEX_LEGACY (D) NF0, ND1, 0x66, MAP4, 0x81 /2
+
+ADC32RegRegImm32  EVEX_LEGACY (D) NF0, ND1, MAP4, NP, 0x81 /2
+ADC32RegMemImm32  EVEX_LEGACY (D) NF0, ND1, MAP4, NP, 0x81 /2
+
+ADC64RegRegImm32s EVEX_LEGACY (D) NF0, ND1, MAP4, NP, W=1, 0x81 /2
+ADC64RegMemImm32s EVEX_LEGACY (D) NF0, ND1, MAP4, NP, W=1, 0x81 /2
+
+ADC32RegRegImm8s  EVEX_LEGACY (B) NF0, ND1, MAP4, NP, 0x83 /2
+ADC32RegMemImm8s  EVEX_LEGACY (B) NF0, ND1, MAP4, NP, 0x83 /2
+
+ADC64RegRegImm8s  EVEX_LEGACY (B) NF0, ND1, MAP4, NP, W=1, 0x83 /2
+ADC64RegMemImm8s  EVEX_LEGACY (B) NF0, ND1, MAP4, NP, W=1, 0x83 /2
+
+ADC16RegRegImm8s  EVEX_LEGACY (B) NF0, ND1, MAP4, 0x66, 0x83 /2
+ADC16RegMemImm8s  EVEX_LEGACY (B) NF0, ND1, MAP4, 0x66, 0x83 /2
+
+----------------------------------------------------------------------------------------
+
+PDEP32_RegRegReg   VEX, EVEX_VEX, LZ, m=F2, p=0F38, W0, NF0, 0xf5
+PDEP32_RegRegMem   VEX, EVEX_VEX, LZ, m=F2, p=0F38, W0, NF0, 0xf5
+
+PDEP64_RegRegReg   VEX, EVEX_VEX, LZ, m=F2, p=0F38, W1, NF0, 0xf5
+PDEP64_RegRegMem   VEX, EVEX_VEX, LZ, m=F2, p=0F38, W1, NF0, 0xf5
+
+----------------------------------------------------------------------------------------
+
+ADDSD_RegReg       0xf2, 0x0f, 0x58
+ADDSD_RegMem       REX2, 0xf2, 0x0f, 0x58
+
+VADDSD_RegRegReg   VEX, EVEX, L0, 0xf2, 0x0f, VEX_W0, EVEX_W1, EVEX_K0, EVEX_Z0, 0x58
+VADDSD_RegRegMem   VEX, EVEX, L0, 0xf2, 0x0f, VEX_W0, EVEX_W1, EVEX_K0, EVEX_Z0, 0x58
+
+----------------------------------------------------------------------------------------
+
+ADDPD_XmmXmm
+ADDPD_XmmM128
+
+VADDPD_XmmXmmXmm   VEX, EVEX, L128, VEX_W0, EVEX_W1, EVEX_K0, EVEX_Z0, 0x66, 0x0f, 0x58
+VADDPD_XmmXmmM128  VEX, EVEX, L128, VEX_W0, EVEX_W1, EVEX_K0, EVEX_Z0, 0x66, 0x0f, 0x58
+
+VADDPD_XmmXmmMB64  EVEX, L128, EVEX_W1, EVEX_K0, EVEX_Z0, EVEX_B1, 0x66, 0x0f, 0x58
+
+VADDPD_YmmYmmYmm   VEX, EVEX, L256, VEX_W0, EVEX_W1, EVEX_K0, EVEX_Z0, EVEX_B0, 0x66, 0x0f, 0x58
+VADDPD_YmmYmmM256  VEX, EVEX, L256, VEX_W0, EVEX_W1, EVEX_K0, EVEX_Z0, EVEX_B0, 0x66, 0x0f, 0x58
+
+VADDPD_YmmYmmMB64  EVEX, L256, EVEX_W1, EVEX_K0, EVEX_Z0, EVEX_B1, 0x66, 0x0f, 0x58
+
+VADDPD_ZmmZmmZmm   EVEX, L512, EVEX_W1, EVEX_K0, EVEX_Z0, 0x66, 0x0f, 0x58
+VADDPD_ZmmZmmM512  EVEX, L512, EVEX_W1, EVEX_K0, EVEX_Z0, 0x66, 0x0f, 0x58
+
+VADDPD_ZmmZmmMB64  EVEX, L512, EVEX_W1, EVEX_K0, EVEX_Z0, EVEX_B1, 0x66, 0x0f, 0x58
+
+
+L       : VEX/EVEX, L=0,1
+
+VEX_W   : for VEX, W=0,1
+
+EVEX_W  : for EVEX, W=0,1
+EVEX_K0 : for EVEX, aaa=k0
+EVEX_Z  : for EVEX, z=0,1
+EVEX_B  : for EVEX, b=0,1 (1 == broadcast)
+
+
+
+
+REX2
+VEX         : VEX
+EVEX        : EVEX
+EVEX_VEX    : EVEX promoted from VEX for APX when there wasn't already an EVEX
+EVEX_LEGACY : EVEX promoted from legacy for APX
+
+- if VEX and EVEX appear on the same opcode, they must be functionally identical except for the registers available
+- an opcode that uses features only available in AVX512 or APX must use EVEX
