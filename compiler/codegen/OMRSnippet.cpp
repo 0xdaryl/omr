@@ -103,7 +103,7 @@ const char *OMR::Snippet::getName(TR::Region &region)
 
     // Render the name into a local buffer
     //
-    OMR::Logger *log = OMR::MemoryLoggerBuffer::create(region, buf, maxNameLen);
+    OMR::Logger *log = OMR::MemoryBufferLogger::create(region, buf, maxNameLen);
     self()->printName(log);
 
     size_t len = strlen(buf);
