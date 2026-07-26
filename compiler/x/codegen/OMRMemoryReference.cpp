@@ -1268,7 +1268,7 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
                         "TR_AMD64MemoryReference::generateBinaryEncoding");
                     *(int32_t *)cursor = (int32_t)displacement;
                 } else if (symbol->isShadow()) {
-                    TR_ASSERT_FATAL(0, "QQQQQ ShadowSymbol");
+                    //                   TR_ASSERT_FATAL(0, "QQQQQ ShadowSymbol");
 
                     *(int32_t *)cursor = (int32_t)getSymbolReference().getOffset();
                 } else
@@ -1294,7 +1294,7 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
                         *(int32_t *)cursor = (int32_t)0;
                     }
                 } else {
-                    TR_ASSERT_FATAL(0, "QQQQQ No Label");
+                    //                    TR_ASSERT_FATAL(0, "QQQQQ No Label");
                     *(int32_t *)cursor = (int32_t)getSymbolReference().getOffset();
                 }
             }
