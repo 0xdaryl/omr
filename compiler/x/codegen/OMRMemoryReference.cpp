@@ -1260,7 +1260,11 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
                     /* ----------------------------------------------------- */
                     *(int32_t *)cursor = 0;
                 } else if (symbol->isRegisterMappedSymbol()) {
-                    TR_ASSERT_FATAL(0, "QQQQQ RegisterMappedSymbol");
+                    static const char *qqq = feGetEnv("MRRegisterMappedSymbol");
+                    if (qqq) {
+                        printf("QQQQ RegisterMappedSymbol : %p , %s\n", containingInstruction, comp->signature());
+                    }
+                    // TR_ASSERT_FATAL(0, "QQQQQ RegisterMappedSymbol : ");
 
                     displacement = getSymbolReference().getOffset() + symbol->getRegisterMappedSymbol()->getOffset();
                     TR_ASSERT(IS_32BIT_SIGNED(displacement),
@@ -1268,6 +1272,10 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
                         "TR_AMD64MemoryReference::generateBinaryEncoding");
                     *(int32_t *)cursor = (int32_t)displacement;
                 } else if (symbol->isShadow()) {
+                    static const char *qqq = feGetEnv("MRShadowSymbol");
+                    if (qqq) {
+                        printf("QQQQ ShadowSymbol : %p , %s\n", containingInstruction, comp->signature());
+                    }
                     //                   TR_ASSERT_FATAL(0, "QQQQQ ShadowSymbol");
 
                     *(int32_t *)cursor = (int32_t)getSymbolReference().getOffset();
@@ -1294,6 +1302,10 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
                         *(int32_t *)cursor = (int32_t)0;
                     }
                 } else {
+                    static const char *qqq = feGetEnv("MRNoLabelSymbol");
+                    if (qqq) {
+                        printf("QQQQ NoLabelSymbol : %p , %s\n", containingInstruction, comp->signature());
+                    }
                     //                    TR_ASSERT_FATAL(0, "QQQQQ No Label");
                     *(int32_t *)cursor = (int32_t)getSymbolReference().getOffset();
                 }
