@@ -1250,8 +1250,22 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
                     if (getUnresolvedDataSnippet() == NULL) {
                         *(int32_t *)cursor
                             = (int32_t)(getSymbolReference().getOffset() + (intptr_t)staticSym->getStaticAddress());
+
+                        static const char *qqq = feGetEnv("MRResolvedStatic");
+                        if (qqq) {
+                            printf("QQQQ ResolvedStatic %p : address=%p, offset=%d : %s\n", containingInstruction,
+                                (intptr_t)staticSym->getStaticAddress(), (int32_t)getSymbolReference().getOffset(),
+                                comp->signature());
+                        }
+
                     } else {
                         *(int32_t *)cursor = (int32_t)getSymbolReference().getOffset();
+
+                        static const char *qqq = feGetEnv("MRUnresolvedStatic");
+                        if (qqq) {
+                            printf("QQQQ UnresolvedStatic %p : offset=%d : %s\n", containingInstruction,
+                                (int32_t)getSymbolReference().getOffset(), comp->signature());
+                        }
                     }
                 } else if (methodSym) {
                     /* ----------------------------------------------------- */
