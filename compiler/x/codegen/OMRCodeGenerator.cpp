@@ -1946,6 +1946,15 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
             uint32_t mask = estimateCursor->getGCMap()->getRegisterMap();
             uint32_t numSlotPushes = (mask & 0x00ff0000) >> 16;
 
+            static char *printSlotInfo = feGetEnv("TR_printslotinfo");
+            static char *printSlotInfoNoZero = feGetEnv("TR_printslotinfonozero");
+
+            if (printSlotInfoNoZero && numSlotPushes != 0) {
+                printf("SSSSS numSlotPushes=%d : %s\n", numSlotPushes, comp->signature());
+            } else if (printSlotInfo) {
+                printf("SSSSS numSlotPushes=%d\n", numSlotPushes);
+            }
+
             if (numSlotPushes == 0) {
                 // The GCMap's info bits should contain the number of slots pushed
                 // on the Java stack on top of the VFP "ground state"; that is, the
