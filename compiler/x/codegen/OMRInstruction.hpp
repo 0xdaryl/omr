@@ -141,6 +141,8 @@ public:
      */
     OMR_FINAL void resetIsFinalized() { _index &= ~TO_MASK(IsFinalized); }
 
+    TR::Instruction *finalizeBeforeBinaryEncoding();
+
     virtual void assignRegisters(TR_RegisterKinds kindsToBeAssigned);
     virtual bool refsRegister(TR::Register *reg);
     virtual bool defsRegister(TR::Register *reg);

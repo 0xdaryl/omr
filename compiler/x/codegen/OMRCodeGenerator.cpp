@@ -1882,6 +1882,7 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
 
     logprints(trace, log, "<proepilogue>\n");
 
+    TR::Instruction *newCursor = NULL;
     TR::Instruction *estimateCursor = getFirstInstruction();
     int32_t estimate = 0;
     int32_t warmEstimate = 0;
@@ -1889,6 +1890,14 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
     // Estimate the binary length up to OP::proc
     //
     while (estimateCursor && estimateCursor->getOpCodeValue() != OP::proc) {
+        if (!estimateCursor->isFinalized()) {
+            newCursor = estimateCursor->finalizeBeforeBinaryEncoding();
+            if (newCursor) {
+                estimateCursor = newCursor;
+                continue;
+            }
+        }
+
         estimate = estimateCursor->estimateBinaryLength(estimate);
         estimateCursor = estimateCursor->getNext();
     }
@@ -1917,6 +1926,10 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
 
     getLinkage()->createPrologue(prologueCursor); // The linkage prologue
 
+    // At this point, prologueCursor points at either the last instruction of
+    // the recompilation prologue (if one was generated), or the OP::proc
+    // instruction (if one was not generated).
+
     for (TR::Instruction *gcMapCursor = prologueCursor; gcMapCursor != _vfpResetInstruction;
          gcMapCursor = gcMapCursor->getNext()) {
         if (gcMapCursor->needsGCMap())
@@ -1940,6 +1953,14 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
     bool snippetsAfterWarm = comp->getOption(TR_MoveSnippetsToWarmCode);
 
     while (estimateCursor) {
+        if (!estimateCursor->isFinalized()) {
+            newCursor = estimateCursor->finalizeBeforeBinaryEncoding();
+            if (newCursor) {
+                estimateCursor = newCursor;
+                continue;
+            }
+        }
+
         // Update the info bits on the register mask.
         //
         if (estimateCursor->needsGCMap()) {
@@ -1994,8 +2015,13 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
                     // at the end of the epilogue.
                     //
                     skipOneReturn = true;
-                }
 
+                    newCursor = estimateCursor->finalizeBeforeBinaryEncoding();
+                    if (newCursor) {
+                        estimateCursor = newCursor;
+                        continue;
+                    }
+                }
             } else {
                 // We've already seen this OP::RET; don't process it again.
                 //
@@ -2004,6 +2030,7 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
         }
 
         estimate = estimateCursor->estimateBinaryLength(estimate);
+
         TR_VFPState prevState = _vfpState;
         estimateCursor->adjustVFPState(&_vfpState, self());
 
@@ -2025,9 +2052,10 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
             estimate = warmEstimate + MIN_DISTANCE_BETWEEN_WARM_AND_COLD_CODE;
         }
 
-        if (estimateCursor == _vfpResetInstruction)
+        if (estimateCursor == _vfpResetInstruction) {
             self()->generateDebugCounter(estimateCursor, "cg.prologues:#instructionBytes",
                 estimate - estimatedPrologueStartOffset, TR::DebugCounter::Expensive);
+        }
 
         estimateCursor = estimateCursor->getNext();
     }
