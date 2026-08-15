@@ -313,7 +313,7 @@ protected:
 
         BeforeFirstBaseFlag = FirstBaseFlag - 1,
 
-#include "codegen/InstructionFlagEnum.hpp"
+#include "codegen/InstructionFlags.enum"
 
         LastBaseFlag
     };
