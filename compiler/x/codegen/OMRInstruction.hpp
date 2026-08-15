@@ -141,6 +141,18 @@ public:
      */
     OMR_FINAL void resetIsFinalized() { _index &= ~TO_MASK(IsFinalized); }
 
+    /**
+     * @brief
+     *     Perform any final processing of a TR::Instruction prior to generating
+     *     its binary encoding. In practice, an instruction should be finalized
+     *     before binary length estimation, which is considered a necessary step
+     *     of binary encoding.
+     *
+     *     Every instruction must be finalized prior to generating its binary
+     *     encoding. Downstream projects may specialize this function.
+     */
+    void finalizeBeforeBinaryEncoding();
+
     virtual void assignRegisters(TR_RegisterKinds kindsToBeAssigned);
     virtual bool refsRegister(TR::Register *reg);
     virtual bool defsRegister(TR::Register *reg);
