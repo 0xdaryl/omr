@@ -1889,6 +1889,7 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
     // Estimate the binary length up to OP::proc
     //
     while (estimateCursor && estimateCursor->getOpCodeValue() != OP::proc) {
+        estimateCursor->finalizeBeforeBinaryEncoding();
         estimate = estimateCursor->estimateBinaryLength(estimate);
         estimateCursor = estimateCursor->getNext();
     }
@@ -1917,6 +1918,10 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
 
     getLinkage()->createPrologue(prologueCursor); // The linkage prologue
 
+    // At this point, prologueCursor points at either the last instruction of
+    // the recompilation prologue (if one was generated), or the OP::proc
+    // instruction (if one was not generated).
+
     for (TR::Instruction *gcMapCursor = prologueCursor; gcMapCursor != _vfpResetInstruction;
          gcMapCursor = gcMapCursor->getNext()) {
         if (gcMapCursor->needsGCMap())
@@ -1940,6 +1945,8 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
     bool snippetsAfterWarm = comp->getOption(TR_MoveSnippetsToWarmCode);
 
     while (estimateCursor) {
+        estimateCursor->finalizeBeforeBinaryEncoding();
+
         // Update the info bits on the register mask.
         //
         if (estimateCursor->needsGCMap()) {
@@ -1980,22 +1987,25 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
             if (skipOneReturn == false) {
                 // Generate epilogue
                 //
-                TR::Instruction *temp = estimateCursor->getPrev();
-                getLinkage()->createEpilogue(temp);
+                TR::Instruction *instBeforeRET = estimateCursor->getPrev();
+                getLinkage()->createEpilogue(instBeforeRET);
 
                 // Resume estimation from the first instruction of the epilogue
                 //
-                if (estimateCursor == temp->getNext()) {
+                if (estimateCursor == instBeforeRET->getNext()) {
                     // Epilogue is empty
                 } else {
-                    estimateCursor = temp->getNext();
+                    // The first instruction of the epilogue
+                    //
+                    estimateCursor = instBeforeRET->getNext();
 
                     // Make sure we don't process the same OP::RET again when we hit it
                     // at the end of the epilogue.
                     //
                     skipOneReturn = true;
-                }
 
+                    estimateCursor->finalizeBeforeBinaryEncoding();
+                }
             } else {
                 // We've already seen this OP::RET; don't process it again.
                 //
@@ -2004,6 +2014,7 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
         }
 
         estimate = estimateCursor->estimateBinaryLength(estimate);
+
         TR_VFPState prevState = _vfpState;
         estimateCursor->adjustVFPState(&_vfpState, self());
 
@@ -2025,9 +2036,10 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
             estimate = warmEstimate + MIN_DISTANCE_BETWEEN_WARM_AND_COLD_CODE;
         }
 
-        if (estimateCursor == _vfpResetInstruction)
+        if (estimateCursor == _vfpResetInstruction) {
             self()->generateDebugCounter(estimateCursor, "cg.prologues:#instructionBytes",
                 estimate - estimatedPrologueStartOffset, TR::DebugCounter::Expensive);
+        }
 
         estimateCursor = estimateCursor->getNext();
     }
