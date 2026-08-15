@@ -587,6 +587,11 @@ uint8_t *OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(uint8_t *modRM
             addressLoadInstruction->getPrev()->setNode(containingInstruction->getNode());
         }
 
+        // The length of this instruction has been accounted for during binary
+        // length estimation
+        //
+        addressLoadInstruction->finalizeBeforeBinaryEncoding();
+
         // Emit the instruction to load the address over top of the
         // already-emitted binary for containingInstruction
         //
@@ -595,7 +600,7 @@ uint8_t *OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(uint8_t *modRM
         cursor = addressLoadInstruction->generateBinaryEncoding();
         cg->setBinaryBufferCursor(cursor);
 
-        // If it's unresolved, tell the snippet where the data reference is
+        // If it is unresolved, tell the snippet where the data reference is
         //
         if (getUnresolvedDataSnippet())
             getUnresolvedDataSnippet()->setAddressOfDataReference(cursor - 8);
@@ -617,8 +622,12 @@ uint8_t *OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(uint8_t *modRM
             // Both base and index registers are used in the MemoryReference.
             // Replace the base register with a new consolidated address.
             //
+            // The length of this instruction has been accounted for during binary
+            // length estimation.
+            //
             TR::Instruction *addressAddInstruction
                 = Inst_RegReg(addressLoadInstruction, OP::ADD8RegReg, getAddressRegister(), getBaseRegister(), cg);
+            addressAddInstruction->finalizeBeforeBinaryEncoding();
             cursor = addressAddInstruction->generateBinaryEncoding();
             cg->setBinaryBufferCursor(cursor);
 
@@ -636,6 +645,14 @@ uint8_t *OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(uint8_t *modRM
         sr.setSymbol(NULL);
         sr.setOffset(0);
         setUnresolvedDataSnippet(NULL); // Otherwise it will get damaged when we re-emit containingInstruction
+
+        // The MemoryReference addressing mode has changed.  The containingInstruction
+        // needs to be finalized again.
+        //
+        // The size of the MemoryReference with the address materialization register
+        // should be no larger than the originally estimated length.
+        //
+        containingInstruction->finalizeBeforeBinaryEncoding();
 
         // Indicate to caller that it must try again to emit its binary
         //
