@@ -124,6 +124,23 @@ public:
         return (_conditions = cond);
     }
 
+    /**
+     * @brief Queries whether instruction has been finalized prior to binary encoding
+     *
+     * @returns true if finalized; false otherwise
+     */
+    OMR_FINAL bool isFinalized() { return (_index & TO_MASK(IsFinalized)) != 0; }
+
+    /**
+     * @brief Indicates instruction has been finalized prior to binary encoding
+     */
+    OMR_FINAL void setIsFinalized() { _index |= TO_MASK(IsFinalized); }
+
+    /**
+     * @brief Indicates instruction has not been finalized prior to binary encoding
+     */
+    OMR_FINAL void resetIsFinalized() { _index &= ~TO_MASK(IsFinalized); }
+
     virtual void assignRegisters(TR_RegisterKinds kindsToBeAssigned);
     virtual bool refsRegister(TR::Register *reg);
     virtual bool defsRegister(TR::Register *reg);
