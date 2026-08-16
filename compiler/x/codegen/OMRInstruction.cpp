@@ -274,7 +274,11 @@ void OMR::X86::Instruction::clobberRegsForRematerialisation()
     }
 }
 
-void OMR::X86::Instruction::finalizeBeforeBinaryEncoding() { setIsFinalized(); }
+void OMR::X86::Instruction::finalizeBeforeBinaryEncoding()
+{
+    finalizeOperands();
+    setIsFinalized();
+}
 
 #if defined(TR_TARGET_64BIT)
 uint8_t OMR::X86::Instruction::operandSizeRexBits() // Rex bits indicating 32/64-bit operand sizes
