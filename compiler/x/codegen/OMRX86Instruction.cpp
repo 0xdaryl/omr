@@ -1778,6 +1778,8 @@ void TR::X86MemInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned)
     }
 }
 
+void TR::X86MemInstruction::finalizeOperands() { getMemoryReference()->finalizeOperands(this, cg()); }
+
 void TR::X86MemTableInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned)
 {
     // Call inherited logic
@@ -2432,6 +2434,8 @@ void TR::X86RegMemInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigne
         }
     }
 }
+
+void TR::X86RegMemInstruction::finalizeOperands() { getMemoryReference()->finalizeOperands(this, cg()); }
 
 ////////////////////////////////////////////////////////////////////////////////
 // TR::X86RegMemImmInstruction:: member functions
