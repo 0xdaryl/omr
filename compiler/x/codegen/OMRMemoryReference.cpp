@@ -781,13 +781,6 @@ enum {
 
 uint32_t OMR::X86::MemoryReference::estimateBinaryLength(TR::Instruction *containingInstruction, TR::CodeGenerator *cg)
 {
-    if (getBaseRegister() && toRealRegister(getBaseRegister())->getRegisterNumber() == TR::RealRegister::vfp) {
-        // Rewrite VFP-relative memref in terms of an actual register
-        //
-        _baseRegister = cg->machine()->getRealRegister(cg->vfpState()._register);
-        getSymbolReference().setOffset(getSymbolReference().getOffset() + cg->vfpState()._displacement);
-    }
-
     TR::RealRegister *base = toRealRegister(getBaseRegister());
 
     uint32_t addressTypes = (getBaseRegister() ? MR_base : 0) | (getIndexRegister() ? MR_index : 0)
@@ -1113,6 +1106,16 @@ void OMR::X86::MemoryReference::addMetaDataForCodeAddress(uint32_t addressTypes,
 
             break;
         }
+    }
+}
+
+void OMR::X86::MemoryReference::finalizeOperands(TR::Instruction *containingInstr, TR::CodeGenerator *cg)
+{
+    if (getBaseRegister() && toRealRegister(getBaseRegister())->getRegisterNumber() == TR::RealRegister::vfp) {
+        // Rewrite VFP-relative memref in terms of an actual register
+        //
+        setBaseRegister(cg->machine()->getRealRegister(cg->vfpState()._register));
+        getSymbolReference().setOffset(getSymbolReference().getOffset() + cg->vfpState()._displacement);
     }
 }
 

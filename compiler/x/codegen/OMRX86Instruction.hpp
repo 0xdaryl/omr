@@ -1469,6 +1469,8 @@ public:
     virtual bool defsRegister(TR::Register *reg);
     virtual bool usesRegister(TR::Register *reg);
 
+    virtual void finalizeOperands();
+
 #ifdef DEBUG
     virtual uint32_t getNumOperandReferencedGPRegisters() { return _memoryReference->getNumMRReferencedGPRegisters(); }
 #endif
@@ -1853,6 +1855,8 @@ public:
         }
         return p;
     }
+
+    virtual void finalizeOperands();
 
     virtual bool needsLockPrefix();
     virtual uint8_t *generateOperand(uint8_t *cursor);
