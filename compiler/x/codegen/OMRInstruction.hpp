@@ -153,6 +153,13 @@ public:
      */
     void finalizeBeforeBinaryEncoding();
 
+    /**
+     * @brief
+     *     Perform any final processing of a TR::Instruction's operands prior
+     *     to generating its binary encoding.
+     */
+    virtual void finalizeOperands() {}
+
     virtual void assignRegisters(TR_RegisterKinds kindsToBeAssigned);
     virtual bool refsRegister(TR::Register *reg);
     virtual bool defsRegister(TR::Register *reg);

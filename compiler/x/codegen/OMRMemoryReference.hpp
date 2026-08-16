@@ -336,6 +336,14 @@ public:
 
     OMR_FINAL static int32_t getStrideForNode(TR::Node *node, TR::CodeGenerator *cg);
 
+    /**
+     * @brief Perform any required finalization of a MemoryReference's operands
+     *
+     * @param[in] containingInstruction : the \c TR::Instruction this MemoryReference is a part of
+     * @param[in] cg : the \c TR::CodeGenerator object
+     */
+    void finalizeOperands(TR::Instruction *containingInstr, TR::CodeGenerator *cg);
+
     uint32_t getBinaryLengthLowerBound(TR::CodeGenerator *cg);
     virtual uint32_t estimateBinaryLength(TR::Instruction *containingInstruction, TR::CodeGenerator *cg);
     virtual OMR::X86::EnlargementResult enlarge(TR::CodeGenerator *cg, TR::Instruction *containingInstruction,
