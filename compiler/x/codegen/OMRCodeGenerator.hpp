@@ -973,12 +973,12 @@ private:
         GenerateMasmListingSyntax     = 0x00000200, ///< generate Masm-style syntax in the debug listings
         MapAutosTo8ByteSlots          = 0x00000400, ///< don't round up sizes of autos to an 8-byte slot size when the stack is mapped
         EnableTLHPrefetching          = 0x00000800, ///< enable software prefetches on TLH allocates
-        // Available                  = 0x00001000,
+        EnableAPX                     = 0x00001000, ///< enable use of Advanced Performance Extensions (APX)
         // Available                  = 0x00002000,
         // Available                  = 0x00004000,
         MethodEnterExitTracingEnabled = 0x00008000, ///< trace method enter/exits
         // Available                  = 0x00010000,
-        // Available                  = 0x00020000
+        // Available                  = 0x00020000,
         // clang-format on
     };
 
@@ -1012,6 +1012,10 @@ public:
     bool enableRegisterWeights() { return _flags.testAny(EnableRegisterWeights); }
 
     void setEnableRegisterWeights() { _flags.set(EnableRegisterWeights); }
+
+    bool enableAPX() { return _flags.testAny(EnableAPX); }
+
+    void setEnableAPX() { _flags.set(EnableAPX); }
 
     bool enableRegisterInterferences() { return _flags.testAny(EnableRegisterInterferences); }
 
