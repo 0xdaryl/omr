@@ -93,6 +93,8 @@ const OMR::X86::InstOpCode::OpCode_t OMR::X86::InstOpCode::_binaries[] = {
 #undef BINARY
 };
 
+struct OMR::X86::InstOpCode::OperandGroup OMR::X86::InstOpCode::_opndGroup = {};
+
 void OMR::X86::InstOpCode::trackUpperBitsOnReg(TR::Register *reg, TR::CodeGenerator *cg)
 {
     if (cg->comp()->target().is64Bit()) {

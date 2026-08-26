@@ -285,6 +285,79 @@ typedef enum {
     Bad = 0x7
 } Encoding;
 
+// clang-format off
+
+// Maximum size of the operand properties bitfield
+//
+typedef uint16_t OperandPropertiesWidth_t;
+
+typedef OperandPropertiesWidth_t OperandBoolean;
+
+enum OperandKind : OperandPropertiesWidth_t {
+    opnd_Reg = 0,  ///< Register operand
+    opnd_Mem = 1,  ///< Memory operand
+    opnd_Imm = 2,  ///< Immediate operand
+};
+
+enum OperandIntOrFloat : OperandPropertiesWidth_t {
+    opnd_Int   = 0,  ///< Operand is an integer type
+    opnd_Float = 1,  ///< Operand is a floating point type
+};
+
+enum OperandScalarOrVector : OperandPropertiesWidth_t {
+    opnd_Sclr = 0,   ///< Operand is a scalar type
+    opnd_Vect = 1,   ///< Operand is a vector type
+};
+
+enum OperandBitWidth : OperandPropertiesWidth_t {
+    opnd_8   = 0,
+    opnd_16  = 1,
+    opnd_32  = 2,
+    opnd_64  = 3,
+    opnd_128 = 4,
+    opnd_256 = 5,
+    opnd_512 = 6,
+};
+
+enum OperandAccess : OperandPropertiesWidth_t {
+    opnd_R  = 0x1,            ///< Operand is read
+    opnd_W  = 0x2,            ///< Operand is written
+    opnd_RW = (opnd_R | opnd_W),  ///< Operand is read and written
+};
+
+// For register operands, how should the register be encoded in the instruction
+//
+enum OperandRegEncoding : OperandPropertiesWidth_t {
+    opnd_NotReg     = 0, ///< For non-register operands
+    opnd_MR_reg_R3  = 0, ///< ModRM reg + R3
+    opnd_MR_rm_B3   = 1, ///< ModRM rm + B3
+    opnd_OPC_reg_B3 = 2, ///< Opcode reg field + B3
+    opnd_vvvv       = 3, ///< vvvv field
+};
+
+// For immediate operands, what extension should be applied to the immediate
+//
+enum OperandImmExtension : OperandPropertiesWidth_t {
+    opnd_NotImm  = 0,  ///< For non-immediate operands
+    opnd_NoExt   = 0,  ///< No extension of immediate
+    opnd_SignExt = 1,  ///< Immediate is sign extended to operand width
+    opnd_ZeroExt = 2,  ///< Immediate is zero extended to operand width
+};
+
+struct OperandProperties {
+    OperandKind           opnd_kind : 2;
+    OperandIntOrFloat     opnd_format : 1;
+    OperandScalarOrVector opnd_vector : 1;
+    OperandBitWidth       opnd_width : 3;
+    OperandAccess         opnd_access : 2;
+    OperandRegEncoding    opnd_regEncoding : 2;
+    OperandImmExtension   opnd_immExt : 2;
+    OperandBoolean        opnd_implicit : 1;
+    // 2 bits available
+};
+
+// clang-format on
+
 class InstOpCode : public OMR::InstOpCode {
     enum TR_OpCodeVEX_L : uint8_t {
         VEX_L128 = 0x0,
@@ -337,6 +410,17 @@ class InstOpCode : public OMR::InstOpCode {
         Immediate_4 = 0x3,
         Immediate_8 = 0x4,
         Immediate_S = 0x7,
+    };
+
+    // Maximum operands for each instruction, adjacent for data locality
+    //
+    struct OperandGroup {
+        OperandProperties opnd1;
+        OperandProperties opnd2;
+        OperandProperties opnd3;
+        OperandProperties opnd4;
+
+        //        OperandProperties opnd[MAX_INSTRUCTION_OPERANDS];
     };
 
     struct OpCode_t {
@@ -453,6 +537,8 @@ class InstOpCode : public OMR::InstOpCode {
     static const uint32_t _properties1[];
     static const uint32_t _properties2[];
     static const uint32_t _features[];
+
+    static OperandGroup _opndGroup;
 
 protected:
     InstOpCode()
@@ -663,6 +749,14 @@ public:
     inline uint32_t isSIMDNarrowing() const { return _properties2[_mnemonic] & IA32OpProp2_SIMDNarrowing; }
 
     inline uint32_t canShortenEVEXDisplacement() const { return isVector2Vector() || isScalar2Vector(); }
+
+    OperandProperties &getOpndProps1() { return _opndGroup.opnd1; }
+
+    OperandProperties &getOpndProps2() { return _opndGroup.opnd2; }
+
+    OperandProperties &getOpndProps3() { return _opndGroup.opnd3; }
+
+    OperandProperties &getOpndProps4() { return _opndGroup.opnd4; }
 
     int32_t getSIMDMemOperandSize(OMR::X86::Encoding encoding)
     {
