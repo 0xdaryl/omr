@@ -141,6 +141,158 @@ public:
      */
     OMR_FINAL void resetIsFinalized() { _index &= ~TO_MASK(IsFinalized); }
 
+    struct EncodingBits {
+        union {
+            uint32_t raw; // Direct access to all 32 bits
+
+            struct {
+                // ----------------------------------------------------------------
+                // Byte 0: opcode or modRM (bits 0-7)
+                // ----------------------------------------------------------------
+
+                union {
+                    union {
+                        uint8_t opcode;
+
+                        struct {
+                            uint8_t opcodeReg: 3; // bits 0-2
+                            uint8_t padding: 5; // bits 3-7
+                        };
+                    };
+
+                    union {
+                        uint8_t modRM;
+
+                        struct {
+                            uint8_t rm: 3; // bits 0-2
+                            uint8_t reg: 3; // bits 3-5
+                            uint8_t mod: 2; // bits 6-7
+                        };
+                    };
+                };
+
+                // ----------------------------------------------------------------
+                // Byte 1: SIB (bits 8-15)
+                // ----------------------------------------------------------------
+
+                union {
+                    uint8_t SIB;
+
+                    struct {
+                        uint8_t base: 3; // bits 8-10
+                        uint8_t index: 3; // bits 11-13
+                        uint8_t ss: 2; // bits 14-15
+                    };
+                };
+
+                // ----------------------------------------------------------------
+                // Byte 2: vvvv and EGPR bits (bits 16-23)
+                // ----------------------------------------------------------------
+
+                uint8_t vvvv: 4; // bits 16-19
+                uint8_t V4: 1; // bit 20
+                uint8_t R4: 1; // bit 21
+                uint8_t X4: 1; // bit 22
+                uint8_t B4: 1; // bit 23
+
+                // ----------------------------------------------------------------
+                // Byte 3: R3/X3/B3, W, and control flags (bits 24-31)
+                // ----------------------------------------------------------------
+
+                union {
+                    struct {
+                        uint8_t R3: 1; // bit 24
+                        uint8_t X3: 1; // bit 25
+                        uint8_t B3: 1; // bit 26
+                        uint8_t W: 1; // bit 27
+                        uint8_t needModRM: 1; // bit 28
+                        uint8_t needSIBByte: 1; // bit 29
+                        uint8_t requiresEGPR: 1; // bit 30
+                        uint8_t reserved: 2; // bits 30-31 (unused)
+                    };
+
+                    struct {
+                        uint8_t RXB: 3; // bits 24-26
+                        uint8_t padding: 5; // bits 27-31
+                    };
+                };
+            };
+        };
+
+        EncodingBits()
+            : raw(0)
+        {}
+
+        // Constructor from raw value
+        explicit EncodingBits(uint32_t value)
+            : raw(value)
+        {}
+
+        // Reset all bits to zero
+        inline void clear() { raw = 0; }
+
+#if 0
+        // Helper methods for grouped access
+
+        inline uint8_t getRXB() const { return RXB; }
+
+        inline void setRXB(uint8_t value) { RXB = value; }
+
+        // Set individual R3, x3, B3 bits
+        inline void setR3(bool value) { R3 = value ? 1 : 0; }
+
+        inline void setX3(bool value) { x3 = value ? 1 : 0; }
+
+        inline void setB3(bool value) { B3 = value ? 1 : 0; }
+
+        // Get individual R3, x3, B3 bits
+        inline bool getR3() const { return R3 != 0; }
+
+        inline bool getX3() const { return x3 != 0; }
+
+        inline bool getB3() const { return B3 != 0; }
+
+        // Set modRM as a complete byte
+        inline void setModRM(uint8_t value) { modRM = value; }
+
+        // Get modRM as a complete byte
+        inline uint8_t getModRM() const { return modRM; }
+
+        // Set modRM using individual fields
+        inline void setModRM(uint8_t mod_val, uint8_t reg_val, uint8_t rm_val)
+        {
+            mod = mod_val & 0x3; // 2 bits
+            reg = reg_val & 0x7; // 3 bits
+            rm = rm_val & 0x7; // 3 bits
+        }
+
+        // Set SIB as a complete byte
+        inline void setSIB(uint8_t value) { SIB = value; }
+
+        // Get SIB as a complete byte
+        inline uint8_t getSIB() const { return SIB; }
+
+        // Set SIB using individual fields
+        inline void setSIB(uint8_t ss_val, uint8_t index_val, uint8_t base_val)
+        {
+            ss = ss_val & 0x3; // 2 bits
+            index = index_val & 0x7; // 3 bits
+            base = base_val & 0x7; // 3 bits
+        }
+
+        // Set vvvv as a 4-bit unit
+        inline void setVVVV(uint8_t value)
+        {
+            vvvv = value & 0xF; // Mask to 4 bits
+        }
+
+        // Get vvvv as a 4-bit unit
+        inline uint8_t getVVVV() const { return vvvv; }
+#endif
+    };
+
+    static_assert(sizeof(EncodingBits) == 4, "EncodingBits must be exactly 4 bytes");
+
     /**
      * @brief
      *     Perform any final processing of a TR::Instruction prior to generating
