@@ -285,6 +285,84 @@ typedef enum {
     Bad = 0x7
 } Encoding;
 
+// clang-format off
+
+// Maximum size of the operand properties bitfield
+//
+typedef uint16_t OperandPropertiesWidth_t;
+
+enum OperandKind : OperandPropertiesWidth_t {
+    opnd_Reg = 0, ///< Register operand
+    opnd_Mem = 1, ///< Memory operand
+    opnd_Imm = 2, ///< Immediate operand
+};
+
+enum OperandDataType : OperandPropertiesWidth_t {
+    opnd_Int   = 0, ///< Operand is an integer type
+    opnd_Float = 1, ///< Operand is a floating point type
+};
+
+enum OperandFormat : OperandPropertiesWidth_t {
+    opnd_Scalar = 0, ///< Operand is a scalar type
+    opnd_Vector = 1, ///< Operand is a vector type
+};
+
+enum OperandBitWidth : OperandPropertiesWidth_t {
+    opnd_8   = 0,
+    opnd_16  = 1,
+    opnd_32  = 2,
+    opnd_64  = 3,
+    opnd_128 = 4,
+    opnd_256 = 5,
+    opnd_512 = 6,
+};
+
+enum OperandAccess : OperandPropertiesWidth_t {
+    opnd_R  = 0x1,               ///< Operand is read
+    opnd_W  = 0x2,               ///< Operand is written
+    opnd_RW = (opnd_R | opnd_W), ///< Operand is read and written
+};
+
+enum OperandEncoding : OperandPropertiesWidth_t {
+    // For immediate operands only
+    opnd_ImmEnc     = 0,
+
+    // For implied reg operands only
+    opnd_ImpliedReg = 0, ///< Register is implied by instruction
+
+    // For reg/mem explicit operands only
+    opnd_MR_reg_R3  = 0, ///< ModRM reg + R3 (reg only)
+    opnd_MR_rm_B3   = 1, ///< ModRM rm + B3 (reg or mem)
+    opnd_OPC_reg_B3 = 2, ///< Opcode reg field + B3 (reg only)
+    opnd_vvvv       = 3, ///< vvvv field (reg only)
+};
+
+enum OperandImmExtension : OperandPropertiesWidth_t {
+    opnd_NotImm  = 0, ///< For non-immediate operands only
+    opnd_NoExt   = 0, ///< No extension of immediate
+    opnd_SignExt = 1, ///< Immediate is sign extended to operand width
+    opnd_ZeroExt = 2, ///< Immediate is zero extended to operand width
+};
+
+enum OperandVisibility : OperandPropertiesWidth_t {
+    opnd_Explicit = 0, ///< Operand is NOT implicit
+    opnd_Implicit = 1, ///< Operand implicitly defined by instruction
+};
+
+struct OperandProperties {
+    OperandKind         opnd_kind : 2;
+    OperandDataType     opnd_type : 1;
+    OperandFormat       opnd_format : 1;
+    OperandBitWidth     opnd_width : 3;
+    OperandAccess       opnd_access : 2;
+    OperandEncoding     opnd_encoding : 2;
+    OperandImmExtension opnd_immExt : 2;
+    OperandVisibility   opnd_visibility : 1;
+    // 2 bits available
+};
+
+// clang-format on
+
 class InstOpCode : public OMR::InstOpCode {
     enum TR_OpCodeVEX_L : uint8_t {
         VEX_L128 = 0x0,
