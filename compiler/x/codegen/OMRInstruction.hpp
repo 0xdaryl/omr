@@ -80,6 +80,132 @@ public:
     int32_t getEncodingGrowth() { return _encodingGrowth; }
 };
 
+struct InstructionEncodingBits {
+    union {
+        uint64_t raw; // Direct access to all 32 bits
+
+        struct {
+            // ----------------------------------------------------------------
+            // Byte 0: opcode or ModRM (bits 0-7)
+            // ----------------------------------------------------------------
+
+            union {
+                union {
+                    uint8_t opcode;
+
+                    struct {
+                        uint8_t opcodeReg: 3; // bits 0-2
+                        uint8_t padding1: 5; // bits 3-7
+                    };
+                };
+
+                union {
+                    uint8_t raw;
+
+                    struct {
+                        uint8_t RM: 3; // bits 0-2
+                        uint8_t Reg: 3; // bits 3-5
+                        uint8_t Mod: 2; // bits 6-7
+                    };
+                } ModRM;
+            };
+
+            // ----------------------------------------------------------------
+            // Byte 1: SIB (bits 8-15)
+            // ----------------------------------------------------------------
+
+            union {
+                uint8_t raw;
+
+                struct {
+                    uint8_t Base: 3; // bits 8-10
+                    uint8_t Index: 3; // bits 11-13
+                    uint8_t SS: 2; // bits 14-15
+                };
+            } SIB;
+
+            // ----------------------------------------------------------------
+            // Byte 2: vvvv and EGPR bits (bits 16-23)
+            // ----------------------------------------------------------------
+
+            uint8_t vvvv: 4; // bits 16-19
+            uint8_t V4: 1; // bit 20
+            uint8_t R4: 1; // bit 21
+            uint8_t X4: 1; // bit 22
+            uint8_t B4: 1; // bit 23
+
+            // ----------------------------------------------------------------
+            // Byte 3: R3/X3/B3, W, and control flags (bits 24-31)
+            // ----------------------------------------------------------------
+
+            union {
+                struct {
+                    uint8_t R3: 1; // bit 24
+                    uint8_t X3: 1; // bit 25
+                    uint8_t B3: 1; // bit 26
+                    uint8_t W: 1; // bit 27
+                    uint8_t needsModRM: 1; // bit 28
+                    uint8_t needsSIB: 1; // bit 29
+                    uint8_t RIPrelative: 1; // bit 30
+                    uint8_t reserved: 1; // bit 31 (unused)
+                };
+
+                struct {
+                    uint8_t RXB: 3; // bits 24-26
+                    uint8_t padding2: 5; // bits 27-31
+                };
+            };
+
+            // ----------------------------------------------------------------
+            // Bytes 4-7: 32-bit memory reference displacement
+            // ----------------------------------------------------------------
+
+            int32_t disp32;
+        };
+    };
+
+    InstructionEncodingBits()
+        : raw(0)
+    {}
+
+    // Constructor from raw value
+    explicit InstructionEncodingBits(uint64_t value)
+        : raw(value)
+    {}
+
+    // Reset all bits to zero
+    inline void clear() { raw = 0; }
+};
+
+static_assert(sizeof(InstructionEncodingBits) == 8, "InstructionEncodingBits must be exactly 8 bytes");
+
+// ModRM and SIB encoding values for InstructionEncodingBits
+//
+enum {
+    // clang-format off
+
+    // ModRM Mod
+    Mod_Base        = 0, // 0b00
+    Mod_Base_Disp8  = 1, // 0b01
+    Mod_Base_Disp32 = 2, // 0b10
+    Mod_Reg         = 3, // 0b11
+
+    // ModRM RM
+    RM_NeedsSIB = 4, // 0b100 (SIB byte required)
+    RM_Disp32   = 5, // 0b101 (disp32 when Mod == 00)
+
+    // SIB SS
+    SIB_SS_Scale1 = 0, // 0b00
+    SIB_SS_Scale2 = 1, // 0b01
+    SIB_SS_Scale4 = 2, // 0b10
+    SIB_SS_Scale8 = 3, // 0b11
+
+    // SIB
+    SIB_Index_None = 4, // Index = 0b100
+    SIB_Base_Disp = 5,  // Base = 0b101
+    // clang-format on
+};
+
 class OMR_EXTENSIBLE Instruction : public OMR::Instruction {
 private:
     uint8_t _rexRepeatCount;
