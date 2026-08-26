@@ -339,6 +339,90 @@ class InstOpCode : public OMR::InstOpCode {
         Immediate_S = 0x7,
     };
 
+    // ------------------------------------------------------------------------
+    // clang-format off
+    //
+
+    // Maximum size of the operand properties bitfield
+    //
+    typedef OpPropertiesWidth_t uint16_t;
+
+    enum OperandKind : OpPropertiesWidth_t {
+        op_Reg = 0,  ///< Register operand (DEFAULT)
+        op_Mem = 1,  ///< Memory operand
+        op_Imm = 2,  ///< Immediate operand
+    };
+
+    enum OperandIntOrFloat : OpPropertiesWidth_t {
+        op_Int   = 0,  ///< Operand is an integer type (DEFAULT)
+        op_Float = 1,  ///< Operand is a floating point type
+    };
+
+    enum OperandScalarOrVector : OpPropertiesWidth_t {
+        op_Sclr = 0,   ///< Operand is a scalar type (DEFAULT)
+        op_Vect = 1,   ///< Operand is a vector type
+    };
+
+    enum OperandBitWidth : OpPropertiesWidth_t {
+        op_8   = 0,  ///< DEFAULT
+        op_16  = 1,
+        op_32  = 2,
+        op_64  = 3,
+        op_128 = 4,
+        op_256 = 5,
+        op_512 = 6,
+    };
+
+    enum OperandAccess : OpPropertiesWidth_t {
+        op_R  = 0x1,            ///< Operand is read
+        op_W  = 0x2,            ///< Operand is written
+        op_RW = (op_R | op_W),  ///< Operand is read and written
+    };
+
+    enum OperandImplicit : OpPropertiesWidth_t {
+        op_Expl = 0,  ///< Operand is explicit (DEFAULT)
+        op_Impl = 1,  ///< Operand is implicitly encoded in the instruction
+    };
+
+    enum OperandEncoding : OpPropertiesWidth_t {
+        op_MR_reg_R3  = 0, ///< ModRM reg + R3
+        op_MR_rm_B3   = 1, ///< ModRM rm + B3
+        op_OPC_reg_B3 = 2, ///< Opcode reg field + B3
+        op_vvvv       = 3, ///< vvvv field
+    };
+
+    enum OperandImmedExtension : OpPropertiesWidth_t {
+        op_NoExt   = 0,  ///< No extension of immediate (DEFAULT)
+        op_SignExt = 1,  ///< Immediate is sign extended to operand width
+        op_ZeroExt = 2,  ///< Immediate is zero extended to operand width
+    };
+
+    struct OperandProperties {
+        OperandKind           opnd_kind : 2;
+        OperandIntOrFloat     opnd_format : 1;
+        OperandScalarOrVector opnd_vector : 1;
+        OperandBitWidth       opnd_width : 3;
+        OperandAccess         opnd_access : 2;
+        OperandImplicit       opnd_implicit : 1;
+        OperandEncoding       opnd_encoding : 2;
+        OperandImmedExtension opnd_ext : 2;
+        // 2 bits available
+    };
+
+    // Group of operands for each instruction, grouped for data locality
+    //
+    struct OperandGroup {
+        Operand opnd1;
+        Operand opnd2;
+        Operand opnd3;
+        Operand opnd4;
+
+//        Operand opnd[MAX_INSTRUCTION_OPERANDS];
+    };
+
+    // clang-format on
+    // ------------------------------------------------------------------------
+
     struct OpCode_t {
         uint8_t vex_l: 4;
         uint8_t vex_v: 1;
