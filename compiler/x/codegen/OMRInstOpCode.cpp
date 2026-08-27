@@ -93,6 +93,38 @@ const OMR::X86::InstOpCode::OpCode_t OMR::X86::InstOpCode::_binaries[] = {
 #undef BINARY
 };
 
+const int8_t OMR::X86::InstOpCode::_evexCompressedDisp8ScalingFactor[][OMR::X86::InstOpCode::numVectorLengths] = {
+    // clang-format off
+
+    // VL=128 VL=256 VL=512
+    {     0,     0,     0,    }, // opc_TupleType_NoScale
+    {    16,    32,    64,    }, // opc_TupleType_FullMem
+    {     1,     1,     1,    }, // opc_TupleType_Tuple1Scalar_8
+    {     2,     2,     2,    }, // opc_TupleType_Tuple1Scalar_16
+    {     4,     4,     4,    }, // opc_TupleType_Tuple1Scalar_32
+    {     8,     8,     8,    }, // opc_TupleType_Tuple1Scalar_64
+    {     4,     4,     4,    }, // opc_TupleType_Tuple1Fixed_32
+    {     8,     8,     8,    }, // opc_TupleType_Tuple1Fixed_64
+    {     8,     8,     8,    }, // opc_TupleType_Tuple2_32
+    {     0,    16,    16,    }, // opc_TupleType_Tuple2_64
+    {     0,    16,    16,    }, // opc_TupleType_Tuple4_32
+    {     0,     0,    32,    }, // opc_TupleType_Tuple4_64
+    {     0,     0,    32,    }, // opc_TupleType_Tuple8_32
+    {     8,    16,    32,    }, // opc_TupleType_HalfMem
+    {     4,     8,    16,    }, // opc_TupleType_QuarterMem
+    {     2,     4,     8,    }, // opc_TupleType_EighthMem
+    {    16,    16,    16,    }, // opc_TupleType_Mem128
+    {     8,    32,    64,    }, // opc_TupleType_MOVDDUP
+    {    16,    32,    64,    }, // opc_TupleType_Full_b0_32
+    {     4,     4,     4,    }, // opc_TupleType_Full_b1_32
+    {    16,    32,    64,    }, // opc_TupleType_Full_b0_64
+    {     8,     8,     8,    }, // opc_TupleType_Full_b1_64
+    {     8,    16,    32,    }, // opc_TupleType_Half_b0_32
+    {     4,     4,     4,    }, // opc_TupleType_Half_b1_32
+
+    // clang-format on
+};
+
 void OMR::X86::InstOpCode::trackUpperBitsOnReg(TR::Register *reg, TR::CodeGenerator *cg)
 {
     if (cg->comp()->target().is64Bit()) {
