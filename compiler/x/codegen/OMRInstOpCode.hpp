@@ -287,6 +287,93 @@ typedef enum {
 
 // clang-format off
 
+// Maximum size of the opcode properties bitfield
+//
+typedef uint64_t OpcodePropertiesWidth_t;
+
+// Valid coding prefixes for this opcode
+//
+enum OpcodeEncodingPrefix : OpcodePropertiesWidth_t {
+    // These flags are NOT mutually exclusive
+    //
+    opc_NoEncPrefix = 0x00, ///< No encoding prefix required (LEGACY or IA32)
+    opc_REX         = 0x01, ///< REX (1 byte)
+    opc_REX2        = 0x02, ///< REX2 (2 byte)
+    opc_VEX2        = 0x04, ///< VEX (2 byte)
+    opc_VEX3        = 0x08, ///< VEX (3 byte)
+    opc_EVEX        = 0x10, ///< EVEX (4 byte)
+    opc_VEX2EVEX    = 0x20, ///< EVEX promoted from VEX (4 byte)
+    opc_LEGACY2EVEX = 0x40, ///< EVEX promoted from legacy (4 byte)
+    // Available    = 0x80,
+};
+
+enum OpcodeVEXPP : OpcodePropertiesWidth_t {
+    // These flags ARE mutually exclusive
+    //
+    opc_VEX_PP_None = 0,
+    opc_VEX_PP_66   = 1,
+    opc_VEX_PP_F3   = 2,
+    opc_VEX_PP_F2   = 3,
+};
+
+typedef OpcodePropertiesWidth_t OpcodeMMMMM;
+
+enum OpcodeKind : OpcodePropertiesWidth_t {
+    // These flags ARE mutually exclusive
+    //
+    opc_Branch    = 0,
+    opc_StackPush = 1,
+    opc_StackPop  = 2,
+    opc_Shift     = 3,
+    opc_Rotate    = 4,
+    opc_Call      = 5,
+    opc_Pseudo    = 6,
+    // Available  = 7,
+};
+
+enum OpcodeStatusFlags : OpcodePropertiesWidth_t {
+    // These flags are NOT mutually exclusive
+    //
+    opc_TestZF = 0x001, ///< Tests zero flag
+    opc_SetZF  = 0x002, ///< Sets zero flag
+    opc_TestSF = 0x004, ///< Tests sign flag
+    opc_SetSF  = 0x008, ///< Sets sign flag
+    opc_TestCF = 0x010, ///< Tests carry flag
+    opc_SetCF  = 0x020, ///< Sets carry flag
+    opc_TestOF = 0x040, ///< Tests overflow flag
+    opc_SetOF  = 0x080, ///< Sets overflow flag
+    opc_TestPF = 0x100, ///< Tests parity flag
+    opc_SetPF  = 0x200, ///< Sets parity flag
+    opc_TestAF = 0x400, ///< Tests auxiliary flag (BCD arithmetic only)
+    opc_SetAF  = 0x800, ///< Sets auxiliary flag (BCD arithmetic only)
+
+    opc_TestFlagsMask = (opc_TestZF | opc_TestSF | opc_TestCF | opc_TestOF | opc_TestPF | opc_TestAF),
+    opc_SetFlagsMask = (opc_SetZF | opc_SetSF | opc_SetCF | opc_SetOF | opc_SetPF | opc_SetAF),
+};
+
+enum OpcodeMisc : OpcodePropertiesWidth_t {
+    // These flags are NOT mutually exclusive
+    //
+    opc_SupportsLOCKPrefix    = 0x01,
+    opc_RequiresLOCKPrefix    = 0x02,
+    opc_RequiresREPPrefix     = 0x04,
+    opc_FusableCompare        = 0x08,
+    opc_SetStatusFlagsForTEST = 0x10,
+    opc_SetStatusFlagsForCMP  = 0x20,
+};
+
+struct OpcodeProperties {
+    OpcodeEncodingPrefix opc_encPrefix : 8;
+    OpcodeKind           opc_kind : 3;
+    OpcodeStatusFlags    opc_statusFlags : 12;
+    OpcodeMisc           opc_misc : 6;
+    OpcodeMMMMM          opc_mmmmm : 5;
+    OpcodeVEXPP          opc_pp : 2;
+    // 36 used; 28 avail
+};
+
+static_assert(sizeof(OpcodeProperties) == sizeof(OpcodePropertiesWidth_t), "OpcodeProperties width must match OpcodePropertiesWidth_t");
+
 // Maximum size of the operand properties bitfield
 //
 typedef uint16_t OperandPropertiesWidth_t;
@@ -412,7 +499,7 @@ class InstOpCode : public OMR::InstOpCode {
         Immediate_S = 0x7,
     };
 
-    // Maximum operands for each instruction, adjacent for data locality
+    // Operands for each instruction, adjacent for data locality
     //
     struct OperandGroup {
         OperandProperties opnd1;
