@@ -287,6 +287,197 @@ typedef enum {
 
 // clang-format off
 
+// Maximum size of the opcode properties bitfield
+//
+typedef uint64_t OpCodePropertiesWidth_t;
+
+enum OpCodeExtension : OpCodePropertiesWidth_t {
+    // These flags are mutually exclusive
+    //
+    opc_Ext_None = 0x0,
+    opc_Ext_0    = 0x8,
+    opc_Ext_1    = 0x9,
+    opc_Ext_2    = 0xa,
+    opc_Ext_3    = 0xb,
+    opc_Ext_4    = 0xc,
+    opc_Ext_5    = 0xd,
+    opc_Ext_6    = 0xe,
+    opc_Ext_7    = 0xf,
+
+    opc_Ext_Mask = 0x7, ///< Not a flag, but used to mask off the digit to encode
+};
+
+// Valid coding prefixes for this opcode
+//
+enum OpCodeEncodingPrefix : OpCodePropertiesWidth_t {
+    // These flags are NOT mutually exclusive
+    //
+    opc_UnknownEnc  = 0x00, ///< Unknown encoding prefix
+    opc_Legacy      = 0x01, ///< Legacy or IA32 (no prefix required)
+    opc_REX         = 0x02, ///< REX (1 byte)
+    opc_REX2        = 0x04, ///< REX2 (2 byte)
+    opc_VEX2        = 0x08, ///< VEX (2 byte)
+    opc_VEX3        = 0x10, ///< VEX (3 byte)
+    opc_EVEX        = 0x20, ///< EVEX (4 byte)
+    opc_VEX2EVEX    = 0x40, ///< EVEX promoted from VEX (4 byte)
+    opc_Legacy2EVEX = 0x80, ///< EVEX promoted from legacy (4 byte)
+};
+
+#define OPC_ENCODING_PREFIXES(x) static_cast<OpCodeEncodingPrefix>(x)
+
+enum OpCodePrefixes : OpCodePropertiesWidth_t {
+    // For legacy encoded instructions only.
+    // These flags are NOT mutually exclusive.
+    //
+    opc_Prefix_None  = 0x0,
+    opc_Prefix_LOCK  = 0x1,
+    opc_Prefix_REPNE = 0x2,
+    opc_Prefix_F2    = 0x2, ///< Aliased with REPNE
+    opc_Prefix_REP   = 0x4,
+    opc_Prefix_F3    = 0x4, ///< Aliased with REP
+    opc_Prefix_66    = 0x8,
+
+    // For VEX encoded instructions only.
+    // These flags are mutually exclusive.
+    //
+    opc_VEX_PP_NP = 0,
+    opc_VEX_PP_66 = 1,
+    opc_VEX_PP_F3 = 2,
+    opc_VEX_PP_F2 = 3,
+};
+
+#define OPC_PREFIX(x) static_cast<OpCodePrefixes>(x)
+
+enum OpCodeMap : OpCodePropertiesWidth_t {
+    // These flags are mutually exclusive
+    //
+    opc_Map_0      = 0,
+    opc_Map_1_0F   = 1,
+    opc_Map_2_0F38 = 2,
+    opc_Map_3_0F3A = 3,
+    opc_Map_4      = 4,
+    opc_Map_5      = 5,
+    opc_Map_6      = 6,
+    opc_Map_7      = 7,
+};
+
+enum OpCodeStatusRFlags : OpCodePropertiesWidth_t {
+    // These flags are NOT mutually exclusive
+    //
+    opc_NoRFlags = 0x000, ///< Does not test or set any RFlag status flags
+    opc_TestZF   = 0x001, ///< Tests zero flag
+    opc_SetZF    = 0x002, ///< Sets zero flag
+    opc_TestSF   = 0x004, ///< Tests sign flag
+    opc_SetSF    = 0x008, ///< Sets sign flag
+    opc_TestCF   = 0x010, ///< Tests carry flag
+    opc_SetCF    = 0x020, ///< Sets carry flag
+    opc_TestOF   = 0x040, ///< Tests overflow flag
+    opc_SetOF    = 0x080, ///< Sets overflow flag
+    opc_TestPF   = 0x100, ///< Tests parity flag
+    opc_SetPF    = 0x200, ///< Sets parity flag
+    opc_TestAF   = 0x400, ///< Tests auxiliary flag (BCD arithmetic only)
+    opc_SetAF    = 0x800, ///< Sets auxiliary flag (BCD arithmetic only)
+
+    opc_TestAllFlags = (opc_TestZF | opc_TestSF | opc_TestCF | opc_TestOF | opc_TestPF | opc_TestAF),
+    opc_SetAllFlags = (opc_SetZF | opc_SetSF | opc_SetCF | opc_SetOF | opc_SetPF | opc_SetAF),
+};
+
+#define OPC_RFLAGS(x) static_cast<OpCodeStatusRFlags>(x)
+
+enum OpCode_W : OpCodePropertiesWidth_t {
+    // These flags are mutually exclusive
+    //
+    opc_W_None = 0, ///< REX/VEX.W does not apply to this opcode
+    opc_WIG    = 0, ///< REX/VEX.W is ignored. Map it to REX/VEX.W0.
+    opc_W0     = 0, ///< REX/VEX.W = 0
+    opc_W1     = 1, ///< REX/VEX.W = 1
+};
+
+enum OpCodeEEVEX_ND : OpCodePropertiesWidth_t {
+    // These flags are mutually exclusive
+    //
+    opc_EEVEX_ND_None = 0, ///< EEVEX.ND does not apply to this opcode
+    opc_EEVEX_ND0     = 0, ///< EEVEX.ND = 0
+    opc_EEVEX_ND1     = 1, ///< EEVEX.ND = 1
+};
+
+enum OpCodeEEVEX_NF : OpCodePropertiesWidth_t {
+    // These flags are mutually exclusive
+    //
+    opc_EEVEX_NF_None = 0, ///< EEVEX.NF does not apply to this opcode
+    opc_EEVEX_NF0     = 0, ///< EEVEX.NF = 0
+    opc_EEVEX_NF1     = 1, ///< EEVEX.NF = 1
+};
+
+enum OpCodeFlags : OpCodePropertiesWidth_t {
+    // These flags are NOT mutually exclusive
+    //
+    opc_NoFlags               = 0x00,
+
+    opc_Kind_Branch           = 0x01,
+    opc_Kind_StackPush        = 0x02,
+    opc_Kind_StackPop         = 0x03,
+    opc_Kind_Shift            = 0x04,
+    opc_Kind_Rotate           = 0x05,
+    opc_Kind_Call             = 0x06,
+    opc_Kind_Pseudo           = 0x07,
+    opc_Kind_Mask             = 0x07,
+
+    opc_SupportsLOCKPrefix    = 0x08,
+    opc_FusableCompare        = 0x10,
+    opc_SetStatusFlagsForTEST = 0x20,
+    opc_SetStatusFlagsForCMP  = 0x40,
+};
+
+enum OpCodeTupleType : OpCodePropertiesWidth_t {
+    // These flags are mutually exclusive
+    //
+    opc_TupleNone       = 0,
+    opc_TupleFullMem    = 1,
+    opc_Tuple1Scalar    = 2,
+    opc_Tuple1Fixed     = 3,
+    opc_Tuple2          = 4,
+    opc_Tuple4          = 5,
+    opc_Tuple8          = 6,
+    opc_TupleHalfMem    = 7,
+    opc_TupleQuarterMem = 8,
+    opc_TupleEighthMem  = 9,
+    opc_TupleMem128     = 10,
+    opc_TupleMOVDDUP    = 11,
+    opc_TupleFull       = 12, ///< Embedded Broadcast
+    opc_TupleHalf       = 13, ///< Embedded Broadcast
+};
+
+#define OPC_FLAGS(x) static_cast<OpCodeFlags>(x)
+
+struct OpCodeProperties {
+    OpCodePropertiesWidth_t opc_byte : 8;
+    OpCodeExtension         opc_ext : 4;
+    OpCodeMap               opc_map : 3;
+    OpCodePrefixes          opc_prefixes : 4;
+    OpCode_W                opc_W : 1;
+    OpCodeEncodingPrefix    opc_validEncPrefixes : 8;
+    OpCodeStatusRFlags      opc_statusRFlags : 12;
+
+    // The remaining fields are deliberately last to avoid explicit initialization
+    // for less common properties in the OpCodeTable
+    //
+    OpCodeFlags             opc_flags : 7;
+
+    OpCodeTupleType         opc_tupleType : 4;
+    OpCodeEEVEX_ND          opc_eevex_nd : 1;
+    OpCodeEEVEX_NF          opc_eevex_nf : 1;
+
+    // For legacy encodings promoted to EVEX. Only 2 bits are required for the
+    // promoted prefix because only the opc_VEX_ family of prefixes is allowed.
+    //
+    OpCodePrefixes          opc_promoted2evex_pp : 2;
+    OpCodePropertiesWidth_t opc_promoted2evex_byte : 8;
+    // 63 used; 1 avail
+};
+
+static_assert(sizeof(OpCodeProperties) == sizeof(OpCodePropertiesWidth_t), "OpCodeProperties width must match OpCodePropertiesWidth_t");
+
 // Maximum size of the operand properties bitfield
 //
 typedef uint16_t OperandPropertiesWidth_t;
