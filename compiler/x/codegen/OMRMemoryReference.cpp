@@ -1427,6 +1427,244 @@ uint32_t OMR::X86::MemoryReference::getNumMRReferencedGPRegisters()
 }
 #endif
 
+void OMR::X86::MemoryReference::analyzeOperand(OMR::X86::OperandProperties &opndProps,
+    OMR::X86::InstructionEncodingBits &encBits, TR::CodeGenerator *cg)
+{
+    TR::Compilation *comp = cg->comp();
+
+    uint32_t addressTypes = (getBaseRegister() ? MR_base : 0) | (getIndexRegister() ? MR_index : 0)
+        | ((getSymbolReference().getSymbol() || getSymbolReference().getOffset() != 0 || isForceWideDisplacement())
+                ? MR_disp
+                : 0);
+
+    TR::RealRegister *baseReg = NULL;
+    TR::RealRegister *indexReg = NULL;
+    intptr_t displacement;
+
+    switch (addressTypes) {
+        case MR_base: {
+            baseReg = toRealRegister(getBaseRegister());
+
+            if (baseReg->needsDisp()) {
+                encBits.ModRM.Mod = Mod_Base_Disp8;
+                encBits.ModRM.RM = baseReg->getId();
+                encBits.B3 = baseReg->needsRXBV3();
+                encBits.B4 = baseReg->needsRXBV4();
+                encBits.needsModRM = 1;
+                encBits.needsSIB = 1;
+
+                // displacement must be zero as required for this encoding,
+                // otherwise this case would have had a "MR_disp" component
+
+                encBits.disp32 = 0;
+            } else if (baseReg->needsSIB()) {
+                encBits.ModRM.Mod = Mod_Base;
+                encBits.ModRM.RM = RM_NeedsSIB;
+                encBits.SIB.SS = SIB_SS_Scale1;
+                encBits.SIB.Index = SIB_Index_None;
+                encBits.SIB.Base = baseReg->getId();
+                encBits.B3 = baseReg->needsRXBV3();
+                encBits.B4 = baseReg->needsRXBV4();
+                encBits.needsModRM = 1;
+                encBits.needsSIB = 1;
+            } else {
+                encBits.ModRM.Mod = Mod_Base;
+                encBits.ModRM.RM = baseReg->getId();
+                encBits.B3 = baseReg->needsRXBV3();
+                encBits.B4 = baseReg->needsRXBV4();
+                encBits.needsModRM = 1;
+            }
+
+            break;
+        }
+
+        case MR_index + MR_disp:
+        case MR_index: {
+            // To encode these cases, the ISA always requires a SIB and a disp32
+
+            indexReg = toRealRegister(getIndexRegister());
+            encBits.ModRM.Mod = Mod_Base;
+            encBits.ModRM.RM = RM_NeedsSIB;
+            encBits.SIB.Base = SIB_Base_Disp;
+            encBits.SIB.Index = indexReg->getId();
+            encBits.SIB.SS = getStride();
+
+            encBits.X3 = indexReg->needsRXBV3();
+            encBits.X4 = indexReg->needsRXBV4();
+            encBits.needsModRM = 1;
+            encBits.needsSIB = 1;
+
+            encBits.disp32 = static_cast<int32_t>(getSymbolReference().getOffset());
+            break;
+        }
+
+        case MR_base + MR_index: {
+            baseReg = toRealRegister(getBaseRegister());
+            indexReg = toRealRegister(getIndexRegister());
+
+            if (baseReg->needsDisp()) {
+                encBits.ModRM.Mod = Mod_Base_Disp8;
+                encBits.disp32 = 0;
+            } else {
+                encBits.ModRM.Mod = Mod_Base;
+            }
+
+            encBits.ModRM.RM = RM_NeedsSIB;
+            encBits.SIB.Base = baseReg->getId();
+            encBits.SIB.Index = indexReg->getId();
+            encBits.SIB.SS = getStride();
+
+            encBits.B3 = baseReg->needsRXBV3();
+            encBits.B4 = baseReg->needsRXBV4();
+            encBits.X3 = indexReg->needsRXBV3();
+            encBits.X4 = indexReg->needsRXBV4();
+            encBits.needsModRM = 1;
+            encBits.needsSIB = 1;
+            break;
+        }
+
+        case MR_disp: {
+            TR::Symbol *symbol = getSymbolReference().getSymbol();
+
+            if (symbol) {
+                // [disp32] absolute address
+                //
+                encBits.ModRM.Mod = Mod_Base;
+
+                if (comp->target().is64Bit()) {
+                    encBits.ModRM.RM = RM_NeedsSIB;
+                    encBits.SIB.Base = SIB_Base_Disp;
+                    encBits.SIB.SS = SIB_SS_Scale1;
+                    encBits.SIB.Index = SIB_Index_None;
+                    encBits.needsSIB = 1;
+                } else {
+                    encBits.ModRM.RM = RM_Disp32;
+                }
+
+                displacement = getDisplacement();
+                TR_ASSERT_FATAL(IS_32BIT_SIGNED(displacement),
+                    "MR_disp symbol displacement out of range: %" OMR_PRIxPTR, displacement);
+            } else {
+                TR::LabelSymbol *labelSym = getLabel();
+                if (labelSym) {
+                    // The MemoryReference for a label is an address in the code cache within this
+                    // compilation unit
+                    //
+                    if (comp->target().is64Bit()) {
+                        // Use RIP-relative addressing on 64-bit. All labels are assumed to be
+                        // within RIP-relative displacement range.
+                        //
+                        // The actual displacement for the memory reference cannot be computed until
+                        // the containing instruction is actually binary encoded.
+                        //
+                        encBits.RIPrelative = 1;
+                    } else {
+                        // Use an absolute code address on 32-bit, which will be filled in during
+                        // relocation processing after binary encoding
+                    }
+
+                    displacement = 0;
+                    encBits.ModRM.Mod = Mod_Base;
+                    encBits.ModRM.RM = RM_Disp32;
+                } else {
+                    // [disp32] absolute address
+                    //
+                    encBits.ModRM.Mod = Mod_Base;
+
+                    if (comp->target().is64Bit()) {
+                        encBits.ModRM.RM = RM_NeedsSIB;
+                        encBits.SIB.Base = SIB_Base_Disp;
+                        encBits.SIB.SS = SIB_SS_Scale1;
+                        encBits.SIB.Index = SIB_Index_None;
+                        encBits.needsSIB = 1;
+                    } else {
+                        encBits.ModRM.RM = RM_Disp32;
+                    }
+
+                    displacement = getSymbolReference().getOffset();
+                    TR_ASSERT_FATAL(IS_32BIT_SIGNED(displacement),
+                        "MR_disp no symbol no label displacement out of range: %" OMR_PRIxPTR, displacement);
+                }
+            }
+
+            encBits.needsModRM = 1;
+            encBits.disp32 = static_cast<int32_t>(displacement);
+
+            break;
+        }
+
+        case MR_base + MR_disp: {
+            baseReg = toRealRegister(getBaseRegister());
+
+            displacement = getDisplacement();
+            TR_ASSERT_FATAL(IS_32BIT_SIGNED(displacement),
+                "64-bit displacement should have been replaced in TR_AMD64MemoryReference::generateBinaryEncoding");
+
+            if ((displacement == 0) && !baseReg->needsDisp() && !isForceWideDisplacement()) {
+                // Eliminate the displacement entirely, if possible
+                encBits.ModRM.Mod = Mod_Base;
+            } else if (IS_8BIT_SIGNED(displacement) && !isForceWideDisplacement()) {
+                encBits.ModRM.Mod = Mod_Base_Disp8;
+            } else {
+                encBits.ModRM.Mod = Mod_Base_Disp32;
+            }
+
+            if (baseReg->needsSIB()) {
+                encBits.ModRM.RM = RM_NeedsSIB;
+                encBits.SIB.SS = SIB_SS_Scale1;
+                encBits.SIB.Index = SIB_Index_None;
+                encBits.SIB.Base = baseReg->getId();
+                encBits.needsSIB = 1;
+            } else {
+                encBits.ModRM.RM = baseReg->getId();
+            }
+
+            encBits.needsModRM = 1;
+
+            encBits.B3 = baseReg->needsRXBV3();
+            encBits.B4 = baseReg->needsRXBV4();
+            encBits.disp32 = static_cast<int32_t>(displacement);
+            break;
+        }
+
+        case MR_base + MR_index + MR_disp: {
+            baseReg = toRealRegister(getBaseRegister());
+            indexReg = toRealRegister(getIndexRegister());
+
+            displacement = getDisplacement();
+            TR_ASSERT(IS_32BIT_SIGNED(displacement),
+                "64-bit displacement should have been replaced in TR_AMD64MemoryReference::generateBinaryEncoding");
+
+            if ((displacement == 0) && !baseReg->needsDisp() && !isForceWideDisplacement()) {
+                // Eliminate the displacement entirely, if possible
+                encBits.ModRM.Mod = Mod_Base;
+            } else if (IS_8BIT_SIGNED(displacement) && !isForceWideDisplacement()) {
+                encBits.ModRM.Mod = Mod_Base_Disp8;
+            } else {
+                // If there is a symbol or if the displacement will not fit in a byte,
+                // then displacement will be 4 bytes.
+                //
+                encBits.ModRM.Mod = Mod_Base_Disp32;
+            }
+
+            encBits.ModRM.RM = RM_NeedsSIB;
+            encBits.SIB.Base = baseReg->getId();
+            encBits.SIB.SS = getStride();
+            encBits.SIB.Index = indexReg->getId();
+            encBits.needsModRM = 1;
+            encBits.needsSIB = 1;
+
+            encBits.B3 = baseReg->needsRXBV3();
+            encBits.B4 = baseReg->needsRXBV4();
+            encBits.X3 = indexReg->needsRXBV3();
+            encBits.X4 = indexReg->needsRXBV4();
+            encBits.disp32 = static_cast<int32_t>(displacement);
+
+            break;
+        }
+    }
+}
+
 /////////////////////////////////////////////////////////////////////
 // TR::MemoryReference factory functions
 /////////////////////////////////////////////////////////////////////

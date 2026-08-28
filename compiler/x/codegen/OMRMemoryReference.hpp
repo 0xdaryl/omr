@@ -344,6 +344,17 @@ public:
      */
     void finalizeOperands(TR::Instruction *containingInstr, TR::CodeGenerator *cg);
 
+    /**
+     * @brief Analyze a single MemoryReference  operand on an instruction and populate
+     *     an \c InstructionEncodingBits structure with its properties
+     *
+     * @param[in] opndProps : \c OperandProperties for the register operand
+     * @param[in] encBits : \c InstructionEncodingBits structure to populate
+     * @param[in] cg : \c CodeGenerator object
+     */
+    void analyzeOperand(OMR::X86::OperandProperties &opndProps, OMR::X86::InstructionEncodingBits &encBits,
+        TR::CodeGenerator *cg);
+
     uint32_t getBinaryLengthLowerBound(TR::CodeGenerator *cg);
     virtual uint32_t estimateBinaryLength(TR::Instruction *containingInstruction, TR::CodeGenerator *cg);
     virtual OMR::X86::EnlargementResult enlarge(TR::CodeGenerator *cg, TR::Instruction *containingInstruction,

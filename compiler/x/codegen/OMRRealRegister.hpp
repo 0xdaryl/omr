@@ -47,6 +47,9 @@ class RealRegister;
 
 namespace OMR { namespace X86 {
 
+struct OperandProperties;
+struct InstructionEncodingBits;
+
 class OMR_EXTENSIBLE RealRegister : public OMR::RealRegister {
 protected:
     RealRegister(TR::CodeGenerator *cg)
@@ -72,6 +75,17 @@ public:
     static TR_RegisterMask getAvailableRegistersMask(TR_RegisterKinds rk);
     static RegMask getRealRegisterMask(TR_RegisterKinds rk, RegNum idx);
     using OMR::RealRegister::getRealRegisterMask; // for getting the _registerMask member
+
+    /**
+     * @brief Analyze a single register operand on an instruction and populate
+     *     an \c InstructionEncodingBits structure with its properties
+     *
+     * @param[in] opndProps : \c OperandProperties for the register operand
+     * @param[in] encBits : \c InstructionEncodingBits structure to populate
+     * @param[in] cg : \c CodeGenerator object
+     */
+    void analyzeOperand(OMR::X86::OperandProperties &opndProps, OMR::X86::InstructionEncodingBits &encBits,
+        TR::CodeGenerator *cg);
 
 protected:
     struct RegisterBinaryEncoding {

@@ -363,6 +363,8 @@ protected:
     void adjustVFPStateForCall(TR_VFPState *state, int32_t vfpAdjustmentForCall, TR::CodeGenerator *cg);
     void clobberRegsForRematerialisation();
 
+    InstructionEncodingBits encBits;
+
 private:
     TR::RegisterDependencyConditions *_conditions;
     void assumeValidInstruction();
