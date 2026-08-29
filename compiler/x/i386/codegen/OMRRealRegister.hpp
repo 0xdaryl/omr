@@ -220,6 +220,15 @@ public:
 
     bool needsSIB() { return _fullRegisterBinaryEncodings[_registerNumber].needsSIB; }
 
+    uint16_t getId() { return _fullRegisterBinaryEncodings[_registerNumber].id; }
+
+    uint16_t getVVVV() { return _fullRegisterBinaryEncodings[_registerNumber].vvvv; }
+
+    // APX not supported on IA32
+    uint16_t needsRXBV4() { return 0; }
+
+    uint16_t needsRXBV3() { return _fullRegisterBinaryEncodings[_registerNumber].needsRexPlusRXB; }
+
 private:
     static const struct RegisterBinaryEncoding _fullRegisterBinaryEncodings[NumRegisters];
 };
