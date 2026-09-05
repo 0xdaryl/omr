@@ -286,6 +286,15 @@ public:
      */
     virtual void finalizeOperands() {}
 
+    /**
+     * @brief
+     *     Analyze the operands of this instruction's operands and populate
+     *     its \c InstructionEncodingBits structure. Each encodable instruction
+     *     kind with register and/or memory reference operands should
+     *     provide an override of this function.
+     */
+    virtual void analyzeOperands() {}
+
     virtual void assignRegisters(TR_RegisterKinds kindsToBeAssigned);
     virtual bool refsRegister(TR::Register *reg);
     virtual bool defsRegister(TR::Register *reg);
@@ -355,6 +364,8 @@ public:
     virtual bool hasZeroMask() { return false; }
 
     int32_t getMaxPatchableInstructionLength() { return 10; }
+
+    InstructionEncodingBits &getEncBits() { return encBits; }
 
 protected:
     // Facility for subclasses to compute effect of a call on the VFP state.

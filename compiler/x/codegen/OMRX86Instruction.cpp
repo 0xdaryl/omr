@@ -591,6 +591,11 @@ void TR::X86RegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned)
     }
 }
 
+void TR::X86RegInstruction::analyzeOperands()
+{
+    toRealRegister(getTargetRegister())->analyzeOperand(getOpCode().getOpndProps1(), getEncBits(), cg());
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // TR::X86RegRegInstruction:: member functions
 ////////////////////////////////////////////////////////////////////////////////

@@ -828,6 +828,8 @@ public:
     virtual bool defsRegister(TR::Register *reg);
     virtual bool usesRegister(TR::Register *reg);
 
+    virtual void analyzeOperands();
+
 #ifdef DEBUG
     virtual uint32_t getNumOperandReferencedGPRegisters() { return 1; };
 #endif
