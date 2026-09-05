@@ -828,6 +828,8 @@ public:
     virtual bool defsRegister(TR::Register *reg);
     virtual bool usesRegister(TR::Register *reg);
 
+    virtual void analyzeOperands();
+
 #ifdef DEBUG
     virtual uint32_t getNumOperandReferencedGPRegisters() { return 1; };
 #endif
@@ -939,6 +941,8 @@ public:
     virtual bool refsRegister(TR::Register *reg);
     virtual bool defsRegister(TR::Register *reg);
     virtual bool usesRegister(TR::Register *reg);
+
+    virtual void analyzeOperands();
 
 #ifdef DEBUG
     virtual uint32_t getNumOperandReferencedGPRegisters() { return 2; }
@@ -1172,6 +1176,8 @@ public:
         TR::RealRegister *source = toRealRegister(_source2ndRegister);
         source->setSource2ndRegisterFieldInEVEX(vex);
     }
+
+    virtual void analyzeOperands();
 
 #ifdef DEBUG
     virtual uint32_t getNumOperandReferencedGPRegisters() { return 3; }
@@ -1470,6 +1476,7 @@ public:
     virtual bool usesRegister(TR::Register *reg);
 
     virtual void finalizeOperands();
+    virtual void analyzeOperands();
 
 #ifdef DEBUG
     virtual uint32_t getNumOperandReferencedGPRegisters() { return _memoryReference->getNumMRReferencedGPRegisters(); }
@@ -1691,6 +1698,8 @@ public:
     virtual bool defsRegister(TR::Register *reg);
     virtual bool usesRegister(TR::Register *reg);
 
+    virtual void analyzeOperands();
+
 #ifdef DEBUG
     virtual uint32_t getNumOperandReferencedGPRegisters()
     {
@@ -1871,6 +1880,8 @@ public:
     virtual bool refsRegister(TR::Register *reg);
     virtual bool usesRegister(TR::Register *reg);
 
+    virtual void analyzeOperands();
+
 #ifdef DEBUG
     virtual uint32_t getNumOperandReferencedGPRegisters()
     {
@@ -1985,6 +1996,8 @@ public:
         TR::RealRegister *source = toRealRegister(_source2ndRegister);
         source->setSource2ndRegisterFieldInEVEX(evex);
     }
+
+    virtual void analyzeOperands();
 
 #ifdef DEBUG
     virtual uint32_t getNumOperandReferencedGPRegisters()

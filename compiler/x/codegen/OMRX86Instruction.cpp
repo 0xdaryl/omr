@@ -591,6 +591,11 @@ void TR::X86RegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned)
     }
 }
 
+void TR::X86RegInstruction::analyzeOperands()
+{
+    toRealRegister(getTargetRegister())->analyzeOperand(getOpCode().getOpndProps1(), getEncBits(), cg());
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // TR::X86RegRegInstruction:: member functions
 ////////////////////////////////////////////////////////////////////////////////
@@ -813,6 +818,12 @@ void TR::X86RegRegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigne
         getTargetRegister()->unblock();
         getSourceRegister()->unblock();
     }
+}
+
+void TR::X86RegRegInstruction::analyzeOperands()
+{
+    toRealRegister(getTargetRegister())->analyzeOperand(getOpCode().getOpndProps1(), getEncBits(), cg());
+    toRealRegister(getSourceRegister())->analyzeOperand(getOpCode().getOpndProps2(), getEncBits(), cg());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1161,6 +1172,13 @@ void TR::X86RegRegRegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssi
         getSourceRegister()->unblock();
         getSource2ndRegister()->unblock();
     }
+}
+
+void TR::X86RegRegRegInstruction::analyzeOperands()
+{
+    toRealRegister(getTargetRegister())->analyzeOperand(getOpCode().getOpndProps1(), getEncBits(), cg());
+    toRealRegister(getSourceRegister())->analyzeOperand(getOpCode().getOpndProps2(), getEncBits(), cg());
+    toRealRegister(getSource2ndRegister())->analyzeOperand(getOpCode().getOpndProps3(), getEncBits(), cg());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1780,6 +1798,15 @@ void TR::X86MemInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned)
 
 void TR::X86MemInstruction::finalizeOperands() { getMemoryReference()->finalizeOperands(this, cg()); }
 
+void TR::X86MemInstruction::analyzeOperands()
+{
+    getMemoryReference()->analyzeOperand(getOpCode().getOpndProps1(), getEncBits(), cg());
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// TR::X86MemTableInstruction:: member functions
+////////////////////////////////////////////////////////////////////////////////
+
 void TR::X86MemTableInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned)
 {
     // Call inherited logic
@@ -2051,6 +2078,12 @@ void TR::X86MemRegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigne
         getMemoryReference()->unblockRegisters();
         getSourceRegister()->unblock();
     }
+}
+
+void TR::X86MemRegInstruction::analyzeOperands()
+{
+    getMemoryReference()->analyzeOperand(getOpCode().getOpndProps1(), getEncBits(), cg());
+    toRealRegister(getSourceRegister())->analyzeOperand(getOpCode().getOpndProps2(), getEncBits(), cg());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2437,6 +2470,12 @@ void TR::X86RegMemInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigne
 
 void TR::X86RegMemInstruction::finalizeOperands() { getMemoryReference()->finalizeOperands(this, cg()); }
 
+void TR::X86RegMemInstruction::analyzeOperands()
+{
+    toRealRegister(getTargetRegister())->analyzeOperand(getOpCode().getOpndProps1(), getEncBits(), cg());
+    getMemoryReference()->analyzeOperand(getOpCode().getOpndProps2(), getEncBits(), cg());
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // TR::X86RegMemImmInstruction:: member functions
 ////////////////////////////////////////////////////////////////////////////////
@@ -2581,6 +2620,13 @@ void TR::X86RegRegMemInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssi
         getTargetRegister()->unblock();
         getSource2ndRegister()->unblock();
     }
+}
+
+void TR::X86RegRegMemInstruction::analyzeOperands()
+{
+    toRealRegister(getTargetRegister())->analyzeOperand(getOpCode().getOpndProps1(), getEncBits(), cg());
+    toRealRegister(getSource2ndRegister())->analyzeOperand(getOpCode().getOpndProps2(), getEncBits(), cg());
+    getMemoryReference()->analyzeOperand(getOpCode().getOpndProps3(), getEncBits(), cg());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
