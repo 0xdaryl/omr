@@ -71,9 +71,10 @@ void OMR::X86::RealRegister::analyzeOperand(const OMR::X86::OperandProperties &o
             encBits.needsModRM = 1;
             break;
         case opnd_OPC_reg_B3:
-            encBits.opcodeReg = id; // opcodeReg needs to be just the 3 bits in the bitfield
+            encBits.opCodeReg = id; // opCodeReg needs to be just the 3 bits in the bitfield
             encBits.B3 = needsRXBV3;
             encBits.B4 = needsRXBV4;
+            encBits.regInOpCode = 1;
             break;
         case opnd_vvvv:
             encBits.vvvv = self()->getVVVV(); // inverted bits
