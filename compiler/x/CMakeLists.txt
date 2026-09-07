@@ -34,6 +34,7 @@ compiler_library(x
 	${CMAKE_CURRENT_LIST_DIR}/codegen/IntegerMultiplyDecomposer.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRMemoryReference.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRInstOpCode.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/codegen/OpCodeTable.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OutlinedInstructions.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/RegisterRematerialization.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/SubtractAnalyser.cpp

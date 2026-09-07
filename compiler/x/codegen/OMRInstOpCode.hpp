@@ -498,17 +498,19 @@ static_assert(sizeof(OpCodeProperties) == sizeof(OpCodePropertiesWidth_t), "OpCo
 
 // Maximum size of the opcode properties bitfield
 //
-typedef uint8_t OpCodeSecondaryPropertiesWidth_t;
+typedef uint8_t OpCodeAuxPropertiesWidth_t;
 
-enum OpCodeSecondaryFlags : OpCodeSecondaryPropertiesWidth_t {
+enum OpCodeAuxProperties : OpCodeAuxPropertiesWidth_t {
     // These flags are NOT mutually exclusive
     //
-    opc_No2ndFlags            = 0x00,
+    opc_AuxNone               = 0x00,
     opc_SupportsLOCKPrefix    = 0x01,
     opc_FusableCompare        = 0x02,
     opc_SetStatusFlagsForTEST = 0x04,
     opc_SetStatusFlagsForCMP  = 0x08,
 };
+
+#define OPC_AUXPROP(x) static_cast<OpCodeAuxProperties>(x)
 
 // Maximum size of the operand properties bitfield
 //
@@ -751,11 +753,24 @@ class InstOpCode : public OMR::InstOpCode {
     // byte
     inline void CheckAndFinishGroup07(uint8_t *cursor) const;
 
+    struct NewOpCode {
+        OpCodeProperties _properties;
+
+        static const uint32_t Max_x86_Instruction_Operands = 4;
+        OperandProperties _opndProperties[Max_x86_Instruction_Operands];
+
+        const char *opCodeName;
+        const char *mnemonicName;
+    };
+
     static const OpCode_t _binaries[];
     static const uint32_t _properties[];
     static const uint32_t _properties1[];
     static const uint32_t _properties2[];
     static const uint32_t _features[];
+
+    static const NewOpCode _opCodeTable[];
+    static const OpCodeAuxProperties _opCodeAuxProperties[];
 
 protected:
     InstOpCode()
@@ -1282,6 +1297,43 @@ public:
             flags |= IA32EFlags_CF;
         return flags;
     }
+
+    inline const uint8_t getOpCodeByte() const { return _opCodeTable[_mnemonic]._properties.opc_byte; }
+
+    inline const OpCodePropertiesWidth_t hasOpCodeExtension() const
+    {
+        return _opCodeTable[_mnemonic]._properties.opc_ext != opc_Ext_None;
+    }
+
+    inline const uint8_t getOpCodeExtensionDigit() const
+    {
+        return _opCodeTable[_mnemonic]._properties.opc_ext & opc_Ext_Mask;
+    }
+
+    inline const OpCodePropertiesWidth_t allowsEncPrefix(OpCodeEncodingPrefix prefix)
+    {
+        return _opCodeTable[_mnemonic]._properties.opc_validEncPrefixes & prefix;
+    }
+
+    inline const OpCodePropertiesWidth_t allowsAnyEncPrefix(OpCodePropertiesWidth_t prefixes)
+    {
+        return _opCodeTable[_mnemonic]._properties.opc_validEncPrefixes & prefixes;
+    }
+
+    inline const OpCodePropertiesWidth_t allowsAllEncPrefixes(OpCodePropertiesWidth_t prefixes)
+    {
+        return (_opCodeTable[_mnemonic]._properties.opc_validEncPrefixes & prefixes) == prefixes;
+    }
+
+    inline const OpCodeMap getOpCodeMap() const { return _opCodeTable[_mnemonic]._properties.opc_map; }
+
+    inline const OperandProperties &getOpndProps1() const { return _opCodeTable[_mnemonic]._opndProperties[0]; }
+
+    inline const OperandProperties &getOpndProps2() const { return _opCodeTable[_mnemonic]._opndProperties[1]; }
+
+    inline const OperandProperties &getOpndProps3() const { return _opCodeTable[_mnemonic]._opndProperties[2]; }
+
+    inline const OperandProperties &getOpndProps4() const { return _opCodeTable[_mnemonic]._opndProperties[3]; }
 
 #if defined(DEBUG)
     const char *getOpCodeName(TR::CodeGenerator *cg);
