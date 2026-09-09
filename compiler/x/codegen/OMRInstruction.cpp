@@ -329,6 +329,8 @@ void OMR::X86::Instruction::selectEncodingPrefix()
                 TR_ASSERT_FATAL(opc.allowsEncPrefix(opc_Legacy2EVEX), "Legacy2EVEX form required");
                 prefix = opc_Legacy2EVEX;
             }
+        } else if (opc.allowsOnlyEncPrefix(opc_REX2)) {
+            prefix = opc_REX2;
         } else if (forceLegacy2EVEX) {
             prefix = opc_Legacy2EVEX;
         } else {
