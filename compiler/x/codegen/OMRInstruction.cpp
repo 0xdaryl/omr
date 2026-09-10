@@ -274,6 +274,77 @@ void OMR::X86::Instruction::clobberRegsForRematerialisation()
     }
 }
 
+void OMR::X86::Instruction::selectEncodingPrefix()
+{
+    TR::InstOpCode &opc = getOpCode();
+
+    // Debugging option to force EVEXEEVEX encodings
+    // Don't check for cg->supportsAVX512F() now because it should have happened before choosing instruction
+
+    //    bool forceEVEX = opc.encVEX() && (opc.encEVEX() || opc.encVEX2EVEX()) &&
+    //    cg()->comp()->getOption(TR_ForceEVEX); bool forceLegacy2EVEX = opc.encLegacy2EVEX() &&
+    //    cg()->comp()->getOption(TR_ForceEVEX);
+
+    bool forceEVEX = false;
+    bool forceLegacy2EVEX = false;
+
+    InstructionEncodingBits &enc = getEncBits();
+    OpCodeEncodingPrefix prefix = opc_UnknownEnc;
+
+    /**
+     * Select the best encoding prefix for this instruction. Generally, the most
+     * compact encoding scheme is preferred.
+     */
+    if (opc.allowsAnyEncPrefix(opc_VEX2 | opc_VEX3 | opc_EVEX | opc_VEX2EVEX)) {
+        if (opc.allowsAnyEncPrefix(opc_VEX2 | opc_VEX3)) {
+            // This instruction has a VEX encoding, but the use of any extended
+            // register requires an EVEX prefix
+            //
+            if (enc.RXBV4 || forceEVEX) {
+                TR_ASSERT_FATAL(opc.allowsAnyEncPrefix(opc_EVEX || opc_VEX2EVEX), "EVEX form required");
+                if (opc.allowsEncPrefix(opc_VEX2EVEX)) {
+                    prefix = opc_VEX2EVEX;
+                } else {
+                    // consider introducing EVEX_EVEX??
+                    prefix = opc_EVEX;
+                }
+            } else {
+                if ((opc.getOpCodeMap() == opc_Map_0F) && !enc.X3 && !enc.B3 && !enc.W) {
+                    prefix = opc_VEX2;
+                } else {
+                    prefix = opc_VEX3;
+                }
+            }
+        } else {
+            TR_ASSERT_FATAL(opc.allowsEncPrefix(opc_EVEX), "unexpected encoding prefix");
+            prefix = opc_EVEX;
+        }
+    } else {
+        // Either a legacy encoding, REX, REX2, or Legacy2EVEX
+        //
+        if (enc.RXBV4) {
+            if (opc.allowsEncPrefix(opc_REX2)) {
+                prefix = opc_REX2;
+            } else {
+                TR_ASSERT_FATAL(opc.allowsEncPrefix(opc_Legacy2EVEX), "Legacy2EVEX form required");
+                prefix = opc_Legacy2EVEX;
+            }
+        } else if (forceLegacy2EVEX) {
+            prefix = opc_Legacy2EVEX;
+        } else {
+            if (enc.W || enc.R3 || enc.B3 || enc.X3) {
+                prefix = opc_REX;
+            } else {
+                prefix = opc_Legacy;
+            }
+        }
+    }
+
+    TR_ASSERT_FATAL(prefix != opc_UnknownEnc, "Unable to assign encoding prefix");
+
+    enc.encodingPrefix = prefix;
+}
+
 void OMR::X86::Instruction::finalizeBeforeBinaryEncoding()
 {
     finalizeOperands();
