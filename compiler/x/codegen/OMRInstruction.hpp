@@ -293,6 +293,13 @@ public:
      */
     virtual void analyzeOperands() {}
 
+    /**
+     * @brief
+     *     Determine the best encoding prefix for this instruction based on the
+     *     information collected in the \c InstructionEncodingBits.
+     */
+    void selectEncodingPrefix();
+
     virtual void assignRegisters(TR_RegisterKinds kindsToBeAssigned);
     virtual bool refsRegister(TR::Register *reg);
     virtual bool defsRegister(TR::Register *reg);
