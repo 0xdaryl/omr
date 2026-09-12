@@ -91,11 +91,11 @@ const OMR::X86::InstOpCode::NewOpCode OMR::X86::InstOpCode::_opCodeTable[] = {
         {
             0x04,
             opc_Ext_None,
-            OPC_ENCODING_PREFIXES(opc_Legacy),
-            OPC_FLAGS(opc_SetAllFlags),
+            opc_Map_0,
+            opc_Prefix_NP,
             opc_WIG,
-            opc_Kind_None,
-            opc_Map_None,
+            OPC_ENCODING_PREFIXES(opc_Legacy),
+            OPC_RFLAGS(opc_SetAllFlags),
             OPC_FLAGS(opc_SetStatusFlagsForTEST | opc_SetStatusFlagsForCMP),
         },
         {
@@ -115,11 +115,11 @@ const OMR::X86::InstOpCode::NewOpCode OMR::X86::InstOpCode::_opCodeTable[] = {
         {
             0x80,
             opc_Ext_0,
-            OPC_ENCODING_PREFIXES(opc_Legacy | opc_REX | opc_REX2),
-            OPC_FLAGS(opc_SetAllFlags),
+            opc_Map_0,
+            opc_Prefix_NP,
             opc_WIG,
-            opc_Kind_None,
-            opc_Map_None,
+            OPC_ENCODING_PREFIXES(opc_Legacy | opc_REX | opc_REX2),
+            OPC_RFLAGS(opc_SetAllFlags),
             OPC_FLAGS(opc_SetStatusFlagsForTEST | opc_SetStatusFlagsForCMP),
         },
         {
@@ -139,11 +139,11 @@ const OMR::X86::InstOpCode::NewOpCode OMR::X86::InstOpCode::_opCodeTable[] = {
         {
             0x80,
             opc_Ext_0,
-            OPC_ENCODING_PREFIXES(opc_Legacy | opc_REX | opc_REX2),
-            OPC_FLAGS(opc_SetAllFlags),
+            opc_Map_0,
+            opc_Prefix_NP,
             opc_WIG,
-            opc_Kind_None,
-            opc_Map_None,
+            OPC_ENCODING_PREFIXES(opc_Legacy | opc_REX | opc_REX2),
+            OPC_RFLAGS(opc_SetAllFlags),
             OPC_FLAGS(opc_SupportsLOCKPrefix | opc_SetStatusFlagsForTEST | opc_SetStatusFlagsForCMP),
         },
         {
@@ -163,11 +163,11 @@ const OMR::X86::InstOpCode::NewOpCode OMR::X86::InstOpCode::_opCodeTable[] = {
         {
             0x00,
             opc_Ext_None,
-            OPC_ENCODING_PREFIXES(opc_Legacy | opc_REX | opc_REX2),
-            OPC_FLAGS(opc_SetAllFlags),
+            opc_Map_0,
+            opc_Prefix_NP,
             opc_WIG,
-            opc_Kind_None,
-            opc_Map_None,
+            OPC_ENCODING_PREFIXES(opc_Legacy | opc_REX | opc_REX2),
+            OPC_RFLAGS(opc_SetAllFlags),
             OPC_FLAGS(opc_SetStatusFlagsForTEST | opc_SetStatusFlagsForCMP),
         },
         {
@@ -187,11 +187,11 @@ const OMR::X86::InstOpCode::NewOpCode OMR::X86::InstOpCode::_opCodeTable[] = {
         {
             0x00,
             opc_Ext_None,
-            OPC_ENCODING_PREFIXES(opc_Legacy | opc_REX | opc_REX2),
-            OPC_FLAGS(opc_SetAllFlags),
+            opc_Map_0,
+            opc_Prefix_NP,
             opc_WIG,
-            opc_Kind_None,
-            opc_Map_None,
+            OPC_ENCODING_PREFIXES(opc_Legacy | opc_REX | opc_REX2),
+            OPC_RFLAGS(opc_SetAllFlags),
             OPC_FLAGS(opc_SupportsLOCKPrefix | opc_SetStatusFlagsForTEST | opc_SetStatusFlagsForCMP),
         },
         {
@@ -211,11 +211,11 @@ const OMR::X86::InstOpCode::NewOpCode OMR::X86::InstOpCode::_opCodeTable[] = {
         {
             0x02,
             opc_Ext_None,
-            OPC_ENCODING_PREFIXES(opc_Legacy | opc_REX | opc_REX2),
-            OPC_FLAGS(opc_SetAllFlags),
+            opc_Map_0,
+            opc_Prefix_NP,
             opc_WIG,
-            opc_Kind_None,
-            opc_Map_None,
+            OPC_ENCODING_PREFIXES(opc_Legacy | opc_REX | opc_REX2),
+            OPC_RFLAGS(opc_SetAllFlags),
             OPC_FLAGS(opc_SetStatusFlagsForTEST | opc_SetStatusFlagsForCMP),
         },
         {
@@ -235,13 +235,12 @@ const OMR::X86::InstOpCode::NewOpCode OMR::X86::InstOpCode::_opCodeTable[] = {
         {
             0x05,
             opc_Ext_None,
-            OPC_ENCODING_PREFIXES(opc_Legacy),
-            OPC_FLAGS(opc_SetAllFlags),
-            opc_WIG,
-            opc_Kind_None,
-            opc_Map_None,
-            OPC_FLAGS(opc_SetStatusFlagsForTEST | opc_SetStatusFlagsForCMP),
+            opc_Map_0,
             opc_Prefix_66,
+            opc_WIG,
+            OPC_ENCODING_PREFIXES(opc_Legacy),
+            OPC_RFLAGS(opc_SetAllFlags),
+            OPC_FLAGS(opc_SetStatusFlagsForTEST | opc_SetStatusFlagsForCMP),
         },
         {
             // Operand 1
@@ -260,11 +259,11 @@ const OMR::X86::InstOpCode::NewOpCode OMR::X86::InstOpCode::_opCodeTable[] = {
         {
             0x05,
             opc_Ext_None,
-            OPC_ENCODING_PREFIXES(opc_Legacy),
-            OPC_FLAGS(opc_SetAllFlags),
+            opc_Map_0,
+            opc_Prefix_NP,
             opc_WIG,
-            opc_Kind_None,
-            opc_Map_None,
+            OPC_ENCODING_PREFIXES(opc_Legacy),
+            OPC_RFLAGS(opc_SetAllFlags),
             OPC_FLAGS(opc_SetStatusFlagsForTEST | opc_SetStatusFlagsForCMP),
         },
         {
@@ -284,11 +283,11 @@ const OMR::X86::InstOpCode::NewOpCode OMR::X86::InstOpCode::_opCodeTable[] = {
         {
             0x05,
             opc_Ext_None,
-            OPC_ENCODING_PREFIXES(opc_Legacy | opc_REX),
-            OPC_FLAGS(opc_SetAllFlags),
+            opc_Map_0,
+            opc_Prefix_NP,
             opc_W1,
-            opc_Kind_None,
-            opc_Map_None,
+            OPC_ENCODING_PREFIXES(opc_REX),
+            OPC_RFLAGS(opc_SetAllFlags),
             OPC_FLAGS(opc_SetStatusFlagsForTEST | opc_SetStatusFlagsForCMP),
         },
         {
@@ -303,36 +302,27 @@ const OMR::X86::InstOpCode::NewOpCode OMR::X86::InstOpCode::_opCodeTable[] = {
         "add64",
     },
 
+    // CRC32_r32_rm16
+    // CRC32_r32_rm32
+    // CRC32_r64_rm8
+    // CRC32_r64_rm64
 
-
-    // ------------------------------------------------------------------------
-
-    // ADD8_RegImm8
+    // CRC32_r32_rm8
     {
         {
-            0x80,
-            opc_Ext_0,
-            OPC_ENCODING_PREFIXES(opc_VEX2 | opc_VEX3),
-            OPC_FLAGS(opc_TestZF | opc_TestSF | opc_SetZF | opc_SetSF),
-            opc_WIG,
-            opc_Kind_None,
-            opc_Map_0F3A,
-            OPC_FLAGS(opc_SupportsLOCKPrefix | opc_SetStatusFlagsForCMP),
-            OPC_PREFIX(opc_VEX_PP_None),
-            opc_EEVEX_ND1,
-            opc_EEVEX_NF_None,
+            0xF0, opc_Ext_None, opc_Map_2_0F38, opc_Prefix_F2, opc_WIG,
+            OPC_ENCODING_PREFIXES(opc_Legacy, opc_REX, opc_Legacy2EVEX),
+            opc_NoRFlags,
+            opc_NoFlags,
+            opc_TupleNone, opc_EEVEX_ND0, opc_EEVEX_NF0, opc_VEX_PP_NP, 0xF0,
         },
         {
-            // Operand 1
-            { opnd_Reg, opnd_Int, opnd_Scalar, opnd_16, opnd_RW, opnd_MR_rm_B3, opnd_NotImm, opnd_Explicit, },
-
-            // Operand 2
-            { opnd_Mem, opnd_Int, opnd_Vector, opnd_256, opnd_R, opnd_ImmEnc, opnd_NotImm, opnd_Implicit, },
+        /* 1 */ { opnd_Reg, opnd_Int, opnd_Scalar, opnd_32, opnd_RW, opnd_MR_reg_R3, opnd_NotImm, opnd_Explicit, },
+        /* 2 */ { opnd_RM, opnd_Int, opnd_Scalar, opnd_8, opnd_R, opnd_MR_rm_B3, opnd_NotImm, opnd_Explicit, },
         },
-
-        "ADD8RegImm8",
-        "add",
-    },
+        "CRC32_r32_rm8",
+        "crc32",
+    }.
 
     // clang-format on
 };
