@@ -296,6 +296,15 @@ public:
      */
     void selectEncodingPrefix();
 
+    /**
+     * @brief
+     *     For EVEX encoded instructions, ensure that ModRM disp8 mode
+     *     correctly accounts for EVEX compressed displacements. Modifies the
+     *     Mod field in the ModRM byte and scales the displacement to ensure
+     *     correctness.
+     */
+    void adjustModRMforEVEXCompressedDisplacement();
+
     virtual void assignRegisters(TR_RegisterKinds kindsToBeAssigned);
     virtual bool refsRegister(TR::Register *reg);
     virtual bool defsRegister(TR::Register *reg);

@@ -347,6 +347,42 @@ void OMR::X86::Instruction::selectEncodingPrefix()
     enc.encodingPrefix = prefix;
 }
 
+void OMR::X86::Instruction::adjustModRMforEVEXCompressedDisplacement()
+{
+    InstructionEncodingBits &enc = getEncBits();
+
+    if (((enc.encodingPrefix == opc_EVEX) || (enc.encodingPrefix == opc_VEX2EVEX)
+            || (enc.encodingPrefix == opc_Legacy2EVEX))
+        && enc.needsModRM && (enc.ModRM.Mod == Mod_Base_Disp8 || enc.ModRM.Mod == Mod_Base_Disp32)) {
+        if (!enc.forceDisp32) {
+            int32_t N = getOpCode().getEVEXCompressedDisp8ScalingFactor();
+
+            // If the displacement on the instruction MemoryReference is a multiple
+            // of the scaling factor then consider it for compressed displacement
+            //
+            if (enc.disp32 % N == 0) {
+                int32_t scaledDisp32 = enc.disp32 / N;
+                if (IS_8BIT_SIGNED(scaledDisp32)) {
+                    if (enc.ModRM.Mod != Mod_Base_Disp8) {
+                        enc.ModRM.Mod = Mod_Base_Disp8;
+                    }
+                    enc.disp32 = scaledDisp32;
+                    return;
+                }
+            }
+
+            // The displacement was not a multiple of N or was too large to
+            // represent with a disp8. Ensure the disp32 form is used with the
+            // original displacement because disp32 with an EVEX encoding is
+            // not compressed.
+            //
+            if (enc.ModRM.Mod != Mod_Base_Disp32) {
+                enc.ModRM.Mod = Mod_Base_Disp32;
+            }
+        }
+    }
+}
+
 void OMR::X86::Instruction::finalizeBeforeBinaryEncoding()
 {
     finalizeOperands();
