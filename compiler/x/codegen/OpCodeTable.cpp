@@ -104,11 +104,11 @@ const OMR::X86::InstOpCode::NewOpCode OMR::X86::InstOpCode::_opCodeTable[] = {
     // ADD_r8_imm8_NF
     {
         {
-        0x80, opc_Ext_0, opc_Map_4, opc_VEX_PP_NP, opc_WIG,
+        0x80, opc_Ext_0, opc_Map_4, opc_PP_NP, opc_WIG,
         OPC_ENCODING_PREFIXES(opc_Legacy2EVEX),
         opc_NoRFlags,
         opc_NoFlags,
-        opc_LLZ, opc_TupleType_NoScale, opc_EEVEX_ND0, opc_EEVEX_NF1, opc_PP_NP, 0x80,
+        opc_LLZ, opc_TupleType_NoScale, opc_ND0, opc_NF1, opc_z_None, opc_EVEX_PP_NP, 0x80,
         },
         {
         /* 1 */ { opnd_Reg, opnd_Int, opnd_Scalar, opnd_8, opnd_RW, opnd_MR_rm_B3, opnd_NotImm, opnd_Explicit, },
@@ -134,11 +134,11 @@ const OMR::X86::InstOpCode::NewOpCode OMR::X86::InstOpCode::_opCodeTable[] = {
     // ADD_m8_imm8_NF
     {
         {
-        0x80, opc_Ext_0, opc_Map_4, opc_VEX_PP_NP, opc_WIG,
+        0x80, opc_Ext_0, opc_Map_4, opc_PP_NP, opc_WIG,
         OPC_ENCODING_PREFIXES(opc_Legacy2EVEX),
         opc_NoRFlags,
         opc_NoFlags,
-        opc_LLZ, opc_TupleType_NoScale, opc_EEVEX_ND0, opc_EEVEX_NF1, opc_PP_NP, 0x80,
+        opc_LLZ, opc_TupleType_NoScale, opc_ND0, opc_NF1, opc_z_None, opc_EVEX_PP_NP, 0x80,
         },
         {
         /* 1 */ { opnd_Mem, opnd_Int, opnd_Scalar, opnd_8, opnd_RW, opnd_MR_rm_B3, opnd_NotImm, opnd_Explicit, },
@@ -178,11 +178,11 @@ const OMR::X86::InstOpCode::NewOpCode OMR::X86::InstOpCode::_opCodeTable[] = {
     // ADD_m8_r8_NF
     {
         {
-        0x00, opc_Ext_None, opc_Map_4, opc_VEX_PP_NP, opc_WIG,
+        0x00, opc_Ext_None, opc_Map_4, opc_PP_NP, opc_WIG,
         OPC_ENCODING_PREFIXES(opc_Legacy2EVEX),
         opc_NoRFlags,
         opc_NoFlags,
-        opc_LLZ, opc_TupleType_NoScale, opc_EEVEX_ND0, opc_EEVEX_NF1, opc_PP_NP, 0x00,
+        opc_LLZ, opc_TupleType_NoScale, opc_ND0, opc_NF1, opc_z_None, opc_EVEX_PP_NP, 0x00,
         },
         {
         /* 1 */ { opnd_Mem, opnd_Int, opnd_Scalar, opnd_8, opnd_RW, opnd_MR_rm_B3, opnd_NotImm, opnd_Explicit, },
@@ -194,11 +194,11 @@ const OMR::X86::InstOpCode::NewOpCode OMR::X86::InstOpCode::_opCodeTable[] = {
     // ADD_r8_rm8_NF
     {
         {
-        0x02, opc_Ext_None, opc_Map_4, opc_VEX_PP_NP, opc_WIG,
+        0x02, opc_Ext_None, opc_Map_4, opc_PP_NP, opc_WIG,
         OPC_ENCODING_PREFIXES(opc_Legacy2EVEX),
         opc_NoRFlags,
         opc_NoFlags,
-        opc_LLZ, opc_TupleType_NoScale, opc_EEVEX_ND0, opc_EEVEX_NF1, opc_PP_NP, 0x02,
+        opc_LLZ, opc_TupleType_NoScale, opc_ND0, opc_NF1, opc_z_None, opc_EVEX_PP_NP, 0x02,
         },
         {
         /* 1 */ { opnd_Reg, opnd_Int, opnd_Scalar, opnd_8, opnd_RW, opnd_MR_reg_R3, opnd_NotImm, opnd_Explicit, },
@@ -210,11 +210,11 @@ const OMR::X86::InstOpCode::NewOpCode OMR::X86::InstOpCode::_opCodeTable[] = {
     // ADD_r8_rm8_r8
     {
         {
-        0x00, opc_Ext_None, opc_Map_4, opc_VEX_PP_NP, opc_WIG,
+        0x00, opc_Ext_None, opc_Map_4, opc_PP_NP, opc_WIG,
         opc_Legacy2EVEX,
         OPC_RFLAGS(opc_SetAllFlags),
         opc_NoFlags,
-        opc_LLZ, opc_TupleType_NoScale, opc_EEVEX_ND1, opc_EEVEX_NF0, opc_PP_NP, 0x00,
+        opc_LLZ, opc_TupleType_NoScale, opc_ND1, opc_NF0, opc_z_None, opc_EVEX_PP_NP, 0x00,
         },
         {
         /* 1 */ { opnd_Reg, opnd_Int, opnd_Scalar, opnd_8, opnd_W, opnd_vvvv, opnd_NotImm, opnd_Explicit, },
@@ -229,11 +229,11 @@ const OMR::X86::InstOpCode::NewOpCode OMR::X86::InstOpCode::_opCodeTable[] = {
     // ADD_r8_r8_rm8
     {
         {
-        0x02, opc_Ext_None, opc_Map_4, opc_VEX_PP_NP, opc_WIG,
+        0x02, opc_Ext_None, opc_Map_4, opc_PP_NP, opc_WIG,
         opc_Legacy2EVEX,
         OPC_RFLAGS(opc_SetAllFlags),
         opc_NoFlags,
-        opc_LLZ, opc_TupleType_NoScale, opc_EEVEX_ND1, opc_EEVEX_NF0, opc_PP_NP, 0x02,
+        opc_LLZ, opc_TupleType_NoScale, opc_ND1, opc_NF0, opc_z_None, opc_EVEX_PP_NP, 0x02,
         },
         {
         /* 1 */ { opnd_Reg, opnd_Int, opnd_Scalar, opnd_8, opnd_W, opnd_vvvv, opnd_NotImm, opnd_Explicit, },
@@ -299,7 +299,7 @@ const OMR::X86::InstOpCode::NewOpCode OMR::X86::InstOpCode::_opCodeTable[] = {
         OPC_ENCODING_PREFIXES(opc_Legacy | opc_REX | opc_Legacy2EVEX),
         opc_NoRFlags,
         opc_NoFlags,
-        opc_LL_Scalar, opc_TupleType_NoScale, opc_EEVEX_ND0, opc_EEVEX_NF0, opc_PP_NP, 0xF0,
+        opc_LL_Scalar, opc_TupleType_NoScale, opc_ND0, opc_NF0, opc_z_None, opc_EVEX_PP_NP, 0xF0,
         },
         {
         /* 1 */ { opnd_Reg, opnd_Int, opnd_Scalar, opnd_32, opnd_RW, opnd_MR_reg_R3, opnd_NotImm, opnd_Explicit, },
@@ -325,11 +325,11 @@ const OMR::X86::InstOpCode::NewOpCode OMR::X86::InstOpCode::_opCodeTable[] = {
     // KMOVB_k8_km8
     {
         {
-        0x90, opc_Ext_None, opc_Map_1_0F, opc_VEX_PP_66, opc_W0,
+        0x90, opc_Ext_None, opc_Map_1_0F, opc_PP_66, opc_W0,
         OPC_ENCODING_PREFIXES(opc_VEX2 | opc_VEX3 | opc_VEX2EVEX),
         opc_NoRFlags,
         opc_NoFlags,
-        opc_LL_Scalar, opc_TupleType_NoScale, opc_EEVEX_ND0, opc_EEVEX_NF0, opc_PP_66, 0x90,
+        opc_LL_Scalar, opc_TupleType_NoScale, opc_ND0, opc_NF0, opc_z_None, opc_EVEX_PP_66, 0x90,
         },
         {
         /* 1 */ { opnd_Reg, opnd_Mask, opnd_Scalar, opnd_8, opnd_W, opnd_MR_reg_R3, opnd_NotImm, opnd_Explicit, },
@@ -341,11 +341,11 @@ const OMR::X86::InstOpCode::NewOpCode OMR::X86::InstOpCode::_opCodeTable[] = {
     // KMOVB_m8_k8
     {
         {
-        0x91, opc_Ext_None, opc_Map_1_0F, opc_VEX_PP_66, opc_W0,
+        0x91, opc_Ext_None, opc_Map_1_0F, opc_PP_66, opc_W0,
         OPC_ENCODING_PREFIXES(opc_VEX2 | opc_VEX3 | opc_VEX2EVEX),
         opc_NoRFlags,
         opc_NoFlags,
-        opc_LL_Scalar, opc_TupleType_NoScale, opc_EEVEX_ND0, opc_EEVEX_NF0, opc_PP_66, 0x91,
+        opc_LL_Scalar, opc_TupleType_NoScale, opc_ND0, opc_NF0, opc_z_None, opc_EVEX_PP_66, 0x91,
         },
         {
         /* 1 */ { opnd_Mem, opnd_Mask, opnd_Scalar, opnd_8, opnd_W, opnd_MR_rm_B3, opnd_NotImm, opnd_Explicit, },
@@ -357,11 +357,11 @@ const OMR::X86::InstOpCode::NewOpCode OMR::X86::InstOpCode::_opCodeTable[] = {
     // KMOVB_k8_r32
     {
         {
-        0x92, opc_Ext_None, opc_Map_1_0F, opc_VEX_PP_66, opc_W0,
+        0x92, opc_Ext_None, opc_Map_1_0F, opc_PP_66, opc_W0,
         OPC_ENCODING_PREFIXES(opc_VEX2 | opc_VEX3 | opc_VEX2EVEX),
         opc_NoRFlags,
         opc_NoFlags,
-        opc_LL_Scalar, opc_TupleType_NoScale, opc_EEVEX_ND0, opc_EEVEX_NF0, opc_PP_66, 0x92,
+        opc_LL_Scalar, opc_TupleType_NoScale, opc_ND0, opc_NF0, opc_z_None, opc_EVEX_PP_66, 0x92,
         },
         {
         /* 1 */ { opnd_Reg, opnd_Mask, opnd_Scalar, opnd_8, opnd_W, opnd_MR_reg_R3, opnd_NotImm, opnd_Explicit, },
@@ -373,11 +373,11 @@ const OMR::X86::InstOpCode::NewOpCode OMR::X86::InstOpCode::_opCodeTable[] = {
     // KMOVB_r32_k8
     {
         {
-        0x93, opc_Ext_None, opc_Map_1_0F, opc_VEX_PP_66, opc_W0,
+        0x93, opc_Ext_None, opc_Map_1_0F, opc_PP_66, opc_W0,
         OPC_ENCODING_PREFIXES(opc_VEX2 | opc_VEX3 | opc_VEX2EVEX),
         opc_NoRFlags,
         opc_NoFlags,
-        opc_LL_Scalar, opc_TupleType_NoScale, opc_EEVEX_ND0, opc_EEVEX_NF0, opc_PP_66, 0x93,
+        opc_LL_Scalar, opc_TupleType_NoScale, opc_ND0, opc_NF0, opc_z_None, opc_EVEX_PP_66, 0x93,
         },
         {
         /* 1 */ { opnd_Reg, opnd_Int, opnd_Scalar, opnd_32, opnd_W, opnd_MR_reg_R3, opnd_NotImm, opnd_Explicit, },
@@ -403,17 +403,175 @@ const OMR::X86::InstOpCode::NewOpCode OMR::X86::InstOpCode::_opCodeTable[] = {
     // LZCNT_r16_rm16_NF
     {
         {
-        0xF5, opc_Ext_None, opc_Map_4, opc_VEX_PP_66, opc_W0,
+        0xF5, opc_Ext_None, opc_Map_4, opc_PP_66, opc_W0,
         OPC_ENCODING_PREFIXES(opc_Legacy2EVEX),
         opc_NoRFlags,
         opc_NoFlags,
-        opc_LLZ, opc_TupleType_NoScale, opc_EEVEX_ND0, opc_EEVEX_NF1, opc_PP_66, 0xF5,
+        opc_LLZ, opc_TupleType_NoScale, opc_ND0, opc_NF1, opc_z_None, opc_EVEX_PP_66, 0xF5,
         },
         {
         /* 1 */ { opnd_Reg, opnd_Int, opnd_Scalar, opnd_16, opnd_W, opnd_MR_reg_R3, opnd_NotImm, opnd_Explicit, },
         /* 2 */ { opnd_RM, opnd_Int, opnd_Scalar, opnd_16, opnd_R, opnd_MR_rm_B3, opnd_NotImm, opnd_Explicit, },
         },
         "LZCNT_r16_rm16_NF", "lzcnt{nf}",
+    },
+
+    // PUSH_rm16
+    {
+        {
+        0xFF, opc_Ext_6, opc_Map_0, opc_Prefix_66, opc_W0,
+        OPC_ENCODING_PREFIXES(opc_Legacy | opc_REX | opc_REX2),
+        opc_NoRFlags,
+        opc_Kind_StackPush,
+        },
+        {
+        /* 1 */ { opnd_RM, opnd_Int, opnd_Scalar, opnd_16, opnd_R, opnd_MR_rm_B3, opnd_NotImm, opnd_Explicit, },
+        },
+        "PUSH_rm16", "push",
+    },
+
+    // PUSH_rm32
+    {
+        {
+        0xFF, opc_Ext_6, opc_Map_0, opc_Prefix_NP, opc_W0,
+        OPC_ENCODING_PREFIXES(opc_Legacy),
+        opc_NoRFlags,
+        opc_Kind_StackPush,
+        },
+        {
+        /* 1 */ { opnd_RM, opnd_Int, opnd_Scalar, opnd_32, opnd_R, opnd_MR_rm_B3, opnd_NotImm, opnd_Explicit, },
+        },
+        "PUSH_rm32", "push",
+    },
+
+    // PUSH_rm64
+    {
+        {
+        0xFF, opc_Ext_6, opc_Map_0, opc_Prefix_NP, opc_W0,
+        OPC_ENCODING_PREFIXES(opc_Legacy | opc_REX | opc_REX2),
+        opc_NoRFlags,
+        opc_Kind_StackPush,
+        },
+        {
+        /* 1 */ { opnd_RM, opnd_Int, opnd_Scalar, opnd_64, opnd_R, opnd_MR_rm_B3, opnd_NotImm, opnd_Explicit, },
+        },
+        "PUSH_rm64", "push",
+    },
+
+    // PUSH_r16
+    {
+        {
+        0x50, opc_Ext_None, opc_Map_0, opc_Prefix_66, opc_W0,
+        OPC_ENCODING_PREFIXES(opc_Legacy | opc_REX | opc_REX2),
+        opc_NoRFlags,
+        opc_Kind_StackPush,
+        },
+        {
+        /* 1 */ { opnd_Reg, opnd_Int, opnd_Scalar, opnd_16, opnd_R, opnd_OPC_reg_B3, opnd_NotImm, opnd_Explicit, },
+        },
+        "PUSH_r16", "push",
+    },
+
+    // PUSH_r32
+    {
+        {
+        0x50, opc_Ext_None, opc_Map_0, opc_Prefix_NP, opc_W0,
+        OPC_ENCODING_PREFIXES(opc_Legacy),
+        opc_NoRFlags,
+        opc_Kind_StackPush,
+        },
+        {
+        /* 1 */ { opnd_Reg, opnd_Int, opnd_Scalar, opnd_32, opnd_R, opnd_OPC_reg_B3, opnd_NotImm, opnd_Explicit, },
+        },
+        "PUSH_r32", "push",
+    },
+
+    // PUSH_r64
+    {
+        {
+        0x50, opc_Ext_None, opc_Map_0, opc_Prefix_NP, opc_W0,
+        OPC_ENCODING_PREFIXES(opc_Legacy | opc_REX | opc_REX2),
+        opc_NoRFlags,
+        opc_Kind_StackPush,
+        },
+        {
+        /* 1 */ { opnd_Reg, opnd_Int, opnd_Scalar, opnd_64, opnd_R, opnd_OPC_reg_B3, opnd_NotImm, opnd_Explicit, },
+        },
+        "PUSH_r64", "push",
+    },
+
+    // PUSH_imm8
+    {
+        {
+        0x6A, opc_Ext_None, opc_Map_0, opc_Prefix_NP, opc_W0,
+        OPC_ENCODING_PREFIXES(opc_Legacy),
+        opc_NoRFlags,
+        opc_Kind_StackPush,
+        },
+        {
+        /* 1 */ { opnd_Imm, opnd_Int, opnd_Scalar, opnd_8, opnd_R, opnd_ImmEnc, opnd_SignExt, opnd_Explicit, },
+        },
+        "PUSH_imm8", "push",
+    },
+
+    // PUSH_imm16
+    {
+        {
+        0x68, opc_Ext_None, opc_Map_0, opc_Prefix_66, opc_W0,
+        OPC_ENCODING_PREFIXES(opc_Legacy),
+        opc_NoRFlags,
+        opc_Kind_StackPush,
+        },
+        {
+        /* 1 */ { opnd_Imm, opnd_Int, opnd_Scalar, opnd_16, opnd_R, opnd_ImmEnc, opnd_SignExt, opnd_Explicit, },
+        },
+        "PUSH_imm16", "push",
+    },
+
+    // PUSH_imm32
+    {
+        {
+        0x68, opc_Ext_None, opc_Map_0, opc_Prefix_NP, opc_W0,
+        OPC_ENCODING_PREFIXES(opc_Legacy),
+        opc_NoRFlags,
+        opc_Kind_StackPush,
+        },
+        {
+        /* 1 */ { opnd_Imm, opnd_Int, opnd_Scalar, opnd_32, opnd_R, opnd_ImmEnc, opnd_SignExt, opnd_Explicit, },
+        },
+        "PUSH_imm32", "push",
+    },
+
+    // PUSH2_r64_r64
+    {
+        {
+        0xFF, opc_Ext_6, opc_Map_4, opc_Prefix_NP, opc_W0,
+        OPC_ENCODING_PREFIXES(opc_EVEX),
+        opc_NoRFlags,
+        opc_Kind_StackPush,
+        opc_LLZ, opc_TupleType_NoScale, opc_ND1, opc_NF0, opc_z_None, opc_EVEX_PP_NP, 0xFF,
+        },
+        {
+        /* 1 */ { opnd_Reg, opnd_Int, opnd_Scalar, opnd_64, opnd_R, opnd_vvvv, opnd_NotImm, opnd_Explicit, },
+        /* 2 */ { opnd_Reg, opnd_Int, opnd_Scalar, opnd_64, opnd_R, opnd_MR_rm_B3, opnd_NotImm, opnd_Explicit, },
+        },
+        "PUSH2_r64_r64", "push2",
+    },
+
+    // PUSH2P_r64_r64
+    {
+        {
+        0xFF, opc_Ext_6, opc_Map_4, opc_Prefix_NP, opc_W1,
+        OPC_ENCODING_PREFIXES(opc_EVEX),
+        opc_NoRFlags,
+        opc_Kind_StackPush,
+        opc_LLZ, opc_TupleType_NoScale, opc_ND1, opc_NF0, opc_z_None, opc_EVEX_PP_NP, 0xFF,
+        },
+        {
+        /* 1 */ { opnd_Reg, opnd_Int, opnd_Scalar, opnd_64, opnd_R, opnd_vvvv, opnd_NotImm, opnd_Explicit, },
+        /* 2 */ { opnd_Reg, opnd_Int, opnd_Scalar, opnd_64, opnd_R, opnd_MR_rm_B3, opnd_NotImm, opnd_Explicit, },
+        },
+        "PUSH2P_r64_r64", "push2p",
     },
 
     // ADDPS_x128_xm128
@@ -436,7 +594,7 @@ const OMR::X86::InstOpCode::NewOpCode OMR::X86::InstOpCode::_opCodeTable[] = {
         OPC_ENCODING_PREFIXES(opc_VEX2 | opc_VEX3 | opc_EVEX),
         opc_NoRFlags,
         opc_NoFlags,
-        opc_LL_128, opc_TupleType_FullMem, opc_EEVEX_ND0, opc_EEVEX_NF0, opc_PP_NP, 0x58,
+        opc_LL_128, opc_TupleType_FullMem, opc_ND0, opc_NF0, opc_z_None, opc_EVEX_PP_NP, 0x58,
         },
         {
         /* 1 */ { opnd_Reg, opnd_Float, opnd_Vector, opnd_128, opnd_W, opnd_MR_reg_R3, opnd_NotImm, opnd_Explicit, },
@@ -453,7 +611,7 @@ const OMR::X86::InstOpCode::NewOpCode OMR::X86::InstOpCode::_opCodeTable[] = {
         OPC_ENCODING_PREFIXES(opc_VEX2 | opc_VEX3 | opc_EVEX),
         opc_NoRFlags,
         opc_NoFlags,
-        opc_LL_256, opc_TupleType_FullMem, opc_EEVEX_ND0, opc_EEVEX_NF0, opc_PP_NP, 0x58,
+        opc_LL_256, opc_TupleType_FullMem, opc_ND0, opc_NF0, opc_z_None, opc_EVEX_PP_NP, 0x58,
         },
         {
         /* 1 */ { opnd_Reg, opnd_Float, opnd_Vector, opnd_256, opnd_W, opnd_MR_reg_R3, opnd_NotImm, opnd_Explicit, },
@@ -470,7 +628,7 @@ const OMR::X86::InstOpCode::NewOpCode OMR::X86::InstOpCode::_opCodeTable[] = {
         OPC_ENCODING_PREFIXES(opc_EVEX),
         opc_NoRFlags,
         opc_NoFlags,
-        opc_LL_512, opc_TupleType_FullMem, opc_EEVEX_ND0, opc_EEVEX_NF0, opc_PP_NP, 0x58,
+        opc_LL_512, opc_TupleType_FullMem, opc_ND0, opc_NF0, opc_z_None, opc_EVEX_PP_NP, 0x58,
         },
         {
         /* 1 */ { opnd_Reg, opnd_Float, opnd_Vector, opnd_512, opnd_W, opnd_MR_reg_R3, opnd_NotImm, opnd_Explicit, },
@@ -550,6 +708,39 @@ const OMR::X86::OpCodeAuxProperties OMR::X86::InstOpCode::_opCodeAuxProperties[]
     opc_AuxNone,
 
     // LZCNT_r16_rm16_NF
+    opc_AuxNone,
+
+    // PUSH_rm16
+    opc_AuxNone,
+
+    // PUSH_rm32
+    OPC_AUXPROP(opc_IA32only),
+
+    // PUSH_rm64
+    opc_AuxNone,
+
+    // PUSH_r16
+    opc_AuxNone,
+
+    // PUSH_r32
+    OPC_AUXPROP(opc_IA32only),
+
+    // PUSH_r64
+    opc_AuxNone,
+
+    // PUSH_imm8
+    opc_AuxNone,
+
+    // PUSH_imm16
+    opc_AuxNone,
+
+    // PUSH_imm32
+    opc_AuxNone,
+
+    // PUSH2_r64_r64
+    opc_AuxNone,
+
+    // PUSH2P_r64_r64
     opc_AuxNone,
 
     // ADDPS_x128_xm128
