@@ -416,6 +416,164 @@ const OMR::X86::InstOpCode::NewOpCode OMR::X86::InstOpCode::_opCodeTable[] = {
         "LZCNT_r16_rm16_NF", "lzcnt{nf}",
     },
 
+    // PUSH_rm16
+    {
+        {
+        0xFF, opc_Ext_6, opc_Map_0, opc_Prefix_66, opc_W0,
+        OPC_ENCODING_PREFIXES(opc_Legacy | opc_REX | opc_REX2),
+        opc_NoRFlags,
+        opc_Kind_StackPush,
+        },
+        {
+        /* 1 */ { opnd_RM, opnd_Int, opnd_Scalar, opnd_16, opnd_R, opnd_MR_rm_B3, opnd_NotImm, opnd_Explicit, },
+        },
+        "PUSH_rm16", "push",
+    },
+
+    // PUSH_rm32
+    {
+        {
+        0xFF, opc_Ext_6, opc_Map_0, opc_Prefix_NP, opc_W0,
+        OPC_ENCODING_PREFIXES(opc_Legacy),
+        opc_NoRFlags,
+        opc_Kind_StackPush,
+        },
+        {
+        /* 1 */ { opnd_RM, opnd_Int, opnd_Scalar, opnd_32, opnd_R, opnd_MR_rm_B3, opnd_NotImm, opnd_Explicit, },
+        },
+        "PUSH_rm32", "push",
+    },
+
+    // PUSH_rm64
+    {
+        {
+        0xFF, opc_Ext_6, opc_Map_0, opc_Prefix_NP, opc_W0,
+        OPC_ENCODING_PREFIXES(opc_Legacy | opc_REX | opc_REX2),
+        opc_NoRFlags,
+        opc_Kind_StackPush,
+        },
+        {
+        /* 1 */ { opnd_RM, opnd_Int, opnd_Scalar, opnd_64, opnd_R, opnd_MR_rm_B3, opnd_NotImm, opnd_Explicit, },
+        },
+        "PUSH_rm64", "push",
+    },
+
+    // PUSH_r16
+    {
+        {
+        0x50, opc_Ext_None, opc_Map_0, opc_Prefix_66, opc_W0,
+        OPC_ENCODING_PREFIXES(opc_Legacy | opc_REX | opc_REX2),
+        opc_NoRFlags,
+        opc_Kind_StackPush,
+        },
+        {
+        /* 1 */ { opnd_Reg, opnd_Int, opnd_Scalar, opnd_16, opnd_R, opnd_OPC_reg_B3, opnd_NotImm, opnd_Explicit, },
+        },
+        "PUSH_r16", "push",
+    },
+
+    // PUSH_r32
+    {
+        {
+        0x50, opc_Ext_None, opc_Map_0, opc_Prefix_NP, opc_W0,
+        OPC_ENCODING_PREFIXES(opc_Legacy),
+        opc_NoRFlags,
+        opc_Kind_StackPush,
+        },
+        {
+        /* 1 */ { opnd_Reg, opnd_Int, opnd_Scalar, opnd_32, opnd_R, opnd_OPC_reg_B3, opnd_NotImm, opnd_Explicit, },
+        },
+        "PUSH_r32", "push",
+    },
+
+    // PUSH_r64
+    {
+        {
+        0x50, opc_Ext_None, opc_Map_0, opc_Prefix_NP, opc_W0,
+        OPC_ENCODING_PREFIXES(opc_Legacy | opc_REX | opc_REX2),
+        opc_NoRFlags,
+        opc_Kind_StackPush,
+        },
+        {
+        /* 1 */ { opnd_Reg, opnd_Int, opnd_Scalar, opnd_64, opnd_R, opnd_OPC_reg_B3, opnd_NotImm, opnd_Explicit, },
+        },
+        "PUSH_r64", "push",
+    },
+
+    // PUSH_imm8
+    {
+        {
+        0x6A, opc_Ext_None, opc_Map_0, opc_Prefix_NP, opc_W0,
+        OPC_ENCODING_PREFIXES(opc_Legacy),
+        opc_NoRFlags,
+        opc_Kind_StackPush,
+        },
+        {
+        /* 1 */ { opnd_Imm, opnd_Int, opnd_Scalar, opnd_8, opnd_R, opnd_ImmEnc, opnd_SignExt, opnd_Explicit, },
+        },
+        "PUSH_imm8", "push",
+    },
+
+    // PUSH_imm16
+    {
+        {
+        0x68, opc_Ext_None, opc_Map_0, opc_Prefix_66, opc_W0,
+        OPC_ENCODING_PREFIXES(opc_Legacy),
+        opc_NoRFlags,
+        opc_Kind_StackPush,
+        },
+        {
+        /* 1 */ { opnd_Imm, opnd_Int, opnd_Scalar, opnd_16, opnd_R, opnd_ImmEnc, opnd_SignExt, opnd_Explicit, },
+        },
+        "PUSH_imm16", "push",
+    },
+
+    // PUSH_imm32
+    {
+        {
+        0x68, opc_Ext_None, opc_Map_0, opc_Prefix_NP, opc_W0,
+        OPC_ENCODING_PREFIXES(opc_Legacy),
+        opc_NoRFlags,
+        opc_Kind_StackPush,
+        },
+        {
+        /* 1 */ { opnd_Imm, opnd_Int, opnd_Scalar, opnd_32, opnd_R, opnd_ImmEnc, opnd_SignExt, opnd_Explicit, },
+        },
+        "PUSH_imm32", "push",
+    },
+
+    // PUSH2_r64_r64
+    {
+        {
+        0xFF, opc_Ext_6, opc_Map_4, opc_Prefix_NP, opc_W0,
+        OPC_ENCODING_PREFIXES(opc_EVEX),
+        opc_NoRFlags,
+        opc_Kind_StackPush,
+        opc_LLZ, opc_TupleType_NoScale, opc_EEVEX_ND1, opc_EEVEX_NF0, opc_PP_NP, 0xFF,
+        },
+        {
+        /* 1 */ { opnd_Reg, opnd_Int, opnd_Scalar, opnd_64, opnd_R, opnd_vvvv, opnd_NotImm, opnd_Explicit, },
+        /* 2 */ { opnd_Reg, opnd_Int, opnd_Scalar, opnd_64, opnd_R, opnd_MR_rm_B3, opnd_NotImm, opnd_Explicit, },
+        },
+        "PUSH2_r64_r64", "push2",
+    },
+
+    // PUSH2P_r64_r64
+    {
+        {
+        0xFF, opc_Ext_6, opc_Map_4, opc_Prefix_NP, opc_W1,
+        OPC_ENCODING_PREFIXES(opc_EVEX),
+        opc_NoRFlags,
+        opc_Kind_StackPush,
+        opc_LLZ, opc_TupleType_NoScale, opc_EEVEX_ND1, opc_EEVEX_NF0, opc_PP_NP, 0xFF,
+        },
+        {
+        /* 1 */ { opnd_Reg, opnd_Int, opnd_Scalar, opnd_64, opnd_R, opnd_vvvv, opnd_NotImm, opnd_Explicit, },
+        /* 2 */ { opnd_Reg, opnd_Int, opnd_Scalar, opnd_64, opnd_R, opnd_MR_rm_B3, opnd_NotImm, opnd_Explicit, },
+        },
+        "PUSH2P_r64_r64", "push2p",
+    },
+
     // ADDPS_x128_xm128
     {
         {
@@ -550,6 +708,39 @@ const OMR::X86::OpCodeAuxProperties OMR::X86::InstOpCode::_opCodeAuxProperties[]
     opc_AuxNone,
 
     // LZCNT_r16_rm16_NF
+    opc_AuxNone,
+
+    // PUSH_rm16
+    opc_AuxNone,
+
+    // PUSH_rm32
+    OPC_AUXPROP(opc_IA32only),
+
+    // PUSH_rm64
+    opc_AuxNone,
+
+    // PUSH_r16
+    opc_AuxNone,
+
+    // PUSH_r32
+    OPC_AUXPROP(opc_IA32only),
+
+    // PUSH_r64
+    opc_AuxNone,
+
+    // PUSH_imm8
+    opc_AuxNone,
+
+    // PUSH_imm16
+    opc_AuxNone,
+
+    // PUSH_imm32
+    opc_AuxNone,
+
+    // PUSH2_r64_r64
+    opc_AuxNone,
+
+    // PUSH2P_r64_r64
     opc_AuxNone,
 
     // ADDPS_x128_xm128
