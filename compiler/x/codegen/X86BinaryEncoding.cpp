@@ -2855,3 +2855,206 @@ uint8_t *TR::AMD64Imm64SymInstruction::generateOperand(uint8_t *cursor)
 
     return cursor;
 }
+
+uint8_t *OMR::X86::Instruction::emitInstructon()
+{
+    InstructionEncodingBits &enc = getEncBits();
+    InstructionLocations instLoc = {};
+    instLoc.prefix = cg()->getBinaryBufferCursor();
+
+    uint8_t *cursor;
+
+    switch (enc.encodingPrefix) {
+        case opc_Legacy:
+            //            cursor = emit_Legacy(instLoc);
+            break;
+        case opc_REX:
+            //            cursor = emit_REX(instLoc);
+            break;
+        case opc_REX2:
+            //            cursor = emit_REX2(instLoc);
+            break;
+        case opc_VEX2:
+        case opc_VEX3:
+            //            cursor = emit_VEX(instLoc);
+            break;
+        case opc_EVEX:
+        case opc_VEX2EVEX:
+        case opc_Legacy2EVEX:
+            cursor = emit_EVEX(instLoc);
+            break;
+    }
+
+    // OpCode byte
+
+    uint8_t opCodeByte = getOpCode().getOpCodeByte();
+    if (!enc.needsModRM && enc.regInOpCode) {
+        opCodeByte |= enc.opCodeReg;
+    }
+
+    *cursor++ = opCodeByte;
+
+    // ModRM
+
+    if (enc.needsModRM) {
+        instLoc.ModRM = cursor;
+        *cursor++ = enc.ModRM.raw;
+    }
+
+    // SIB
+
+    if (enc.needsSIB) {
+        *cursor++ = enc.SIB.raw;
+    }
+
+    // disp8 or disp32
+
+    if (enc.needsModRM && (enc.ModRM.Mod == Mod_Base_Disp8 || enc.ModRM.Mod == Mod_Base_Disp32)) {
+        instLoc.disp = cursor;
+        if (enc.ModRM.Mod == Mod_Base_Disp8) {
+            *cursor++ = static_cast<uint8_t>(enc.disp32);
+        } else {
+            *reinterpret_cast<int32_t *&>(cursor)++ = enc.disp32;
+        }
+    }
+
+    // Immediate values are not encoded here because the immediate values are not
+    // cached in the InstructionEncodingBits. Immediate values are encoded by the
+    // appropriate Imm instruction kind binary encoding function.
+
+    return cursor;
+}
+
+struct EVEX_t {
+    uint8_t mandatory; // 0x62
+
+    // P0
+    uint8_t mmm: 3;
+    uint8_t B4: 1;
+    uint8_t R4: 1;
+    uint8_t RXB: 3;
+
+    // P1
+    uint8_t pp: 2;
+    uint8_t X4: 1;
+    uint8_t vvvv: 4;
+    uint8_t W: 1;
+
+    // P2
+    union {
+        struct {
+            uint8_t aaa: 3;
+            uint8_t V4: 1;
+            uint8_t b_or_ND: 1;
+            uint8_t LL: 2;
+            uint8_t z: 1;
+        };
+
+        struct {
+            uint8_t evexpadding1: 2;
+            uint8_t NF: 1;
+            uint8_t evexpadding2: 5;
+        };
+    };
+};
+
+uint8_t *OMR::X86::Instruction::emit_EVEX(InstructionLocations &instLoc)
+{
+    InstructionEncodingBits &enc = getEncBits();
+    const OpCodeProperties &opcProp = getOpCode().getOpcProps();
+
+    uint8_t *cursor = instLoc.prefix;
+    EVEX_t &evex = *new (cursor) EVEX_t();
+
+    // Zero initialize all fields
+    //
+    evex = {};
+
+    evex.mandatory = 0x62;
+
+    evex.mmm = opcProp.opc_map;
+    evex.RXB = ~enc.RXB;
+    evex.R4 = ~enc.R4;
+    evex.B4 = enc.B4;
+
+    evex.W = opcProp.opc_W;
+    evex.vvvv = ~enc.vvvv;
+    evex.X4 = ~enc.X4;
+
+    if (enc.encodingPrefix == opc_Legacy2EVEX) {
+        evex.pp = opcProp.opc_promoted2evex_pp;
+    } else {
+        evex.pp = opcProp.opc_prefixes;
+    }
+
+    evex.z = opcProp.opc_z;
+    evex.LL = opcProp.opc_LL;
+    evex.V4 = ~enc.V4;
+
+    evex.b_or_ND = opcProp.opc_b_or_ND;
+
+    if (opcProp.opc_NF) {
+        evex.NF = 1;
+    } else {
+        evex.aaa = enc.aaa;
+    }
+
+    cursor += 4;
+
+    return cursor;
+
+#if 0
+
+Fig 2-11 EVEX
+
+7  6  5  4  3  2  1  0
+----------------------
+R  X  B  R! 0  m  m  m
+W  v  v  v  v  1  p  p
+z  L! L  b  V! a  a  a
+
+
+EEVEX - EGPRs only (Fig 3-2) --> Is this actually used by itself?
+
+R3 X3 B3 R4 B4 M2 M1 M0
+W  V3 V2 V1 V0 U  p  p
+x  x  x  x  V4 x  x  x
+
+Legacy2EVEX (Fig 3-3)
+
+R3 X3 B3 R4 B4 1  0  0  (map 4)
+W  V3 V2 V1 V0 X4 p  p  X4/1 (X4 when ModRM.Mod != 3)
+0  0  0  ND V4 NF 0  0
+
+VEX2EVEX (Fig 3-4)
+
+R3 X3 B3 R4 B4 M2 M1 M0
+W  V3 V2 V1 V0 X4 p  p  X4/1
+0  0  L  0  V4 NF 0  0
+
+EVEX2EVEX (Fig 3-5)
+
+R3 X3 B3 R4 B4 M2 M1 M0
+W  V3 V2 V1 V0 U  p  p  X4/1
+z  L  L  b  V4 a  a  a
+
+EVEX PUSH2/POP2 (Fig 3-6)
+
+R3 X3 B3 R4 B4 1  0  0  (map 4)
+W  V3 V2 V1 V0 1  0  0
+0  0  0  1  V4 0  0  0
+
+EVEX conditional CMP and TEST (Fig 3-7)
+
+R3 X3 B3 R4 B4 1  0  0  (map 4)
+W  OF SF ZF CF X4 p  p  X4/1
+0  0  0  0  S3 S2 S1 S0
+
+EVEX CMOVcc (Fig 3-10)
+
+R3 X3 B3 R4 B4 1  0  0  (map 4)
+W  V3 V2 V1 V0 X4 p  p  X4/1
+0  0  0  ND V4 NF 0  0
+
+#endif
+}

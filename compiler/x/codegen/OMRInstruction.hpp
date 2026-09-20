@@ -165,7 +165,16 @@ struct InstructionEncodingBits {
     int32_t disp32;
 
     // ----------------------------------------------------------------
-    // Byte 8 : instruction encoding prefix
+    // Byte 8 : mask register
+    // ----------------------------------------------------------------
+
+    struct {
+        uint8_t aaa: 3;
+        uint8_t padding6: 5;
+    };
+
+    // ----------------------------------------------------------------
+    // Byte 9 : instruction encoding prefix
     // ----------------------------------------------------------------
 
     OpCodeEncodingPrefix encodingPrefix;
@@ -199,6 +208,13 @@ enum {
     SIB_Index_None = 4, // Index = 0b100
     SIB_Base_Disp = 5,  // Base = 0b101
     // clang-format on
+};
+
+struct InstructionLocations {
+    uint8_t *prefix;
+    uint8_t *ModRM;
+    uint8_t *disp;
+    uint8_t *imm;
 };
 
 class OMR_EXTENSIBLE Instruction : public OMR::Instruction {
@@ -305,6 +321,9 @@ public:
      *     correctness.
      */
     void adjustModRMforEVEXCompressedDisplacement();
+
+    uint8_t *emitInstructon();
+    uint8_t *emit_EVEX(InstructionLocations &instLoc);
 
     virtual void assignRegisters(TR_RegisterKinds kindsToBeAssigned);
     virtual bool refsRegister(TR::Register *reg);
