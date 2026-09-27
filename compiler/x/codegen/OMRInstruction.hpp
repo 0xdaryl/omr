@@ -211,7 +211,7 @@ enum {
 };
 
 struct InstructionLocations {
-    uint8_t *prefix;
+    uint8_t *startOfInstr;
     uint8_t *ModRM;
     uint8_t *disp;
     uint8_t *imm;

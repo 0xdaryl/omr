@@ -804,6 +804,8 @@ class InstOpCode : public OMR::InstOpCode {
     static const uint32_t _properties2[];
     static const uint32_t _features[];
 
+    static const int32_t _operandWidthToBytes[];
+
 public:
     // Making these arrays public is an unfortunate consequence of C++ language
     // rules. Because these are statically defined and const initialized arrays
@@ -1402,6 +1404,8 @@ public:
     inline const OperandProperties &getOpndProps3() const { return _opCodeTable[_mnemonic]._opndProperties[2]; }
 
     inline const OperandProperties &getOpndProps4() const { return _opCodeTable[_mnemonic]._opndProperties[3]; }
+
+    static inline int32_t getOperandWidthInBytes(OperandBitWidth width) { return _operandWidthInBytes[width]; }
 
 #if defined(DEBUG)
     const char *getOpCodeName(TR::CodeGenerator *cg);

@@ -306,6 +306,16 @@ void OMR::X86::InstOpCode::finalize(uint8_t *cursor) const
         info().finalize(cursor);
 }
 
+const int32_t OMR::X86::InstOpCode::_operandWidthInBytes[] = {
+    1, // opnd_8
+    2, // opnd_16
+    4, // opnd_32
+    8, // opnd_64
+    16, // opnd_128
+    32, // opnd_256
+    64, // opnd_512
+};
+
 #ifdef DEBUG
 
 #include "codegen/CodeGenerator.hpp"

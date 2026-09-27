@@ -1543,7 +1543,7 @@ void OMR::X86::MemoryReference::analyzeOperand(const OMR::X86::OperandProperties
                 }
 
                 displacement = getDisplacement();
-                TR_ASSERT_FATAL(IS_32BIT_SIGNED(displacement),
+                TR_ASSERT_FATAL(IS_32BIT_SIGNED(displacement) || encBits.mayRequireAddressMaterializationInstr,
                     "MR_disp symbol displacement out of range: %" OMR_PRIxPTR, displacement);
             } else {
                 TR::LabelSymbol *labelSym = getLabel();
@@ -1583,7 +1583,7 @@ void OMR::X86::MemoryReference::analyzeOperand(const OMR::X86::OperandProperties
                     }
 
                     displacement = getSymbolReference().getOffset();
-                    TR_ASSERT_FATAL(IS_32BIT_SIGNED(displacement),
+                    TR_ASSERT_FATAL(IS_32BIT_SIGNED(displacement) || encBits.mayRequireAddressMaterializationInstr,
                         "MR_disp no symbol no label displacement out of range: %" OMR_PRIxPTR, displacement);
                 }
             }
@@ -1599,7 +1599,7 @@ void OMR::X86::MemoryReference::analyzeOperand(const OMR::X86::OperandProperties
             baseReg = toRealRegister(getBaseRegister());
 
             displacement = getDisplacement();
-            TR_ASSERT_FATAL(IS_32BIT_SIGNED(displacement),
+            TR_ASSERT_FATAL(IS_32BIT_SIGNED(displacement) || encBits.mayRequireAddressMaterializationInstr,
                 "64-bit displacement should have been replaced in TR_AMD64MemoryReference::generateBinaryEncoding");
 
             if ((displacement == 0) && !baseReg->needsDisp() && !isForceWideDisplacement()) {
@@ -1635,7 +1635,7 @@ void OMR::X86::MemoryReference::analyzeOperand(const OMR::X86::OperandProperties
             indexReg = toRealRegister(getIndexRegister());
 
             displacement = getDisplacement();
-            TR_ASSERT(IS_32BIT_SIGNED(displacement),
+            TR_ASSERT(IS_32BIT_SIGNED(displacement) || encBits.mayRequireAddressMaterializationInstr,
                 "64-bit displacement should have been replaced in TR_AMD64MemoryReference::generateBinaryEncoding");
 
             if ((displacement == 0) && !baseReg->needsDisp() && !isForceWideDisplacement()) {

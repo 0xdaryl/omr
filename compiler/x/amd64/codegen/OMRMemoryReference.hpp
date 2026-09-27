@@ -173,6 +173,9 @@ public: // Constructors
     OMR_FINAL void addMetaDataForCodeAddressWithLoad(uint8_t *displacementLocation,
         TR::Instruction *containingInstruction, TR::CodeGenerator *cg, TR::SymbolReference *srCopy);
 
+    void analyzeOperand(const OMR::X86::OperandProperties &opndProps, OMR::X86::InstructionEncodingBits &encBits,
+        TR::CodeGenerator *cg);
+
 protected:
 #if defined(TR_TARGET_64BIT)
     OMR_FINAL bool needsAddressLoadInstruction(intptr_t nextInstructionAddress, TR::CodeGenerator *cg);

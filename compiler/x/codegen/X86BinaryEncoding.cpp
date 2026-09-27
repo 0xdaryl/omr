@@ -55,6 +55,7 @@
 #include "il/Symbol.hpp"
 #include "il/SymbolReference.hpp"
 #include "infra/Assert.hpp"
+#include "infra/Bit.hpp"
 #include "infra/List.hpp"
 #include "ras/Debug.hpp"
 #include "ras/DebugCounter.hpp"
@@ -2856,73 +2857,25 @@ uint8_t *TR::AMD64Imm64SymInstruction::generateOperand(uint8_t *cursor)
     return cursor;
 }
 
-uint8_t *OMR::X86::Instruction::emitInstructon()
+int32_t OMR::X86::Instruction::countLegacyPrefixesAndEscapeBytes()
 {
-    InstructionEncodingBits &enc = getEncBits();
-    InstructionLocations instLoc = {};
-    instLoc.prefix = cg()->getBinaryBufferCursor();
+    const OpCodeProperties &opcProp = getOpCode().getOpcProps();
 
-    uint8_t *cursor;
+    // Legacy prefixes
+    length += populationCount(opcProp.opc_prefixes);
 
-    switch (enc.encodingPrefix) {
-        case opc_Legacy:
-            //            cursor = emit_Legacy(instLoc);
+    // Escape bytes
+    switch (opcProp.opc_map) {
+        case opc_Map_1_0F:
+            length += 1;
             break;
-        case opc_REX:
-            //            cursor = emit_REX(instLoc);
-            break;
-        case opc_REX2:
-            //            cursor = emit_REX2(instLoc);
-            break;
-        case opc_VEX2:
-        case opc_VEX3:
-            //            cursor = emit_VEX(instLoc);
-            break;
-        case opc_EVEX:
-        case opc_VEX2EVEX:
-        case opc_Legacy2EVEX:
-            cursor = emit_EVEX(instLoc);
+        case opc_Map_2_0F38:
+        case opc_Map_3_0F3A:
+            length += 2;
             break;
     }
 
-    // OpCode byte
-
-    uint8_t opCodeByte = getOpCode().getOpCodeByte();
-    if (!enc.needsModRM && enc.regInOpCode) {
-        opCodeByte |= enc.opCodeReg;
-    }
-
-    *cursor++ = opCodeByte;
-
-    // ModRM
-
-    if (enc.needsModRM) {
-        instLoc.ModRM = cursor;
-        *cursor++ = enc.ModRM.raw;
-    }
-
-    // SIB
-
-    if (enc.needsSIB) {
-        *cursor++ = enc.SIB.raw;
-    }
-
-    // disp8 or disp32
-
-    if (enc.needsModRM && (enc.ModRM.Mod == Mod_Base_Disp8 || enc.ModRM.Mod == Mod_Base_Disp32)) {
-        instLoc.disp = cursor;
-        if (enc.ModRM.Mod == Mod_Base_Disp8) {
-            *cursor++ = static_cast<uint8_t>(enc.disp32);
-        } else {
-            *reinterpret_cast<int32_t *&>(cursor)++ = enc.disp32;
-        }
-    }
-
-    // Immediate values are not encoded here because the immediate values are not
-    // cached in the InstructionEncodingBits. Immediate values are encoded by the
-    // appropriate Imm instruction kind binary encoding function.
-
-    return cursor;
+    return length
 }
 
 struct EVEX_t {
@@ -2958,16 +2911,14 @@ struct EVEX_t {
     };
 };
 
-uint8_t *OMR::X86::Instruction::emit_EVEX(InstructionLocations &instLoc)
+uint8_t *OMR::X86::Instruction::encode_EVEX(InstructionLocations &instLocs)
 {
     InstructionEncodingBits &enc = getEncBits();
     const OpCodeProperties &opcProp = getOpCode().getOpcProps();
 
-    uint8_t *cursor = instLoc.prefix;
+    uint8_t *cursor = instLocs.startOfInstr;
     EVEX_t &evex = *new (cursor) EVEX_t();
 
-    // Zero initialize all fields
-    //
     evex = {};
 
     evex.mandatory = 0x62;
@@ -3057,4 +3008,288 @@ W  V3 V2 V1 V0 X4 p  p  X4/1
 0  0  0  ND V4 NF 0  0
 
 #endif
+}
+
+int32_t OMR::X86::Instruction::estimateInstructionLength()
+{
+    InstructionEncodingBits &enc = getEncBits();
+
+    int32_t length = 1; // 1 opcode byte
+
+    switch (enc.encodingPrefix) {
+        case opc_Legacy:
+            length += countLegacyPrefixesAndEscapeBytes();
+            break;
+
+        case opc_REX:
+            length += countLegacyPrefixesAndEscapeBytes() + 1; // +1 byte REX
+            break;
+
+        case opc_REX2:
+            length += countLegacyPrefixesAndEscapeBytes() + 2; // +2 byte REX2
+            break;
+
+        case opc_VEX2:
+            length += 2;
+            break;
+
+        case opc_VEX3:
+            length += 3;
+            break;
+
+        case opc_EVEX:
+        case opc_VEX2EVEX:
+        case opc_Legacy2EVEX:
+            length += 4; // +4 byte EVEX
+            break;
+    }
+
+    length += (enc.needsModRM ? 1 : 0) + (enc.needsSIB ? 1 : 0);
+
+    if (enc.needsModRM) {
+        if (enc.ModRM.Mod == Mod_Base) {
+            if (enc.ModRM.RM == RM_Disp32) {
+                length += 4; // disp32 or RIP-relative
+            } else if ((enc.ModRM.RM == RM_NeedsSIB) && (enc.SIB.Base == SIB_Base_Disp))
+                length += 4; // [scaled index] + disp32
+        } else if (enc.ModRM.Mod == Mod_Base_Disp8) {
+            length += 1;
+        } else if (enc.ModRM.Mod == Mod_Base_Disp32) {
+            length += 4;
+        }
+
+        // Some instructions require the address used in a MemoryReference to
+        // be materialized in a separate instruction (for example, an external
+        // RIP-relative addressing mode).
+        //
+        // Whether this extra instruction is required will not be decided until
+        // binary encoding when the actual instruction addresses are known, but
+        // length estimation must conservatively account for the possibility.
+        //
+        if (enc.mayRequireAddressMaterializationInstr) {
+            // Address materialization instruction
+            length += (2 + 1 + 8); // REX2 + op + Imm64 (MOV_r64_imm64)
+
+            // If both a base and index register are used, an additional
+            // consolidation instruction may be required
+            //
+            if (enc.needsSIB && ((enc.SIB.Index != SIB_Index_None) || (enc.X3 || enc.X4)) && (enc.ModRM.Mod != Mod_Base)
+                || (enc.SIB.Base != SIB_Base_Disp)) {
+                length += (2 + 1 + 1); // REX2 + op + ModRM (ADD_r64_rm64)
+            }
+
+            if (!enc.needsSIB) {
+                // The addressLoadRegister will be used as the index register.
+                // A SIB byte is required.
+                //
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // Sizes of immediate operands are not accounted for here, but by the
+    // overload in the Imm kind instruction
+    // ------------------------------------------------------------------------
+
+    return length;
+}
+
+int32_t TR::X86RegMemInstruction::estimateInstructionLength()
+{
+    int32_t length = TR::X86RegInstruction::estimateInstructionLength();
+
+    if (getEncBits().mayRequireAddressMaterializationInstr) {
+        // Address materialization instruction
+        length += (2 + 1 + 8); // REX2 + op + Imm64 (MOV_r64_imm64)
+
+        if (getBaseRegister()) {
+            if (!getIndexRegister()) {
+                // The materialization register will be used as the index register.
+                // A SIB byte is required.
+                //
+                length += 1;
+            } else {
+                // The base register will be replaced with an address consolidation
+                // register
+                //
+                length += (2 + 1 + 1); // REX2 + op + ModRM (ADD_r64_rm64)
+            }
+        }
+
+        if (getAddressRegister()->encodeWithRXBorRXB4()) {
+            // If the address materialization register requires RXB or RXB4
+            // prefix bits to encode when it is used as either the base
+            // register or index register, account for it in case the
+            // containing instruction does not emit it already.
+            //
+            length += 1;
+        }
+    }
+
+    return length;
+}
+
+uint8_t *TR::X86RegMemInstruction::encodeInstruction(InstructionLocations &instLocs)
+{
+    if (getEncBits().mayRequireAddressMaterializationInstr) {
+        // Emit the address materialization instruction first because it may change
+        // the addressing mode of the instruction being encoded
+        //
+        getMemoryReference()->emitAddressMaterializationInstrIfNecessary(instLocs, this, cg());
+    }
+
+    return TR::X86RegInstruction::encodeInstruction(instLocs);
+}
+
+int32_t TR::X86ImmInstruction::estimateInstructionLength()
+{
+    return TR::Instruction::estimateInstructionLength() + OP::getOperandWidthInBytes(getOpndProps1().opnd_width);
+}
+
+int32_t TR::X86RegImmInstruction::estimateInstructionLength()
+{
+    return TR::Instruction::estimateInstructionLength() + OP::getOperandWidthInBytes(getOpndProps2().opnd_width);
+}
+
+uint8_t OMR::X86::X86Instruction::encodeImmediate(InstructionLocations &instLocs, uint8_t *cursor,
+    OperandBitWidth opndWidth, intptr_t immValue)
+{
+    instLocs.imm = cursor;
+    switch (opndWidth) {
+        case opnd_8:
+            *cursor = static_cast<int8_t>(immValue);
+            break;
+
+        case opnd_16:
+            *cursor = static_cast<int16_t>(immValue);
+            break;
+
+        case opnd_32:
+            *cursor = static_cast<int32_t>(immValue);
+            break;
+
+        case opnd_64:
+            *cursor = static_cast<int64_t>(immValue);
+            break;
+
+        default:
+            TR_ASSERT_FATAL(false, "Unexpected immediate width %d", opndWidth);
+    }
+
+    cursor += OP::getOperandWidthInBytes(opndWidth);
+    return cursor;
+}
+
+uint8_t *TR::X86ImmInstruction::encodeInstruction(InstructionLocations &instLocs)
+{
+    uint8_t *cursor = cg()->getBinaryBufferCursor();
+    return TR::X86Instruction::encodeImmediate(instLocs, cursor, getOpndProps1().opnd_width, getSourceImmediate());
+}
+
+uint8_t *TR::X86RegImmInstruction::encodeInstruction(InstructionLocations &instLocs)
+{
+    uint8_t *cursor = TR::X86RegInstruction::encodeInstruction(instLocs);
+    cursor = TR::X86Instruction::encodeImmediate(instLocs, cursor, getOpndProps2().opnd_width, getSourceImmediate());
+    return cursor;
+}
+
+uint8_t *OMR::X86::Instruction::encodeInstruction(InstructionLocations &instLocs)
+{
+    InstructionEncodingBits &enc = getEncBits();
+
+    instLocs.startOfInstr = cg()->getBinaryBufferCursor();
+
+    uint8_t *cursor;
+
+    // ------------------------------------------------------------------------
+    // Prefixes
+    // ------------------------------------------------------------------------
+
+    switch (enc.encodingPrefix) {
+        case opc_Legacy:
+            //            cursor = encode_Legacy(instLocs);
+            //
+            break;
+
+        case opc_REX:
+            //            cursor = encode_REX(instLocs);
+            break;
+
+        case opc_REX2:
+            //            cursor = encode_REX2(instLocs);
+            break;
+
+        case opc_VEX2:
+        case opc_VEX3:
+            // Note that while some legacy prefixes are technically allowed to
+            // appear before a VEX prefix (e.g., segment and default operand
+            // size overrides), they are not supported by the OMR code
+            // generator because they are considered legacy features.
+            //
+            //            cursor = encode_VEX(instLocs);
+            break;
+
+        case opc_EVEX:
+        case opc_VEX2EVEX:
+        case opc_Legacy2EVEX:
+            // Note that while some legacy prefixes are technically allowed to
+            // appear before an EVEX prefix (e.g., segment and default operand
+            // size overrides), they are not supported by the OMR code
+            // generator because they are considered legacy features.
+            //
+            cursor = encode_EVEX(instLocs);
+            break;
+
+        default:
+            TR_ASSERT_FATAL(false, "Invalid encoding prefix %d", enc.encodingPrefix);
+    }
+
+    // ------------------------------------------------------------------------
+    // OpCode byte
+    // ------------------------------------------------------------------------
+
+    uint8_t opCodeByte = getOpCode().getOpCodeByte();
+    if (!enc.needsModRM && enc.regInOpCode) {
+        opCodeByte |= enc.opCodeReg;
+    }
+
+    *cursor++ = opCodeByte;
+
+    // ------------------------------------------------------------------------
+    // ModRM
+    // ------------------------------------------------------------------------
+
+    if (enc.needsModRM) {
+        instLocs.ModRM = cursor;
+        *cursor++ = enc.ModRM.raw;
+    }
+
+    // ------------------------------------------------------------------------
+    // SIB
+    // ------------------------------------------------------------------------
+
+    if (enc.needsSIB) {
+        *cursor++ = enc.SIB.raw;
+    }
+
+    // ------------------------------------------------------------------------
+    // disp8 or disp32
+    // ------------------------------------------------------------------------
+
+    if (enc.needsModRM && (enc.ModRM.Mod == Mod_Base_Disp8 || enc.ModRM.Mod == Mod_Base_Disp32)) {
+        instLocs.disp = cursor;
+        if (enc.ModRM.Mod == Mod_Base_Disp8) {
+            *cursor++ = static_cast<uint8_t>(enc.disp32);
+        } else {
+            *reinterpret_cast<int32_t *&>(cursor)++ = enc.disp32;
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // Immediate values are not encoded here because the immediate values are
+    // not cached in the InstructionEncodingBits. Immediate values are encoded
+    // by the appropriate "Imm" instruction kind binary encoding function.
+    // ------------------------------------------------------------------------
+
+    return cursor;
 }

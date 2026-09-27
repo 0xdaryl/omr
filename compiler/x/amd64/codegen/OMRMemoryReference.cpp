@@ -702,3 +702,296 @@ uint8_t *OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(uint8_t *modRM
     //
     return OMR::X86::MemoryReference::generateBinaryEncoding(modRM, containingInstruction, cg);
 }
+
+bool OMR::X86::AMD64::MemoryReference::needsAddressMaterializationInstruction(intptr_t lowestNextInstrAddr,
+    intptr_t highestNextInstrAddr, TR::CodeGenerator *cg)
+{
+    TR::SymbolReference &sr = getSymbolReference();
+    TR::Symbol *sym = sr.getSymbol();
+    intptr_t displacement = getDisplacement();
+
+    if (_forceRIPRelative) {
+        return false;
+    } else if (sym && sr.isUnresolved()) {
+        return sym->isShadow() ? false : true;
+    } else if (_baseRegister || _indexRegister) {
+        return !IS_32BIT_SIGNED(displacement);
+    }
+
+    // At this point, the memory reference is known not to have a base or index register
+    // (a displacement only).
+    //
+    // The displacement holds an address in memory, and the remaining logic determines
+    // whether a 64-bit immediate load instruction is required to materialize the address.
+    // If not, the address is materialized through either a 32-bit RIP-relative form or
+    // a 32-bit absolute form.
+
+    if (cg->needClassAndMethodPointerRelocations()) {
+        return true;
+    }
+
+    if (sym) {
+        if (sym->isRecompilationCounter() && cg->needRelocationsForBodyInfoData()) {
+            return true;
+        } else if (sym->isCountForRecompile() && cg->needRelocationsForPersistentInfoData()) {
+            return true;
+        } else if ((sym->isBlockFrequency() || sym->isRecompQueuedFlag())
+            && cg->needRelocationsForPersistentProfileInfoData()) {
+            return true;
+        } else if (sym->isCatchBlockCounter() && cg->needRelocationsForBodyInfoData()) {
+            return true;
+        } else if (cg->comp()->getOption(TR_EnableHCR) && sym->isClassObject()) {
+            return true; // If a class gets replaced, it may no longer fit in an immediate
+        }
+    }
+
+    if (IS_32BIT_SIGNED(displacement)) {
+        return false;
+    }
+
+    // At this point, the displacement is known to be 64-bit
+
+    if (cg->comp()->isOutOfProcessCompilation() && sym && sym->isStatic()
+        && !sym->isStaticAddressWithinMethodBounds()) {
+        return true;
+
+        // If both the lowestInstrAddr and highestInstrAddr are within RIP range
+        // of the displacement then the displacement can be encoded in 32-bits
+        //
+    } else if (IS_32BIT_RIP(displacement, lowestNextInstrAddr) && IS_32BIT_RIP(displacement, highestNextInstrAddr)) {
+        return false;
+    } else {
+        return true;
+    }
+}
+
+void OMR::X86::AMD64::MemoryReference::addAddrMaterializationInstrMetaData(InstructonLocations &instLocs,
+    TR::Node *node, TR::CodeGenerator *cg, TR::SymbolReference *srCopy)
+{
+    TR::Compilation *comp = cg->comp();
+
+    if (_symbolReference.getSymbol()) {
+        TR::SymbolReference &sr = *srCopy;
+        if (getUnresolvedDataSnippet()) {
+            if (comp->getOption(TR_EnableHCR) && (!sr.getSymbol()->isStatic() || !sr.getSymbol()->isClassObject())) {
+                cg->jitAddUnresolvedAddressMaterializationToPatchOnClassRedefinition(instLocs.startOfInstr);
+            }
+        } else if ((sr.getSymbol()->isClassObject())) {
+            if (sr.getSymbol()->isStatic()) {
+                if (cg->needClassAndMethodPointerRelocations()) {
+                    if (comp->getOption(TR_UseSymbolValidationManager)) {
+                        cg->addExternalRelocation(
+                            TR::ExternalRelocation::create(instLocs.imm,
+                                (uint8_t *)sr.getSymbol()->castToStaticSymbol()->getStaticAddress(),
+                                (uint8_t *)TR::SymbolType::typeClass, TR_SymbolFromManager, cg),
+                            __FILE__, __LINE__, node);
+                    } else {
+                        cg->addExternalRelocation(TR::ExternalRelocation::create(instLocs.imm, (uint8_t *)srCopy,
+                                                      (uint8_t *)(uintptr_t)node->getInlinedSiteIndex(),
+                                                      TR_ClassAddress, cg),
+                            __FILE__, __LINE__, node);
+                    }
+                }
+            }
+        } else if (sr.getSymbol()->isCountForRecompile()) {
+            if (cg->needRelocationsForPersistentInfoData()) {
+                cg->addExternalRelocation(
+                    TR::ExternalRelocation::create(instLocs.imm, (uint8_t *)TR_CountForRecompile, TR_GlobalValue, cg),
+                    __FILE__, __LINE__, node);
+            }
+        } else if (sr.getSymbol()->isRecompilationCounter()) {
+            if (cg->needRelocationsForBodyInfoData()) {
+                cg->addExternalRelocation(TR::ExternalRelocation::create(instLocs.imm, 0, TR_BodyInfoAddress, cg),
+                    __FILE__, __LINE__, node);
+            }
+        } else if (sr.getSymbol()->isCatchBlockCounter()) {
+            if (cg->needRelocationsForBodyInfoData()) {
+                cg->addExternalRelocation(TR::ExternalRelocation::create(instLocs.imm, 0, TR_CatchBlockCounter, cg),
+                    __FILE__, __LINE__, node);
+            }
+        } else if (sr.getSymbol()->isGCRPatchPoint()) {
+            if (cg->needRelocationsForStatics()) {
+                cg->addExternalRelocation(TR::ExternalRelocation::create(instLocs.imm, 0, TR_AbsoluteMethodAddress, cg),
+                    __FILE__, __LINE__, node);
+            }
+        } else if (sr.getSymbol()->isCompiledMethod()) {
+            if (cg->needRelocationsForStatics()) {
+                cg->addExternalRelocation(TR::ExternalRelocation::create(instLocs.imm, 0, TR_RamMethod, cg), __FILE__,
+                    __LINE__, node);
+            }
+        } else if (sr.getSymbol()->isStartPC()) {
+            if (cg->needRelocationsForStatics()) {
+                cg->addExternalRelocation(TR::ExternalRelocation::create(instLocs.imm, 0, TR_AbsoluteMethodAddress, cg),
+                    __FILE__, __LINE__, node);
+            }
+        } else if (sr.getSymbol()->isDebugCounter()) {
+            if (cg->needRelocationsForStatics()) {
+                TR::DebugCounterBase *counter = comp->getCounterFromStaticAddress(&sr);
+                if (counter == NULL) {
+                    comp->failCompilation<TR::CompilationException>(
+                        "Could not generate relocation for debug counter in "
+                        "OMR::X86::AMD64::MemoryReference::addMetaDataForCodeAddressWithLoad\n");
+                }
+                TR::DebugCounter::generateRelocation(comp, instLocs.imm, node, counter);
+            }
+        } else if (sr.getSymbol()->isEnterEventHookAddress() || sr.getSymbol()->isExitEventHookAddress()) {
+            if (cg->needRelocationsForStatics()) {
+                cg->addExternalRelocation(TR::ExternalRelocation::create(instLocs.imm, (uint8_t *)srCopy, NULL,
+                                              TR_MethodEnterExitHookAddress, cg),
+                    __FILE__, __LINE__, node);
+            }
+        }
+    } else {
+        if (needsCodeAbsoluteExternalRelocation()) {
+            cg->addExternalRelocation(
+                TR::ExternalRelocation::create(instLocs.imm, (uint8_t *)0, TR_AbsoluteMethodAddress, cg), __FILE__,
+                __LINE__, node);
+        }
+    }
+}
+
+void OMR::X86::AMD64::emitAddressMaterializationInstrIfNecessary(InstructionLocations &instLocs,
+    TR::Instruction *containingInstr, TR::CodeGenerator *cg)
+{
+    uint8_t *startOfInstr = cg->getBinaryBufferCursor();
+
+    if (!needsAddressMaterializationInstruction(startOfInstr + 1, startOfInstr + MAX_INSTRUCTION_SIZE, cg)) {
+        return;
+    }
+
+    TR::Compilation *comp = cg->comp();
+
+    // ------------------------------------------------------------------------
+    // Create a MOV_r64_imm64 instruction to materialize the constant address
+    //
+    TR::Instruction *materializeAddrInstr;
+    TR::Instruction *prevInstr = containingInstr->getPrev();
+    TR::SymbolReference &sr = getSymbolReference();
+    TR::SymbolReference *symRefCopy = NULL;
+    TR::UnresolvedDataSnippet *uds = getUnresolvedDataSnippet();
+    intptr_t displacement = getDisplacement();
+
+    if (sr.getSymbol()) {
+        // Clone the symbol reference because it will be clobbered shortly
+        //
+        symRefCopy = new (cg->trHeapMemory()) TR::SymbolReference(cg->symRefTab(), sr, 0);
+
+        materializeAddrInstr = Inst_RegImm64Sym(prevInstr, OP::MOV8RegImm64, getAddressRegister(),
+            (!uds && sr.getSymbol()->isStatic() && sr.getSymbol()->isClassObject()
+                && cg->needClassAndMethodPointerRelocations())
+                ? (uint64_t)TR::Compiler->cls.persistentClassPointerFromClassPointer(comp,
+                      (TR_OpaqueClassBlock *)displacement)
+                : displacement,
+            symRefCopy, cg);
+
+        if (uds) {
+            uds->setDataReferenceInstruction(materializeAddrInstr);
+            uds->setDataSymbolReference(symRefCopy);
+        }
+    } else {
+        materializeAddrInstr = Inst_RegImm64(prevInstr, OP::MOV8RegImm64, getAddressRegister(), displacement, cg);
+    }
+
+    materializeAddrInstr->setNode(getBaseNode() ? getBaseNode() : containingInstr->getNode());
+
+#if 0
+    if (comp->target().isSMP() && uds) {
+        // Also adjust the node of the TR::X86PatchableCodeAlignmentInstruction
+        //
+        TR_ASSERT((materializeAddrInstr->getPrev()->getKind() == TR::Instruction::IsPatchableCodeAlignment)
+                || (materializeAddrInstr->getPrev()->getKind() == TR::Instruction::IsBoundaryAvoidance),
+            "Expected TR::X86PatchableCodeAlignmentInstruction or TR::X86BoundaryAvoidance before unresolved "
+            "memory reference instruction");
+        materializeAddrInstr->getPrev()->setNode(containingInstr->getNode());
+    }
+#endif
+
+    TR_ASSERT_FATAL(materializeAddrInstr->getPrev() == prevInstr, "Unexpected prev instr");
+    TR_ASSERT_FATAL(materializeAddrInstr->getPrev()->getNode() == containingInstr->getNode(), "Unexpected node");
+
+    materializeAddrInstr->finalizeBeforeBinaryEncoding();
+
+    // The length of this instruction has already been conservatively accounted
+    // for during binary length estimation
+    //
+    InstructionLocations instLocs = {};
+    cursor = materializeAddrInstr->encodeInstruction(instLocs);
+    cg->setBinaryBufferCursor(cursor);
+
+    if (uds) {
+        uds->setAddressOfDataReference(instLocs.imm);
+    }
+
+    addAddrMaterializationInstrMetaData(instLocs, containingInstr->getNode(), cg, symRefCopy);
+
+    // ------------------------------------------------------------------------
+    // Transform the original MemoryReference to use the materialized address
+    // register most effectively
+
+    if (!getBaseRegister()) {
+        // Prefer to use the base register position in the MemoryReference
+        // because it generally yields smaller instructions
+        //
+        setBaseRegister(getAddressRegister());
+        setBaseNode(NULL);
+    } else if (!getIndexRegister()) {
+        setIndexRegister(getAddressRegister());
+        setIndexNode(NULL);
+        setStride(0);
+    } else {
+        // Both base and index registers are used in the MemoryReference.
+        // Replace the base register with a new consolidated address.
+        //
+        // The length of this instruction has been accounted for during binary
+        // length estimation.
+        //
+        TR::Instruction *consolidateAddrInstr =
+            = Inst_RegReg(materializeAddrInstr, OP::ADD8RegReg, getAddressRegister(), getBaseRegister(), cg);
+        consolidateAddrInstr->finalizeBeforeBinaryEncoding();
+
+        // Re-use instLocs without re-initializing first because the contents are not needed
+        cursor = consolidateAddrInstr->encodeInstruction(instLocs);
+        cg->setBinaryBufferCursor(cursor);
+
+        setBaseRegister(getAddressRegister());
+        setBaseNode(NULL);
+    }
+
+    resetForceWideDisplacement();
+
+    // The external code absolute relocation would have been created for the address
+    // materialization instruction and is no longer needed
+    //
+    resetNeedsCodeAbsoluteExternalRelocation();
+
+    sr.setSymbol(NULL);
+    sr.setOffset(0);
+
+    // The unresolved data snippet has already been processed by this function.
+    // Reset it in the MemoryReference of the containing instruction.
+    //
+    setUnresolvedDataSnippet(NULL);
+
+    // ------------------------------------------------------------------------
+    // The MemoryReference addressing mode has changed.  The containingInstr
+    // needs to be finalized again.
+    //
+    // The size of the MemoryReference with the address materialization register
+    // should be no larger than the originally estimated length.
+
+    // Reset the structures (encbits, finalization flag) and finalize again
+    containingInstr->refinalizeBeforeBinaryEncoding();
+
+    // Reset instLocs because its contents are no longer required
+    instLocs = {};
+}
+
+void OMR::X86::AMD64::MemoryReference::analyzeOperand(const OMR::X86::OperandProperties &opndProps,
+    OMR::X86::InstructionEncodingBits &encBits, TR::CodeGenerator *cg)
+{
+    if (getAddressRegister()) {
+        encBits.mayRequireAddressMaterializationInstr = 1;
+    }
+
+    OMR::X86::MemoryReference::analyzeOperand(opndProps, encBits, cg);
+}
