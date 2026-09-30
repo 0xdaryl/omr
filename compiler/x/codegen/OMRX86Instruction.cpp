@@ -3362,13 +3362,6 @@ TR::X86PaddingInstruction *Inst_Padding(TR::Instruction *precedingInstruction, u
     return new (cg->trHeapMemory()) TR::X86PaddingInstruction(precedingInstruction, length, cg);
 }
 
-// X86PaddingSnippetInstruction
-//
-TR::X86PaddingSnippetInstruction *Inst_PaddingSnippet(uint8_t length, TR::Node *node, TR::CodeGenerator *cg)
-{
-    return new (cg->trHeapMemory()) TR::X86PaddingSnippetInstruction(length, node, cg);
-}
-
 // X86PatchableCodeAlignmentInstruction
 //
 TR::X86PatchableCodeAlignmentInstruction *Inst_PatchableCodeAlignment(const TR_AtomicRegion *atomicRegions,
