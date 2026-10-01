@@ -3442,6 +3442,23 @@ TR::AMD64RegImm64SymInstruction *Inst_RegImm64Sym(TR::Instruction *precedingInst
     return new (cg->trHeapMemory()) TR::AMD64RegImm64SymInstruction(precedingInstruction, op, reg, imm, sr, cg);
 }
 
+// AMD64MaterializeAddressInstruction
+//
+TR::AMD64MaterializeAddressInstruction *Inst_MaterializeAddress(TR::Instruction *precedingInstr, TR::Node *node,
+    TR::Register *reg, uint64_t imm, bool needsCodeAbsoluteReloc, TR::CodeGenerator *cg)
+{
+    return new (cg->trHeapMemory())
+        TR::AMD64MaterializeAddressInstruction(precedingInstr, node, reg, imm, needsCodeAbsoluteReloc, cg);
+}
+
+// AMD64MaterializeAddressSymInstruction
+//
+TR::AMD64MaterializeAddressSymInstruction *Inst_MaterializeAddressSym(TR::Instruction *precedingInstr, TR::Node *node,
+    TR::Register *reg, uint64_t imm, TR::SymbolReference *sr, TR::CodeGenerator *cg)
+{
+    return new (cg->trHeapMemory()) TR::AMD64MaterializeAddressSymInstruction(precedingInstr, node, reg, imm, sr, cg);
+}
+
 // X86RegMaskMemInstruction
 //
 TR::X86RegMaskMemInstruction *Inst_RegMaskMem(OP::Mnemonic op, TR::Node *node, TR::Register *reg1, TR::Register *mreg,
