@@ -175,6 +175,8 @@ public: // Constructors
 
     void finalizeInstrAttachment(TR::Instruction *containingInstr, TR::CodeGenerator *cg);
 
+    TR_YesNoMaybe requiresAddressMaterializationInstruction(intptr_t nextInstructionAddress, TR::CodeGenerator *cg);
+
 protected:
 #if defined(TR_TARGET_64BIT)
     OMR_FINAL bool needsAddressLoadInstruction(intptr_t nextInstructionAddress, TR::CodeGenerator *cg);
