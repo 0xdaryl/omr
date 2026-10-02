@@ -543,18 +543,25 @@ uint8_t *OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(uint8_t *modRM
 
         TR::Instruction *addressLoadInstruction;
 
-        uint8_t *displacementLocation = containingInstruction->getBinaryEncoding() + 2;
+        //        uint8_t *displacementLocation = containingInstruction->getBinaryEncoding() + 2;
 
         // Create a mov immediate to load the address
         //
+        TR::Node *node = getBaseNode() ? getBaseNode() : containingInstruction->getNode();
+
         TR::SymbolReference *symRef = NULL;
         if (sr.getSymbol()) {
             // Clone the symbol reference because we're going to clobber it shortly
             //
             symRef = new (cg->trHeapMemory()) TR::SymbolReference(cg->symRefTab(), sr, 0);
 
+#if 0
             addressLoadInstruction
                 = Inst_RegImm64Sym(containingInstruction->getPrev(), OP::MOV8RegImm64, getAddressRegister(),
+#endif
+
+            addressLoadInstruction
+                = Inst_MaterializeAddressSym(containingInstruction->getPrev(), node, getAddressRegister(),
                     (!getUnresolvedDataSnippet() && sr.getSymbol()->isStatic() && sr.getSymbol()->isClassObject()
                         && cg->needClassAndMethodPointerRelocations())
                         ? (uint64_t)TR::Compiler->cls.persistentClassPointerFromClassPointer(comp,
@@ -569,13 +576,16 @@ uint8_t *OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(uint8_t *modRM
         } else {
             TR_ASSERT(!getUnresolvedDataSnippet(), "Unresolved references should always have a symbol");
 
-            addressLoadInstruction = Inst_RegImm64(containingInstruction->getPrev(), OP::MOV8RegImm64,
-                getAddressRegister(), displacement, cg);
+            //            addressLoadInstruction = Inst_RegImm64(containingInstruction->getPrev(), OP::MOV8RegImm64,
+            //                getAddressRegister(), displacement, cg);
+
+            addressLoadInstruction = Inst_MaterializeAddress(containingInstruction->getPrev(), node,
+                getAddressRegister(), displacement, needsCodeAbsoluteExternalRelocation(), cg);
         }
 
-        addMetaDataForCodeAddressWithLoad(displacementLocation, containingInstruction, cg, symRef);
+        //        addMetaDataForCodeAddressWithLoad(displacementLocation, containingInstruction, cg, symRef);
 
-        addressLoadInstruction->setNode(getBaseNode() ? getBaseNode() : containingInstruction->getNode());
+        //        addressLoadInstruction->setNode(getBaseNode() ? getBaseNode() : containingInstruction->getNode());
 
         if (comp->target().isSMP() && getUnresolvedDataSnippet()) {
             // Also adjust the node of the TR::X86PatchableCodeAlignmentInstruction
