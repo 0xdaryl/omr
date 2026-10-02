@@ -597,11 +597,11 @@ uint8_t *OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(uint8_t *modRM
     //
     intptr_t nextInstructionAddress = (intptr_t)(modRM + 5) + containingInstruction->getOpCode().info().ImmediateSize();
 
-    TR_YesNoMaybe needAddrMaterializationInstr
+    TR_YesNoMaybe needsAddrMaterializationInstr
         = self()->requiresAddressMaterializationInstruction(nextInstructionAddress, cg);
-    TR_ASSERT_FATAL(needAddrMaterializationInstr != TR_maybe, "Address materialization must be decided");
+    TR_ASSERT_FATAL(needsAddrMaterializationInstr != TR_maybe, "Address materialization must be decided");
 
-    if (needAddrMaterializationInstr == TR_yes) {
+    if (needsAddrMaterializationInstr == TR_yes) {
         TR_ASSERT(_addressRegister != NULL,
             "OMR::X86::AMD64::MemoryReference should have allocated an address register");
 
@@ -624,7 +624,7 @@ uint8_t *OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(uint8_t *modRM
                 = Inst_RegImm64Sym(containingInstruction->getPrev(), OP::MOV8RegImm64, getAddressRegister(),
 #endif
 
-            addressLoadInstruction
+            TR::AMD64MaterializeAddressSymInstruction *materializeInstr
                 = Inst_MaterializeAddressSym(containingInstruction->getPrev(), node, getAddressRegister(),
                     (!getUnresolvedDataSnippet() && sr.getSymbol()->isStatic() && sr.getSymbol()->isClassObject()
                         && cg->needClassAndMethodPointerRelocations())
@@ -633,12 +633,28 @@ uint8_t *OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(uint8_t *modRM
                         : displacement,
                     symRef, cg);
 
+            if (sr.isUnresolved()) {
+                TR::UnresolvedDataSnippet *uds = getUnresolvedDataSnippet();
+
+                // Transfer the UnresolvedDataSnippet to the materialization instruction
+                // and clear it on the MemoryReference
+                //
+                materializeInstr->setUnresolvedDataSnippet(uds);
+                uds->setDataReferenceInstruction(materializeInstr);
+                uds->setDataSymbolReference(symRef);
+                setUnresolvedDataSnippet(NULL);
+            }
+
+#if 0
             if (getUnresolvedDataSnippet()) {
                 getUnresolvedDataSnippet()->setDataReferenceInstruction(addressLoadInstruction);
                 getUnresolvedDataSnippet()->setDataSymbolReference(symRef);
             }
+#endif
+
+            addressLoadInstruction = materializeInstr;
         } else {
-            TR_ASSERT(!getUnresolvedDataSnippet(), "Unresolved references should always have a symbol");
+            // TR_ASSERT(!getUnresolvedDataSnippet(), "Unresolved references should always have a symbol");
 
             //            addressLoadInstruction = Inst_RegImm64(containingInstruction->getPrev(), OP::MOV8RegImm64,
             //                getAddressRegister(), displacement, cg);
@@ -651,6 +667,7 @@ uint8_t *OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(uint8_t *modRM
 
         //        addressLoadInstruction->setNode(getBaseNode() ? getBaseNode() : containingInstruction->getNode());
 
+#if 0
         if (comp->target().isSMP() && getUnresolvedDataSnippet()) {
             // Also adjust the node of the TR::X86PatchableCodeAlignmentInstruction
             //
@@ -660,23 +677,19 @@ uint8_t *OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(uint8_t *modRM
                 "memory reference instruction");
             addressLoadInstruction->getPrev()->setNode(containingInstruction->getNode());
         }
+#endif
 
-        // Emit the instruction to load the address over top of the
-        // already-emitted binary for containingInstruction
-        //
-        uint8_t *cursor = containingInstruction->getBinaryEncoding();
-        cg->setBinaryBufferCursor(cursor);
-        cursor = addressLoadInstruction->generateBinaryEncoding();
-        cg->setBinaryBufferCursor(cursor);
-
+#if 0
         // If it's unresolved, tell the snippet where the data reference is
         //
         if (getUnresolvedDataSnippet())
             getUnresolvedDataSnippet()->setAddressOfDataReference(cursor - 8);
+#endif
 
         // Transform the original MemoryReference to use the materialized
         // address register most effectively
 
+        TR::Instruction *addressAddInstruction = NULL;
         if (!getBaseRegister()) {
             // Prefer to use the base register position in the MemoryReference
             // because it generally yields smaller instructions
@@ -691,10 +704,12 @@ uint8_t *OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(uint8_t *modRM
             // Both base and index registers are used in the MemoryReference.
             // Replace the base register with a new consolidated address.
             //
-            TR::Instruction *addressAddInstruction
+            addressAddInstruction
                 = Inst_RegReg(addressLoadInstruction, OP::ADD8RegReg, getAddressRegister(), getBaseRegister(), cg);
+#if 0
             cursor = addressAddInstruction->generateBinaryEncoding();
             cg->setBinaryBufferCursor(cursor);
+#endif
 
             setBaseRegister(getAddressRegister());
             setBaseNode(NULL);
@@ -709,7 +724,22 @@ uint8_t *OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(uint8_t *modRM
 
         sr.setSymbol(NULL);
         sr.setOffset(0);
+#if 0
         setUnresolvedDataSnippet(NULL); // Otherwise it will get damaged when we re-emit containingInstruction
+#endif
+
+        // Emit the instruction to load the address over top of the
+        // already-emitted binary for containingInstruction
+        //
+        uint8_t *cursor = containingInstruction->getBinaryEncoding();
+        cg->setBinaryBufferCursor(cursor);
+        cursor = addressLoadInstruction->generateBinaryEncoding();
+        cg->setBinaryBufferCursor(cursor);
+
+        if (addressAddInstruction) {
+            cursor = addressAddInstruction->generateBinaryEncoding();
+            cg->setBinaryBufferCursor(cursor);
+        }
 
         // Indicate to caller that it must try again to emit its binary
         //
@@ -762,6 +792,15 @@ uint8_t *OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(uint8_t *modRM
 
 void OMR::X86::AMD64::MemoryReference::finalizeInstrAttachment(TR::Instruction *containingInstr, TR::CodeGenerator *cg)
 {
+    TR_YesNoMaybe needsAddrMaterializationInstr = self()->requiresAddressMaterializationInstruction(0, cg);
+
+    // If an address materialization instruction is definitively required, insert it now
+    //
+    if (needsAddrMaterializationInstr == TR_yes) {
+        // new instruction
+        // re-write MR
+    }
+
     self()->useRegisters(containingInstr, cg);
     if (getUnresolvedDataSnippet() != NULL) {
         getUnresolvedDataSnippet()->setDataReferenceInstruction(containingInstr);
