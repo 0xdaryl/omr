@@ -357,6 +357,11 @@ public:
 
     void consolidateRegisters(TR::Node *, TR::CodeGenerator *cg);
 
+    TR_YesNoMaybe requiresAddressMaterializationInstruction(intptr_t nextInstructionAddress, TR::CodeGenerator *cg)
+    {
+        return TR_no;
+    }
+
     /**
      * @brief Perform any necessary final tasks when this memory reference is
      *     attached to an instruction.
