@@ -556,6 +556,92 @@ void OMR::X86::AMD64::MemoryReference::addMetaDataForCodeAddressWithLoad(uint8_t
     }
 }
 
+TR::Instruction *OMR::X86::AMD64::MemoryReference::createMaterializationInstructions(
+    TR::Instruction *containingInstruction, TR::Instruction **addressAddInstruction, TR::CodeGenerator *cg)
+{
+    TR::Compilation *comp = cg->comp();
+    TR::SymbolReference &sr = getSymbolReference();
+    intptr_t displacement = getDisplacement();
+
+    TR::Instruction *addressLoadInstruction;
+
+    // Create a mov immediate to load the address
+    //
+    TR::Node *node = getBaseNode() ? getBaseNode() : containingInstruction->getNode();
+
+    TR::SymbolReference *symRef = NULL;
+    if (sr.getSymbol()) {
+        // Clone the symbol reference because we're going to clobber it shortly
+        //
+        symRef = new (cg->trHeapMemory()) TR::SymbolReference(cg->symRefTab(), sr, 0);
+
+        TR::AMD64MaterializeAddressSymInstruction *materializeInstr
+            = Inst_MaterializeAddressSym(containingInstruction->getPrev(), node, getAddressRegister(),
+                (!getUnresolvedDataSnippet() && sr.getSymbol()->isStatic() && sr.getSymbol()->isClassObject()
+                    && cg->needClassAndMethodPointerRelocations())
+                    ? (uint64_t)TR::Compiler->cls.persistentClassPointerFromClassPointer(comp,
+                          (TR_OpaqueClassBlock *)displacement)
+                    : displacement,
+                symRef, cg);
+
+        if (sr.isUnresolved()) {
+            TR::UnresolvedDataSnippet *uds = getUnresolvedDataSnippet();
+
+            // Transfer the UnresolvedDataSnippet to the materialization instruction
+            // and clear it on the MemoryReference
+            //
+            materializeInstr->setUnresolvedDataSnippet(uds);
+            uds->setDataReferenceInstruction(materializeInstr);
+            uds->setDataSymbolReference(symRef);
+            setUnresolvedDataSnippet(NULL);
+        }
+
+        addressLoadInstruction = materializeInstr;
+    } else {
+        addressLoadInstruction = Inst_MaterializeAddress(containingInstruction->getPrev(), node, getAddressRegister(),
+            displacement, needsCodeAbsoluteExternalRelocation(), cg);
+    }
+
+    // Transform the original MemoryReference to use the materialized
+    // address register most effectively
+
+    //    TR::Instruction *addressAddInstruction = NULL;
+
+    *addressAddInstruction = NULL;
+    if (!getBaseRegister()) {
+        // Prefer to use the base register position in the MemoryReference
+        // because it generally yields smaller instructions
+        //
+        setBaseRegister(getAddressRegister());
+        setBaseNode(NULL);
+    } else if (!getIndexRegister()) {
+        setIndexRegister(getAddressRegister());
+        setIndexNode(NULL);
+        setStride(0);
+    } else {
+        // Both base and index registers are used in the MemoryReference.
+        // Replace the base register with a new consolidated address.
+        //
+        *addressAddInstruction
+            = Inst_RegReg(addressLoadInstruction, OP::ADD8RegReg, getAddressRegister(), getBaseRegister(), cg);
+
+        setBaseRegister(getAddressRegister());
+        setBaseNode(NULL);
+    }
+
+    resetForceWideDisplacement();
+
+    // The external code absolute relocation would have been created for the address
+    // materialization instruction and is no longer needed
+    //
+    resetNeedsCodeAbsoluteExternalRelocation();
+
+    sr.setSymbol(NULL);
+    sr.setOffset(0);
+
+    return addressLoadInstruction;
+}
+
 uint8_t *OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(uint8_t *modRM,
     TR::Instruction *containingInstruction, TR::CodeGenerator *cg)
 {
@@ -602,131 +688,9 @@ uint8_t *OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(uint8_t *modRM
     TR_ASSERT_FATAL(needsAddrMaterializationInstr != TR_maybe, "Address materialization must be decided");
 
     if (needsAddrMaterializationInstr == TR_yes) {
-        TR_ASSERT(_addressRegister != NULL,
-            "OMR::X86::AMD64::MemoryReference should have allocated an address register");
-
-        TR::Instruction *addressLoadInstruction;
-
-        //        uint8_t *displacementLocation = containingInstruction->getBinaryEncoding() + 2;
-
-        // Create a mov immediate to load the address
-        //
-        TR::Node *node = getBaseNode() ? getBaseNode() : containingInstruction->getNode();
-
-        TR::SymbolReference *symRef = NULL;
-        if (sr.getSymbol()) {
-            // Clone the symbol reference because we're going to clobber it shortly
-            //
-            symRef = new (cg->trHeapMemory()) TR::SymbolReference(cg->symRefTab(), sr, 0);
-
-#if 0
-            addressLoadInstruction
-                = Inst_RegImm64Sym(containingInstruction->getPrev(), OP::MOV8RegImm64, getAddressRegister(),
-#endif
-
-            TR::AMD64MaterializeAddressSymInstruction *materializeInstr
-                = Inst_MaterializeAddressSym(containingInstruction->getPrev(), node, getAddressRegister(),
-                    (!getUnresolvedDataSnippet() && sr.getSymbol()->isStatic() && sr.getSymbol()->isClassObject()
-                        && cg->needClassAndMethodPointerRelocations())
-                        ? (uint64_t)TR::Compiler->cls.persistentClassPointerFromClassPointer(comp,
-                              (TR_OpaqueClassBlock *)displacement)
-                        : displacement,
-                    symRef, cg);
-
-            if (sr.isUnresolved()) {
-                TR::UnresolvedDataSnippet *uds = getUnresolvedDataSnippet();
-
-                // Transfer the UnresolvedDataSnippet to the materialization instruction
-                // and clear it on the MemoryReference
-                //
-                materializeInstr->setUnresolvedDataSnippet(uds);
-                uds->setDataReferenceInstruction(materializeInstr);
-                uds->setDataSymbolReference(symRef);
-                setUnresolvedDataSnippet(NULL);
-            }
-
-#if 0
-            if (getUnresolvedDataSnippet()) {
-                getUnresolvedDataSnippet()->setDataReferenceInstruction(addressLoadInstruction);
-                getUnresolvedDataSnippet()->setDataSymbolReference(symRef);
-            }
-#endif
-
-            addressLoadInstruction = materializeInstr;
-        } else {
-            // TR_ASSERT(!getUnresolvedDataSnippet(), "Unresolved references should always have a symbol");
-
-            //            addressLoadInstruction = Inst_RegImm64(containingInstruction->getPrev(), OP::MOV8RegImm64,
-            //                getAddressRegister(), displacement, cg);
-
-            addressLoadInstruction = Inst_MaterializeAddress(containingInstruction->getPrev(), node,
-                getAddressRegister(), displacement, needsCodeAbsoluteExternalRelocation(), cg);
-        }
-
-        //        addMetaDataForCodeAddressWithLoad(displacementLocation, containingInstruction, cg, symRef);
-
-        //        addressLoadInstruction->setNode(getBaseNode() ? getBaseNode() : containingInstruction->getNode());
-
-#if 0
-        if (comp->target().isSMP() && getUnresolvedDataSnippet()) {
-            // Also adjust the node of the TR::X86PatchableCodeAlignmentInstruction
-            //
-            TR_ASSERT((addressLoadInstruction->getPrev()->getKind() == TR::Instruction::IsPatchableCodeAlignment)
-                    || (addressLoadInstruction->getPrev()->getKind() == TR::Instruction::IsBoundaryAvoidance),
-                "Expected TR::X86PatchableCodeAlignmentInstruction or TR::X86BoundaryAvoidance before unresolved "
-                "memory reference instruction");
-            addressLoadInstruction->getPrev()->setNode(containingInstruction->getNode());
-        }
-#endif
-
-#if 0
-        // If it's unresolved, tell the snippet where the data reference is
-        //
-        if (getUnresolvedDataSnippet())
-            getUnresolvedDataSnippet()->setAddressOfDataReference(cursor - 8);
-#endif
-
-        // Transform the original MemoryReference to use the materialized
-        // address register most effectively
-
         TR::Instruction *addressAddInstruction = NULL;
-        if (!getBaseRegister()) {
-            // Prefer to use the base register position in the MemoryReference
-            // because it generally yields smaller instructions
-            //
-            setBaseRegister(getAddressRegister());
-            setBaseNode(NULL);
-        } else if (!getIndexRegister()) {
-            setIndexRegister(getAddressRegister());
-            setIndexNode(NULL);
-            setStride(0);
-        } else {
-            // Both base and index registers are used in the MemoryReference.
-            // Replace the base register with a new consolidated address.
-            //
-            addressAddInstruction
-                = Inst_RegReg(addressLoadInstruction, OP::ADD8RegReg, getAddressRegister(), getBaseRegister(), cg);
-#if 0
-            cursor = addressAddInstruction->generateBinaryEncoding();
-            cg->setBinaryBufferCursor(cursor);
-#endif
-
-            setBaseRegister(getAddressRegister());
-            setBaseNode(NULL);
-        }
-
-        resetForceWideDisplacement();
-
-        // The external code absolute relocation would have been created for the address
-        // materialization instruction and is no longer needed
-        //
-        resetNeedsCodeAbsoluteExternalRelocation();
-
-        sr.setSymbol(NULL);
-        sr.setOffset(0);
-#if 0
-        setUnresolvedDataSnippet(NULL); // Otherwise it will get damaged when we re-emit containingInstruction
-#endif
+        TR::Instruction *addressLoadInstruction
+            = createMaterializationInstructions(containingInstruction, &addressAddInstruction, cg);
 
         // Emit the instruction to load the address over top of the
         // already-emitted binary for containingInstruction

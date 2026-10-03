@@ -177,6 +177,9 @@ public: // Constructors
 
     TR_YesNoMaybe requiresAddressMaterializationInstruction(intptr_t nextInstructionAddress, TR::CodeGenerator *cg);
 
+    TR::Instruction *createMaterializationInstructions(TR::Instruction *containingInstruction,
+        TR::Instruction **addressAddInstruction, TR::CodeGenerator *cg);
+
 protected:
 #if defined(TR_TARGET_64BIT)
     OMR_FINAL bool needsAddressLoadInstruction(intptr_t nextInstructionAddress, TR::CodeGenerator *cg);
