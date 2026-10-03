@@ -1603,10 +1603,10 @@ void insertUnresolvedReferenceInstructionMemoryBarrier(TR::CodeGenerator *cg, in
 
     TR::RegisterDependencyConditions *deps = RegDeps((uint8_t)0, 7, cg);
 
-    if (baseReg)
+    if (baseReg != addressReg)
         deps->addPostCondition(baseReg, TR::RealRegister::NoReg, cg);
 
-    if (indexReg)
+    if (indexReg != addressReg)
         deps->addPostCondition(indexReg, TR::RealRegister::NoReg, cg);
 
     if (srcReg)

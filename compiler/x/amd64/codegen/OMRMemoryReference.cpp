@@ -286,6 +286,10 @@ void OMR::X86::AMD64::MemoryReference::useRegisters(TR::Instruction *instr, TR::
 TR_YesNoMaybe OMR::X86::AMD64::MemoryReference::requiresAddressMaterializationInstruction(
     intptr_t nextInstructionAddress, TR::CodeGenerator *cg)
 {
+    if (isDisplacementConsolidatedInRegister()) {
+        return TR_no;
+    }
+
     TR::SymbolReference &sr = getSymbolReference();
     TR::Symbol *sym = sr.getSymbol();
     intptr_t displacement = getDisplacement();
@@ -664,9 +668,9 @@ TR::Instruction *OMR::X86::AMD64::MemoryReference::createMaterializationInstruct
     // materialization instruction and is no longer needed
     //
     resetNeedsCodeAbsoluteExternalRelocation();
-
-    sr.setSymbol(NULL);
     sr.setOffset(0);
+
+    setDisplacementConsolidatedInRegister();
 
     return addressLoadInstruction;
 }
@@ -715,34 +719,40 @@ uint8_t *OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(uint8_t *modRM
     TR_ASSERT_FATAL(getAttachmentAddressMaterializationDecisionMade(),
         "MR attached to an instruction without finalization");
 
-    TR_YesNoMaybe needsAddrMaterializationInstr
-        = self()->requiresAddressMaterializationInstruction(nextInstructionAddress, cg);
+    TR_YesNoMaybe needsAddrMaterializationInstr = getAddressMaterializationDecisionOnAttachment();
+    //        = self()->requiresAddressMaterializationInstruction(nextInstructionAddress, cg);
+    //    TR_ASSERT_FATAL(needsAddrMaterializationInstr != TR_maybe, "Address materialization must be decided");
 
-    //    = getAddressMaterializationDecisionOnAttachment
+    if (needsAddrMaterializationInstr == TR_maybe) {
+        needsAddrMaterializationInstr = IS_32BIT_RIP(displacement, nextInstructionAddress) ? TR_no : TR_yes;
 
-    TR_ASSERT_FATAL(needsAddrMaterializationInstr != TR_maybe, "Address materialization must be decided");
+        if (needsAddrMaterializationInstr == TR_yes) {
+            TR::Instruction *addressAddInstruction = NULL;
+            TR::Instruction *addressLoadInstruction
+                = createMaterializationInstructions(containingInstruction, &addressAddInstruction, cg);
 
-    if (needsAddrMaterializationInstr == TR_yes) {
-        TR::Instruction *addressAddInstruction = NULL;
-        TR::Instruction *addressLoadInstruction
-            = createMaterializationInstructions(containingInstruction, &addressAddInstruction, cg);
-
-        // Emit the instruction to load the address over top of the
-        // already-emitted binary for containingInstruction
-        //
-        uint8_t *cursor = containingInstruction->getBinaryEncoding();
-        cg->setBinaryBufferCursor(cursor);
-        cursor = addressLoadInstruction->generateBinaryEncoding();
-        cg->setBinaryBufferCursor(cursor);
-
-        if (addressAddInstruction) {
-            cursor = addressAddInstruction->generateBinaryEncoding();
+            // Emit the instruction to load the address over top of the
+            // already-emitted binary for containingInstruction
+            //
+            uint8_t *cursor = containingInstruction->getBinaryEncoding();
             cg->setBinaryBufferCursor(cursor);
-        }
+            cursor = addressLoadInstruction->generateBinaryEncoding();
+            cg->setBinaryBufferCursor(cursor);
 
-        // Indicate to caller that it must try again to emit its binary
-        //
-        return NULL;
+            if (addressAddInstruction) {
+                cursor = addressAddInstruction->generateBinaryEncoding();
+                cg->setBinaryBufferCursor(cursor);
+            }
+
+            // Update the materialization decision to avoid processing this
+            // MemoryReference again
+            //
+            setAddressMaterializationDecisionOnAttachment(TR_yes);
+
+            // Indicate to caller that it must try again to emit its binary
+            //
+            return NULL;
+        }
     }
 
     // If the memory reference is displacement-only without a secondary address
@@ -798,6 +808,8 @@ void OMR::X86::AMD64::MemoryReference::finalizeInstrAttachment(TR::Instruction *
     setAddressMaterializationDecisionOnAttachment(needsAddrMaterializationInstr);
     setAttachmentAddressMaterializationDecisionMade(true);
 
+    TR::SymbolReference &sr = getSymbolReference();
+
     // If an address materialization instruction is definitively required
     // (TR_yes) then insert it now.
     //
@@ -808,20 +820,27 @@ void OMR::X86::AMD64::MemoryReference::finalizeInstrAttachment(TR::Instruction *
     // binary encoded.
     //
     if (needsAddrMaterializationInstr == TR_yes) {
-        // new instruction
-        // re-write MR
+        TR::Instruction *addressAddInstr = NULL;
+        TR::Instruction *addressLoadInstr = createMaterializationInstructions(containingInstr, &addressAddInstr, cg);
+
+        if (sr.isUnresolved()) {
+            Inst_BoundaryAvoidance(TR::X86BoundaryAvoidanceInstruction::unresolvedAtomicRegions, 8, 8, addressLoadInstr,
+                cg);
+        }
+    } else {
+        if (getUnresolvedDataSnippet() != NULL) {
+            getUnresolvedDataSnippet()->setDataReferenceInstruction(containingInstr);
+
+            // Instruction order:
+            //
+            // 1) containingInstr->prev
+            // 2) X86BoundaryAvoidanceInstruction
+            // 3) containingInstr (marked as unresolved data reference instruction)
+            //
+            Inst_BoundaryAvoidance(TR::X86BoundaryAvoidanceInstruction::unresolvedAtomicRegions, 8, 8, containingInstr,
+                cg);
+        }
     }
 
     self()->useRegisters(containingInstr, cg);
-    if (getUnresolvedDataSnippet() != NULL) {
-        getUnresolvedDataSnippet()->setDataReferenceInstruction(containingInstr);
-
-        // Instruction order:
-        //
-        // 1) containingInstr->prev
-        // 2) X86BoundaryAvoidanceInstruction
-        // 3) containingInstr (marked as unresolved data reference instruction)
-        //
-        Inst_BoundaryAvoidance(TR::X86BoundaryAvoidanceInstruction::unresolvedAtomicRegions, 8, 8, containingInstr, cg);
-    }
 }

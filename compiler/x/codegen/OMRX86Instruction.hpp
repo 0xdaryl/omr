@@ -2093,6 +2093,8 @@ public:
 
     virtual Kind getKind() { return IsMaterializeAddressSym; }
 
+    virtual TR::Snippet *getSnippetForGC() { return getUnresolvedDataSnippet(); }
+
     virtual void addMetaDataForCodeAddress(uint8_t *cursor);
 
     TR::UnresolvedDataSnippet *getUnresolvedDataSnippet() { return _unresolvedDataSnippet; }

@@ -68,6 +68,10 @@ static void rematerializeAddressAdds(TR::Node *rootLoadOrStore, TR::CodeGenerato
 
 intptr_t OMR::X86::MemoryReference::getDisplacement()
 {
+    if (isDisplacementConsolidatedInRegister()) {
+        return 0;
+    }
+
     TR::SymbolReference &symRef = getSymbolReference();
     intptr_t displacement = symRef.getOffset();
     TR::Symbol *symbol = symRef.getSymbol();
