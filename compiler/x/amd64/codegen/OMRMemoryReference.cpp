@@ -61,6 +61,9 @@ class Machine;
 OMR::X86::AMD64::MemoryReference::MemoryReference(TR::CodeGenerator *cg)
     : OMR::X86::MemoryReference(cg)
     , _forceRIPRelative(false)
+    , _attachmentAddressMaterializationDecisionMade(false)
+    , _addressMaterializationDecisionOnAttachment(TR_maybe)
+
 {
     self()->finishInitialization(cg, NULL);
 }
@@ -69,6 +72,8 @@ OMR::X86::AMD64::MemoryReference::MemoryReference(TR::Register *br, TR::SymbolRe
     uint8_t s, TR::CodeGenerator *cg)
     : OMR::X86::MemoryReference(br, sr, ir, s, cg)
     , _forceRIPRelative(false)
+    , _attachmentAddressMaterializationDecisionMade(false)
+    , _addressMaterializationDecisionOnAttachment(TR_maybe)
 {
     self()->finishInitialization(cg, NULL);
 }
@@ -76,6 +81,8 @@ OMR::X86::AMD64::MemoryReference::MemoryReference(TR::Register *br, TR::SymbolRe
 OMR::X86::AMD64::MemoryReference::MemoryReference(TR::Register *br, TR::Register *ir, uint8_t s, TR::CodeGenerator *cg)
     : OMR::X86::MemoryReference(br, ir, s, cg)
     , _forceRIPRelative(false)
+    , _attachmentAddressMaterializationDecisionMade(false)
+    , _addressMaterializationDecisionOnAttachment(TR_maybe)
 {
     self()->finishInitialization(cg, NULL);
 }
@@ -83,6 +90,8 @@ OMR::X86::AMD64::MemoryReference::MemoryReference(TR::Register *br, TR::Register
 OMR::X86::AMD64::MemoryReference::MemoryReference(TR::Register *br, intptr_t disp, TR::CodeGenerator *cg)
     : OMR::X86::MemoryReference(br, disp, cg)
     , _forceRIPRelative(false)
+    , _attachmentAddressMaterializationDecisionMade(false)
+    , _addressMaterializationDecisionOnAttachment(TR_maybe)
 {
     self()->finishInitialization(cg, NULL);
 }
@@ -90,6 +99,8 @@ OMR::X86::AMD64::MemoryReference::MemoryReference(TR::Register *br, intptr_t dis
 OMR::X86::AMD64::MemoryReference::MemoryReference(intptr_t disp, TR::CodeGenerator *cg, TR_ScratchRegisterManager *srm)
     : OMR::X86::MemoryReference(disp, cg)
     , _forceRIPRelative(false)
+    , _attachmentAddressMaterializationDecisionMade(false)
+    , _addressMaterializationDecisionOnAttachment(TR_maybe)
 {
     self()->finishInitialization(cg, srm);
 }
@@ -98,6 +109,8 @@ OMR::X86::AMD64::MemoryReference::MemoryReference(TR::Register *br, TR::Register
     TR::CodeGenerator *cg)
     : OMR::X86::MemoryReference(br, ir, s, disp, cg)
     , _forceRIPRelative(false)
+    , _attachmentAddressMaterializationDecisionMade(false)
+    , _addressMaterializationDecisionOnAttachment(TR_maybe)
 {
     self()->finishInitialization(cg, NULL);
 }
@@ -105,6 +118,8 @@ OMR::X86::AMD64::MemoryReference::MemoryReference(TR::Register *br, TR::Register
 OMR::X86::AMD64::MemoryReference::MemoryReference(TR::X86DataSnippet *cds, TR::CodeGenerator *cg)
     : OMR::X86::MemoryReference(cds, cg)
     , _forceRIPRelative(false)
+    , _attachmentAddressMaterializationDecisionMade(false)
+    , _addressMaterializationDecisionOnAttachment(TR_maybe)
 {
     self()->finishInitialization(cg, NULL);
 }
@@ -112,6 +127,8 @@ OMR::X86::AMD64::MemoryReference::MemoryReference(TR::X86DataSnippet *cds, TR::C
 OMR::X86::AMD64::MemoryReference::MemoryReference(TR::LabelSymbol *label, TR::CodeGenerator *cg)
     : OMR::X86::MemoryReference(label, cg)
     , _forceRIPRelative(false)
+    , _attachmentAddressMaterializationDecisionMade(false)
+    , _addressMaterializationDecisionOnAttachment(TR_maybe)
 {
     self()->finishInitialization(cg, NULL);
 }
@@ -120,6 +137,8 @@ OMR::X86::AMD64::MemoryReference::MemoryReference(TR::Node *rootLoadOrStore, TR:
     bool canRematerializeAddressAdds, TR_ScratchRegisterManager *srm)
     : OMR::X86::MemoryReference(rootLoadOrStore, cg, canRematerializeAddressAdds)
     , _forceRIPRelative(false)
+    , _attachmentAddressMaterializationDecisionMade(false)
+    , _addressMaterializationDecisionOnAttachment(TR_maybe)
 {
     self()->finishInitialization(cg, srm);
 }
@@ -128,6 +147,8 @@ OMR::X86::AMD64::MemoryReference::MemoryReference(TR::SymbolReference *symRef, T
     TR_ScratchRegisterManager *srm)
     : OMR::X86::MemoryReference(symRef, cg)
     , _forceRIPRelative(false)
+    , _attachmentAddressMaterializationDecisionMade(false)
+    , _addressMaterializationDecisionOnAttachment(TR_maybe)
 {
     self()->finishInitialization(cg, srm);
 }
@@ -136,6 +157,8 @@ OMR::X86::AMD64::MemoryReference::MemoryReference(TR::SymbolReference *symRef, T
     bool forceRIPRelative, TR_ScratchRegisterManager *srm)
     : OMR::X86::MemoryReference(symRef, cg)
     , _forceRIPRelative(forceRIPRelative)
+    , _attachmentAddressMaterializationDecisionMade(false)
+    , _addressMaterializationDecisionOnAttachment(TR_maybe)
 {
     self()->finishInitialization(cg, srm);
 }
@@ -144,6 +167,8 @@ OMR::X86::AMD64::MemoryReference::MemoryReference(TR::SymbolReference *symRef, i
     TR::CodeGenerator *cg, TR_ScratchRegisterManager *srm)
     : OMR::X86::MemoryReference(symRef, displacement, cg)
     , _forceRIPRelative(false)
+    , _attachmentAddressMaterializationDecisionMade(false)
+    , _addressMaterializationDecisionOnAttachment(TR_maybe)
 {
     self()->finishInitialization(cg, srm);
 }
@@ -152,6 +177,8 @@ OMR::X86::AMD64::MemoryReference::MemoryReference(TR::SymbolReference *symRef, i
     TR::CodeGenerator *cg, bool forceRIPRelative, TR_ScratchRegisterManager *srm)
     : OMR::X86::MemoryReference(symRef, displacement, cg)
     , _forceRIPRelative(forceRIPRelative)
+    , _attachmentAddressMaterializationDecisionMade(false)
+    , _addressMaterializationDecisionOnAttachment(TR_maybe)
 {
     self()->finishInitialization(cg, srm);
 }
@@ -160,6 +187,8 @@ OMR::X86::AMD64::MemoryReference::MemoryReference(TR::MemoryReference &mr, intpt
     TR_ScratchRegisterManager *srm)
     : OMR::X86::MemoryReference(mr, n, cg)
     , _forceRIPRelative(mr.getForceRIPRelative())
+    , _attachmentAddressMaterializationDecisionMade(mr.getAttachmentAddressMaterializationDecisionMade())
+    , _addressMaterializationDecisionOnAttachment(mr.getAddressMaterializationDecisionOnAttachment())
 {
     self()->finishInitialization(cg, srm);
 }
@@ -683,8 +712,14 @@ uint8_t *OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(uint8_t *modRM
     //
     intptr_t nextInstructionAddress = (intptr_t)(modRM + 5) + containingInstruction->getOpCode().info().ImmediateSize();
 
+    TR_ASSERT_FATAL(getAttachmentAddressMaterializationDecisionMade(),
+        "MR attached to an instruction without finalization");
+
     TR_YesNoMaybe needsAddrMaterializationInstr
         = self()->requiresAddressMaterializationInstruction(nextInstructionAddress, cg);
+
+    //    = getAddressMaterializationDecisionOnAttachment
+
     TR_ASSERT_FATAL(needsAddrMaterializationInstr != TR_maybe, "Address materialization must be decided");
 
     if (needsAddrMaterializationInstr == TR_yes) {
@@ -758,7 +793,19 @@ void OMR::X86::AMD64::MemoryReference::finalizeInstrAttachment(TR::Instruction *
 {
     TR_YesNoMaybe needsAddrMaterializationInstr = self()->requiresAddressMaterializationInstruction(0, cg);
 
-    // If an address materialization instruction is definitively required, insert it now
+    // Record the decision made when this MemoryReference is attached to an instruction.
+    //
+    setAddressMaterializationDecisionOnAttachment(needsAddrMaterializationInstr);
+    setAttachmentAddressMaterializationDecisionMade(true);
+
+    // If an address materialization instruction is definitively required
+    // (TR_yes) then insert it now.
+    //
+    // If one is definitively not required (TR_no) then skip it.
+    //
+    // If it is still undetermined (TR_maybe) then skip it for now, but
+    // reconsider when the instruction containing this MemoryReference is
+    // binary encoded.
     //
     if (needsAddrMaterializationInstr == TR_yes) {
         // new instruction

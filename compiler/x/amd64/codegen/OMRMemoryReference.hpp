@@ -57,6 +57,12 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::X86::MemoryReference {
     TR::Register *_addressRegister; // Used when extra loads are required to compute the address
     bool _forceRIPRelative; // Force use of RIP-relative addressing form
 
+    // Decision on whether an address materialization instruction is required
+    // when this MemoryReference was attached to an instruction
+    TR_YesNoMaybe _addressMaterializationDecisionOnAttachment;
+
+    bool _attachmentAddressMaterializationDecisionMade;
+
 public:
 #if defined(TR_TARGET_64BIT)
     virtual void decNodeReferenceCounts(TR::CodeGenerator *cg);
@@ -179,6 +185,20 @@ public: // Constructors
 
     TR::Instruction *createMaterializationInstructions(TR::Instruction *containingInstruction,
         TR::Instruction **addressAddInstruction, TR::CodeGenerator *cg);
+
+    void setAddressMaterializationDecisionOnAttachment(TR_YesNoMaybe d)
+    {
+        _addressMaterializationDecisionOnAttachment = d;
+    }
+
+    TR_YesNoMaybe getAddressMaterializationDecisionOnAttachment()
+    {
+        return _addressMaterializationDecisionOnAttachment;
+    }
+
+    bool getAttachmentAddressMaterializationDecisionMade() { return _attachmentAddressMaterializationDecisionMade; }
+
+    void setAttachmentAddressMaterializationDecisionMade(bool d) { _attachmentAddressMaterializationDecisionMade = d; }
 
 protected:
 #if defined(TR_TARGET_64BIT)
