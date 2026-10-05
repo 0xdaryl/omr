@@ -286,6 +286,10 @@ void OMR::X86::AMD64::MemoryReference::useRegisters(TR::Instruction *instr, TR::
 TR_YesNoMaybe OMR::X86::AMD64::MemoryReference::requiresAddressMaterializationInstruction(
     intptr_t nextInstructionAddress, TR::CodeGenerator *cg)
 {
+    if (isDisplacementConsolidatedInRegister()) {
+        return TR_no;
+    }
+
     TR::SymbolReference &sr = getSymbolReference();
     TR::Symbol *sym = sr.getSymbol();
     intptr_t displacement = getDisplacement();
@@ -665,7 +669,8 @@ TR::Instruction *OMR::X86::AMD64::MemoryReference::createMaterializationInstruct
     //
     resetNeedsCodeAbsoluteExternalRelocation();
 
-    sr.setSymbol(NULL);
+    setDisplacementConsolidatedInRegister();
+    // sr.setSymbol(NULL);
     sr.setOffset(0);
 
     return addressLoadInstruction;
