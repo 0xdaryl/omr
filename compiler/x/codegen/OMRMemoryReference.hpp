@@ -75,6 +75,7 @@ typedef OMR::X86::MemoryReference MemoryReferenceConnector;
 #define MemRef_ProcessAsLongVolatileHigh 0x0080
 #define MemRef_RequiresLockPrefix 0x0100
 #define MemRef_UpcastingMode 0x0200
+#define MemRef_DisplacementConsolidatedInRegister 0x0400
 
 class TR_OpaqueClassBlock;
 class TR_ScratchRegisterManager;
@@ -246,6 +247,13 @@ public:
     OMR_FINAL bool getFlags() { return _flags.getValue() != 0; }
 
     OMR_FINAL void setFlags(uint8_t f) { _flags.setValue(0xff, f); }
+
+    OMR_FINAL bool isDisplacementConsolidatedInRegister()
+    {
+        return _flags.testAny(MemRef_DisplacementConsolidatedInRegister);
+    }
+
+    OMR_FINAL void setDisplacementConsolidatedInRegister() { _flags.set(MemRef_DisplacementConsolidatedInRegister); }
 
     OMR_FINAL bool isForceWideDisplacement() { return _flags.testAny(MemRef_ForceWideDisplacement); }
 
