@@ -314,7 +314,7 @@ TR_YesNoMaybe OMR::X86::AMD64::MemoryReference::requiresAddressMaterializationIn
                 return TR_maybe;
             }
         } else {
-            if (getNeedsCodeAbsoluteExternalRelocation()) {
+            if (needsCodeAbsoluteExternalRelocation()) {
                 return TR_maybe;
             }
         }
