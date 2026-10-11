@@ -298,7 +298,29 @@ TR_YesNoMaybe OMR::X86::AMD64::MemoryReference::requiresAddressMaterializationIn
         return TR_no;
     } else if (sym && sr.isUnresolved()) {
         return sym->isShadow() ? TR_no : TR_yes;
-    } else if (_baseRegister || _indexRegister) {
+    } else if (getLabel() {
+        return TR_no;
+    }
+
+    // For MemoryReferences that deal with code addresses within the current
+    // method, defer the decision until the nextInstructionAddress is known
+    // This is because a TR_AbsoluteMethodAddress relocation may be created for
+    // the materialization instruction, and the address will not be known until
+    // binary encoding.
+    //
+    if (nextInstructionAddress == 0) {
+        if (sym) {
+            if (sym->isGCRPatchPoint() || sym->isStartPC()) {
+                return TR_maybe;
+            }
+        } else {
+            if (getNeedsCodeAbsoluteExternalRelocation()) {
+                return TR_maybe;
+            }
+        }
+    }
+
+    if (_baseRegister || _indexRegister) {
         return IS_32BIT_SIGNED(displacement) ? TR_no : TR_yes;
     }
 
@@ -716,6 +738,8 @@ uint8_t *OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(uint8_t *modRM
     //
     intptr_t nextInstructionAddress = (intptr_t)(modRM + 5) + containingInstruction->getOpCode().info().ImmediateSize();
 
+    TR_ASSERT_FATAL(modRM, "Expecting a non-NULL modRM location");
+
     TR_ASSERT_FATAL(getAttachmentAddressMaterializationDecisionMade(),
         "MR attached to an instruction without finalization");
 
@@ -724,7 +748,10 @@ uint8_t *OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(uint8_t *modRM
     //    TR_ASSERT_FATAL(needsAddrMaterializationInstr != TR_maybe, "Address materialization must be decided");
 
     if (needsAddrMaterializationInstr == TR_maybe) {
-        needsAddrMaterializationInstr = IS_32BIT_RIP(displacement, nextInstructionAddress) ? TR_no : TR_yes;
+        //        needsAddrMaterializationInstr = IS_32BIT_RIP(displacement, nextInstructionAddress) ? TR_no : TR_yes;
+
+        needsAddrMaterializationInstr = self()->requiresAddressMaterializationInstruction(nextInstructionAddress, cg);
+        TR_ASSERT_FATAL(needsAddrMaterializationInstr != TR_maybe, "Address materialization must be decided by now");
 
         if (needsAddrMaterializationInstr == TR_yes) {
             TR::Instruction *addressAddInstruction = NULL;
