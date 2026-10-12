@@ -265,6 +265,8 @@ TR_YesNoMaybe OMR::X86::AMD64::MemoryReference::requiresAddressMaterializationIn
         return TR_no;
     } else if (sym && sr.isUnresolved()) {
         return sym->isShadow() ? TR_no : TR_yes;
+    } else if (getLabel()) {
+        return TR_no;
     } else if (_baseRegister || _indexRegister) {
         return IS_32BIT_SIGNED(displacement) ? TR_no : TR_yes;
     }
